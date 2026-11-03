@@ -99,10 +99,11 @@ test('rankCheck lists only the pending ranks (D1159) and the flagged NPCs (D1160
     return Object.keys(R.ranks.pending).filter((n) => names.has(n)).sort();
   });
   expect(pend.length).toBeGreaterThanOrEqual(16);
-  expect(c.placeholders.map((p) => p.replace(/ \((D1159|D1245)\)$/, '')).sort()).toEqual(pend);
+  expect(c.placeholders.map((p) => p.replace(/ \((D1159|D1245|D1198)\)$/, '')).sort()).toEqual(pend);
   // D1159: Keepers waiting for Vincent's OK on a rank. D1245: FERNBROOK_PLAZA's rank-only placeholders, waiting for Design's names (Vincent, Nov 3).
   const PLAZA = ['Associate', 'Bright Lead', 'Cadet', 'Constable', 'Junior Bright', 'Sergeant'];
-  for (const p of c.placeholders) expect(p).toMatch(PLAZA.includes(p.replace(/ \(D\d+\)$/, '')) ? /\(D1245\)$/ : /\(D1159\)$/);
+  const CRACKDOWN = ['Commander', 'Officer'];   // POST_TRIAL_CRACKDOWN rank-only labels (D1198)
+  for (const p of c.placeholders) { const n = p.replace(/ \(D\d+\)$/, ''); expect(p).toMatch(PLAZA.includes(n) ? /\(D1245\)$/ : CRACKDOWN.includes(n) ? /\(D1198\)$/ : /\(D1159\)$/); }
   const labels = await page.evaluate(() => MAPDATA.reputation.cast.map((e) => PixelPets.shownName(e.name)));
   for (const l of labels) expect(l).not.toMatch(/\[|\]/);
   expect(c.flagged.map((f) => f.replace(/ \(D1160\)$/, '')).sort()).toEqual(

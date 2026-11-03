@@ -817,6 +817,21 @@
       "base": 50,
       "rank": "Field Lead",
       "given": "Imogen"
+    },
+    {
+      "name": "Commander",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Officer",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Resident",
+      "faction": "none",
+      "base": 50
     }
   ],
   "tiers": [
@@ -1140,7 +1155,19 @@
         "decision": "D1159",
         "note": "#261 Trial Hall holder (D1170: one Keeper cadet); cast row comes with #261"
       },
-      "Constable": {
+      "Commander": {
+      "propose": "Commander",
+      "given": null,
+      "decision": "D1198",
+      "note": "POST_TRIAL_CRACKDOWN: the Commander stays unnamed (D1198, Vincent Nov 3: defaults accepted); rank-only label until Story names him"
+    },
+    "Officer": {
+      "propose": "Officer",
+      "given": null,
+      "decision": "D1198",
+      "note": "POST_TRIAL_CRACKDOWN: the escort officers and the Hall post; rank-only label, like the plaza's (D1245)"
+    },
+    "Constable": {
         "propose": "Constable",
         "given": null,
         "decision": "D1245",

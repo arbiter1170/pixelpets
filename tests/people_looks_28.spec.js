@@ -116,7 +116,7 @@ test('each of the 28 people resolves to its own new look, with the looks.json fi
     const fields = Object.assign({}, defs[key]);
     delete fields.extra;
     expect(fields, key + ' definition').toEqual(want.look);
-    const hits = all.filter(r => r.key === key);
+    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id));   // LANTERN_HOUSE_FERNBROOK: the curfew-night twins (lh_odile) are the same person indoors
     expect(hits.map(r => r.map + ':' + r.id), key + ' is worn by its NPC only').toEqual([want.map + ':' + want.id]);
     expect(hits[0].same, key + ' drawn by npcLook').toBe(true);
   }
