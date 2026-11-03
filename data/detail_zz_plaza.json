@@ -582,7 +582,7 @@
       "story.plaza_tansy&!story.plaza_done": "@plaza_back",
       "story.starter_received&!story.plaza_yes": "@plaza_ask",
       "story.board_gate_sign&!story.board_gate_done": "Cald holds east. I hold this square.",
-      "story.side=glimmer": "Mint vest. This square stays open.",
+      "story.side=glimmer": "Wine vest. This square stays open.",
       "story.side=keepers&standing.keepers>=4": "Warden's Ally. The west square is yours.",
       "story.side=keepers&standing.keepers>=3": "Hall Friend. Lumen trusts this beat.",
       "story.side=keepers&standing.keepers>=1": "A pledged Keeper. Walk easy.",
