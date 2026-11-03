@@ -97,7 +97,7 @@
    "name": "Bryn",
    "title": "Fernbrook Local",
    "map": "fb_hall_in",
-   "facing": "right",
+   "facing": "left",
    "sight": 4,
    "ai": "basic",
    "team": [
@@ -121,7 +121,7 @@
    "name": "Linden",
    "title": "Orchard Hand",
    "map": "fb_hall_in",
-   "facing": "left",
+   "facing": "right",
    "sight": 4,
    "ai": "basic",
    "team": [
@@ -903,7 +903,7 @@
      {
       "kind": "sign",
       "id": "fb_sign_glimmer",
-      "x": 16,
+      "x": 18,
       "y": 7,
       "when": [
        "!story.side_pick_done | !story.seal1"

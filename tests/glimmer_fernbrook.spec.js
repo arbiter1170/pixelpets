@@ -80,8 +80,11 @@ test('an old save past the orchard never sees the side pick @w1', async ({ page 
   expect(await page.evaluate(() => PixelPets.scene)).toBeFalsy();
 });
 
+// DAY1_TRIAL1_FLOW (D1172 no, D1175): the gate trigger waits for Seal 1, Lizzy's class and the post-Trial slot.
+const PICK_READY = { 'story.seal1': true, 'story.lizzy_class': true, 'story.post_trial_done': true };
+
 test('Think about it sets nothing, and stepping off the gate toasts once @w1', async ({ page }) => {
-  await installSave(page.context(), fernSave(), { quietDay: true });
+  await installSave(page.context(), fernSave(PICK_READY), { quietDay: true });
   await gotoDebug(page);
   await page.locator('#tabs button[data-tab="walk"]').click();
   await page.keyboard.down('ArrowDown');

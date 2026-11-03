@@ -241,6 +241,10 @@ test('T8 D819: walk-up holders (Rook at the gate, the Wardens, Fen, Hale, Nia)',
   await page.evaluate(() => PixelPets.goto('rx_f1'));
   expect((await markOf(page, 'rx_wardens')).holder).toBe('rx_wardens');
   await page.evaluate(() => PixelPets.goto('fb_hall_in'));
+  // DAY1_TRIAL1_FLOW §8 (D1170): Fen's mark waits for the three Hall holders, each of whom carries its own mark.
+  expect((await markOf(page, 'fen_hall')).holder).toBe(null);
+  expect((await markOf(page, 'h1_cadet')).holder).toBe('h1_cadet');
+  await page.evaluate(() => { for (const id of ['h1_cadet', 'h1_challenger', 'h1_local']) PixelPets.setFlag('trainer.' + id, true); });
   expect((await markOf(page, 'fen_hall')).holder).toBe('hall1_fen');           // a save that never picked a side: trial ready
   await page.evaluate(() => PixelPets.setFlag('story.side_pick_done', true));   // picked a side, no Heights yet: trial waits
   expect((await markOf(page, 'fen_hall')).holder).toBeNull();
@@ -301,13 +305,14 @@ test('T10 all: save unchanged, debug hooks inert without ?debug=1, 26 holders in
   expect(after.flags).toEqual([]);
   expect(await page.evaluate(() => (window.PPQuests && PPQuests.devCheck) ? PPQuests.devCheck() : []))
     .toEqual([]);
-  // 24 kind:'trainer' objects across the map data (MATCH_MARKER section 4), plus Brinewick's bw_ringer and bw_deckhand (BRINEWICK).
+  // 24 kind:'trainer' objects across the map data (MATCH_MARKER section 4), plus Brinewick's bw_ringer and bw_deckhand (BRINEWICK),
+  // plus DAY1_TRIAL1_FLOW's three Trial Hall holders and Tobin's restated battle in the Fernbrook overlay (the same holder).
   let n = 0;
   for (const f of fs.readdirSync(path.join(__dirname, '..', 'data')).filter(f => f.endsWith('.json'))) {
     const walk = v => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') { if (v.kind === 'trainer') n++; Object.values(v).forEach(walk); } };
     walk(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', f), 'utf8')));
   }
-  expect(n).toBe(26);
+  expect(n).toBe(30);
   // Without debug (?debug=0 turns this tab's debug session off) the debug reads are inert.
   await page.goto('/?debug=0');
   await page.waitForFunction(() => window.PixelPets);

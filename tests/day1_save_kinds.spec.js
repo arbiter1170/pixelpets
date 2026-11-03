@@ -11,6 +11,7 @@ trackErrors(test, expect);
 
 const FLOW = { 'story.crate_a': true, 'story.crate_b': true, 'story.crate_c': true, 'story.tally_done': true, 'story.tl_amos': true, 'story.tl_juniper': true, 'story.tl_done': true };
 const KINDS = Object.assign({}, K.KINDS, {
+  a1_after_heights: { flags: { ...K.KINDS.a1.flags, 'story.heights_done': true }, seals: {} },
   mahopac_done: { flags: { ...K.KINDS.p.flags, 'story.dream_woke': true, 'story.dream_study': true }, seals: {} },
   lizzy_opening_only: { flags: { ...K.KINDS.p.flags, 'story.lizzy_wake': true }, seals: {} },
   day1_done: { flags: { ...K.KINDS.p.flags, ...FLOW, 'story.crates_seen': true }, seals: {} },
@@ -21,6 +22,8 @@ const KINDS = Object.assign({}, K.KINDS, {
 // kind -> what this build reads. door: open; deny: which deny line shows when shut; pick: the orchard-gate trigger is live.
 const WANT = {
   a1: { quest: 'heights', door: false, deny: 'latched', pick: false, tally: false, battle: true, fenOrchard: true, hold: 'split', contest: true },
+  // a1 after the Heights still points at the orchard (Tobin's battle): no new row may count as done on an old save.
+  a1_after_heights: { quest: 'orchard', door: false, deny: 'latched', pick: false, tally: false, battle: true, fenOrchard: true, hold: 'split', contest: true },
   a2: { quest: 'heights', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
   b: { quest: 'teaser', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
   "b'": { quest: 'hall1_holders', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },

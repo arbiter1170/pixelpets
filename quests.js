@@ -148,7 +148,9 @@
     { id: 'post_trial', when: ['story.seal1', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done'],
       text: 'Master Fen has one more thing for you in the Trial Hall.', place: 'Fernbrook Trial Hall',
       npc: 'Master Fen', npcIds: ['fen_hall'], target: { map: 'fb_hall_in', x: 7, y: 4 } },
-    { id: 'pick', when: ['story.post_trial_done', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.side_pick_done'],
+    // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
+    // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.
+    { id: 'pick', when: ['story.post_trial_done', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],
       text: 'Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', place: 'Orchard gate',
       target: { map: 'fernbrook', x: 9, y: 10 } },
     // D1187: after a Keepers pick on the new flow, Tobin's built battle still clears the orchard (FPT Part D is not built).
