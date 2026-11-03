@@ -83,6 +83,15 @@
       explain: 'Standing is how much a side trusts you.',   // D161: no switching before Act 5
       marker: 'PLEDGED',
     },
+    // NPC_RANKS / SIDE_BADGE (Vincent, Nov 2, 2026): faction control inside the place chip (emblem, hold stripe) and the hold word
+    // that covers the place line when you walk into a new place. hold ids come from REGION_MAP (keepers, glimmer, split, wild). Every word lives here.
+    bar: {
+      words: { keepers: 'KEEPERS', glimmer: 'GLIMMERWELL', split: 'BOTH SIDES', wild: 'UNCLAIMED' },
+      holdMs: 2400,                                   // how long the hold word shows on arrival
+      label: 'Standing',                              // the TODAY card row's aria label starts with this
+      unpledged: "You haven't picked a side yet",     // the card STANDING opens before the side pick (no points shown)
+      close: 'CLOSE',
+    },
     // Voice guide for any Glimmerwell placeholder (not UI text).
     glossary: {
       'a Walkling': 'a unit', 'the draining': 'glow sharing', 'relocating': 'giving them a comfier home', 'the player': 'partner',
@@ -94,6 +103,8 @@
     art: {
       emblem_keepers: ['....lg..', '...og...', '..oooo..', '.oyywyo.', '.oywyyo.', '.oyyyyo.', '..oooo..', '...oo...'],
       emblem_glimmer: ['..yyyy..', '.yVVVVy.', 'yVVwVVVy', 'yVwwwVVy', 'yVVwVVVy', '.yVVVVy.', '..dhhd..', '...dd...'],
+      // SIDE_BADGE: the unpledged emblem. Neutral greys only (no gold and green, no wine and soot).
+      emblem_none: ['...hh...', '..hmmh..', '.hm..mh.', 'hm.hh.mh', 'hm.hh.mh', '.hm..mh.', '..hmmh..', '...hh...'],
     },
   });
 
