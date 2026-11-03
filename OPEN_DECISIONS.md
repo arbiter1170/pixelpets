@@ -40,11 +40,15 @@ D1189-D1196 reserved: TRIAL_HALL_FERNBROOK_MAP (`handoff/specs/TRIAL_HALL_FERNBR
 
 D1197-D1209 reserved: POST_TRIAL_CRACKDOWN (`handoff/specs/POST_TRIAL_CRACKDOWN.md`, the quest in the D1175 slot; same PR, checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:31 PM ET).
 
-D1210-D1242 reserved: Seals canon (Design, design repo; Vincent's renumbering, Mon Nov 2, 2026, ~11:15 PM ET).
+D1210-D1242 reserved: STORY_DECISIONS v0.65, the Seals calls (design repo, Mon Nov 2, 2026; checked with walklings-decision-ids at about 11:20 PM EST). D1210-D1239 are Vincent's settled Seals calls (SEALS-A to SEALS-AD); D1240-D1242 were settled by Vincent at 11:05 PM EST (defaults accepted). All are recorded in the archive.
 
-D1243-D1252 reserved by unmerged branches, renumbered Mon Nov 2, 2026, ~11:15 PM ET (Vincent) from D1210-D1219, which clashed with Design's Seals canon block: D1243-D1247 `claude/fernbrook-plaza` (Fernbrook plaza standoff), D1248-D1252 `claude/fernbrook-homes` (south Fernbrook homes).
+D1243-D1247 reserved: FERNBROOK_PLAZA (claude/fernbrook-plaza), renumbered in order from D1210-D1214 (Chief of Staff, Mon Nov 2, 2026, 11:08 PM EST).
 
-Next free id is D1253.
+D1248-D1252 reserved: FERNBROOK_HOMES (claude/fernbrook-homes), renumbered in order from D1215-D1219 (Chief of Staff, Mon Nov 2, 2026, 11:08 PM EST).
+
+D1253-D1254 reserved: STORY_DECISIONS v0.65 (design repo), unused.
+
+Next free id is D1255.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
