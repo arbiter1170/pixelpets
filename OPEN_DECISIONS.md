@@ -46,7 +46,11 @@ D1210-D1242 reserved: Seals canon (Design, design repo; Vincent's renumbering, M
 
 D1243-D1252 reserved by unmerged branches, renumbered Mon Nov 2, 2026, ~11:15 PM ET (Vincent) from D1210-D1219, which clashed with Design's Seals canon block: D1243-D1247 `claude/fernbrook-plaza` (Fernbrook plaza standoff), D1248-D1252 `claude/fernbrook-homes` (south Fernbrook homes).
 
-Next free id is D1253.
+D1253-D1254 are reserved in the design repo (`specs/STORY_DECISIONS.md` v0.65, unused).
+
+D1255-D1265 reserved: CORE_LOOP_HOOK_AUDIT (`handoff/specs/CORE_LOOP_HOOK_AUDIT.md`, audit only, for Morgan; checked with walklings-decision-ids on Tue Nov 3, 2026).
+
+Next free id is D1266.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -169,6 +173,17 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 | D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
 | D1208 | green, POST_TRIAL_CRACKDOWN §4 | All crackdown lines are PLACEHOLDER for June | Not built | Story |
 | D1209 | yellow, POST_TRIAL_CRACKDOWN §8 | Pick balance: the §8 ledger is the target; June signs it off before the build; QA watches the pick ratio | Not built. Default yes | Story, QA |
+| D1255 | yellow, CORE_LOOP_HOOK_AUDIT §8 R1 | Return card on WALK: on the first boot of a day (and after 14 h away) one card shows the hello, the lowest need, the Warm Bowl, finds left and a NEWS headline; the hello's bond point moves there | Not built. The hello fires only on PARTNER (`pumpHello`, `game.js:2071`); the welcome-back only on a visibility return. Default: yes, after #262 merges, with shots at 390/320 | `pumpHello`, `noteWelcome`, `bowlHint` in `game.js` |
+| D1256 | yellow, CORE_LOOP_HOOK_AUDIT §8 R2 | TODAY card ticks for the dailies that already exist (Warm Bowl, walk finds 0/2, wild Acorns n/60), no new reward | Not built. TODAY shows place, weather, likely species and the clock. Default: yes | `#ovEnv` in `index.html`; `game.js` |
+| D1257 | yellow, CORE_LOOP_HOOK_AUDIT §8 R3 | Rare wilds show: a 5% second form or a weather-only Vanelet draws the guide wild's `spark` glyph; the first one a day shows a 40-character toast; the Journal cell gets a star | Not built. Nothing marks a rare wild before the battle. Default: yes | wild draw near `game.js:10564`; Journal grid |
+| D1258 | yellow, CORE_LOOP_HOOK_AUDIT §8 R4 | Bond levels 2-5 each unlock one small thing for that partner (a trick, a free kit adornment, a Lantern House line, a small befriend-zone bonus well under the 0.50 cap) | Not built. Bond 3 adds a stretch idle; nothing else. Default: yes; Design writes the list | `BOND`, `addBond` in `game.js` |
+| D1259 | yellow, CORE_LOOP_HOOK_AUDIT §8 R5a | After the Seal, a card lists what it opened (Lv cap 22, Fen's rematch, Emberwake, Old Meadow starter lines) | Not built. Default: yes | `noteSealsUp` in `game.js` |
+| D1260 | red, CORE_LOOP_HOOK_AUDIT §8 R5b | Fernbrook's Hall Stone room behind the Seal read (STORY §2 "What Seals are", SEALS-B): a small sealed room under the dais with one plate of old lore. A new room, so rule 9 | Not built. Default: Design packet and previews first; build after the crackdown | Design room packet; a detail overlay |
+| D1261 | yellow, CORE_LOOP_HOOK_AUDIT §8 R6 | Each outdoor area gets two species the previous area lacks, plus a per-area Journal tally and a one-time Acorn gift when full | Not built. Fernbrook repeats 6 of Route 1's 8 rows (`SPAWNS`, `game.js:10421`). Default: yes; Design picks species from the roster | `SPAWNS` in `game.js`; Journal |
+| D1262 | red, CORE_LOOP_HOOK_AUDIT §8 R7 | Three rotating daily town-board slips (meet, win, walk), paid through the wild-win seam | Not built: bounties are `[]` (`game.js:13413`) and Q19 town boards are on hold (Vincent). Default: hold until Vincent reopens Q19 | `BOARD` in `quests.js`; `wildWinRewards` in `game.js` |
+| D1263 | yellow, CORE_LOOP_HOOK_AUDIT §8 R8 | One solo Event Hall game as a booth on an existing walkable tile in Hearthmoor Plaza, before the pledge | Not built. All booths are in High Charity after the pledge and Ilse's letter. Default: yes; Design picks the tile, shots before merge | `minigames.js`; a detail overlay |
+| D1264 | yellow, CORE_LOOP_HOOK_AUDIT §8 R9 | One counter-type hint (≤ 110 characters) at the Lantern House after the first loss to a holder whose team counters the lead, naming a counter type that lives on this map | Not built. Default: yes | Lantern House wake-up in `game.js`; `SPAWNS` |
+| D1265 | red, CORE_LOOP_HOOK_AUDIT §8 R10 | Status effects or other battle-system additions before Episode 1 ships | Not built (stat stages and heals only). Default: no | `moves.js`, `stats.js` |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

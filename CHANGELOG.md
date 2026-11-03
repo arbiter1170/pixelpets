@@ -2,6 +2,22 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 00:15 ET: Audit: what the core loop needs to hook players (CORE_LOOP_HOOK_AUDIT v0.1), docs only
+
+- What changed and why: Morgan asked for an honest audit of the core loop, with concrete things to build. New doc `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` covers:
+  - the loop as it plays on live build 20261102-2259 (and the opening on 2141), from a scripted fresh-save play-through at 390 px with timings per stretch;
+  - the first 5, 15 and 30 minutes, and retention hooks rated built, half or missing;
+  - progression and collection numbers, story pull (with the settled Seals canon and the crackdown), and phone fit;
+  - ten ranked recommendations with three quick wins, and the risks.
+  It also reports two small cue bugs on live: the Trial Hall arrow points at the exit, and an unlock tip opens mid-battle. Audit only: nothing builds without Morgan's clearance, and the red rows need Vincent.
+- Files touched: `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` (new), `OPEN_DECISIONS.md` (D1255-D1265 reserved and opened; next free D1266), `CHANGELOG.md`.
+- Commit(s) + build id: `claude/walklings-core-loop-audit-ctysbm`; docs only, no build stamp. Played builds: 20261102-2259 and 20261102-2141.
+- Tests run and result (widths, checks): no code changed. The play-through ran at 390×844 against the live site with zero console errors, and no sign-in or cloud writes. `node tools/scans/run.js` passes.
+- Decisions made (colour + reasoning):
+  - Yellow: D1255-D1259, D1261, D1263 and D1264 (surface the existing dailies, a rare-wild signal, Bond unlocks, a Seal card, area species, one booth, a counter-type hint).
+  - Red: D1260 (the Hall Stone room, rule 9), D1262 (daily slips while Q19 is on hold) and D1265 (no battle-system additions before Episode 1).
+- Anything left unfinished: Morgan's triage of §8. The quick wins wait for #262 to merge, since only one `game.js` build is in flight at a time.
+
 ## 2026-11-03 04:30 ET: Lizzy walks back and faces the holder when her reunion starts (FACE_ME, Vincent, Nov 3)
 - What changed and why: Vincent's bug: Lizzy's reunion (`lizzy_intro`) can start from Buddy, and Lizzy, who wanders (NPC_LIFE), could be a few tiles off and facing away for the whole talk. A new scene step `faceMe` (no "!" and no hidden box, unlike the trainer `approach`) walks the first present of the named bodies back beside the holder and turns both to face each other. It opens `lizzy_intro` (plaza, morning plaza and school bodies); the design JSON stays verbatim. Reduced motion and SKIP snap the walk.
 - Files touched: `game.js` (`faceMeWalk`, the `faceMe` step, the `lizzy_intro` head), `tests/face_me.spec.js` (new), `handoff/shots/face_me/`.
