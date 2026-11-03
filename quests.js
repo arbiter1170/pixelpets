@@ -131,7 +131,7 @@
     { id: 'lizzy_class', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.class_sent'], done: ['story.lizzy_class'],
       text: "Lizzy's class is on at the Hearthmoor Schoolhouse. Sit in and listen.", place: 'Hearthmoor Schoolhouse',
       npc: 'Lizzy', target: { map: 'hm_school_in', x: 10, y: 3 } },
-    { id: 'orchard', when: ['story.side_pick_done'], noImply: true, done: ['story.orchard_cleared'],
+    { id: 'orchard', when: ['story.side_pick_done'], done: ['story.orchard_cleared'],
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
       glimmer: { text: 'Tobin needs a hand packing crates at the orchard gate.', place: 'Orchard gate' },
       target: { map: 'fernbrook', x: 9, y: 14 } },
@@ -151,6 +151,13 @@
     { id: 'pick', when: ['story.post_trial_done', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.side_pick_done'],
       text: 'Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', place: 'Orchard gate',
       target: { map: 'fernbrook', x: 9, y: 10 } },
+    // D1187: after a Keepers pick on the new flow, Tobin's built battle still clears the orchard (FPT Part D is not built).
+    // Its own row here, so Seal 1 never implies it; `story.crates_seen` keeps every old save off it.
+    // Its done also needs story.crates_seen: a later row's done implies every earlier row, so an old save that cleared the
+    // orchard before Hall 1 (kind b') must not count this row done and skip the Hall.
+    { id: 'tobin_crates', when: ['story.crates_seen', 'story.side_pick_done', '!story.side=glimmer'], done: ['story.crates_seen', 'story.orchard_cleared'],
+      text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
+      target: { map: 'fernbrook', x: 9, y: 14 } },
     { id: 'teaser', done: ['story.slice_end'],
       text: 'Rook has news, waiting outside the Trial Hall.', place: 'Trial Hall doorstep',
       glimmer: { text: 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', place: 'Trial Hall doorstep' },

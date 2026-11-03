@@ -225,9 +225,9 @@ test('A Keepers pick: Tobin\'s battle after the pick clears the orchard, and Fer
   expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('keepers');
   expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fern_associate').whenOk)).toBe(true);
   expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_tobin').whenOk)).toBe(false);
-  // After the Heights the chain points at Tobin's battle (the orchard row no longer counts as done by Hall 1).
+  // After the Heights the chain points at Tobin's battle (its own row after the pick, D1187).
   await page.evaluate(() => PixelPets.setFlag('story.heights_done', true));
-  expect((await quest(page)).id).toBe('orchard');
+  expect((await quest(page)).id).toBe('tobin_crates');
   expect(await page.evaluate(() => PixelPets.runScene('orchard'))).toBe(true);
   await playScene(page, []);
   expect((await flags(page))['story.orchard_cleared']).toBe(true);
