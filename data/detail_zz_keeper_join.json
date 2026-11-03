@@ -24,7 +24,7 @@
   "story.shift_g": "3i: Imogen's day shift done",
   "story.shift_k": "4l: the Keeper Scout's dusk watch done",
   "story.orchard_lean": "4.6 (D1510): open / pack, the orchard lean; or the old-save move (§9)",
-  "story.sway_fernbrook": "D1504-D1506: Fernbrook's sway, an int -3..3 (lean ±2, face ±1, old-save seed, Act 3 switch -2)",
+  "story.sway_fernbrook": "D1504-D1506: Fernbrook's sway, an int -3..3: the orchard lean ±2 (D1674: the face no longer moves it, since every holder wears the lanyard, D1562), the old-save seed, the Act 3 switch -2",
   "story.ilse_call2": "4.7: Ilse's second call answered (or Amos passes it on without a Keeper1)",
   "story.keeper_cadet": "7f: the holder is a Keeper Cadet (or the old-save move). Never cleared",
   "story.cover": "7j: glimmer = the lanyard face, undercover for Ilse",
@@ -767,11 +767,6 @@
         "Wear the Cadet pin",
         [
          [
-          "inc",
-          "story.sway_fernbrook",
-          1
-         ],
-         [
           "setFlag",
           "story.side_pick_done",
           true
@@ -846,11 +841,6 @@
     "setFlag",
     "story.side_pick_done",
     true
-   ],
-   [
-    "inc",
-    "story.sway_fernbrook",
-    -1
    ],
    [
     "standing",

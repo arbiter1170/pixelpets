@@ -135,7 +135,7 @@ test.describe('post-Trial crackdown', () => {
     const after = (await objs(page)).map(o => o.id);
     for (const id of ['cd_post_lantern', 'cd_post_hall', 'cd_cordon', 'cd_notice', 'juniper_east', 'fen_dawn']) expect(after, id).not.toContain(id);
     expect(after).toEqual(expect.arrayContaining(['odile', 'fb_wynne']));
-    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('after');   // open + lanyard: Fernbrook stays split (K1)
+    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('held_keepers');   // the opened crates settle the Keepers (D1674)
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 

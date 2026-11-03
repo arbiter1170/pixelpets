@@ -245,7 +245,7 @@ test('A Keepers pick: Tobin\'s battle after the pick clears the orchard, and Fer
   await playScene(page, []);
   expect((await flags(page))['story.orchard_cleared']).toBe(true);
   expect((await quest(page)).id).toBe('enrol');
-  // The face settles the town (ACT1_KEEPER_JOIN 4.7). D1562: every holder takes the lanyard, so an Open lean leaves it split.
+  // The face settles the town (ACT1_KEEPER_JOIN 4.7). D1562: every holder takes the lanyard; D1674: the lean alone moves the sway.
   await page.evaluate(() => PixelPets.setFlag('story.ilse_call2', true));
   expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);
   await playScene(page, []);
@@ -254,7 +254,7 @@ test('A Keepers pick: Tobin\'s battle after the pick clears the orchard, and Fer
   f = await flags(page);
   expect(f['story.side_pick_done']).toBe(true);
   expect(f['story.keeper_cadet']).toBe(true);
-  expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('split');
+  expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('keepers');
   await page.evaluate(() => PixelPets.setFlag('story.heights_done', true));
   expect((await quest(page)).id).toBe('teaser');
 });

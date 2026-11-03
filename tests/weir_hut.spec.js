@@ -13,6 +13,7 @@ const ROOM = 'hw_weir_hut_in';
 const ROOM_OBJS = OVERLAY.maps[ROOM].objs;
 const CUT = OVERLAY.slicePatch.maps.hw_cut;
 const DENY = CUT.addObjs.find(o => o.id === 'hw_weir_hut').deny;
+const MAPDATA_CHI_LINE = "Imogen's crew needs hands by day. A Keeper Scout keeps watch at dusk. I'll be here.";   // ACT1_KEEPER_JOIN 2f
 const lineOf = id => {
   const o = ROOM_OBJS.concat(CUT.addObjs).find(x => x.id === id);
   return o.lines.else;
@@ -218,6 +219,8 @@ test('every prop answers its line by tap (the desk from beside Vincent Chi), and
   test.setTimeout(150000);
   await boot(page, null, { reduce: true });
   const before = await page.evaluate(() => ({ respawn: PixelPets.state.world.respawn }));
+  // ACT1_KEEPER_JOIN keys Vincent Chi's lines; once he has met the holder his tap repeats the shifts (K4).
+  await page.evaluate(() => PixelPets.setFlag('story.chi_met', true));
   await jump(page, ROOM, 4, 7, 'up');
   const props = await page.evaluate(() => PixelPets.mapObjs.filter(o => o.kind === 'prop' || o.kind === 'npc').map(o => ({ id: o.id, x: o.x, y: o.y })));
   const seen = [];
@@ -228,7 +231,7 @@ test('every prop answers its line by tap (the desk from beside Vincent Chi), and
     await tapTile(page, p.x, p.y);
     await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.full && PixelPets.scene.text) || ''), { timeout: 15000, message: p.id }).not.toBe('');
     const got = await page.evaluate(() => ({ text: PixelPets.scene.text, who: PixelPets.scene.who, at: { x: PixelPets.state.world.x, y: PixelPets.state.world.y } }));
-    const want = p.id === 'chi_hut' ? lineOf('chi_hut') : (ROOM_OBJS.find(o => o.id === p.id).lines.else);
+    const want = p.id === 'chi_hut' ? MAPDATA_CHI_LINE : (ROOM_OBJS.find(o => o.id === p.id).lines.else);
     expect(got.text, p.id).toBe(want);
     expect(got.text.length, p.id).toBeLessThanOrEqual(110);
     expect(got.text, p.id).not.toMatch(/[{}]/);
@@ -324,13 +327,15 @@ test('access (D1594, D1595): the walk opens at story.warden_met, the Rim and the
   await page.evaluate(() => PixelPets.walkStep('up'));
   await expect.poll(() => where(page), { timeout: 8000 }).toMatchObject({ map: ROOM, x: 4, y: 10 });
   await settle(page);
-  // the first step (4,9) is a stub until the chi_meet scene exists (D1598): no scene, the walk goes on, nothing is written
-  const flags0 = await page.evaluate(() => Object.keys(PixelPets.state.flags).sort());
-  const step = await page.evaluate(() => PixelPets.walkStep('up'));
-  expect(step).toMatchObject({ ok: true, x: 4, y: 9, scene: false });
-  expect(await page.evaluate(() => PixelPets.debugCatalog().scenes.includes('chi_meet'))).toBe(false);
+  // the first step (4,9) plays the meeting once (D1598; the scene is ACT1_KEEPER_JOIN's, K4)
+  expect(await page.evaluate(() => PixelPets.debugCatalog().scenes.includes('chi_meet'))).toBe(true);
   expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'chi_hut_first'))).toBe(true);
-  expect(await page.evaluate(() => Object.keys(PixelPets.state.flags).sort())).toEqual(flags0);
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.id), { timeout: 8000 }).toBe('chi_meet');
+  for (let i = 0; i < 60 && await page.evaluate(() => !!PixelPets.scene); i++) { await page.keyboard.press('Space'); await page.waitForTimeout(120); }
+  await settle(page);
+  expect(await page.evaluate(() => PixelPets.state.flags['story.chi_met'])).toBe(true);
+  expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'chi_hut_first'))).toBe(false);
 
   // story.cobble_end alone (main today: after Hall 2): everything open as built, the holders back, the door opens
   await page.evaluate(() => { PixelPets.setFlag('story.warden_met', null); PixelPets.setFlag('story.cobble_end', true); });

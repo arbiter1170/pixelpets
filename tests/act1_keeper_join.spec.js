@@ -444,10 +444,10 @@ test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () =>
     f = await flags(page);
     expect(f['story.side']).toBe('glimmer');
     expect(f['story.side_pick_done']).toBe(true);
-    expect(f['story.sway_fernbrook']).toBe(1);   // open + lanyard: Fernbrook stays split
+    expect(f['story.sway_fernbrook']).toBe(2);   // D1674: the face moves no sway; the opened crates settle the Keepers
     expect(f['story.know_us']).toBe(true);
     expect(f['standing.got.sp_pick']).toBe(true);
-    expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('split');
+    expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('keepers');
     // The curfew read ends: posts and notice go.
     expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).not.toBe('curfew');
     await goto(page, 'fernbrook', 12, 8, 'down');
@@ -497,7 +497,7 @@ test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () =>
     f = await flags(page);
     expect(f['story.side']).toBe('glimmer');
     expect(f['story.side_pick_done']).toBe(true);
-    expect(f['story.sway_fernbrook']).toBe(-3);
+    expect(f['story.sway_fernbrook']).toBe(-2);   // D1674: the lean alone
     expect(f['story.tour1_s1']).toBe(true);
     expect(f['standing.got.sp_pick']).toBe(true);
     expect(Object.keys(await page.evaluate(() => PixelPets.state.seals)).sort()).toEqual(['seal_fernbrook', 'seal_glim_1']);
@@ -537,7 +537,7 @@ test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () =>
 });
 
 test.describe('ACT1_KEEPER_JOIN: Fernbrook settles by lean and face (T11, with K1)', () => {
-  test('T11 (D1562): pack+lanyard Glimmerwell, open+lanyard split: chip, map line, plaza', async ({ page }) => {
+  test('T11 (D1562, D1674): crates packed settles Glimmerwell, crates opened settles the Keepers: chip, map line, plaza', async ({ page }) => {
     test.setTimeout(150000);
     await boot(page, joinSave(DONE));
     const out = {};
@@ -545,17 +545,16 @@ test.describe('ACT1_KEEPER_JOIN: Fernbrook settles by lean and face (T11, with K
       await page.evaluate(([l]) => { for (const k of ['story.orchard_lean', 'story.sway_fernbrook', 'story.keeper_cadet', 'story.cover', 'story.side', 'story.side_pick_done', 'story.orchard_cleared', 'story.ilse_call2']) PixelPets.setFlag(k, null);
         PixelPets.setFlag('story.orchard_lean', l); PixelPets.setFlag('story.sway_fernbrook', l === 'open' ? 2 : -2); PixelPets.setFlag('story.orchard_cleared', true); PixelPets.setFlag('story.ilse_call2', true); }, [lean]);
       // Before the face is set the town is still split (the hold settles at the face, D1553).
-      expect(await page.evaluate(() => PixelPets.mapHold('fernbrook')), lean + ' before').toBe('split');
+      expect(await page.evaluate(() => PixelPets.mapHold('fernbrook')), lean + ' before').toBe('split');   // settles at the face
       await enrolment(page, face);
       expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true); await drive(page);
       await goto(page, 'fernbrook', 12, 8, 'down');
       out[lean + '+' + face] = await page.evaluate(() => ({ hold: PixelPets.mapHold('fernbrook'), line: PixelPets.holdLine('fernbrook'), chip: PixelPets.sideBadge().hold, plaza: PixelPets.fbPlazaPhase(), sway: PixelPets.sway('fernbrook') }));
     }
-    // D1562: every new holder wears the lanyard, so a new save's Fernbrook is Glimmerwell's (pack) or split (open); the
-    // Keepers hold (sway >= 2 with a Cadet) is an old Keepers-pick save's, after the move (T16, O9).
-    expect(out['pack+lanyard']).toMatchObject({ hold: 'glimmer', chip: 'glimmer', plaza: 'held_glimmer', sway: -3 });
-    expect(out['open+lanyard']).toMatchObject({ hold: 'split', chip: 'split', plaza: 'after', sway: 1 });
-    expect(out['open+lanyard'].line).toBe('Keepers walk the lanes. Glimmerwell keeps the gate.');
+    // D1562 (always the lanyard) and D1674 (the face moves no sway): Fernbrook settles from the lean alone at the enrolment.
+    expect(out['pack+lanyard']).toMatchObject({ hold: 'glimmer', chip: 'glimmer', plaza: 'held_glimmer', sway: -2 });
+    expect(out['open+lanyard']).toMatchObject({ hold: 'keepers', chip: 'keepers', plaza: 'held_keepers', sway: 2 });
+    expect(out['open+lanyard'].line).toBe('The Keepers hold the town now. The orchard stays rooted.');
     expect(out['pack+lanyard'].line).toBe('Glimmerwell holds the town now. Lanterns on every gate.');
   });
 
@@ -573,7 +572,7 @@ test.describe('ACT1_KEEPER_JOIN: Fernbrook settles by lean and face (T11, with K
 // D1562: a new holder is always undercover, so the public-Keepers Cadet here is an old Keepers-pick save after the move (§9.2)
 // that has had its Lodge talk; its letters carry the Keepers-face lines.
 const PIN = Object.assign({}, DONE, { 'story.orchard_lean': 'open', 'story.orchard_cleared': true, 'story.sway_fernbrook': 3, 'story.keeper_cadet': true, 'story.side_pick_done': true, 'story.know_us': true, 'story.ilse_call_old': true, 'story.cover_done': true, 'story.rpt_old_seen': true });
-const COVER = Object.assign({}, DONE, { 'story.orchard_lean': 'pack', 'story.orchard_cleared': true, 'story.sway_fernbrook': -3, 'story.ilse_call2': true, 'story.keeper_cadet': true, 'story.cover': 'glimmer', 'story.side': 'glimmer', 'story.side_pick_done': true, 'story.tour1_s1': true });
+const COVER = Object.assign({}, DONE, { 'story.orchard_lean': 'pack', 'story.orchard_cleared': true, 'story.sway_fernbrook': -2, 'story.ilse_call2': true, 'story.keeper_cadet': true, 'story.cover': 'glimmer', 'story.side': 'glimmer', 'story.side_pick_done': true, 'story.tour1_s1': true });
 // A chain row is open: its `when` holds and its own `done` does not (the fixtures skip the steps in between).
 const rowOpen = (page, id) => page.evaluate(i => { const e = PPQuests.byId(i), st = { flags: PixelPets.state.flags, seals: PixelPets.state.seals, pets: 1 };
   return e.when.every(c => PPQuests.evalCond(c, st)) && !e.done.every(c => PPQuests.evalCond(c, st)); }, id);
