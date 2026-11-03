@@ -1,9 +1,25 @@
-# HC_PARADE: the first arrival in High Charity (build notes)
+# HC_PARADE: the President's parade in High Charity (build notes)
 
-Build of design `specs/HC_PARADE.md` **v0.2** (design `master` 0523db6; D1353-D1369, all settled Tue Nov 3, 2026, the reds by
-Vincent). It rides on HIGH_CHARITY phase 1 (`handoff/maps/HC_CITY_V2.md`) and stays behind the same switch: **nothing reaches
+Build of design `specs/HC_PARADE.md` **v0.3.1** (D1353-D1369, all settled Tue Nov 3, 2026, the reds by Vincent; v0.3.1 adds
+D1424, D1428, D1430, D1438 and D1442, settled by Vincent the same day). It rides on HIGH_CHARITY phase 1 (`handoff/maps/HC_CITY_V2.md`) and stays behind the same switch: **nothing reaches
 normal play.** `HC_CITY_V2 = false`; the parade exists only in the city preview (`?debug=1&hccity=2`), which never writes the
 save. Plain `?debug=1` and normal play keep `hc_gate` (Keeper Moss's welcome) exactly as on main.
+
+## When it plays (v0.3.1, D1430)
+
+- **The first arrival keeps `hc_gate`** (Keeper Moss's welcome) exactly as on main, in the city preview too: the build no longer
+  re-points the kept `hc_gate` trigger (32,36) at the parade.
+- **The parade plays on a later Lantern Coach arrival** after the holder has met the Governor: the `load` trigger
+  `hc_parade_start` sits on the coach landing tile only (32,37, `r` 0) and needs `story.hc_greeted & story.hc_gov_met &
+  !story.hc_parade_seen & !story.hc_parade_square`. Walking onto the Square from another district or out of a door never plays it.
+- **The Governor-met flag is the city's existing `story.hc_gov_met`** (D1370, already a not-step flag in `quests.js` and the
+  city's `notStepFlags`; it also gates the President's stair with `story.act>=5`). It replaces HC_PARADE v0.3.1 §0's PLACEHOLDER
+  `story.gov_met`; no new flag. The Act 2 Governor meeting (Design's packet, in progress) will set it; it is **not built**, so in
+  normal play nothing sets it yet and **the parade is unreachable** until that scene lands. Today only the city preview's debug
+  places set it: the Act 5 places (`hc2_gov`, `hc2_pres`, which land indoors) and `hc2_parade` (`?debug=1&hccity=2`: the greeted
+  flags plus `story.hc_gov_met`, landing on the coach stop). Tests seed it.
+- **Old saves:** a save with `story.hc_greeted` and no `story.hc_gov_met` plays nothing on load; a save with
+  `story.hc_parade_seen` never sees the parade again.
 
 ## How it is built
 
@@ -21,9 +37,9 @@ save. Plain `?debug=1` and normal play keep `hc_gate` (Keeper Moss's welcome) ex
   - **E7** flying layer: a prop with `fly: true` draws after people and roofs, `alt` px up, with its `shadow` on the ground; it
     never blocks (`drawFlyers`, `blockerAt`).
   - **E8** `["emoteAll", ids, glyph, ms]`: one emote on every listed actor in the same frame (the clap).
-  - **E10** a trigger with `load: true` plays when its map loads (boot, or an arrival once the fade clears). `hc_parade_start`
-    on the Square (`!story.hc_greeted & !story.hc_parade_square`) and `hc_parade_resume` on Charter Hill
-    (`story.hc_parade_square & !story.hc_parade_seen`).
+  - **E10** a trigger with `load: true` plays when its map loads (boot, or an arrival once the fade clears) while the holder
+    stands within `r`. `hc_parade_start` on the Square's coach landing (32,37, `r` 0; see "When it plays") and
+    `hc_parade_resume` on Charter Hill (`story.hc_parade_square & !story.hc_parade_seen`).
   - `["camera", id | null]` (owner's direction, Tue Nov 3): the view follows a scene actor instead of the holder; a switch
     eases over 400 ms (reduced motion and SKIP cut); the scene's end always hands the view back.
   - Staging helpers: `["hide", "people"]` keeps a map's own people and parked tanks off until the scene ends (the Square's
@@ -34,7 +50,12 @@ save. Plain `?debug=1` and normal play keep `hc_gate` (Keeper Moss's welcome) ex
     (`TRAINERS` ally, Bump only). Foes are level-matched to the lead (lv, lv-1..lv+1). A win sets `story.hc_sf_<n>` and the
     foes are led off; a loss restores the team, says the ally's "Get up. Again.", clears the rematch mark and starts the same
     battle again (no Acorns lost, no flag). Picks are not saved.
-- **Debug (only with `?debug=1`):** `PixelPets.hcParade()` (who is on the map, tanks in view, hidden bodies, the last pick),
+    **Led away (v0.3.1, D1442, D1425):** with `leadOff` on the side's pool (the Keepers path), after each win a fresh guard
+    from the ally pool steps in behind the first beaten supporter and walks them off the street (`walkTo {with}`; both drop at the
+    lane's end). No blood, no guns. The Glimmer path is unchanged (its beaten guards walk off). Eight guards cover three allies
+    and three escorts.
+- **Debug (only with `?debug=1`):** `PixelPets.hcParade()` (who is on the map, tanks in view, hidden bodies, the last pick, the
+  guard and supporter pairs led away),
   `PixelPets.hcParadeRng(list)` (a fixed pick sequence for tests).
 
 ## Beat sheet (compiled; `tools/hc_parade.py`)
@@ -45,7 +66,7 @@ art holds frame 0; emotes still show. SKIP still stops at each battle.
 
 | # | Map | Beat | Steps | Mode |
 |---|---|---|---|---|
-| 1.1 | highcharity | Coach lands (load trigger on arrival, or the gate 32,36) | `hide people`; `music anthem_march` (PLACEHOLDER, silent); walk to 32,36; narration | tap |
+| 1.1 | highcharity | Coach lands after the Governor meeting (load trigger on the coach landing 32,37; D1430) | `hide people`; `music anthem_march` (PLACEHOLDER, silent); walk to 32,36; narration | tap |
 | 1.2 | | Officers A and B step in at 31,35 / 33,35 | `castAt`; the side's Officer A line | tap |
 | 1.3-1.4 | | Seven civilians on row 23, five cordon posts in the kerb bays (row 22); the holder walked to the spot with Officer A | `castAt`, `walkAll {with}` | auto |
 | 1.5 w1 | | Two rotor craft (ROTOR_CRAFT §6.1, D1392): A over the crowd row (23) with its beam one tile ahead, B three tiles behind and a row north (22), altitude 24, 100 ms a tile, leaving east | fly props, `walkAll {line, with, drop}` | auto |
@@ -61,14 +82,27 @@ art holds frame 0; emotes still show. SKIP still stops at each battle.
 | 2.3 | | Four Officers march in along the road and file into the Court door (dropped) | BFS walks to 32,26 | auto |
 | 2.4 | | **The view rides with the car** from Charter Avenue (54,31; `camera pr_car2`) up the road to 33,31, four close guards beside it; door open; the President (16x16 back-lit prop) walks with them to the top of the steps (32,26; guards 30/31/33/34,26); the view follows him (`camera pr_pres`) and holds him in view through the speech | | auto |
 | 2.5 | | A civilian steps toward the cordon; a guard steps across: "Citizen. Back."; `anthem_dark` (PLACEHOLDER, silent) | | auto, tap |
-| 2.6 | | The speech, seven lines, "The President", no portrait | `say {face: false}` | tap |
+| 2.6 | | The speech, seven lines S1-S7 (below), "The President", no portrait | `say {face: false}` | tap |
 | 2.7 | | Officer A's hand; the crowd claps | `emoteAll` | auto |
 | 2.8 | | **He goes back into the Court before the battles** (owner's direction); the view eases back to the holder; the guards stay | `camera null`, walk, drop | auto |
-| 3.1-3.3 | | Three street battles (between them, the packet's line endings) | `hcFight 1..3` | battle |
+| 3.1-3.3 | | Three street battles (between them, the packet's line endings); Keepers path: a guard leads the first beaten supporter away after each (D1442) | `hcFight 1..3` | battle |
 | 3 end K | | Officer A walks up; thanks and hand-off (PLACEHOLDER HOOK, D1363); Moss's letter line if `!story.hc_invite` | | tap |
 | 3 end G | | "Not here. Run!"; the holder runs west along row 34; curtain; Lantern Quay north edge (22,1); HOOK (PLACEHOLDER, D1362); the letter line | `warp hc_waterfront` | tap |
 | end | | `story.hc_parade_seen`, `story.hc_greeted` | | |
 | resume | hc_civic | `hc_parade_hill` alone: the stage, then the speech if no battle is won yet, else the one-line re-stage (PLACEHOLDER) and the next battle | E10 | |
+
+**The speech (§4 v0.3.1; D1424, D1428, D1438).** Every line PLACEHOLDER until Story signs it. The speech promises force against
+people; no line touches Glimmerwell's business (D1424). The draft line is dropped (D1428).
+
+| # | Line |
+|---|---|
+| S1 | "Citizens. You asked for order. Today you will see it." |
+| S2 | "From today, a Keeper stands on every road and at every Hall. Look up, and you will see us." |
+| S3 | "Picking Day is closed to civilians. No civilian may pick a Walkling." (PLACEHOLDER pending D1429: Story picks the canon term) |
+| S4 | "Our schools will teach again from the first page. Every lesson will serve the lantern." |
+| S5 | "Anyone who stands with Glimmerwell in the street will be fined or jailed." |
+| S6 | "And to those who stand with them today: we see you." |
+| S7 | "Keepers. Into the crowd." |
 
 **Budgets (§9, T7).** Square: 2 Officers + 7 civilians + one wave (8 marchers or 4 guards) = 17 people at most; the parked tanks
 are hidden for the scene, so at most 2 tanks are in view. Charter Hill: 2 + 12 + 4 guard line + 4 marchers = 22, then the
@@ -148,12 +182,21 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
 | Keeper tanks, beam, cordon | crackdown draft art (`keeper_tank_*`, `lantern_cordon`) | reused, as §8 says |
 | Music `anthem_march`, `anthem_dark` | `music` steps | KEEPER_ANTHEM (D1375-D1384) is not built; the steps name the cues and play nothing; the city loop keeps playing. No new sound (rule 3) |
 | Grey-box hum on each speech line | not built | red, D1371 (HC phase 1) |
-| Every line | `tools/hc_parade.py` | the packet's §2-§5 lines verbatim, PLACEHOLDER until Story signs them (D1358) |
+| Every line | `tools/hc_parade.py` | the packet's §2-§5 lines verbatim, PLACEHOLDER until Story signs them (D1358); the speech is v0.3.1 §4 S1-S7 |
+| S3 "Picking Day" | `SPEECH[2]` | PLACEHOLDER pending D1429 (Story) |
+| The Governor-met flag | `story.hc_gov_met` (`GOV_MET` in `tools/hc_parade.py`; D1370) | replaces §0's PLACEHOLDER `story.gov_met`; the Act 2 Governor scene sets it, not built |
 | Officer A / Officer B | cast labels | FRIEND SLOT names (§7) |
 | The re-stage line, the two HOOK lines, Officer A's thanks | `RESTAGE`, Part 3 ends | written as `[PLACEHOLDER: ...]` (the packet gives no words) |
 | Street-battle teams | `FIGHT.pools[side].team` | Story and Design (§5, open); level-matched within 1 |
 
 ## Open, for the Chief of Staff
+
+- **The parade is unreachable in normal play** until the Act 2 Governor scene (Design's packet, in progress) sets
+  `story.hc_gov_met`.
+- **Moss's letter line at the parade's end** (`!story.hc_invite`, folded in by v0.2 when the parade replaced `hc_gate`) is kept;
+  now that `hc_gate` plays first it only repeats for a holder who still has no invite. Story may drop it.
+- **Reload during Part 1:** Part 1 writes no flag before the warp, so a reload replays it only while the save still has the
+  holder on the coach stop; if the save has the holder elsewhere on the Square, the next coach arrival plays it.
 
 - **E1-E5 ride on `claude/post-trial-crackdown`** (no PR yet when this was built; merged in with a merge commit). If the crackdown
   PR lands first this merges cleanly; if it is reworked, this branch re-merges it. Its `OPEN_DECISIONS.md` header claims

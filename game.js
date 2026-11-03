@@ -9683,8 +9683,12 @@ async function hcFight(sc, n, spec){
   }
   sc.view.flags[flag] = true; pend(() => { S.flags[flag] = true; }); commitPending(); save();
   const off = spec.off || [-12, 0];
+  // HC_PARADE v0.3.1 (D1442, D1425): with `leadOff`, a fresh guard from the ally pool steps in behind the first beaten foe and
+  // leads them off (walkTo `with`; both drop at the lane's end). No blood, no guns: a walk off the street.
+  const esc = P.leadOff ? pick(P.ally, 1)[0] : null, q0 = CUR.objs.find(o => o.id === foes[0]), e0 = q0 ? objPos(q0) : me;
+  if (esc) { await cutWalkTo(sc, esc, e0.x, e0.y + 1, G); if (!scene) return; sc.hcLed = (sc.hcLed || []).concat([[esc, foes[0]]]); }
   await Promise.all(foes.map((id, i) => { const q = CUR.objs.find(o => o.id === id); const p0 = q ? objPos(q) : me;
-    return cutWalkTo(sc, id, p0.x + off[0], p0.y + off[1] + i, { line: true, drop: true }); }));
+    return cutWalkTo(sc, id, p0.x + off[0], p0.y + off[1] + i, Object.assign({ line: true, drop: true }, i === 0 && esc ? { with: esc } : {})); }));
   if (scene && home) await cutWalkTo(sc, ally, home.x, home.y, G);   // the ally steps back into the line; the next pick comes forward
 }
 // Shortest 4-way path to (x, y), as pathBeside's BFS: walls and blockers stop it, the walker and its `with` do not.
@@ -18200,6 +18204,8 @@ if (HC_V2_ON) {
   const ACT5 = HC_F.concat(['story.act=5', 'story.hc_gov_met']);
   Object.assign(DEBUG_EXTRAS, {
     hc2_square: { place: 'HC Lantern Square', text: 'The coach stop, the gate tanks.', map: 'highcharity', x: 32, y: 37, facing: 'up', flags: HC_F },
+    // HC_PARADE v0.3.1 (D1430): the coach stop after the Governor meeting (story.hc_gov_met, D1370; the Act 2 scene is not built)
+    hc2_parade: { place: 'HC parade (after the Governor)', text: 'Coach arrival with the Governor met.', map: 'highcharity', x: 32, y: 37, facing: 'up', flags: HC_F.concat(['story.hc_gov_met']) },
     hc2_hill: { place: 'HC Charter Hill', text: "The Governor's House, the Parade.", map: 'hc_civic', x: 32, y: 19, facing: 'up', flags: HC_F },
     hc2_exchange: { place: 'HC Exchange Quarter', text: 'Block News House, Store Row.', map: 'hc_exchange', x: 52, y: 16, facing: 'up', flags: HC_F },
     hc2_quay: { place: 'HC Lantern Quay', text: 'The Promenade, the piers.', map: 'hc_waterfront', x: 61, y: 19, facing: 'left', flags: HC_F },
@@ -20227,7 +20233,7 @@ function boot(){
     return { map: CUR.id, scene: scene ? scene.id : null, battle: !!battle.on, battleId: battle.id, cam: cutRT.cam, camLog: scene && scene.camLog ? scene.camLog.slice() : [], people: live.filter(o => o.kind === 'npc' || o.kind === 'trainer').length,
       tanksInView: live.filter(o => o.kind === 'prop' && /tank_(cmd_)?[rl]$|^hc_tank/.test(o.sprite || '') && inView(o)).length,
       hidden: CUR.objs.filter(o => o._cutHide).length, cast: live.filter(o => o.cast).map(o => { const q = objPos(o); return { id: o.id, x: q.fx != null ? q.fx : q.x, y: q.fy != null ? q.fy : q.y, sprite: o.sprite || null, fly: !!o.fly }; }),
-      last: scene && scene.hcLast ? JSON.parse(JSON.stringify(scene.hcLast)) : null, used: scene && scene.hcUsed ? [...scene.hcUsed] : [] };
+      last: scene && scene.hcLast ? JSON.parse(JSON.stringify(scene.hcLast)) : null, used: scene && scene.hcUsed ? [...scene.hcUsed] : [], led: scene && scene.hcLed ? scene.hcLed.map(p => p.slice()) : [] };
   };
   api.hcParadeRng = seq => { if (!DEBUG) return; if (!Array.isArray(seq)) { hcRng = Math.random; return; } let i = 0; hcRng = () => seq[i++ % seq.length]; };
   api.hcCity = () => DEBUG ? { on: HC_V2_ON, preview: HC_PREVIEW, ship: HC_CITY_V2, chunks: HC_V2_ON ? HC_CHUNKS.map(id => ({ id, w: WORLD[id].w, h: WORLD[id].h,

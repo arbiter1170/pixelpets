@@ -1,4 +1,4 @@
-"""HC_PARADE v0.2 (design specs/HC_PARADE.md, D1353-D1369, all settled Tue Nov 3, 2026): the beat sheet and its compiler.
+"""HC_PARADE v0.3.1 (design specs/HC_PARADE.md; D1353-D1369, D1424, D1428, D1430, D1438, D1442): the beat sheet and its compiler.
 
 Called by tools/build_hc_city.py after the five chunks are dressed. Everything here lands in data/hc_city_v2.json (the city
 preview data, window.PP_HC_V2), so it exists only while the city is on (HC_CITY_V2 or ?debug=1&hccity=2); normal play is
@@ -6,12 +6,21 @@ untouched. The beat table (BEATS) is the source for the scenes and for the hando
 
 Scenes:  hc_parade      Part 1 on Lantern Square (the parade), then the warp, then `run hc_parade_hill`.
          hc_parade_hill Part 2 (the speech) and Part 3 (three street battles) on Charter Hill. Standalone, so E10 can replay it.
+When:    (D1430) the first arrival keeps hc_gate (Keeper Moss's welcome) exactly as on main. The parade plays on a later
+         Lantern Coach arrival (the coach landing tile) once story.hc_greeted and the Governor-met flag are set and
+         story.hc_parade_seen is not. The Governor-met flag is the city's existing story.hc_gov_met (D1370; it replaces
+         HC_PARADE §0's PLACEHOLDER story.gov_met). The Act 2 Governor scene that sets it is not built, so in normal play
+         nothing sets it yet and the parade is unreachable (only the debug Act 5 places and tests set it).
 Flags:   story.hc_parade_square (1.8, saved by the warp), story.hc_sf_1..3 (each street battle won), story.hc_parade_seen and
-         story.hc_greeted (the end). All CHAIN rows (D1365); save v2, no new field.
+         story.hc_greeted (the end); story.hc_gov_met is read, never written here. All CHAIN rows (D1365); save v2, no new field.
 Words:   every line is PLACEHOLDER until Story signs it (the packet's §4 lines verbatim). Speaker "The President" (D1366).
 Sound:   the anthem cues (KEEPER_ANTHEM, D1357) are not built: the `music` steps name them and play nothing (an unknown id is a
          no-op), so the city's own loop keeps playing. The grey-box hum (D1371) is not built either. No new sound.
 """
+
+# HC_PARADE v0.3.1 §0 (D1430): the Governor-met flag. The city's existing story.hc_gov_met (D1370; already a not-step flag in
+# build_hc_city.py and quests.js) replaces the packet's PLACEHOLDER story.gov_met; the Act 2 Governor scene (not built) sets it.
+GOV_MET = 'story.hc_gov_met'
 
 # ---------- cast (castAt entries: people use a look, props a sprite) ----------
 OFFICER = 'officer'
@@ -179,14 +188,14 @@ def part2_speech():
     S += [['camera', None], ['walkTo', 'pr_pres', *COURT_DOOR, {'drop': True}]]                                  # he goes back in before the battles (owner); the guards stay
     return S
 
-SPEECH = [
-    "Citizens. Glimmerwell has crossed every line we drew. We will not wait for the next one.",
-    "From today, the national draft returns. Every able citizen will answer the roll.",
-    "Picking Day is closed to civilians. No civilian may pick a Walkling.",
-    "Our schools will teach again from the first page. Every lesson will serve the lantern.",
-    "Anyone who stands with Glimmerwell in public will be fined or jailed.",
-    "And to those who stand with them today: we see you.",
-    "Keepers. Into the crowd.",
+SPEECH = [   # HC_PARADE v0.3.1 §4 S1-S7 (D1424, D1428, D1438): every line PLACEHOLDER until Story signs it; no draft line
+    "Citizens. You asked for order. Today you will see it.",                                        # S1
+    "From today, a Keeper stands on every road and at every Hall. Look up, and you will see us.",   # S2 (D1428: replaces the draft line)
+    "Picking Day is closed to civilians. No civilian may pick a Walkling.",                          # S3 PLACEHOLDER pending D1429 (Story)
+    "Our schools will teach again from the first page. Every lesson will serve the lantern.",       # S4
+    "Anyone who stands with Glimmerwell in the street will be fined or jailed.",                     # S5
+    "And to those who stand with them today: we see you.",                                          # S6
+    "Keepers. Into the crowd.",                                                                     # S7
 ]
 GUARDS2 = [f'pr_line_{k}' for k in range(1, 5)] + [f'pr_guard_{k}' for k in range(1, 5)]
 FIGHT = {   # §5 (D1360, D1361): the pools, labels and the PLACEHOLDER team pool per side (Story and Design, open)
@@ -194,6 +203,7 @@ FIGHT = {   # §5 (D1360, D1361): the pools, labels and the PLACEHOLDER team poo
     'pools': {
         'keepers': {'ally': GUARDS2, 'foe': P2_VEST, 'allyName': N_GUARD, 'foeName': N_SUPP, 'call': 'Holder. With me.',
                     'team': ['moth/1', 'crab/1', 'vane/0'], 'allyTeam': ['mole/1'],
+                    'leadOff': True,   # v0.3.1 (D1442): a fresh guard leads the first beaten supporter away (8 guards: 3 allies + 3)
                     'lines': {'intro': "You won't take this street.", 'win': 'Fine. Fine!', 'lose': 'Not today, Keeper.'}},
         'glimmer': {'ally': P2_VEST, 'foe': GUARDS2, 'allyName': N_SUPP, 'foeName': N_GUARD, 'call': "You're with us? Then stand with me.",
                     'team': ['mole/1', 'beetle/1', 'stone/0'], 'allyTeam': ['moth/1'],
@@ -254,12 +264,15 @@ def build(CHUNKS, keep, fail):
     hill += part3()
     scenes = {'hc_parade': p1, 'hc_parade_hill': hill}
 
-    # T1: the gate plays the parade for a save without story.hc_greeted; E10: load triggers on both maps.
-    keep['highcharity:hc_gate'] = dict(keep.get('highcharity:hc_gate') or {'map': 'highcharity', 'x': 32, 'y': 36}, set={'scene': 'hc_parade'})
+    # T1 (v0.3.1, D1430): hc_gate is kept as on main (no override here), so a first arrival always plays Keeper Moss's welcome.
+    # The parade's own `load` trigger sits on the coach landing tile only (r 0): a Lantern Coach arrival, or a boot there, plays
+    # it once hc_greeted and the Governor-met flag are set; walking in from another district or out of a door never does.
     sq = CHUNKS['highcharity']
-    sq.add({'kind': 'trigger', 'id': 'hc_parade_start', 'x': 32, 'y': 32, 'r': 64, 'load': True,
-            'when': ['!story.hc_greeted', '!story.hc_parade_square'], 'scene': 'hc_parade',
-            '_note': 'HC_PARADE E10/T5: a first arrival (or a reload during Part 1) plays the parade from the gate.'}, blocks=False)
+    cx, cy = sq.targets.get('coach', (32, 37))
+    sq.add({'kind': 'trigger', 'id': 'hc_parade_start', 'x': cx, 'y': cy, 'r': 0, 'load': True,
+            'when': ['story.hc_greeted', GOV_MET, '!story.hc_parade_seen', '!story.hc_parade_square'], 'scene': 'hc_parade',
+            '_note': 'HC_PARADE v0.3.1 E10/T1/T5: a coach arrival after the Governor meeting (or a reload at the coach stop during '
+                     'Part 1) plays the parade from the gate. ' + GOV_MET + ' is set by the Act 2 Governor scene (not built yet).'}, blocks=False)
     civ.add({'kind': 'trigger', 'id': 'hc_parade_resume', 'x': 28, 'y': 32, 'r': 64, 'load': True,
              'when': ['story.hc_parade_square', '!story.hc_parade_seen'], 'scene': 'hc_parade_hill',
              '_note': 'HC_PARADE E10: a reload after the warp replays Part 2; between battles, a one-line re-stage and the next battle.'}, blocks=False)
@@ -280,7 +293,7 @@ def build(CHUNKS, keep, fail):
     for r in cast_rows:   # NPC_RANKS: every faction cast entry has a rank, a proposal or a flag; these are generic labels (D1361)
         if r['faction'] != 'none': r['rankFlag'] = 'D1361: HC_PARADE generic label, rank PLACEHOLDER until Story'
     return {'scenes': scenes, 'castAt': CAST, 'looks': looks, 'castRows': cast_rows,
-            'notStepFlags': ['story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen'],
+            'notStepFlags': ['story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen'],   # GOV_MET is already the city's (D1370)
             'budget': {'square_people_max': 2 + 7 + 8, 'hill_people_max': 2 + 12 + 4 + 4 + 4}}
 
 def walk_all(steps):
