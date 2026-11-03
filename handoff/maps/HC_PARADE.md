@@ -13,11 +13,9 @@ save. Plain `?debug=1` and normal play keep `hc_gate` (Keeper Moss's welcome) ex
   `python3 tools/build_hc_city.py --layout <design>/specs/high_charity_layout.json && python3 tools/gen_mapdata.py` (the ROTOR_CRAFT
   frames are read from `<design>/specs/rotor_craft_preview/rotor_craft_frames.json` next to the layout, or `--rotor`).
   The build fails on a beat tile that is not walkable or a line over 110.
-- **The Court move (§3.1, D1354)** is in the build tool (`court_move`): the Keeper High Court (`hc_court`, ids kept) leaves
-  `hc_civic` 8,45 for the Parade's south half, box 26,21-38,26, door 32,27, its steps (row 27, PLACEHOLDER `hc_court_step` decals)
-  facing south onto Muster Road. The old corner is grass (D1368: left empty). The six flag poles move to the Parade's north half
-  (row 18) and the Parade patrol keeps to rows 19-20. The Court's sign stands beside the steps (25,27), off the staging. The
-  design layout JSON is still v0.2.1, so the move is applied in the tool; it is a no-op once HIGH_CHARITY_LAYOUT v0.3 has it.
+- **The Court move (§3.1, D1354)** is main's #287 (HIGH_CHARITY_LAYOUT v0.3, design 91ef326): box 26,21-38,25, door 32,26,
+  wide steps on rows 26-27 facing Muster Road, the old corner left as grass. This build stages on it and adds nothing to the
+  layout; the Court's sign (33,26, on the top step) is hidden for the scene so the close guards can stand there.
 - **Engine (§9).** E1-E5 come from `claude/post-trial-crackdown` (merged into this branch, see the PR). New, all inert unless a
   scene uses them:
   - **E7** flying layer: a prop with `fly: true` draws after people and roofs, `alt` px up, with its `shadow` on the ground; it
@@ -59,9 +57,9 @@ art holds frame 0; emotes still show. SKIP still stops at each battle.
 | 1.5 w6 | | Escort tank, last column | | auto |
 | 1.7 | | "The President speaks at the Court. Citizens will attend." The crowd walks east | `walkAll {line, drop}` | tap, auto |
 | 1.8 | | Curtain; `story.hc_parade_square`; warp to hc_civic | `curtain on`, `setFlag`, `warp` (commits the flag) | auto |
-| 2.1-2.2 | hc_civic | Muster Road packed: 12 civilians (six in vests), 14 crowd strips on the back rows and sidewalks, tanks at both road ends (4,31 / 60,31), the rotor craft hovering over the Court facing the crowd (altitude 36, its down-beam on the cell behind the President's step; ROTOR_CRAFT §6.2), four guards behind the cordon (row 28 / row 29), Officers A and B | `castAt` behind the curtain | auto |
-| 2.3 | | Four Officers march in along the road and file into the Court door (dropped) | BFS walks to 32,27 | auto |
-| 2.4 | | **The view rides with the car** from Charter Avenue (54,31; `camera pr_car2`) up the road to 33,31, four close guards beside it; door open; the President (16x16 back-lit prop) walks with them to the top of the steps (32,27; guards 30/31/33/34,27); the view follows him (`camera pr_pres`) and holds him in view through the speech | | auto |
+| 2.1-2.2 | hc_civic | Muster Road packed: 12 civilians (six in vests), 14 crowd strips on the back rows and sidewalks, tanks at both road ends (4,31 / 60,31), the rotor craft hovering over the Court facing the crowd (altitude 36 over 32,25, its down-beam on the cell behind the President's step; ROTOR_CRAFT §6.2), four guards behind the cordon (row 28 / row 29), Officers A and B | `castAt` behind the curtain | auto |
+| 2.3 | | Four Officers march in along the road and file into the Court door (dropped) | BFS walks to 32,26 | auto |
+| 2.4 | | **The view rides with the car** from Charter Avenue (54,31; `camera pr_car2`) up the road to 33,31, four close guards beside it; door open; the President (16x16 back-lit prop) walks with them to the top of the steps (32,26; guards 30/31/33/34,26); the view follows him (`camera pr_pres`) and holds him in view through the speech | | auto |
 | 2.5 | | A civilian steps toward the cordon; a guard steps across: "Citizen. Back."; `anthem_dark` (PLACEHOLDER, silent) | | auto, tap |
 | 2.6 | | The speech, seven lines, "The President", no portrait | `say {face: false}` | tap |
 | 2.7 | | Officer A's hand; the crowd claps | `emoteAll` | auto |
