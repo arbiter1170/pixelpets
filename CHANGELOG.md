@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 00:38 ET: FERNBROOK_PLAZA: the six rank-only placeholders join rank-first naming as pending (D1245, Vincent's option A; build 20261103-0035)
+- What changed and why: #262's rankCheck requires every Keeper and Glimmerwell cast NPC to carry rank and given name or a `ranks.pending` row; the plaza's six placeholders (Constable, Sergeant, Cadet, Associate, Bright Lead, Junior Bright) had neither, so `npc_ranks.spec.js:90` failed. Vincent chose option A (Nov 3): list them in `data/reputation.json` `ranks.pending` with decision D1245 (waiting for Design's names, not for a rank). Nothing changes on screen; the save is untouched.
+- Files touched: `data/reputation.json` (six pending rows, pendingNote), `data/mapdata.js` (generated), `tests/npc_ranks.spec.js` (placeholders may be D1159 or, for the six plaza names, D1245), `OPEN_DECISIONS.md` (D1245 row), `CHANGELOG.md`, build stamp files.
+- Commit(s) + build id: claude/fernbrook-plaza, build 20261103-0035.
+- Tests run and result (widths, checks): `npc_ranks` and `fernbrook_plaza` at 320, 375 and 390: 48 passed. At 390: `side_badge`, `whereabouts`, `data_integrity`, `tap_interact`, `fernbrook_homes`, `day1_flow`, `map_legend`: 27 passed. `node tools/scans/run.js` exit 0.
+- Decisions made (colour + reasoning): Vincent's call (option A) on how D1245's placeholders fit D1159's rank-first rule.
+- Anything left unfinished: Design's names for the six (D1245).
+
 ## 2026-11-03 00:12 ET: FERNBROOK_PLAZA meets FERNBROOK_HOMES (#267): catch-up, the south lamp moves off the gate, test pins follow (build 20261103-0020)
 - What changed and why: #267 grew Fernbrook south with a gate at x17-18 under the plaza's south edge. The plaza's south-west lamp post sat at (18,17), the one tile above the gate's walk-in (x17 above the gate is a tree), so walking straight down x18 stopped at the plaza (`fernbrook_homes` "walk through the gate" failed). The lamp moves one tile east to (19,17); its id and art stay. The two branches' specs pinned each other's old state and now follow the merged map: `fernbrook_homes` expects the plaza's rows 10-17 and only the orchard wild zone (D1246 drops the stream-field zone); `fernbrook_plaza` expects h 32. `tap_interact` counts are summed (talk 745). No save change.
 - Files touched: `data/detail_zzz_fernbrook_plaza.json` (one lamp x), `data/mapdata.js` and `tools/GAMEJS_MAP.txt` (generated), `tests/fernbrook_homes.spec.js`, `tests/fernbrook_plaza.spec.js`, `tests/tap_interact.spec.js`, `handoff/maps/FERNBROOK_PLAZA.md`, `handoff/shots/fernbrook_plaza/` (`plaza-catchup-*`, `plaza-seam-*`), `BACKLOG.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, build stamp files.

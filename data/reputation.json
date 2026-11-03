@@ -1139,8 +1139,44 @@
         "given": "Ash",
         "decision": "D1159",
         "note": "#261 Trial Hall holder (D1170: one Keeper cadet); cast row comes with #261"
+      },
+      "Constable": {
+        "propose": "Constable",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Sergeant": {
+        "propose": "Sergeant",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Cadet": {
+        "propose": "Cadet",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Associate": {
+        "propose": "Associate",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Bright Lead": {
+        "propose": "Bright Lead",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Junior Bright": {
+        "propose": "Junior Bright",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
       }
     },
-    "pendingNote": "pending: Keepers with no ladder rank yet (KEEPER_RANKS D893). They show their plain name (no rank, no placeholder) until Vincent OKs the proposed rank (D1159); then the cast row gains rank/given/duty from here. rankCheck counts a name listed here as pending, not missing."
+    "pendingNote": "pending: Keepers with no ladder rank yet (KEEPER_RANKS D893). They show their plain name (no rank, no placeholder) until Vincent OKs the proposed rank (D1159); then the cast row gains rank/given/duty from here. rankCheck counts a name listed here as pending, not missing. Rows with decision D1245 are the FERNBROOK_PLAZA placeholders: rank-only labels that wait for Design's names, not for a rank."
   }
 }
