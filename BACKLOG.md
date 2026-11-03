@@ -5,6 +5,8 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
+GLIMMERWELL_VEHICLES_BUILDINGS (D1220-D1234) is built on `claude/glimmerwell-vehicles-buildings-6pgkqr`, behind a `?debug=1` preview lot only (`PixelPets.fleetPreview('split'|'keepers'|'glimmer')`): the Courtesy Cruiser, the Sky Concierge, Glow Care, Bright Swap, the Glimmerwell Relay and Fleet Bay. Nothing changes in normal play. Waits on Vincent's sign-off of the shots and the red rows (D1220-D1225, D1228); story placement (§10) is later builds after #261 and the crackdown.
+
 BATTLE_BACKDROPS (D1009, red, settled by Vincent Oct 31, 2026; supersedes D167) is in the game on this branch: every battle draws its own scene from the map's own tiles and props (`battle_bg.js`, `BATTLE_BG_ON` on in `game.js`). The Pet tab, music and the maps' `backdrop` fields are unchanged. Save stays `pixelpets.save.v2` with `v` 2; no new fields.
 
 GEAR_SWITCH (D768-D774) is in the game on main: care-screen GEAR opens the Walkling sheet, the stats card drops its GEAR button, and a party row beside the WALK back arrow switches the shown Walkling. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.

@@ -40,7 +40,11 @@ D1189-D1196 reserved: TRIAL_HALL_FERNBROOK_MAP (`handoff/specs/TRIAL_HALL_FERNBR
 
 D1197-D1209 reserved: POST_TRIAL_CRACKDOWN (`handoff/specs/POST_TRIAL_CRACKDOWN.md`, the quest in the D1175 slot; same PR, checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:45 PM ET).
 
-Next free id is D1210.
+D1210-D1219 are held by unmerged branches with no PR yet: D1210-D1214 `claude/fernbrook-plaza`, D1215-D1219 `claude/fernbrook-homes` (renumbered from D1175-D1185; their own PRs record them).
+
+D1220-D1234 reserved: GLIMMERWELL_VEHICLES_BUILDINGS (`handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md`, Glimmerwell's Courtesy Cruiser, Sky Concierge and four buildings on a `?debug=1` preview lot; checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:00 PM ET).
+
+Next free id is D1235.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -161,6 +165,21 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 | D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
 | D1208 | green, POST_TRIAL_CRACKDOWN §4 | All crackdown lines are PLACEHOLDER for June | Not built | Story |
 | D1209 | yellow, POST_TRIAL_CRACKDOWN §8 | Pick balance: the §8 ledger is the target; June signs it off before the build; QA watches the pick ratio | Not built. Default yes | Story, QA |
+| D1220 | red, GLIMMERWELL_VEHICLES_BUILDINGS §4 | Naming: Glimmerwell's ground vehicle (the Watch Coach's answer) is the Courtesy Cruiser. Alternatives: Escort Glider, Brightline | Built on the `?debug=1` preview lot only, named Courtesy Cruiser (PLACEHOLDER) | `glimmer_fleet.js` `LINES` |
+| D1221 | red, GLIMMERWELL_VEHICLES_BUILDINGS §5 | Naming: the air unit is the Sky Concierge. Alternatives: Hover Lamp, Glow Scout | Preview lot only, named Sky Concierge | `glimmer_fleet.js` |
+| D1222 | red, GLIMMERWELL_VEHICLES_BUILDINGS §6 | Naming: the buildings Glow Care (clinic), Bright Swap (buy-back stall), Glimmerwell Relay (mast), Fleet Bay (vehicle depot) | Preview lot only, signs PLACEHOLDER | `glimmer_fleet.js` `LINES` |
+| D1223 | red, GLIMMERWELL_VEHICLES_BUILDINGS §4-§5 | Canon: Glimmerwell runs a fleet that hovers on the hum (no wheels, no rotors, no weapons), sent to reassure a town; a Keepers hold holds it at a Keeper yard | Preview lot only; the hover is drawn, never explained | STORY.md (Design) |
+| D1224 | red, GLIMMERWELL_VEHICLES_BUILDINGS §7 | Canon and CHIP_SECRECY: Glow Care is where the chip is fitted, implied only; a member clinic for Walklings with a shut door; its inside is Glimmer-side only and later | Preview lot only; the door stays shut | `glimmer_fleet.js` |
+| D1225 | red, GLIMMERWELL_VEHICLES_BUILDINGS §7 (rule 10) | Glimmerwell buildings never carry the Lantern House heart or the store acorn; a Walkling clinic never heals; the badge plate is the one exterior piece every Glimmerwell building shares | Preview lot only, built that way | `glimmer_fleet.js` art |
+| D1226 | yellow, GLIMMERWELL_VEHICLES_BUILDINGS §6 | The four civilians (Receptionist, Swap Clerk, Mast Tech, Bay Attendant): no rank, Glimmerwell-lock colours, no lanyard, not on the WS-PALETTE locked list | Preview lot only | `glimmer_fleet.js` `LOOKS` |
+| D1227 | yellow, GLIMMERWELL_VEHICLES_BUILDINGS §6 | What each building shows on a Keepers or Glimmerwell hold | Preview lot only, three holds | `glimmer_fleet.js` `buildMap` |
+| D1228 | red, GLIMMERWELL_VEHICLES_BUILDINGS §10 | Story placement: a Cruiser getaway and a Concierge fly-by in the crackdown; a Concierge over Juniper's camp at the pick, Glimmer-pick props on the east road; Act 2 mast, bay and Glow Care | Nothing placed in the story | later builds |
+| D1229 | green, GLIMMERWELL_VEHICLES_BUILDINGS §11 | Build behind a flag: an in-memory `?debug=1` preview lot, no save writes, nothing in normal play | Built (PixelPets.fleetPreview / fleetExit) | `glimmer_fleet.js`, `game.js` hooks |
+| D1230 | yellow, GLIMMERWELL_VEHICLES_BUILDINGS §4 | Vehicles move on fixed scripted paths, not a new system; a scene step that moves them waits for D1204 | Built | `glimmer_fleet.js` `posOf` |
+| D1231 | yellow, GLIMMERWELL_VEHICLES_BUILDINGS §5 | The air unit draws above every actor, never blocks, casts a shadow, and is grounded on a Keepers hold | Built | `game.js` `drawMap` hook |
+| D1232 | green, GLIMMERWELL_VEHICLES_BUILDINGS §9 | All art is engineer draft in PAL; Pia redraws before any story placement | Drafts on the preview lot only | `glimmer_fleet.js` `GW_ART` |
+| D1233 | green, GLIMMERWELL_VEHICLES_BUILDINGS | All lines are PLACEHOLDER for June; none names the chip, the Tuning or an implant | Placeholder lines on the preview lot | `glimmer_fleet.js` `LINES` |
+| D1234 | yellow, GLIMMERWELL_VEHICLES_BUILDINGS §11 | `glimmer_fleet.js` (about 37 KB) loads on every page; its art installs only when the preview opens. Option: load it only on `?debug=1` | Loads always; one check per frame | `index.html`, `sw.js` |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.
