@@ -9,7 +9,7 @@ June (Story). Staging a scene every player sees is red, so the real quest waits 
 |---|---|
 | Status | v0.1, Tue Nov 3, 2026. Draft for the Chief of Staff and Vincent |
 | Ask | Vincent, Tue Nov 3, 2026, on POST_TRIAL_CRACKDOWN: "There should be no pick yet, need placeholder and to spec a quest from the warden in starting area who summons the keeper back home to meet her." ("keeper" there means the player character, the holder) |
-| Builds on | `handoff/specs/POST_TRIAL_CRACKDOWN.md` v0.3.1 (Beat 8, §5, §6, §7); the lead engineer's placeholder on `claude/post-trial-crackdown` (§7 below), including D1333 (the curfew lifts at dawn, when the night scene sets `story.post_trial_done`) |
+| Builds on | `handoff/specs/POST_TRIAL_CRACKDOWN.md` v0.3.1 (Beat 8, §5, §6, §7); the lead engineer's placeholder on `claude/post-trial-crackdown` (§7 below), including D1333 (Vincent: the only change from the spec is that the pick doesn't come right at the dawn release; the §5 curfew order stands until the pick) |
 | Canon read | design `STORY.md`: §3a (ladder Captain < Commander < Warden < High Court < President; "the President and every Keeper commander know"; Wardens and the High Court are in the dark; Captain Lumen and Warden Ilse decide for the holder in Act 5, at a Lantern House, in a scene); §3a "a Warden keeps a whole district (a Lodge, its Lantern House and its holders)"; §4 (Ilse gives the starter); §6 (Ilse keeps a dream ledger; Mom never says "Professor"); design `specs/STORY_DECISIONS.md` D970, D978, D979 |
 | Game data read | `data/interiors.json` `hm_lodge_in` (11x9; `ilse_lodge_after` at 5,3, lines `!has:name` > `story.dream_woke` > `else`; `ilse_chat`; `lodge_ledger` prop at 9,2); `data/mahopac.json` `ilse_gate`/`ilse_dreams`; `data/detail_zz_partner_day.json` `ilseAfter`; `data/cutscene_intro.json`; `data/maps_slice.json` `starter`; `data/detail_wayup.json` (sign "WARDEN'S LODGE · Warden Ilse Marrow"); `data/civic.json` (Ness, Cald, Bren); `data/glimmer_path.json` `fb_side_pick`; `quests.js` CHAIN `hall1`..`teaser`; `game.js` `whereNow` |
 | Specs read | `handoff/specs/DAY1_TRIAL1_FLOW.md` §4, §5, §6, §16; `handoff/specs/LANTERN_HOUSE_FERNBROOK.md` (Amos 6,3, wire desk 7,3) |
@@ -53,7 +53,7 @@ The holder stands at 5,10 when the night ends. `walkTo player 6,4` (Amos's open 
 | (narration) | The wire reads: Come home to the Lodge. I want to hear it from you. Warden Ilse Marrow. |
 | Master Fen | She answered. Good. Go and tell her all of it, the way it happened. |
 | Master Fen | I'll be at the orchard gate. Curfew or no curfew, the trees still need me. |
-| Keeper Amos | The curfew lifted at dawn. Route 1 is open. Safe road, {name}. |
+| Keeper Amos | You're free to go at dawn. Route 1 is open. Safe road, {name}. |
 
 Then `setFlag story.post_trial_done` and `setFlag story.warden_called` (as the placeholder already does).
 
@@ -206,7 +206,7 @@ Plus a `tests/README.md` row, and the spec-match table in the PR naming the test
 |---|---|---|---|
 | 1 | POST_TRIAL_CRACKDOWN §6 hand-off and D1203 | §6 has the pick at the orchard gate at dawn, right after the release; its `pick` text reads "at dawn" | the summons sits between; the place stays (option A); "at dawn" is dropped (Beat 6). D1203's pitch placement is unchanged |
 | 2 | D1142 (red, settled: the pick) | Vincent's "no pick yet" | place and result kept under A; B and C move it and need Vincent (D1341) |
-| 3 | POST_TRIAL_CRACKDOWN §2 bottleneck and D1200 | the curfew read ran to the pick | D1333 (engineer's build) lifts it at dawn, so the trip runs in the plaza's `after` phase; the Hall stays shut (`story.hall1_shut`). Which posts and notice stand during the trip follows D1333's build |
+| 3 | POST_TRIAL_CRACKDOWN §2 bottleneck and D1200 | the curfew read ran to the pick | Kept: the curfew read runs to the pick (D1333 only moves the pick), so the trip home happens under the curfew order (posts, notice, plaza `curfew`, townsfolk indoors); the Hall stays shut (`story.hall1_shut`) |
 | 4 | FPT pitches (Part C, as moved by the crackdown) | Amos pitches inside the night before; Juniper on the east road at dawn | unchanged; Juniper stays at 30,8 until the pick, so her pitch can come before or after the trip; STANDING still opens on the pick or both pitches (D1144) |
 | 5 | Rook (`rook_fb` fernbrook 22,8, `when` Fernbrook Seal & `!story.slice_end`) | he stands at the Hall door from Seal 1 through the crackdown and the trip; his `teaser` row comes after the pick | the crackdown build hides `rook_fb` while `story.crackdown & !story.side_pick_done`; no Rook in the summons. Optional (Story): a competitor cameo on Route 1, not in the default |
 | 6 | `ilse_chat` (`interiors.json:221`) | "Fen wrote to me. She says you were kind to her orchard." reads wrong after the crackdown | an override keyed `story.warden_met` (D1346), file untouched |
