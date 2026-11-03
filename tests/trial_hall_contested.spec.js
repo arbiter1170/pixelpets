@@ -2,6 +2,8 @@
    The contested Fernbrook Trial Hall is built behind a flag (AGENTS rule 9: nothing ships until Vincent says yes to the
    previews). Off (every player, and every other spec): fb_hall_in is exactly today's room. On (?debug=1&hall2=1): the east
    half is Glimmerwell's polish, a seam runs down x 7/8, and the props follow Fernbrook's hold (D1171, D1190). Fen stays.
+   D1432 (Nov 3, 2026): after Seal 1 and the pick the Hall is shut and keeps the split look on both paths until Fen's own
+   Act 2 turn (story.fen_turned, set by nothing yet); Fen is not inside then. tests/fernbrook_hall_shut.spec.js covers the door.
    Also D1192 (live, unflagged): "Fernbrook Trial Hall" everywhere. Spec §12's T1-T12 are named on each check.
    Save stays pixelpets.save.v2, v 2; the flag is never saved. */
 const { test, expect } = require('@playwright/test');
@@ -15,7 +17,12 @@ const PICK = {
   split: {},
   keepers: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'keepers' },
   glimmer: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'glimmer' },
+  keepers_turned: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'keepers', 'story.fen_turned': true },
+  glimmer_turned: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'glimmer', 'story.fen_turned': true },
 };
+// state -> Fernbrook's hold (D1171, unchanged) and the Hall's look (D1432: split until Fen's turn).
+const HOLD = { split: 'split', keepers: 'keepers', glimmer: 'glimmer', keepers_turned: 'keepers', glimmer_turned: 'glimmer' };
+const LOOK = { split: 'split', keepers: 'split', glimmer: 'split', keepers_turned: 'keepers', glimmer_turned: 'glimmer' };
 // §7.3: when each object shows. always | split | keepers | glimmer | notK (contested + Glimmerwell) | notG (contested + Keepers).
 const SHOWS = {
   fb_hall_mat: 'always', fen_hall: 'always', fb_hall_note: 'always', h1_local: 'always', h1_challenger: 'always', h1_cadet: 'always',
@@ -135,15 +142,16 @@ test('T1 T2 T10: same walk mask, west half untouched, runs of 6 at most, floor c
   await p2.close();
 });
 
-for (const hold of ['split', 'keepers', 'glimmer']) {
-  test(`T3 T4 T5 (${hold}): paths, every object readable, no shared tiles, objects as §7.3`, async ({ page }) => {
+for (const state of Object.keys(PICK)) {
+  test(`T3 T4 T5 (${state}): paths, every object readable, no shared tiles, objects as §7.3`, async ({ page }) => {
     test.skip(page.viewportSize().width !== 390, '390');
     test.setTimeout(60000);
-    await boot(page, hallSave(Object.assign(beaten(), PICK[hold])), ON);
-    expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe(hold);
+    const hold = LOOK[state];
+    await boot(page, hallSave(Object.assign(beaten(), PICK[state])), ON);
+    expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe(HOLD[state]);
     const r = await room(page);
-    // T5: the object set per state, and one object per tile.
-    const want = Object.keys(SHOWS).filter(id => shows(SHOWS[id], hold)).sort();
+    // T5: the object set per state, and one object per tile. Fen is not in her shut Hall after the pick (D1432).
+    const want = Object.keys(SHOWS).filter(id => shows(SHOWS[id], hold) && !(id === 'fen_hall' && state !== 'split')).sort();
     expect(r.objs.map(o => o.id).sort()).toEqual(want);
     const cells = r.objs.map(o => o.x + ',' + o.y);
     expect(cells.length).toBe(new Set(cells).size);
@@ -182,7 +190,7 @@ for (const hold of ['split', 'keepers', 'glimmer']) {
   });
 }
 
-test('T6: the props follow mapHold(fernbrook) on every save kind', async ({ page }) => {
+test('T6: the props keep the split look on every save kind until Fen\'s turn (D1432), whatever mapHold(fernbrook) reads', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390');
   test.setTimeout(120000);
   const kinds = ['a1', 'a2', 'b', "b'", 'c', 'c_glimmer', 'p', 'n', 'a1_glimmer'];
@@ -194,7 +202,8 @@ test('T6: the props follow mapHold(fernbrook) on every save kind', async ({ page
     await gotoGame(page, ON);
     await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && typeof PixelPets.gateRead === 'function');
     const got = await page.evaluate(ids => ({ hold: PixelPets.mapHold('fernbrook'), on: ids.filter(id => (PixelPets.gateRead('fb_hall_in', id) || {}).whenOk) }), Object.keys(SHOWS));
-    const want = Object.keys(SHOWS).filter(id => shows(SHOWS[id], got.hold) && !['fen_hall'].includes(id));
+    // D1432: no kind here has story.fen_turned, so the Hall keeps the split look whatever the hold is.
+    const want = Object.keys(SHOWS).filter(id => shows(SHOWS[id], 'split') && !['fen_hall'].includes(id));
     expect(got.on.filter(id => id !== 'fen_hall').sort(), kind).toEqual(want.sort());
     await page.context().clearCookies();
     await page.evaluate(() => localStorage.clear());

@@ -83,6 +83,25 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): green, reuse `story.tour1_s1` as the photo flag (the news reader has no OR, and the Tour's later stops stay hidden on new saves by `!story.crates_seen`); `story.tour1_s3` marks a save that took the Tour.
 - Anything left unfinished: the four lines are PLACEHOLDER for Story (D1186 row). D26's threshold is 2, so on a new save one point alone does not yet unlock Quinn's softer Tuning line or Rook's aside; noted in the D1186 row, threshold unchanged.
 
+## 2026-11-03 14:52 ET: Build: the Fernbrook Trial Hall stays shut after the Trial and the pick, until Fen's own turn (D1432)
+- What changed and why:
+  - D1432 (red, settled by Vincent, Tue Nov 3, 2026): once Seal 1 and the pick are both in, the Hall door `fb_hall` is shut on both paths with a PLACEHOLDER line ("Shut by Keeper order. Master Fen's Hall stays closed for now."). Before the pick nothing changes: the door opens at Seal 1 and Fen runs the Trial. An old save that picked before Trial 1 still gets in for its Trial. The crackdown (#288) is not on main, so the shut reads the pick.
+  - Fen is not inside after the pick (`fen_hall` gains `!story.side_pick_done | !story.seal1`). She waits in the orchard as the built `fen_after` (fernbrook 10,9), now shown from the pick on the Day 1 flow; a Keepers save that has not beaten Tobin hears a PLACEHOLDER nudge ("Tobin won't listen to me. Try him.").
+  - The Glimmer-pick orchard line no longer sends Fen to the Hall: "Fen turns back to her trees without a word. The cart rolls off down the road." (PLACEHOLDER).
+  - The flagged contested dressing (#284, `HALL2_ON`): the Keeper and Glimmerwell looks now also need a new additive flag `story.fen_turned` (set by nothing yet; Fen's Act 2 turn will set it), so the Hall shows the split look after the pick on both paths. D1434: its Glimmerwell banners name no colour.
+- Files touched: `data/fernbrook_rooms.json`, `data/glimmer_path.json`, `data/detail_zz_day1.json`, `data/detail_zz_hall_contested.json`, `data/mapdata.js` (regenerated); tests: `tests/fernbrook_hall_shut.spec.js` (new), `tests/trial_hall_contested.spec.js`, `tests/day1_save_kinds.spec.js`, `tests/faction_or_gate.spec.js`, `tests/README.md`; docs: `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (v0.4), `OPEN_DECISIONS.md` (D1186 row), `CHANGELOG.md`; shots: `handoff/shots/fernbrook_hall_shut/` (door before and after at 390 and 320); build stamp.
+- Commit(s) + build id: claude/b5-fernbrook-hall-shut, build 20261103-1452.
+- Tests run and result (widths, checks): `tests/fernbrook_hall_shut.spec.js` 24 passed (320, 375, 390, reduced motion, zero console errors, save `v` 2). `trial_hall_contested`, `day1_flow`, `day1_save_kinds`: 172 passed, 20 skipped by width. `faction_or_gate`: 84 passed. Wider Fernbrook run (maps_b8, glimmer_fernbrook, seals_both_paths, story_copy_fix, quest_npc_where, data_integrity, wording_guard, map_reach_sweep, heights, fernbrook_plaza, arbiter_test, qa_gaps, town_board): 195 passed, 1 failed (arbiter_test's no-PLACEHOLDER check on a data note, fixed), then `arbiter_test` 17 passed.
+- Decisions made (colour + reasoning):
+  - D1432 and D1434 built as settled; no new id.
+  - Green (engineer): the Keeper look is held back with the Glimmerwell one, because D1432 says split on both paths.
+  - Green (engineer): after `story.fen_turned`, `story.side` picks which look shows until Fen's turn records its own pick.
+- Anything left unfinished:
+  - The three new lines are PLACEHOLDER for Story (OPEN_DECISIONS D1186 row).
+  - An old save that picked before Trial 1 sees Fen leave the Hall as soon as her Seal scene ends, while the holder is still inside.
+  - Nothing sets `story.fen_turned` yet (Fen's Act 2 turn).
+  - `npm run test:agent` stops at its symlink scan in this sandbox (the shared `node_modules` link); specs ran through `npx playwright test`.
+
 ## 2026-11-03 11:21 ET: Build: the Keeper High Court moves to Charter Hill's Parade, facing Muster Road (D1354, HIGH_CHARITY_LAYOUT v0.3)
 - What changed and why:
   - D1354 (red, SETTLED by Vincent, Tue Nov 3, 2026; design `specs/HC_PARADE.md` §3.1): the Court moves from `hc_civic` 8,45 to the south half of the Parade, so the HC_PARADE speech can play on its steps.

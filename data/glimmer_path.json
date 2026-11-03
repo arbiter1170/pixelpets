@@ -90,13 +90,14 @@
             "y": 9,
             "look": "fen",
             "when": [
-              "story.orchard_cleared"
+              "story.orchard_cleared | story.fen_sent_home & story.seal1 & story.side_pick_done"
             ],
             "lines": {
+              "!story.orchard_cleared": "Tobin won't listen to me. Try him.",
               "story.side=glimmer": "The trees still know your step.",
               "!story.side=glimmer": "Thank you. The blossoms remember."
             },
-            "_note": "fen_orchard leaves once the orchard is cleared. These lines need a Fen who stays. No new look."
+            "_note": "fen_orchard leaves once the orchard is cleared. These lines need a Fen who stays. No new look. D1432: her Hall is shut after Seal 1 and the pick, so on the Day 1 flow she waits here from the pick (a Keepers save sees her before Tobin's battle; that line is draft copy for Story, OPEN_DECISIONS D1186)."
           },
           {
             "kind": "trigger",
@@ -1511,6 +1512,7 @@
       "!story.side=glimmer": "Rest well, holder. Roots need sleep."
     },
     "fen_after": {
+      "!story.orchard_cleared": "Tobin won't listen to me. Try him.",
       "story.side=glimmer": "The trees still know your step.",
       "!story.side=glimmer": "Thank you. The blossoms remember."
     }
