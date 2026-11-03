@@ -117,7 +117,7 @@ def part1_tail(sd):
     S += [['warp', 'hc_civic', *HILL_SPOT[sd], 'up'], ['run', 'hc_parade_hill']]
     return S
 
-# ---------- Part 2 and Part 3: Charter Hill (map hc_civic), Muster Road closed, the Court's steps on row 27 ----------
+# ---------- Part 2 and Part 3: Charter Hill (map hc_civic), Muster Road closed, the Court's steps on rows 26-27 (layout v0.3) ----------
 HILL_SPOT = {'keepers': (28, 30), 'glimmer': (28, 34)}               # 2.1: the front edge of the crowd / the very back
 CIV2 = [(24, 30), (25, 30), (26, 30), (24, 31), (25, 31), (26, 31), (27, 31), (24, 33), (25, 33), (26, 33), (27, 33), (23, 33)]
 VEST2 = {1, 5, 6, 8, 10, 11}                                         # six of the twelve wear the vest (the foe pool for six picks)
@@ -131,16 +131,16 @@ LINE2 = [(29, 28), (30, 28), (34, 28), (35, 28)]                     # 2.2 the g
 CORDON2 = [(26, 29), (27, 29), (28, 29), (29, 29), (30, 29), (34, 29), (35, 29), (36, 29)]
 STRIPS2 = [(21, 30), (21, 31), (21, 33), (21, 34), (24, 34), (37, 33), (41, 33), (37, 34), (41, 34),
            (25, 36), (29, 36), (33, 36), (37, 36), (45, 33)]       # crowd strips: back rows on the road and both sidewalks
-COURT_DOOR, PRES_TOP = (32, 27), (32, 27)
-CLOSE2 = [(30, 27), (31, 27), (33, 27), (34, 27)]                    # 2.4 four close guards around him on the steps
+COURT_DOOR, PRES_TOP = (32, 26), (32, 26)   # HIGH_CHARITY_LAYOUT v0.3 (D1354): door 32,26, steps rows 26-27
+CLOSE2 = [(30, 26), (31, 26), (33, 26), (34, 26)]                    # 2.4 four close guards around him on the steps
 OFF2 = {'pr_off_a': (26, 28), 'pr_off_b': (37, 28)}
 CAR_STOP = (33, 31)
 
 def part2_stage():
-    S = [['hide', 'people'], ['curtain', 'on'],
+    S = [['hide', 'people'], ['hide', ['hc2_sign_court']], ['curtain', 'on'],   # the Court's sign (33,26) steps aside for the close guards
          ['if', 'story.side=glimmer', [walk('player', *HILL_SPOT['glimmer'])], [walk('player', *HILL_SPOT['keepers'])]]]   # a resume lands here first
     S += [cast('pr_tank_w', 4, 31, 'right'), cast('pr_tank_e', 60, 31, 'left'),
-          cast('pr_rotor_h', 32, 26, 'down'), cast('pr_court_beam', 32, 26, 'down')]                  # ROTOR_CRAFT §6.2: one row behind his step
+          cast('pr_rotor_h', 32, 25, 'down'), cast('pr_court_beam', 32, 25, 'down')]                  # ROTOR_CRAFT §6.2: one row behind his step
     S += [['castAt', f'pr_strip_{k + 1}', x, y, 'up'] for k, (x, y) in enumerate(STRIPS2)]
     S += [['castAt', f'pr_cordon_{k + 1}', x, y, 'down'] for k, (x, y) in enumerate(CORDON2)]
     S += [cast(c, x, y, 'up') for c, (x, y) in zip(P2_CIV, CIV2)]

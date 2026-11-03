@@ -226,12 +226,3 @@ test('rule 11 (owner, Tue Nov 3): the supporters\' vests stay inside Glimmerwell
   const civ = Object.entries(DATA.looks).filter(([k]) => /^hc_pr_civ_/.test(k)).map(([, v]) => v.outfitCol);
   expect(civ).not.toContain('r');   // no civilian in a red that reads as the vest
 });
-
-test('D1354: the Keeper High Court stands on the Parade\'s south half, its door facing Muster Road; the old corner is open', async () => {
-  const civ = DATA.maps.hc_civic, door = civ.objs.find(o => o.id === 'hc_court');
-  expect([door.x, door.y]).toEqual([32, 27]);
-  expect(civ.grid[26][32]).toBe('H'); expect(civ.grid[28][32]).toBe('P');
-  expect(civ.roofs.court).toMatchObject({ x0: 26, x1: 38 });
-  for (let y = 38; y <= 44; y++) expect(civ.grid[y].slice(2, 15)).not.toMatch(/[RH]/);
-  expect(civ.objs.find(o => o.id === 'hc2_sign_court').text).toBe('KEEPER HIGH COURT.');
-});

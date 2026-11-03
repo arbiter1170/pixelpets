@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""HIGH_CHARITY_LAYOUT v0.2.1, phase 1 ("the capital, day one"): writes data/hc_city_v2.json.
+"""HIGH_CHARITY_LAYOUT v0.3, phase 1 ("the capital, day one"): writes data/hc_city_v2.json.
+v0.3 (D1354): the Keeper High Court stands on the Parade's south half, its front and wide steps facing Muster Road.
 
 Run from the repo root: python3 tools/build_hc_city.py [--layout design/specs/high_charity_layout.json]
 The layout JSON lives in the private design repo (gitignored `design/` checkout); it is read, never copied in whole.
@@ -36,27 +37,6 @@ OLD = json.load(open(os.path.join(ROOT, 'data', 'highcharity.json')))
 B4 = json.load(open(os.path.join(ROOT, 'data', 'detail_b4.json')))['slicePatch']['maps']['highcharity']['set']['roofs']
 CH = {c['id']: c for c in L['chunks']}
 
-# ---------- HC_PARADE §3.1 (D1354, red, SETTLED by Vincent Tue Nov 3, 2026): the Keeper High Court moves ----------
-# From hc_civic 8,45 to the south half of the Parade, its front and wide steps facing south onto Muster Road (the engine draws
-# every building from the south). Ids kept (hc_court, its sign). The old corner is left empty (D1368). The design layout JSON
-# is still v0.2.1, so the move is applied here until HIGH_CHARITY_LAYOUT v0.3 lands; it is a no-op once the JSON has it.
-COURT_BOX, COURT_DOOR = [26, 21, 38, 26], (32, 27)
-def court_move(c):
-    d = next(d for d in c['doors'] if d['id'] == 'hc_court')
-    if (d['x'], d['y']) == COURT_DOOR: return
-    g = [list(r) for r in c['grid']]
-    ob = d['box']
-    for y in range(ob[1], ob[3] + 1):
-        for x in range(ob[0], ob[2] + 1): g[y][x] = 'g'
-    x0, y0, x1, y1 = COURT_BOX
-    for y in range(y0, y1 + 1):
-        for x in range(x0, x1 + 1): g[y][x] = 'R' if y <= y1 - 2 else 'H'
-    for x in range(x0, x1 + 1): g[y1 + 1][x] = 'P'          # the Court steps: plaza between the facade and the Muster Road sidewalk
-    c['grid'] = [''.join(r) for r in g]
-    d.update(x=COURT_DOOR[0], y=COURT_DOOR[1], box=list(COURT_BOX))
-    for pt in c['patrols']:                                  # the Parade beat keeps to the north half, in front of the Governor's House
-        if pt['id'] == 'pt_c1_parade': pt['route'] = [[16, 19], [44, 19], [44, 20], [16, 20]]
-court_move(CH['hc_civic'])
 OLD_MAP = OLD['maps']['highcharity']
 OLD_OBJ = {o['id']: o for o in OLD_MAP['objs']}
 
@@ -405,7 +385,7 @@ for cid, c in CHUNKS.items():
     for d in c.src['doors']:
         did = d['id']
         if did in ('hc_lantern', 'hc_apt_b', 'hc_trial'): continue   # the Lantern House carries its healing mark; B keeps no sign; the Hall has its notice
-        spot = (COURT_BOX[0] - 1, d['y']) if did == 'hc_court' else c.place_near(d['x'] + 1, d['y'] + 1, r=3, need_tap=True)   # the Court's sign beside its steps, off the staging (HC_PARADE)
+        spot = c.place_near(d['x'] + 1, d['y'] + 1, r=3, need_tap=True)
         if not spot: fail(f'{cid}: no tile for the {did} sign'); continue
         if did in DOOR_SIGN:
             keep_at(DOOR_SIGN[did], cid, *spot)
@@ -527,9 +507,17 @@ for i, (x, y) in enumerate([(19, 30), (39, 30), (60, 30), (18, 23), (60, 24)]):
     prop('highcharity', f'hc2_sq_bench_{i}', x, y, 'bench_long', r=2)
 
 # Charter Hill: the Parade flag row, the Lantern Muster mural (HB6), LAMP STOCK crates and the dockhand (HB7).
-for i, x in enumerate((24, 27, 30, 34, 37, 40)): prop('hc_civic', f'hc2_flag_{i}', x, 18, 'flag_pole', r=1)   # six poles, now along the north half (§3.1)
-for x in range(COURT_BOX[0] + 2, COURT_BOX[2] - 1):         # PLACEHOLDER court steps (layout A14 moves to P0); decals, never solid
-    CHUNKS['hc_civic'].add({'kind': 'decal', 'id': f'hc2_court_step_{x}', 'x': x, 'y': COURT_BOX[3] + 1, 'sprite': 'hc_court_step'}, blocks=False)
+FLAG_Y = next(l['y'] for l in CH['hc_civic']['landmarks'] if l['id'] == 'flag_row')     # v0.3: row 20, between the Governor's House and the Court
+for i, x in enumerate(range(22, 43, 4)): prop('hc_civic', f'hc2_flag_{i}', x, FLAG_Y, 'flag_pole', r=1)
+# v0.3 (D1354): the High Court's wide steps, two rows deep across its front, down to Muster Road's north sidewalk.
+# Decals (A14 PLACEHOLDER, 16x32 each from the top step row): drawn on walk tiles, never block, never talk.
+court = [d for d in CH['hc_civic']['doors'] if d['id'] == 'hc_court'][0]
+cx0, _, cx1, cy1 = court['box']
+for i, x in enumerate(range(cx0, cx1 + 1)):
+    for y in (cy1 + 1, cy1 + 2):
+        if not CHUNKS['hc_civic'].walk(x, y): fail(f'hc_civic: Court step {(x, y)} is not a walk tile')
+    CHUNKS['hc_civic'].add({'kind': 'decal', 'id': f'hc2_court_step_{i}', 'x': x, 'y': cy1 + 1,
+                            'sprite': 'hc_court_steps_w' if x == cx0 else 'hc_court_steps_e' if x == cx1 else 'hc_court_steps'}, blocks=False)
 SC['hc2_mural'] = [['say', '', TXT['hb6_mural']], ['setFlag', 'story.hc_mural', True]]
 mur = CHUNKS['hc_civic'].add({'kind': 'prop', 'id': 'hc_mural', 'x': 50, 'y': 20, 'sprite': 'hc_mural', 'scene': 'hc2_mural',
                                'lines': {'else': TXT['hb6_mural']}, 'name': 'The Lantern Muster mural'}, blocks=False)
@@ -557,12 +545,15 @@ for i, (x, y) in enumerate([(15, 40), (30, 36), (38, 30)]): prop('hc_college', f
 for i, (x, y) in enumerate([(5, 26), (20, 30), (42, 42), (6, 44)]): prop('hc_college', f'hc2_park_tree_{i}', x, y, 'lm_big_tree', r=3)
 
 # Parks are spotless: clipped hedges and flowerbeds on open grass, a few per chunk, never on a way through.
+# The Court's old corner (v0.3, D1354; the layout's §7.6) stays plain grass: nothing is placed there.
+VACANT = {'hc_civic': [(2, 38, 14, 44)]}
+def vacant(cid, x, y): return any(x0 <= x <= x1 and y0 <= y <= y1 for x0, y0, x1, y1 in VACANT.get(cid, []))
 for cid, c in CHUNKS.items():
     k = 0
     for y in range(2, c.h - 2):
         for x in range(2, c.w - 2):
             if k >= 14: break
-            if c.ch(x, y) != 'g' or (x * 7 + y * 13) % 29: continue
+            if c.ch(x, y) != 'g' or (x * 7 + y * 13) % 29 or vacant(cid, x, y): continue
             if c.scatter_ok(x, y):
                 c.add({'kind': 'prop', 'id': f'hc2_plant_{cid}_{k}', 'x': x, 'y': y, 'sprite': ('hedge_planter', 'flowerbed', 'planter_round')[k % 3]})
                 k += 1
@@ -826,7 +817,7 @@ for cid, c in CHUNKS.items():
                  'grid': c.grid, 'objs': c.objs,
                  'hcSlots': [h for h in c.src['hooks']]}
 out = {
-    'spec': 'HIGH_CHARITY_LAYOUT v0.2.1 phase 1 (design specs/HIGH_CHARITY_LAYOUT.md); built by tools/build_hc_city.py',
+    'spec': 'HIGH_CHARITY_LAYOUT v0.3 phase 1 (design specs/HIGH_CHARITY_LAYOUT.md); built by tools/build_hc_city.py',
     '_about': 'City preview data. Not in MAPDATA. Merged into WORLD only while HC_CITY_V2 or ?debug=1&hccity=2 is on. '
               'All player text is PLACEHOLDER until Story signs it (layout §11). Art keys hc_* are PLACEHOLDER (HC_PLACEHOLDER_ART).',
     'tiles': {'C': {'name': 'carriageway', 'walk': True}, 'Z': {'name': 'crosswalk', 'walk': True},

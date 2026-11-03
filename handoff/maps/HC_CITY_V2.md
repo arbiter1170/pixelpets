@@ -146,8 +146,12 @@ built roof kit for now. The President's look is a PLACEHOLDER NPC look (LH-2 is 
   claimed D1348-D1350 first).
 - HC_PARADE (design, settled Tue Nov 3) builds on this city. Its Court move (D1354: the Keeper High Court to the Parade's
   south half, facing Muster Road) is queued for after this merge and is not in this PR.
-- **Update (HC_PARADE build, branch `claude/hc-parade`):** the Court move is done in `tools/build_hc_city.py` (`court_move`); see
-  `handoff/maps/HC_PARADE.md`.
+- **Court move (branch `claude/hc-court-move`, layout v0.3, design 91ef326):** the city is rebuilt from the v0.3 json with
+  `python3 tools/build_hc_city.py --layout <design>/specs/high_charity_layout.json`. `hc_court` is now box 26,21-38,25, door
+  32,26, with wide steps (A14 PLACEHOLDER decals `hc_court_steps_w`/`hc_court_steps`/`hc_court_steps_e`) on rows 26-27 facing
+  Muster Road; the old corner 2,38-14,44 is grass and the tool places nothing there (`VACANT`); the flag row reads its row from
+  the layout's `flag_row` landmark. Test: `tests/hc_court_move.spec.js`. Shots: `handoff/shots/hc_court_move/`.
+- **HC_PARADE (branch `claude/hc-parade`)** stages on this Court (door 32,26, steps rows 26-27); see `handoff/maps/HC_PARADE.md`.
 
 ## Open, for the Chief of Staff
 
