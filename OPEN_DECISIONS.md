@@ -52,15 +52,19 @@ D1248-D1252 reserved: FERNBROOK_HOMES (claude/fernbrook-homes), renumbered in or
 
 D1253-D1254 reserved: STORY_DECISIONS v0.65 (design repo), unused.
 
-D1255-D1281 reserved: Design, HIGH_CHARITY (design repo). D1282-D1286 reserved: Design, the Lantern House (design repo). Recorded by the Chief of Staff, Tue Nov 3, 2026, 12:05 AM ET.
+D1255-D1281 reserved: HIGH_CHARITY_LAYOUT v0.1 (design specs/HIGH_CHARITY_LAYOUT.md, Mon Nov 2, 2026; checked with walklings-decision-ids at about 11:40 PM EST). D1255-D1267 are June's HC-A to HC-M, settled by Vincent at 11:27 PM ET (recorded in the archive); D1268-D1281 are the layout's own calls (open rows below).
 
-D1287-D1294 reserved: WARDROBE_SHOP v0.3 (design specs/WARDROBE_SHOP.md §8; D1287-D1290 open, due Wed Nov 4, 2026, 11:40 PM EST; D1291-D1294 unused). Pasted from design specs/STORY_DECISIONS.md.
+D1282-D1286 reserved: LANTERN_HOUSE_FERNBROOK (`handoff/specs/LANTERN_HOUSE_FERNBROOK.md`), renumbered in order from D1220-D1224 (LH-1 to LH-5; the Chief of Staff, Mon Nov 2, 2026, 11:40 PM EST, settled green; design STORY_DECISIONS v0.67).
 
-D1295-D1311 reserved: HIGH_CHARITY_LAYOUT v0.2 (design specs/HIGH_CHARITY_LAYOUT.md §14-§15). D1295-D1305 are June's HCT-A to HCT-K, settled by Vincent at 11:56 PM EST Mon Nov 2; D1306-D1311 open.
+D1287-D1294 reserved: WARDROBE_SHOP v0.3 (design repo, Mon Nov 2, 2026, 11:47 PM EST; STORY_DECISIONS v0.67). D1287-D1290 are the six free outfits; D1291-D1294 are unused.
+
+D1295-D1305 reserved: Design, HCT (design repo). D1306-D1311 reserved: Design, the High Charity Trial Hall (design repo). Design is also reserving a new block for the both-paths Seals, starting at the next free id below (not final). Recorded by the Chief of Staff, Tue Nov 3, 2026, 12:55 AM ET. GLIMMERWELL_VEHICLES_BUILDINGS (#268, not merged) still uses D1295-D1309, which collides with Design's HCT and Trial Hall blocks; it gets a new block once Design's is final.
 
 D1312-D1322 reserved: CORE_LOOP_HOOK_AUDIT (`handoff/specs/CORE_LOOP_HOOK_AUDIT.md`, audit only, for Morgan; checked with walklings-decision-ids on Tue Nov 3, 2026, ~12:30 AM ET against main, every origin branch and design master).
 
-Next free id is D1323.
+D1323-D1332 reserved: SEALS_BOTH_PATHS (design specs/SEALS_BOTH_PATHS.md and STORY_DECISIONS v0.69; checked with walklings-decision-ids on Tue Nov 3, 2026, about 1:00 AM EST). D1323-D1331 are SBP-A to SBP-H and the caps note, settled by Vincent at 12:51 AM EST Tue Nov 3; D1332 is open (the Apple Picker look, fbh_picker_res).
+
+Next free id is D1333.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)

@@ -258,7 +258,7 @@ Role labels only, no given names; none collides with an existing NPC name (check
 | Id | Label | Where | Look | Line | Chatter |
 |---|---|---|---|---|---|
 | `fbh_presser` | Cider Presser | fbh_press_in 4,4 | `fbh_presser` (skin 4, hair short, hairCol d, outfit vest, outfitCol o, accent y) | First pressing of the day. Mind the floor, it gets sticky by noon. | Apples in, cider out. |
-| `fbh_picker` | Apple Picker | fbh_picker_in 9,4 | `fbh_picker` (skin 2, hair pony, hairCol r, outfit tunic, outfitCol l, accent r, accessory satchel) | Up the ladder at dawn, home by supper. The baskets never stay empty for long. | Ladder's by the door. |
+| `fbh_picker_res` | Apple Picker | fbh_picker_in 9,4 | `fbh_picker_res` (skin 2, hair pony, hairCol r, outfit tunic, outfitCol l, accent r, accessory satchel) | Up the ladder at dawn, home by supper. The baskets never stay empty for long. | Ladder's by the door. |
 | `fbh_young_picker` | Young Picker | fbh_picker_in 9,7 | `fbh_young_picker` (skin 2, hair spiky, hairCol r, outfit hoodie, outfitCol y, accent g, accessory cap) | I picked up forty apples today! They were on the ground, but it still counts. | Forty apples! |
 | `fbh_stitcher` | Quilt Stitcher | fbh_stitch_in 4,4 | `fbh_stitcher` (skin 5, hair bun, hairCol h, outfit sweater, outfitCol p, accent w, accessory glasses) | Every square in that rug was a shirt once. Sit if you like, just not on the pins. | Mind the pins. |
 | `fbh_hedger` | Hedge Trimmer | fernbrook 4,26 | `fbh_hedger` (skin 3, hair buzz, hairCol n, outfit vest, outfitCol t, accent o, accessory goggles) | One snip too many and the whole hedge sulks. I go slow. | Snip, snip. |
