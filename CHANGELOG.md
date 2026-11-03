@@ -34,6 +34,22 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): ids renumbered Tue Nov 3 from D1175-D1179 (they collided with Vincent's D1175 and #261); D1243 settled (Vincent's ask and answers); D1244 yellow (phase reading, retarget watch with the Day 1 flow); D1245 yellow (placeholder labels, looks, Walklings and lines for Design); D1246 green, preview for Vincent (layout, zone 2 dropped); D1247 green (engine hook).
 - Anything left unfinished: Design sign-off on copy (D1245); Vincent's preview (D1246); the map-hold flip is slice 8b's.
 
+## 2026-11-03 00:15 ET: Audit: what the core loop needs to hook players (CORE_LOOP_HOOK_AUDIT v0.1), docs only
+
+- What changed and why: Morgan asked for an honest audit of the core loop, with concrete things to build. New doc `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` covers:
+  - the loop as it plays on live build 20261102-2259 (and the opening on 2141), from a scripted fresh-save play-through at 390 px with timings per stretch;
+  - the first 5, 15 and 30 minutes, and retention hooks rated built, half or missing;
+  - progression and collection numbers, story pull (with the settled Seals canon and the crackdown), and phone fit;
+  - ten ranked recommendations with three quick wins, and the risks.
+  It also reports two small cue bugs on live: the Trial Hall arrow points at the exit, and an unlock tip opens mid-battle. Audit only: nothing builds without Morgan's clearance, and the red rows need Vincent.
+- Files touched: `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` (new), `OPEN_DECISIONS.md` (D1312-D1322 reserved and opened; Design's D1287-D1311 header lines pasted; next free D1323), `CHANGELOG.md`.
+- Commit(s) + build id: `claude/walklings-core-loop-audit-ctysbm`; docs only, no build stamp. Played builds: 20261102-2259 and 20261102-2141.
+- Tests run and result (widths, checks): no code changed. The play-through ran at 390×844 against the live site with zero console errors, and no sign-in or cloud writes. `node tools/scans/run.js` passes.
+- Decisions made (colour + reasoning):
+  - Yellow: D1312-D1316, D1318, D1320 and D1321 (surface the existing dailies, a rare-wild signal, Bond unlocks, a Seal card, area species, one booth, a counter-type hint).
+  - Red: D1317 (the Hall Stone room, rule 9), D1319 (daily slips while Q19 is on hold) and D1322 (no battle-system additions before Episode 1).
+- Anything left unfinished: Morgan's triage of §8. The quick wins go in one small `game.js` build when Morgan clears it (one build in flight at a time); #262 has merged.
+
 ## 2026-11-02 23:40 ET: June's Seals packet copy: the Arbiter note (C1, D1158) and Fen's Glimmer-pick line (C14)
 - What changed and why: two items from June's Seals change packet, worded exactly as design `702e418` (STORY_DECISIONS v0.64) gives them. C1: the author note `_lore.arbiter` (`data/heights.json:3377`) took D1158's v0.64 wording, so it no longer calls the Arbiter "an ancient Glimmerwell cradle" (Oct 29 canon: nobody built it here; it is alien and nobody knows). It is not player text; no script reads `_lore`. C14: Fen's line after a Glimmer pick past Seal 1 (`data/detail_zz_day1.json:798`, the `orchard@glimmer` swap) reads "Go on, then. You won my Seal fairly. After last night, I can't say you're wrong." (80), Design's doubt line. Governor rename (D1240, Orokin to Merriden): no hit in player text, data, code or tests; the only "Orokin" is the settled-names history line in `archive/DECISIONS_SETTLED.md:23`, left as written.
 - Files touched: `data/heights.json`, `data/detail_zz_day1.json`, `data/mapdata.js` (regenerated), `tests/story_copy_fix.spec.js` (the `:3377` pin moves to the new text; new C14 pin), `index.html`, `version.json`, `handoff/shots/june_seals_text_fixes/`, `CHANGELOG.md`.
@@ -101,6 +117,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Anything left unfinished: Vincent's look at the tanks; Pia's redraw (about 3 days for the tanks); the build after #261 merges.
 
 ## 2026-11-02 22:59 ET: Lizzy walks back and faces the holder when her reunion starts (FACE_ME, Vincent, Nov 3)
+## 2026-11-03 04:30 ET: Lizzy walks back and faces the holder when her reunion starts (FACE_ME, Vincent, Nov 3)
 - What changed and why: Vincent's bug: Lizzy's reunion (`lizzy_intro`) can start from Buddy, and Lizzy, who wanders (NPC_LIFE), could be a few tiles off and facing away for the whole talk. A new scene step `faceMe` (no "!" and no hidden box, unlike the trainer `approach`) walks the first present of the named bodies back beside the holder and turns both to face each other. It opens `lizzy_intro` (plaza, morning plaza and school bodies); the design JSON stays verbatim. Reduced motion and SKIP snap the walk.
 - Files touched: `game.js` (`faceMeWalk`, the `faceMe` step, the `lizzy_intro` head), `tests/face_me.spec.js` (new), `handoff/shots/face_me/`.
 - Commit(s) + build id: on claude/day1-trial1-build-gtkcop (PR #261).
