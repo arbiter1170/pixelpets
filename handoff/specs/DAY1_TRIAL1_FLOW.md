@@ -283,7 +283,7 @@ Reserved with walklings-decision-ids at about 4:38 PM ET over origin/main, pr252
 | D1170 | red | Three holders in the Trial Hall before Fen, **mixed** (amended): one Keeper cadet (the only D1161 Keeper rank), one Glimmerwell-leaning local, one neutral Fernbrook holder; Fen stays a Keeper; sign "FERNBROOK TRIAL HALL · Master Fen"; D1128 still decides Fen's team; §7.5 re-run | **SETTLED** (R3), same time; **amended** by Vincent, Mon Nov 2, 2026, 5:41 PM ET (no new id). Required-for-all default is Q5 |
 | D1171 | red | Fernbrook's hold flips to the picked side at the pick result after Trial 1 | **SETTLED** (R4), same time. Read method and live-save effect are Q7 |
 | D1172 | yellow | Kind a1 (picked, orchard not cleared): does `story.side_pick_done` also open the Hall door? | **SETTLED: NO** (Vincent, Mon Nov 2, 2026, 5:03 PM ET, R9). The door opens only after the class; the pick is not a door term |
-| D1173 | red | Town steering: the state that records which side a Trial steered a town toward, what flips, and what the holder sees | **Open**. Spec first (Slice 9); build only after Vincent approves |
+| D1173 | red | Town steering: the state that records which side a Trial steered a town toward, what flips, and what the holder sees | **Open**. Spec first (Slice 9); build only after Vincent approves **SETTLED by Vincent (Tue Nov 3, 2026, 7:52 AM ET):** a Trial does not move a town while the holder is undecided; Fernbrook does not move until the holder makes the actual pick (as D1171) |
 
 ## 14. Open questions (each with a default)
 

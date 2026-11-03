@@ -245,9 +245,9 @@ This block was first written as D1255-D1265, then D1287-D1297, as Design's block
 | D1314 | yellow | R3 sparkle and toast for 5% second forms and the weather-only Vanelet | Yes |
 | D1315 | yellow | R4 Bond levels 2-5 unlock small things for that partner | Yes; Design writes the list |
 | D1316 | yellow | R5a Seal card listing what the Seal opened | Yes |
-| D1317 | **red** | R5b Fernbrook's Hall Stone room behind the Seal read (SEALS-B; a new room, rule 9) | Design packet and previews first; build after the crackdown |
+| D1317 | **red** | R5b Fernbrook's Hall Stone room behind the Seal read (SEALS-B; a new room, rule 9) | Design packet and previews first; build after the crackdown **SETTLED by Vincent (Tue Nov 3, 2026, 7:52 AM ET):** yes: Fernbrook's Hall Stone room. Rule 9 still applies to the build: Design packet and previews first |
 | D1318 | yellow | R6 two area-own species per area, plus per-area Journal tallies and a one-time gift | Yes; Design picks species |
-| D1319 | **red** | R7 daily town-board slips (core functionality; Q19 on hold) | Hold until Vincent reopens Q19 |
+| D1319 | **red** | R7 daily town-board slips (core functionality; Q19 on hold) | Hold until Vincent reopens Q19 **PARKED by Vincent (Tue Nov 3, 2026, 7:52 AM ET):** parked: listed in `handoff/backlog/REVISIT_LATER.md` |
 | D1320 | yellow | R8 one Event Hall booth in Hearthmoor Plaza before the pick | Yes; Design picks the tile |
 | D1321 | yellow | R9 one counter-type hint after the first loss to a countering holder | Yes |
-| D1322 | **red** | R10 status effects or other battle-system additions before Episode 1 ships | No |
+| D1322 | **red** | R10 status effects or other battle-system additions before Episode 1 ships | No **SETTLED by Vincent (Tue Nov 3, 2026, 7:52 AM ET):** no status effects before Episode 1 (the default) |

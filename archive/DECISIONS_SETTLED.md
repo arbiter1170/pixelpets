@@ -2,6 +2,31 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026, 7:52 AM ET: Vincent's rulings on the open red rows (recorded by Claude Code)
+
+Vincent answered the open red list in the Claude Code session that built the contested Trial Hall. His words are quoted with each ruling (dictation slips fixed: "Lauren" is "lore", "Fern book" is "Fernbrook"). Still open after this: D1128 (research first), D1200, D1044, D971, D1000, D1087, D1159 (on #277). Parked, not settled: D1160 and D1319 (`handoff/backlog/REVISIT_LATER.md`).
+
+- **D1248 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: the three south-lane homes deploy (rule 9 previews approved). Vincent: "The Fernbrook homes are good to go"
+- **D1250 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: Fernbrook grows south to 32x32 (exception to D81, settles with D1248). Vincent: "The Fernbrook homes are good to go"
+- **D1198 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** rank Commander as the default; his name stays PLACEHOLDER until Story fills it. Vincent: "Everything that's names are OK to leave for now, we can fill in placeholders later"
+- **D1199 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** A, the town's voice: a Seal gives the holder a say in that town. **Added by Vincent:** the lore implies many people have contested for the Seals and lost, so collecting towns one by one feels like an accomplishment. It sits alongside the settled Seals canon (D1211 SEALS-B Hall Stone room and Summit door, D1212 SEALS-C), not in place of it. Vincent: "The seals unlock the town's voice, it should be implied in the lore that many people have contested for the seals and lost, giving the player a sense of accomplishment as he slowly collects the towns"
+- **D1201 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes, the default (world news and NPC reaction only; it never blocks the holder or removes a Seal). **Added by Vincent:** it needs a significant amount of lore and dialogue: NEWS reactions, Ribbit (social) reactions, and NPCs in basically every Keeper town react to it on their next interaction when no priority quest line would fire. Vincent: "The seal ban needs a significant amount of lore and dialogue written up for it, yes, there should be news reactions, social media reactions, NPC's should react to it in basically every town on the keepers. Next interaction if there is no priority quest dialogue that would be firing."
+- **D1202 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes, the default: shape as §10a; "Keeper tank" in narration (PLACEHOLDER). Vincent: "For the tank look go with the default that was spec"
+- **D1203 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes, option A: leave at first light; the pick stays at `fb_side_pick` at dawn; Amos's pitch moves inside and Juniper's to the east road. Vincent: "First light is fine"
+- **D1173 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** a Trial does not move a town while the holder is undecided; Fernbrook does not move until the holder makes the actual pick (as D1171). Vincent: "A trial should not necessarily move a town in one direction or another, not while the player is undecided so Fernbrook, for example, shouldn't move until the player makes an actual pick"
+- **D1140 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: re-arm holders that old saves left stuck. Vincent: "Yes, re arm holders"
+- **D1034 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** discarded for now: no Marks are built. Vincent: "RPG marks can be discarded for now"
+- **D1035 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** discarded for now with D1034. Vincent: "RPG marks can be discarded for now"
+- **D1038 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** discarded for now with D1034. Vincent: "RPG marks can be discarded for now"
+- **D1040 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** discarded for now with D1034. Vincent: "RPG marks can be discarded for now"
+- **D1317 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: Fernbrook's Hall Stone room. Rule 9 still applies to the build: Design packet and previews first. Vincent: "Hallstone room is approved"
+- **D1322 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** no status effects before Episode 1 (the default). Vincent: "No status effect from before episode one"
+- **D1020 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed: superseded by #258 PARTNER_DAY (Vincent's new opening, previews approved Mon Nov 2, 9:41 PM ET), which replaced INTRO_OPENING_RULINGS' Option B. Vincent: "I thought that was all approved."
+- **D1021 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed with D1020 (#258). Vincent: "I thought that was all approved."
+- **D1022 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed with D1020 (#258). Vincent: "I thought that was all approved."
+- **D1023 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed with D1020 (#258). Vincent: "I thought that was all approved."
+- **D1029 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed with D1020 (#258). Vincent: "I thought that was all approved."
+
 ## Mon Nov 2, 2026, 10:19 PM ET: Vincent's rulings on TRIAL_HALL_FERNBROOK_MAP (recorded by Claude Code)
 
 Recorded from Vincent's rulings on `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (merged in #263), relayed in the Claude Code session that wrote the spec.

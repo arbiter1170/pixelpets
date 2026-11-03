@@ -2,6 +2,30 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 07:52 ET: Decisions: Vincent's rulings on the open red rows (docs only)
+- What changed and why: Vincent answered the open red list. Settled:
+  - D1248 and D1250: the Fernbrook homes (already merged in #267 and #273) are approved.
+  - D1199: a Seal gives the town's voice, and the lore implies many contested for the Seals and lost.
+  - D1201: the Seal ban, with lots of lore and dialogue: NEWS, Ribbit, and Keeper-town NPCs on their next talk when no priority line fires.
+  - D1202: the tank look is the default.
+  - D1203: first light.
+  - D1173: no town moves while the holder is undecided.
+  - D1140: stuck holders are re-armed.
+  - D1034, D1035, D1038 and D1040: the RPG Marks are discarded for now.
+  - D1317: the Hall Stone room is approved (rule 9 previews still first).
+  - D1322: no status effects before Episode 1.
+  - D1198: the Commander keeps a PLACEHOLDER name.
+  - D1020-D1023 and D1029: closed as superseded by #258.
+  - Parked: D1160 and D1319, in the new `handoff/backlog/REVISIT_LATER.md`, which also lists the placeholder names to fill later.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/backlog/REVISIT_LATER.md` (new), `handoff/maps/FERNBROOK_HOMES.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `handoff/specs/POST_TRIAL_CRACKDOWN.md`, `handoff/specs/CORE_LOOP_HOOK_AUDIT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only, no build stamp.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): the red rows above, settled by Vincent in his own words (quoted in the archive). No new ids.
+- Anything left unfinished:
+  - D1128 (Fen's pacing): a research report comes first.
+  - Still open with Vincent: D1200 (curfew), D1044 (shadows), D971, D1000, D1087.
+  - D1159 and D1348-D1350 are recorded on #277.
+
 ## 2026-11-03 01:25 ET: FERNBROOK_PLAZA catch-up (Supervisor): main a726e94 merged, phase shots for Vincent (build 20261103-0112)
 - What changed and why: main a726e94 (#271) merged in with a merge commit (`CHANGELOG.md` kept both sides), restamped, `mapdata` and `GAMEJS_MAP` regenerated. Checked `fbPlazaPhase`: `story.seal1` is read first, so "watch" turns on with `story.lizzy_class & !story.seal1` (or `story.heights_done & !story.seal1` on an older save); the spec case is `watch on the Day 1 flow` (`tests/fernbrook_plaza.spec.js:271`, the class with no Seal reads watch, then the Seal reads after). New shots of the argue, watch and after phases at 390 and 320, each with the plaza Cadet's line (`handoff/shots/fernbrook_plaza/phase-*.png`).
 - After vs the crackdown curfew: "after" is `story.seal1` with no crackdown and no pick; the crackdown (POST_TRIAL_CRACKDOWN) is not built, so `story.crackdown` is never set in play and "after" runs from the Seal to the pick. The curfew read (`seal1 & crackdown`, no pick) hides all 16 plaza people and Walklings (`!fbplaza:curfew`, spec `curfew:` case), so the plaza Cadet (`fbp_cadet`) is off the street exactly when §5's curfew officers stand. Ash (`h1_cadet`) stands inside the Trial Hall (`fb_hall_in`), never in the plaza, and POST_TRIAL_CRACKDOWN §5 shuts the Hall by order after the crackdown (`story.hall1_shut`, not built yet), so the two cadets never share a scene. Two Keeper cadets still exist (plaza "Cadet", the Hall's "Keeper Cadet" Ash); the plaza names wait on Design (D1245).
