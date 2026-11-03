@@ -156,7 +156,7 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
     ['Rook', "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."],
     ['', 'A soft click under the fur. The Hall lights dim. Somewhere below, something vast exhales.'],
     ['Associate Quinn', 'There. Tuned. Keep them close, holder. The box is for the others now.'],
-    ['Associate Quinn', 'Review closed. Bright Tier 2 Lanyard. Two marks, one cord.'],
+    ['Associate Quinn', "Review closed. Tier 2 on your cord. Hale still holds your Seal. His floor's open."],   // J9: the Tuning gives the tag, not the Seal
     ['Associate Quinn', 'Same care package Hale gives his friends. We can be generous.'],
     ['Associate Quinn', 'Brinewick is down the coast. The cart goes whether you ride it or not.'],
   ];
@@ -244,8 +244,9 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
 
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
   const again = [];
-  await playScene(page, [], (prompt) => { again.push(prompt); });
-  expect(again).toEqual([]);
+  // SEALS_BOTH_PATHS (D1328): after the Tuning closes the chapter, Hale offers his match again until it is won. No second Tuning.
+  await playScene(page, ['Not today'], (prompt) => { again.push(prompt); });
+  expect(again).toEqual(['One match on the stone. Ready?']);
   const still = await page.evaluate(() => PixelPets.state.party.filter((p) => p.chip && p.chip.on).length);
   expect(still).toBe(1);
 });

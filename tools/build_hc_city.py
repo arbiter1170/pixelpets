@@ -65,6 +65,7 @@ TXT = {
     'hb13_stamp': "LAMP STOCK. The ink is fresh.",
     'hb13_ledger': "SEAL ROLL, over an older label.",
     'hb15_door': "Chained. The lantern hook is empty.",
+    'hb15_door_seven': "Chained. Ask the duty Keeper.",
     'hb15_keeper': "Shut since the war, holder. Come back with seven on the roll.",
     'gov_door': "By appointment.",
     'gov_line': "[PLACEHOLDER: Governor Merriden's Act 5 lines are Story's.]",
@@ -245,7 +246,7 @@ NEW_STYLE = {
 NEW_DOORS = {
     'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': '!story.side=glimmer & story.act>=5', 'deny': TXT['gov_door']},
     'hc_news': {'to': 'hc_news_1', 'tx': 7, 'ty': 14, 'facing': 'up'},
-    'hc_trial': {'need': 'story.hc_trial_called', 'deny': TXT['hb15_door']},
+    'hc_trial': {'need': 'story.hc_trial_called', 'deny': {'seals>=7': TXT['hb15_door_seven'], 'else': TXT['hb15_door']}},   # §5.2 keyed deny; seals>= counts Seals held (D1329)
     'hc_court': {'need': 'story.hc_no_room', 'deny': TXT['court']},
     'hc_exch': {'need': 'story.hc_no_room', 'deny': TXT['closed']},
     'hc_store_a': {'need': 'story.hc_no_room', 'deny': TXT['closed']},
@@ -755,6 +756,8 @@ KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'Governor Merriden', '
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
 CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
+for e in CAST:   # NPC_RANKS: a Keeper cast entry needs a rank, a pending proposal or a flag; the city's ranks are Story's to set
+    if e['faction'] == 'keepers': e['rankFlag'] = 'D1374: city cast, ranks PLACEHOLDER until Story'
 
 # ---------- write ----------
 for k, v in room_keep.items(): keep[k] = v

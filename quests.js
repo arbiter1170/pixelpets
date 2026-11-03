@@ -442,7 +442,8 @@
     let v;
     const ge = c.match(/^pets>=(\d+)$/);
     if (ge) v = (st.pets | 0) >= +ge[1];
-    else if (c.startsWith('seal:')) v = !!(st.seals && st.seals[c.slice(5)]);
+    else if (c.startsWith('seal:')) v = window.PPStanding ? PPStanding.hasSealIn(st.seals, st.flags, c.slice(5), st.both !== false) : !!(st.seals && st.seals[c.slice(5)]);
+    else if (/^seals>=\d+$/.test(c)) v = (window.PPStanding ? PPStanding.sealsHeldIn(st.seals, st.flags, st.both !== false) : 0) >= +c.slice(7);
     else { const k = c.indexOf('='), F = st.flags || {}; v = k >= 0 ? String(F[c.slice(0, k)]) === c.slice(k + 1) : !!F[c]; }
     return neg ? !v : v;
   }

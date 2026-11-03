@@ -72,6 +72,11 @@ test('the city loads: five chunks and five rooms, the in-game check passes, and 
   const r = await page.evaluate(() => ({ hc: PixelPets.hcCity(), check: PixelPets.charityCheck(), rooms: ['hc_lantern_in', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_3'].map(id => WORLD[id] && [WORLD[id].w, WORLD[id].h]) }));
   expect(r.hc.on && r.hc.preview && !r.hc.ship).toBe(true);
   expect(r.check).toEqual([]);
+  // NPC_RANKS: every city Keeper body carries the D1374 flag (ranks are Story's), so none is missing a rank
+  const ranks = await page.evaluate(() => PixelPets.rankCheck());
+  const cityNames = DATA.cast.map(e => e.name);
+  expect(ranks.missing.filter(n => cityNames.includes(n))).toEqual([]);
+  expect(ranks.bad.filter(b => cityNames.some(n => b.startsWith(n + ':')))).toEqual([]);
   expect(r.hc.chunks.map(c => c.id)).toEqual(['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college']);
   expect(r.hc.chunks.map(c => [c.w, c.h])).toEqual([[64, 40], [64, 48], [64, 48], [64, 40], [48, 48]]);
   for (const c of r.hc.chunks) {
@@ -256,6 +261,16 @@ test('the Muster Hall stands chained north of the Dojo with two duty Keepers; th
   await settle(page);
   await page.evaluate(() => PixelPets.walkStep('up'));
   await expect(page.locator('#sbText')).toContainText('Chained. The lantern hook is empty.');
+  await endScene(page);
+  expect((await where(page)).map).toBe('highcharity');
+  // §5.2 keyed deny: with seven Seals held (seals>=7, D1329) the door points to the duty Keeper; the call itself is phase 2
+  await page.evaluate(() => { const S = PixelPets.state; S.seals = S.seals || {};
+    for (const id of ['seal_fernbrook', 'seal_cobblecrest', 'seal_brinewick', 'seal_t4', 'seal_t5', 'seal_t6', 'seal_t7']) S.seals[id] = true; });
+  expect(await page.evaluate(() => PixelPets.sealsHeld())).toBeGreaterThanOrEqual(7);
+  await page.evaluate(() => PixelPets.goto('highcharity', 10, 29, 'up'));
+  await settle(page);
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  await expect(page.locator('#sbText')).toContainText('Chained. Ask the duty Keeper.');
   await endScene(page);
   expect((await where(page)).map).toBe('highcharity');
   // HB3: the Kindness Board sets story.hc_board on first read

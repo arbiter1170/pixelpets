@@ -104,22 +104,23 @@ Inspiration only, for Design and the builder to translate into pixels with `PAL`
 | §3 five chunks, the json grids, kept ids, the moved buildings (D1268, D1270) | Matched | | `the city loads`; `a save inside a moved building` |
 | §3.3 kept tiles: Event Hall 32,29, coach 32,37, hc_south 32,38, gate 32,36, Moss 30,36 | Matched | | `the coach still lands` |
 | §4.1 boulevards: walkable carriageway, solid bays and medians, crosswalks (D1271) | Matched | new tiles C Z U M; `X` mouth cells take their street's tile (X is Cobblecrest's rock pillar in the game) | build tool checks |
-| §4.2-4.5 lamp posts with the grey box, lanterns lit at noon, spotless parks | Matched, except the hum | the hum loop is iPhone audio, red (D1349): not built; the tap line ships | `player text` |
+| §4.2-4.5 lamp posts with the grey box, lanterns lit at noon, spotless parks | Matched, except the hum | the hum loop is iPhone audio, red (D1371): not built; the tap line ships | `player text` |
 | §4.3 48 parked cars, the Glimmerwell bay left empty | Matched | cars sit on horizontal bay runs only (one car body) | `the city loads` |
 | §4.4 9 tank posts, idle-lit, no guns (D1272) | Matched | PLACEHOLDER tank art (A24; POST_TRIAL_CRACKDOWN §10a art is not built) | `the city loads`; reduced motion |
 | §5.1 coach arrival | Matched in data | the Hearthmoor coach tile (12,9) is a roof tile on main in both modes (earlier issue, for QA) | `the coach still lands` |
-| §5.2 the Muster Hall exterior: chained door 10,29, duty Keepers 8,29 / 12,29, notice 14,29, Board 21,26, dark roof (D1306) | Matched | the after-seven line and the call wait for `sealsHeld` (not on main) and phase 2 | `the Muster Hall stands chained` |
-| §5.3 gates by path and act (D1266, D1276) | Matched as read in D1351 | "after meeting the Governor" reads the new flag `story.hc_gov_met` (D1348) | `§5.3 gates` |
+| §5.2 the Muster Hall exterior: chained door 10,29 with the keyed deny (`seals>=7`: "Chained. Ask the duty Keeper."), duty Keepers 8,29 / 12,29, notice 14,29, Board 21,26, dark roof (D1306, D1308) | Matched | the call and the Trial are phase 2 (`HC_TRIAL_HALL`) | `the Muster Hall stands chained` |
+| §5.3 gates by path and act (D1266, D1276) | Matched as read in D1373 | "after meeting the Governor" reads the new flag `story.hc_gov_met` (D1370) | `§5.3 gates` |
 | §6.2 mouths | Matched | | `every mouth warps` |
 | §6.4 budgets (D1280) | Matched | | `the city loads`; build tool |
 | §6.4 / §13.7 perf: no frame over 33 ms at 390 on a mid phone | Differs | no in-game frame meter; headless 4x CPU throttle: chunks p95 17-50 ms, today's High Charity p95 33, today's Hearthmoor p95 67. Gate set at p95 <= 50 ms; the real-phone check is QA's | `@slow perf` |
 | §7.1 grand Lantern House 16x22, 12 beds, respawn 8,19 (D1260, D1274) | Matched | the gallery (phase 2) stair is roped off | `the grand Lantern House` |
 | §7.2 Block News House, two floors, open to both paths (D1255-D1257) | Matched | the Keeper reader stands at 1,6 (2,6 is his desk in the §7.2 grid) | `§5.3 gates` |
-| §7.3 Governor's House floors 1 and 3, the President's rooms (D1261-D1263, D1266) | Matched | floor 1's stair goes to floor 3 until floor 2 lands (D1350); The President stands at 7,2 behind the desk (6,4 is the permit tray in the grid) | `§5.3 gates` |
+| §7.3 Governor's House floors 1 and 3, the President's rooms (D1261-D1263, D1266) | Matched | floor 1's stair goes to floor 3 until floor 2 lands (D1372); The President stands at 7,2 behind the desk (6,4 is the permit tray in the grid) | `§5.3 gates` |
 | §8.1 fixed anchors | Matched | `still: true` keeps them off the wander rules | data |
+| NPC_RANKS (D1159-D1163): every Keeper cast entry has a rank, a pending proposal or a flag | Matched by flag | the city's Keeper cast carries `rankFlag` D1374; Story sets the ranks | `the city loads` (rankCheck) |
 | §8.2 scheduled townsfolk | Phase 2 | Child and Parent and the old holder stand at their day tiles as anchors (HB1, HB8); the Child moves from 14,25 (inside the Muster Hall now) to 17,25 | data |
 | §8.3 the 10 foot patrol beats, pairs half a loop apart (D1273) | Matched | | data; `tickPatrol` |
-| §11 HB1-HB13 stubs (HB14 is phase 2), HB15 | Matched | sample lines word for word, PLACEHOLDER; lines §11 does not give are marked (D1352) | `player text`; `the Muster Hall stands chained` |
+| §11 HB1-HB13 stubs (HB14 is phase 2), HB15 | Matched | sample lines word for word, PLACEHOLDER; lines §11 does not give are marked (D1374) | `player text`; `the Muster Hall stands chained` |
 | §13.3 old saves | Matched | the preview holds the save; `save.js` needs the city's sizes when HC_CITY_V2 ships | `old saves`; `the preview never writes the save` |
 | Normal play unchanged | Matched | | `flag off` |
 
@@ -134,10 +135,22 @@ A76 the card (the one `Q` spark); A77 thank-you letters; A78 lantern pin; A79 de
 A93 chained door. A10-A12 (the grand Lantern House, Governor's House and Block News House facades) and the P1 facades use the
 built roof kit for now. The President's look is a PLACEHOLDER NPC look (LH-2 is open). Sheet: `handoff/shots/hc_city_v2/placeholder_art_sheet.png`.
 
+## Sign-off and merge (Tue Nov 3, 2026)
+
+- **The 390 previews were approved** by the owner in the Claude Code session that built this, Tue Nov 3, 2026 (layout §0
+  preview gate, §13 test 10). The owner also approved the merge in that session and asked Claude to merge it, overriding
+  AGENTS rule 4 (the Chief of Staff merges) for this PR only.
+- What that does and does not do: the code lands with `HC_CITY_V2 = false`, so players see no change. Flipping the flag
+  still waits on Pia's art for the PLACEHOLDER rows and the ship-time items below.
+- Ids: this build's own calls are **D1370-D1374** (renumbered from D1348-D1352 in design `specs/HC_PARADE.md` §15: #277
+  claimed D1348-D1350 first).
+- HC_PARADE (design, settled Tue Nov 3) builds on this city. Its Court move (D1354: the Keeper High Court to the Parade's
+  south half, facing Muster Road) is queued for after this merge and is not in this PR.
+
 ## Open, for the Chief of Staff
 
-- D1349 (red): the grey-box hum. Default not built.
-- D1348, D1350-D1352: this build's own calls (see `OPEN_DECISIONS.md`).
+- D1371 (red): the grey-box hum. Default not built.
+- D1370, D1372-D1374: this build's own calls (see `OPEN_DECISIONS.md`).
 - At ship time: flip `HC_CITY_V2`, drop the save hold, and add the city's map sizes to `save.js` MAP_SIZE.
 - The Hearthmoor coach tile (12,9) is a roof tile on main (both modes); the coach can't be stepped on today. For QA.
 - The Dojo line fix (D1304) is a separate copy PR, as the layout says.
