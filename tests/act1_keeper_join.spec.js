@@ -4,7 +4,9 @@
    after Brinewick; and the one-time old-save move at load (D1546 B). Every new line is PLACEHOLDER (Story).
    data/detail_zz_keeper_join.json, quests.js, game.js. Save stays pixelpets.save.v2, v 2, new story.* keys only. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const fs = require('fs');
+const path = require('path');
+const { starterSave, installSave, trackErrors, gotoGame, withOverlay } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -32,7 +34,23 @@ function joinSave(extra, world) {
   s.money = 40;
   return s;
 }
+// The weir hut is WEIR_HUT's room (data/detail_zz_weir_hut.json, a parallel build). Until it lands, the scene tests stand Vincent
+// Chi in a test-only stand-in room (a copy of a built room's floor, same object ids), so his scenes and keys are checked now.
+const HUT_BUILT = fs.existsSync(path.join(__dirname, '..', 'data', 'detail_zz_weir_hut.json'));
+function hutStandIn() {
+  const rooms = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'fernbrook_rooms.json'), 'utf8')).maps;
+  const r = JSON.parse(JSON.stringify(rooms.fb_lantern_in));
+  Object.assign(r, { name: 'Weir Hut', outdoor: 'route2_glen', door: null });
+  r.objs = [
+    { kind: 'warp', id: 'weir_hut_mat', x: 5, y: 15, to: 'route2_glen', tx: 21, ty: 4, facing: 'left' },
+    { kind: 'npc', id: 'chi_hut', name: 'Vincent Chi', look: 'chi', x: 5, y: 4, facing: 'up', when: ['story.warden_met'], lines: { else: 'Boots on the sack, please.' } },
+    { kind: 'trigger', id: 'chi_hut_first', x: 5, y: 13, r: 0, when: ['story.warden_met', '!story.chi_met'], scene: 'chi_meet' },
+  ];
+  return { maps: { hw_weir_hut_in: r } };
+}
+const HUT = HUT_BUILT ? { map: 'hw_weir_hut_in', x: 4, y: 10, first: 'up' } : { map: 'hw_weir_hut_in', x: 5, y: 14, first: 'up' };
 async function boot(page, save, opts = {}) {
+  if (!HUT_BUILT) await withOverlay(page, hutStandIn(), 'detail_zy_test_hut');
   if (opts.reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), save, { quietDay: true, oldSave: !!opts.oldSave });
   await gotoGame(page, '?debug=1');
@@ -175,6 +193,64 @@ test.describe('ACT1_KEEPER_JOIN: Ilse sends the holder to Vincent Chi (K3)', () 
     const o = await ids(page);
     expect(o).toEqual(expect.arrayContaining(['r2_lead', 'glen_intro']));
     expect(o).not.toContain('glen_imogen');
+  });
+});
+
+test.describe('ACT1_KEEPER_JOIN: Vincent Chi in the weir hut (K4)', () => {
+  test('T2 / 4.2: the first step in plays chi_meet once; story.chi_met; one jar', async ({ page }) => {
+    test.setTimeout(90000);
+    await boot(page, joinSave(MET));
+    await goto(page, HUT.map, HUT.x, HUT.y, 'up');
+    expect(await ids(page)).toContain('chi_hut');
+    expect(await page.evaluate(() => !!PixelPets.lookGrid('chi'))).toBe(true);   // the chi look draws (PAL only)
+    await step(page, HUT.first);
+    expect(await sceneId(page)).toBe('chi_meet');
+    const lines = await drive(page);
+    expect(lines[1]).toEqual(['Vincent Chi', "Ilse sent you. Good. No poles out here. The wire can't hear the water."]);
+    expect(lines[lines.length - 1]).toEqual(['Vincent Chi', "Imogen's crew needs hands by day. A Keeper Scout keeps watch at dusk. I'll be here."]);
+    for (const l of lines) expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110);
+    let f = await flags(page);
+    expect(f['story.chi_met']).toBe(true);
+    expect(f['story.chi_jars']).toBe(1);
+    expect((await quest(page)).id).not.toBe('chi_meet');
+    // Once is enough: the trigger is gone, and his talk repeats the shifts.
+    await goto(page, HUT.map, HUT.x, HUT.y, 'up'); await step(page, HUT.first);
+    expect(await sceneId(page)).toBeNull();
+    expect(await page.evaluate(() => PixelPets.talkTo('chi_hut'))).toBe(true);
+    expect((await drive(page))[0][1]).toBe("Imogen's crew needs hands by day. A Keeper Scout keeps watch at dusk. I'll be here.");
+    // Without Ilse's word the hut has no Vincent Chi.
+    await page.evaluate(() => PixelPets.setFlag('story.warden_met', null));
+    await goto(page, HUT.map, HUT.x, HUT.y, 'up');
+    expect(await ids(page)).not.toContain('chi_hut');
+    f = await stored(page);
+    expect(f.v).toBe(2);
+  });
+
+  test('4.5: the report needs both shifts; the hub takes each thing once; story.chi_done; six jars', async ({ page }) => {
+    test.setTimeout(90000);
+    await boot(page, joinSave(Object.assign({ 'story.chi_met': true, 'story.chi_jars': 1, 'story.shift_g': true, 'story.met_lead': true }, MET)));
+    await goto(page, HUT.map, HUT.x, HUT.y, 'up');
+    // One shift is not enough.
+    expect(await page.evaluate(() => PixelPets.talkTo('chi_hut'))).toBe(true);
+    expect(await sceneId(page)).not.toBe('chi_report');
+    await drive(page);
+    await page.evaluate(() => { PixelPets.setFlag('story.shift_k', true); PixelPets.setFlag('story.chi_jars', 3); });
+    expect((await quest(page)).id).toBe('chi_report');
+    expect(await page.evaluate(() => PixelPets.talkTo('chi_hut'))).toBe(true);
+    expect(await sceneId(page)).toBe('chi_report');
+    const lines = await drive(page, ['The ledger', 'The lamps', 'The list', "That's all"]);
+    const picks = lines.filter(l => l[0] === '>').map(l => l[1]);
+    expect(picks).toEqual(['The ledger', 'The lamps', 'The list', "That's all"]);
+    expect(said(lines, /^Six Seals, held by permit\./)).toBe(true);
+    expect(said(lines, /one story: the Seals, the lamps, the tanks\.$/)).toBe(true);
+    expect(lines[lines.length - 1][1]).toBe("Go home by the orchard. Fen's crates are still at the gate.");
+    for (const l of lines) expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110);
+    const f = await flags(page);
+    expect(f['story.chi_done']).toBe(true);
+    expect(f['story.chi_jars']).toBe(6);
+    // The lean is next (K6 keys the gate on story.chi_done).
+    expect(await page.evaluate(() => PixelPets.talkTo('chi_hut'))).toBe(true);
+    expect((await drive(page))[0][1]).toBe("Go home by the orchard. Fen's crates are still at the gate.");
   });
 });
 

@@ -2,15 +2,21 @@
  "spec": "ACT1_KEEPER_JOIN v0.1.1 (design repo, private): the Wickerglen investigation, the orchard lean and the Keeper join",
  "_about": "Ours, not a design copy. After the crackdown's dawn release Ilse sends the holder to Vincent Chi (the debrief's last lines live in detail_zz_crackdown.json). Route 2 opens on story.warden_met (D1551) so the holder can reach Wickerglen; Imogen's battle and the lit lamps wait for the enrolment (r2_lead is hidden on a crackdown save until story.keeper_cadet). An old save (no crackdown) reads every gate as before. Save stays pixelpets.save.v2; every flag here is a new additive story.* key.",
  "_placeholders": {
-  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Every line in this file is a placeholder, including the Constable's name.",
+  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Every line in this file is a placeholder, including the Constable's name. 'Eleven' Walklings is a PLACEHOLDER number; Vincent Chi's name check is pending (D1524); the jar line and his lean line (story.lean_keep) are the engineer's draft.",
   "paths": [
+   "scenes",
+   "looks.chi",
    "slicePatch.maps.route2_glen.addObjs",
    "objPatch"
   ]
  },
  "flags": {
   "story.chi_met": "ACT1_KEEPER_JOIN 2f: Vincent Chi met in the weir hut",
-  "story.chi_jars": "WEIR_HUT §3.3: the jars on Vincent Chi's sill, a number 0-6 (one per thing seen)"
+  "story.chi_jars": "WEIR_HUT §3.3: the jars on Vincent Chi's sill, a number 0-6 (one per thing seen)",
+  "story.chi_told_ledger": "5c: the ledger told to Vincent Chi (hub option seen)",
+  "story.chi_told_lamps": "5d: the lamps told",
+  "story.chi_told_list": "5e: the list told",
+  "story.chi_done": "5g: the report to Vincent Chi done; the orchard lean opens"
  },
  "slicePatch": {
   "maps": {
@@ -57,7 +63,7 @@
   }
  },
  "objPatch": {
-  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights.",
+  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights. Vincent Chi's body (chi_hut) and the first-step trigger (chi_hut_first, scene chi_meet) come with the weir hut room (WEIR_HUT, detail_zz_weir_hut.json); his lines are keyed here.",
   "fb_east": {
    "when": [
     "story.seal1",
@@ -103,6 +109,207 @@
     "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
     "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
    }
+  },
+  "chi_hut": {
+   "linesFirst": {
+    "story.warden_met & !story.chi_met": "@chi_meet",
+    "story.chi_done": "Go home by the orchard. Fen's crates are still at the gate.",
+    "story.shift_g & story.shift_k": "@chi_report",
+    "story.chi_met": "Imogen's crew needs hands by day. A Keeper Scout keeps watch at dusk. I'll be here."
+   }
   }
+ },
+ "looks": {
+  "_note": "PLACEHOLDER (Sprites). Vincent Chi: an ex-Keeper Scout gone off the wire. A slate raincoat, no Keeper green, no Glimmerwell wine or mint; grey buzz cut, a satchel of papers. PAL keys only.",
+  "chi": {
+   "skin": "4",
+   "hair": "buzz",
+   "hairCol": "h",
+   "outfit": "raincoat",
+   "outfitCol": "m",
+   "accent": "y",
+   "accessory": "satchel"
+  }
+ },
+ "scenes": {
+  "chi_meet": [
+   [
+    "say",
+    "",
+    "A low hut over the water. Papers pinned on every wall. Someone has been busy."
+   ],
+   [
+    "say",
+    "Vincent Chi",
+    "Ilse sent you. Good. No poles out here. The wire can't hear the water."
+   ],
+   [
+    "say",
+    "Vincent Chi",
+    "I walked Scout for the Keepers once. Now I just write down what nobody asks me to."
+   ],
+   [
+    "say",
+    "",
+    "He drops a pressed leaf into a glass jar on the sill. One jar of six."
+   ],
+   [
+    "say",
+    "Vincent Chi",
+    "Wickerglen's lost eleven Walklings this month. Nobody's looking. So I am."
+   ],
+   [
+    "say",
+    "Vincent Chi",
+    "Both sides work that glen. Work a shift with each. Look at what they don't show you."
+   ],
+   [
+    "say",
+    "Vincent Chi",
+    "Imogen's crew needs hands by day. A Keeper Scout keeps watch at dusk. I'll be here."
+   ],
+   [
+    "inc",
+    "story.chi_jars"
+   ],
+   [
+    "setFlag",
+    "story.chi_met",
+    true
+   ]
+  ],
+  "chi_report": [
+   [
+    "say",
+    "Vincent Chi",
+    "Well? Tell me what you saw. All of it."
+   ],
+   [
+    "run",
+    "chi_hub"
+   ]
+  ],
+  "chi_hub": [
+   [
+    "choice",
+    "What do you tell him?",
+    [
+     [
+      "The ledger",
+      [
+       [
+        "say",
+        "Vincent Chi",
+        "Six Seals, held by permit. The ban didn't stop Fernbrook's Seals. It sent them somewhere."
+       ],
+       [
+        "setFlag",
+        "story.chi_told_ledger",
+        true
+       ],
+       [
+        "inc",
+        "story.chi_jars"
+       ],
+       [
+        "run",
+        "chi_hub"
+       ]
+      ],
+      null,
+      "!story.chi_told_ledger"
+     ],
+     [
+      "The lamps",
+      [
+       [
+        "say",
+        "Vincent Chi",
+        "Lamps that hum, and Walklings that listen. Fen saw it, and wrote it up. Then the tanks came."
+       ],
+       [
+        "setFlag",
+        "story.chi_told_lamps",
+        true
+       ],
+       [
+        "inc",
+        "story.chi_jars"
+       ],
+       [
+        "run",
+        "chi_hub"
+       ]
+      ],
+      null,
+      "!story.chi_told_lamps"
+     ],
+     [
+      "The list",
+      [
+       [
+        "say",
+        "Vincent Chi",
+        "A list with no heading is still a list. Show Ilse, not me. I don't want my name near it."
+       ],
+       [
+        "setFlag",
+        "story.chi_told_list",
+        true
+       ],
+       [
+        "inc",
+        "story.chi_jars"
+       ],
+       [
+        "run",
+        "chi_hub"
+       ]
+      ],
+      null,
+      "!story.chi_told_list"
+     ],
+     [
+      "That's all",
+      [
+       [
+        "if",
+        "story.lean_keep>=2",
+        [
+         [
+          "say",
+          "Vincent Chi",
+          "You watch more than you work. Good. Write it all down."
+         ]
+        ],
+        [
+         [
+          "say",
+          "Vincent Chi",
+          "You keep your hands busy. Fine. Keep your eyes busy too."
+         ]
+        ]
+       ],
+       [
+        "say",
+        "Vincent Chi",
+        "I can't tell you who signs. I can tell you it's one story: the Seals, the lamps, the tanks."
+       ],
+       [
+        "say",
+        "Vincent Chi",
+        "Go home by the orchard. Fen's crates are still at the gate."
+       ],
+       [
+        "setFlag",
+        "story.chi_done",
+        true
+       ]
+      ]
+     ]
+    ],
+    "Vincent Chi"
+   ]
+  ]
  }
 }
