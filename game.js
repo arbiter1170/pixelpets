@@ -4764,15 +4764,20 @@ function repCond(c, o){
    in `when`, `lines`, `chatter`, `faceWhen` and `bangWhen` keys (with `!`, `&` and `|` as usual). First match wins:
      held_glimmer / held_keepers  Fernbrook flipped to the picked side at the faction pick result after Trial 1 (Vincent's D1171:
                                   story.side_pick_done & story.seal1, then story.side; absent counts as the Keepers, as side() does).
-     after                        story.seal1, no pick yet: the argument is back on.
-     watch                        the first trial is next. Today that is story.heights_done & !story.seal1 (trialReady's read).
-                                  DAY1_TRIAL1_FLOW moves the Hall-door gate after Lizzy's class: retarget this one line then (D1244).
+     curfew                       story.seal1 & story.crackdown, no pick yet: POST_TRIAL_CRACKDOWN §5's curfew (D1200, D1207). The
+                                  plaza's people are indoors (their `when` holds `!fbplaza:curfew`); the props stay. It lifts at the
+                                  pick result, the same read that flips the hold (D1171).
+     after                        story.seal1, no pick and no crackdown yet: the argument is back on (the short gap between the Seal
+                                  and the crackdown).
+     watch                        the first trial is next: story.lizzy_class & !story.seal1 on the Day 1 flow (#261: the Hall door
+                                  opens after Lizzy's class, and story.heights_done only comes after the pick), or story.heights_done
+                                  & !story.seal1 for an older save (trialReady's read) (D1244).
      argue                        everything before.
    `held` matches either held_ phase and `contested` any other. Reads only; never writes a flag or the save. */
 function fbPlazaPhase(live){
   const f = k => flagOf(k, live);
-  if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : 'after';
-  if (f('story.heights_done')) return 'watch';
+  if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : (f('story.crackdown') ? 'curfew' : 'after');
+  if (f('story.lizzy_class') || f('story.heights_done')) return 'watch';
   return 'argue';
 }
 function fbPlazaIs(want, live){

@@ -181,7 +181,8 @@
        "fbplaza:after"
       ],
       "when": [
-       "!fbplaza:held_glimmer"
+       "!fbplaza:held_glimmer",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held_keepers": "Fernbrook's ours again, and you helped keep it. Thank you, truly.",
@@ -217,7 +218,8 @@
        "fbplaza:after"
       ],
       "when": [
-       "!fbplaza:held_glimmer"
+       "!fbplaza:held_glimmer",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held_keepers": "The lanterns stay lit in Fernbrook. You helped. The Keepers won't forget.",
@@ -253,7 +255,8 @@
        "fbplaza:after"
       ],
       "when": [
-       "!fbplaza:held_glimmer"
+       "!fbplaza:held_glimmer",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held_keepers": "We did it! Well, you did most of it. Thank you!",
@@ -289,7 +292,8 @@
        "fbplaza:after"
       ],
       "when": [
-       "!fbplaza:held_keepers"
+       "!fbplaza:held_keepers",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held_glimmer": "Fernbrook's on the quarterly report now, partner. Thanks for the push!",
@@ -325,7 +329,8 @@
        "fbplaza:after"
       ],
       "when": [
-       "!fbplaza:held_keepers"
+       "!fbplaza:held_keepers",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held_glimmer": "Fernbrook's ours, partner. You helped close the deal. Have a bright day!",
@@ -361,7 +366,8 @@
        "fbplaza:after"
       ],
       "when": [
-       "!fbplaza:held_keepers"
+       "!fbplaza:held_keepers",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held_glimmer": "We got Fernbrook! You helped so much, partner. Lanyard high five!",
@@ -387,7 +393,8 @@
       "y": 11,
       "hold": true,
       "when": [
-       "!fbplaza:held_glimmer"
+       "!fbplaza:held_glimmer",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held": "@fbp_kpet_calm",
@@ -405,7 +412,8 @@
       "y": 13,
       "hold": true,
       "when": [
-       "!fbplaza:held_glimmer"
+       "!fbplaza:held_glimmer",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held": "@fbp_kpet_calm",
@@ -423,7 +431,8 @@
       "y": 15,
       "hold": true,
       "when": [
-       "!fbplaza:held_glimmer"
+       "!fbplaza:held_glimmer",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held": "@fbp_kpet_calm",
@@ -441,7 +450,8 @@
       "y": 11,
       "hold": true,
       "when": [
-       "!fbplaza:held_keepers"
+       "!fbplaza:held_keepers",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held": "@fbp_gpet_calm",
@@ -459,7 +469,8 @@
       "y": 13,
       "hold": true,
       "when": [
-       "!fbplaza:held_keepers"
+       "!fbplaza:held_keepers",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held": "@fbp_gpet_calm",
@@ -477,7 +488,8 @@
       "y": 15,
       "hold": true,
       "when": [
-       "!fbplaza:held_keepers"
+       "!fbplaza:held_keepers",
+       "!fbplaza:curfew"
       ],
       "lines": {
        "fbplaza:held": "@fbp_gpet_calm",
@@ -510,7 +522,10 @@
        "fbplaza:held": "Back to the apples, then.",
        "fbplaza:watch": "Everyone's watching the Hall.",
        "else": "Not again. Not in the square."
-      }
+      },
+      "when": [
+       "!fbplaza:curfew"
+      ]
      },
      {
       "kind": "npc",
@@ -536,7 +551,10 @@
        "fbplaza:held": "Peace at last. Mostly.",
        "fbplaza:watch": "Who'll win, do you think?",
        "else": "Please don't fight here..."
-      }
+      },
+      "when": [
+       "!fbplaza:curfew"
+      ]
      },
      {
       "kind": "npc",
@@ -562,7 +580,10 @@
        "fbplaza:held": "Business as usual.",
        "fbplaza:watch": "Shh. Look at the Hall.",
        "else": "They'll knock my crates over!"
-      }
+      },
+      "when": [
+       "!fbplaza:curfew"
+      ]
      },
      {
       "kind": "npc",
@@ -588,7 +609,10 @@
        "fbplaza:held": "Calm again. Good.",
        "fbplaza:watch": "Hush now. The Hall.",
        "else": "Mind the little ones!"
-      }
+      },
+      "when": [
+       "!fbplaza:curfew"
+      ]
      },
      {
       "kind": "prop",
