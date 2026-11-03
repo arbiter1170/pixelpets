@@ -270,7 +270,8 @@ test('the header chip stays tappable and points at the compass', async ({ page }
   expect(box.x + box.width).toBeLessThanOrEqual(vp.width + 1);
   expect(box.y + box.height).toBeLessThanOrEqual(vp.height + 1);
   expect(await page.locator('#thHour').textContent()).toBe('TUE 8:30');
-  expect(await page.locator('#thChip').getAttribute('aria-label')).toBe('Hearthmoor, TUE 8:30. Tap for today.');
+  // SIDE_BADGE (Vincent, Nov 2, 2026): the chip also says your pledge and who holds the place.
+  expect(await page.locator('#thChip').getAttribute('aria-label')).toBe("Hearthmoor, TUE 8:30. You haven't picked a side yet. Home. The Keepers hold this town. Tap for today.");
   await page.locator('#thChip').click();
   await expect(page.locator('#ovEnv')).toBeVisible();
   const card = await page.locator('#clockCard').innerText();
