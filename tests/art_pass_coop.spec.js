@@ -19,6 +19,7 @@ function saveFor(uid, name, world){
   s.flags['story.phone_got'] = true;
   s.flags['story.tutorial_done'] = true;
   s.flags['story.early_done'] = true;
+  for (const id of ['h1_cadet', 'h1_challenger', 'h1_local']) s.flags['trainer.' + id] = true;   // DAY1_TRIAL1_FLOW: the Hall holders, beaten
   s.world = Object.assign({ map: 'hearthmoor', x: 8, y: 12, facing: 'down', respawn: 'hearthmoor' }, world || {});
   return s;
 }
