@@ -34,6 +34,28 @@ L = json.load(open(args.layout))
 OLD = json.load(open(os.path.join(ROOT, 'data', 'highcharity.json')))
 B4 = json.load(open(os.path.join(ROOT, 'data', 'detail_b4.json')))['slicePatch']['maps']['highcharity']['set']['roofs']
 CH = {c['id']: c for c in L['chunks']}
+
+# ---------- HC_PARADE §3.1 (D1354, red, SETTLED by Vincent Tue Nov 3, 2026): the Keeper High Court moves ----------
+# From hc_civic 8,45 to the south half of the Parade, its front and wide steps facing south onto Muster Road (the engine draws
+# every building from the south). Ids kept (hc_court, its sign). The old corner is left empty (D1368). The design layout JSON
+# is still v0.2.1, so the move is applied here until HIGH_CHARITY_LAYOUT v0.3 lands; it is a no-op once the JSON has it.
+COURT_BOX, COURT_DOOR = [26, 21, 38, 26], (32, 27)
+def court_move(c):
+    d = next(d for d in c['doors'] if d['id'] == 'hc_court')
+    if (d['x'], d['y']) == COURT_DOOR: return
+    g = [list(r) for r in c['grid']]
+    ob = d['box']
+    for y in range(ob[1], ob[3] + 1):
+        for x in range(ob[0], ob[2] + 1): g[y][x] = 'g'
+    x0, y0, x1, y1 = COURT_BOX
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1): g[y][x] = 'R' if y <= y1 - 2 else 'H'
+    for x in range(x0, x1 + 1): g[y1 + 1][x] = 'P'          # the Court steps: plaza between the facade and the Muster Road sidewalk
+    c['grid'] = [''.join(r) for r in g]
+    d.update(x=COURT_DOOR[0], y=COURT_DOOR[1], box=list(COURT_BOX))
+    for pt in c['patrols']:                                  # the Parade beat keeps to the north half, in front of the Governor's House
+        if pt['id'] == 'pt_c1_parade': pt['route'] = [[16, 19], [44, 19], [44, 20], [16, 20]]
+court_move(CH['hc_civic'])
 OLD_MAP = OLD['maps']['highcharity']
 OLD_OBJ = {o['id']: o for o in OLD_MAP['objs']}
 
@@ -382,7 +404,7 @@ for cid, c in CHUNKS.items():
     for d in c.src['doors']:
         did = d['id']
         if did in ('hc_lantern', 'hc_apt_b', 'hc_trial'): continue   # the Lantern House carries its healing mark; B keeps no sign; the Hall has its notice
-        spot = c.place_near(d['x'] + 1, d['y'] + 1, r=3, need_tap=True)
+        spot = (COURT_BOX[0] - 1, d['y']) if did == 'hc_court' else c.place_near(d['x'] + 1, d['y'] + 1, r=3, need_tap=True)   # the Court's sign beside its steps, off the staging (HC_PARADE)
         if not spot: fail(f'{cid}: no tile for the {did} sign'); continue
         if did in DOOR_SIGN:
             keep_at(DOOR_SIGN[did], cid, *spot)
@@ -504,7 +526,9 @@ for i, (x, y) in enumerate([(19, 30), (39, 30), (60, 30), (18, 23), (60, 24)]):
     prop('highcharity', f'hc2_sq_bench_{i}', x, y, 'bench_long', r=2)
 
 # Charter Hill: the Parade flag row, the Lantern Muster mural (HB6), LAMP STOCK crates and the dockhand (HB7).
-for i, x in enumerate(range(22, 43, 4)): prop('hc_civic', f'hc2_flag_{i}', x, 21, 'flag_pole', r=1)
+for i, x in enumerate((24, 27, 30, 34, 37, 40)): prop('hc_civic', f'hc2_flag_{i}', x, 18, 'flag_pole', r=1)   # six poles, now along the north half (§3.1)
+for x in range(COURT_BOX[0] + 2, COURT_BOX[2] - 1):         # PLACEHOLDER court steps (layout A14 moves to P0); decals, never solid
+    CHUNKS['hc_civic'].add({'kind': 'decal', 'id': f'hc2_court_step_{x}', 'x': x, 'y': COURT_BOX[3] + 1, 'sprite': 'hc_court_step'}, blocks=False)
 SC['hc2_mural'] = [['say', '', TXT['hb6_mural']], ['setFlag', 'story.hc_mural', True]]
 mur = CHUNKS['hc_civic'].add({'kind': 'prop', 'id': 'hc_mural', 'x': 50, 'y': 20, 'sprite': 'hc_mural', 'scene': 'hc2_mural',
                                'lines': {'else': TXT['hb6_mural']}, 'name': 'The Lantern Muster mural'}, blocks=False)
@@ -556,6 +580,13 @@ for cid, c in CHUNKS.items():
                  'lines': {'phase:dusk|phase:night': TXT['hb5_patrol'], 'else': TXT['hb5_patrol_day']}}
             if pt['when']: o['when'] = list(pt['when'])
             c.add(o, blocks=False)
+
+# ---------- HC_PARADE (design specs/HC_PARADE.md v0.2): the parade, the speech and the street battles (tools/hc_parade.py) ----------
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hc_parade
+PARADE = hc_parade.build(CHUNKS, keep, fail)
+SC.update(PARADE['scenes'])
+LOOKS.update(PARADE['looks'])
 
 # ---------- the final outdoor checks ----------
 for cid, c in CHUNKS.items():
@@ -756,6 +787,7 @@ KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'Governor Merriden', '
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
 CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
+CAST += [r for r in PARADE['castRows'] if r['name'] not in names]   # HC_PARADE's generic labels (D1361)
 for e in CAST:   # NPC_RANKS: a Keeper cast entry needs a rank, a pending proposal or a flag; the city's ranks are Story's to set
     if e['faction'] == 'keepers': e['rankFlag'] = 'D1374: city cast, ranks PLACEHOLDER until Story'
 
@@ -786,8 +818,9 @@ out = {
     'looks': LOOKS,
     'speakers': SPEAKERS,
     'cast': CAST,
+    'castAt': PARADE['castAt'],
     'notStepFlags': ['story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',
-                     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called'],
+                     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called'] + PARADE['notStepFlags'],
 }
 for n in notes: print('note:', n)
 if fails:

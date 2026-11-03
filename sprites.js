@@ -3513,6 +3513,98 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   if (LIZZY_ART.art.buddy_sit) A.buddy_blink = paint(LIZZY_ART.art.buddy_sit.map(r => r.replace(/k/g, 'y')));
   for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
   addCrackdownArt(T, A, paint);   // POST_TRIAL_CRACKDOWN + LANTERN_HOUSE_FERNBROOK draft art
+  if (city) addHcParadeArt(T, A);   // HC_PARADE PLACEHOLDER art, city only, built on first draw
+}
+// HC_PARADE §8 (D1355, D1356; design specs/HC_PARADE.md): PLACEHOLDER draft art for the parade, PAL keys only, from the sub-agent
+// inspiration briefs in handoff/maps/HC_PARADE.md (rule 9). Pia redraws before HC_CITY_V2 ships. Installed only while the city is
+// on, and built on first draw, not at boot (each new size opens a whole pool sheet; memory_walk). No gun on any of it.
+// Sizes: rotor craft 48x32 (its shadow 40x10), the President's car 48x24, the President 16x16, crowd strips 64x16, court step 16x16.
+function addHcParadeArt(T, A){
+  const lazy = (key, fn) => {
+    if (key in A) return;
+    const set = v => { Object.defineProperty(A, key, { value: v, writable: true, configurable: true, enumerable: true }); return v; };
+    Object.defineProperty(A, key, { configurable: true, enumerable: true, get(){ return set(fn()); }, set });
+  };
+  const anim = (list, ms) => { list.ms = ms; return list; };
+  const P = (g, mir, W) => (k, x, y, w = 1, h = 1) => { g.fillStyle = PAL[k]; g.fillRect(mir ? W - x - w : x, y, w, h); };
+  // Keeper rotor craft, facing right (mir = facing left). f: rotor frame 0-3.
+  const rotor = (f, mir) => sheetPaint(48, 32, g => {
+    const d = P(g, mir, 48);
+    d('J', 3, 15, 13, 3); d('D', 3, 15, 13, 1); d('J', 1, 10, 3, 6); d('D', 1, 10, 1, 5);                // tail boom and fin
+    d('d', 0, 8, 5, 1); d('m', 2, 6, 1, 5);                                                              // tail rotor
+    d('J', 15, 11, 24, 13); d('J', 13, 13, 2, 9); d('J', 39, 13, 2, 9); d('D', 16, 11, 22, 2);         // cabin
+    d('C', 14, 20, 26, 2); d('A', 14, 22, 26, 1);                                                        // cream belly band
+    d('F', 16, 15, 18, 1); d('G', 16, 16, 18, 1);                                                        // brass rail
+    d('d', 32, 13, 7, 5); d('m', 33, 14, 5, 3); d('h', 36, 14, 1, 1);                                     // glass
+    d('y', 22, 13, 3, 3); d('F', 23, 14, 1, 1);                                                          // lantern crest on the door
+    d('F', 40, 17, 5, 5); d('y', 41, 18, 3, 3); d('w', 42, 19, 1, 1);                                     // caged nose lantern
+    d('d', 18, 24, 1, 3); d('d', 34, 24, 1, 3); d('d', 13, 27, 28, 1); d('m', 13, 27, 2, 1);           // skids
+    d('d', 26, 7, 2, 4);                                                                                 // mast
+    if (f === 0) { d('d', 3, 7, 44, 1); d('m', 3, 6, 4, 1); }
+    else if (f === 1) { for (let i = 0; i < 18; i++) d(i % 2 ? 'h' : 'm', 10 + i * 2, 3 + (i >> 1) % 2 + Math.floor(i / 6), 2, 1); }
+    else if (f === 2) { d('d', 24, 2, 6, 1); d('d', 26, 3, 2, 4); d('d', 22, 8, 10, 1); }
+    else { for (let i = 0; i < 18; i++) d(i % 2 ? 'h' : 'm', 10 + i * 2, 9 - Math.floor(i / 6), 2, 1); }
+  });
+  for (const [k, mir] of [['hc_rotor_r', false], ['hc_rotor_l', true]]) lazy(k, () => anim([0, 1, 2, 3].map(f => rotor(f, mir)), 70));
+  lazy('hc_rotor_shadow', () => sheetPaint(40, 10, g => {
+    g.globalAlpha = 0.32; g.fillStyle = PAL.k;
+    for (let y = 0; y < 10; y++) { const r = Math.round(20 * Math.sqrt(1 - ((y - 4.5) / 5) ** 2)); g.fillRect(20 - r, y, 2 * r, 1); }
+    g.globalAlpha = 1;
+  }));
+  // The President's car, facing right (mir = left). v: 0 drive, 1 wheels turned, 'hand' the still, 'door' the rear door open.
+  const car = (v, mir) => sheetPaint(48, 24, g => {
+    const d = P(g, mir, 48);
+    d('k', 4, 20, 41, 1);                                                                                // hard shadow
+    d('J', 2, 12, 44, 8); d('D', 3, 12, 42, 1); d('h', 3, 16, 42, 1); d('w', 32, 12, 12, 1);             // body, chrome strip, bonnet streak
+    d('J', 14, 5, 17, 7); d('D', 15, 5, 15, 1);                                                          // cabin roof
+    d('k', 15, 7, 7, 4); d('k', 23, 7, 7, 4); d('d', 16, 7, 2, 1); d('d', 24, 7, 2, 1);                  // tinted glass
+    d('y', 19, 13, 3, 3); d('F', 20, 14, 1, 1);                                                          // Keeper crest
+    d('F', 40, 6, 1, 6); d('J', 41, 6, 3, 2); d('y', 43, 6, 1, 2);                                       // pennant (front wing)
+    d('F', 36, 7, 1, 5); d('J', 37, 7, 3, 2); d('y', 39, 7, 1, 2);                                       // second pennant
+    d('k', 8, 18, 6, 5); d('k', 35, 18, 6, 5);                                                            // wheels
+    const hub = v === 1 ? 1 : 0; d('m', 10 + hub, 20, 2, 1); d('m', 37 + hub, 20, 2, 1);
+    if (v === 'hand') { d('d', 16, 7, 5, 2); d('C', 18, 9, 2, 3); }                                      // window down, one gloved hand
+    if (v === 'door') { d('k', 15, 12, 7, 7); d('y', 17, 18, 2, 1); d('J', 13, 14, 7, 8); d('D', 13, 14, 7, 1); d('h', 18, 17, 1, 1); }
+  });
+  for (const [sfx, mir] of [['r', false], ['l', true]]) {
+    lazy('hc_pcar_' + sfx, () => car(0, mir));
+    lazy('hc_pcar_' + sfx + '_move', () => anim([car(0, mir), car(1, mir)], 160));
+    lazy('hc_pcar_hand_' + sfx, () => car('hand', mir));
+    lazy('hc_pcar_door_' + sfx, () => car('door', mir));
+  }
+  // The President, minimal and half-seen (D1356): a dark long coat with a rim of light from behind; no face pixels.
+  const pres = f => sheetPaint(16, 16, g => {
+    const d = P(g, false, 16);
+    d('k', 6, 1, 4, 4); d('y', 6, 0, 4, 1); d('y', 10, 1, 1, 3); d('C', 9, 0, 1, 1);                     // head, rim
+    d('k', 5, 5, 6, 8); d('d', 6, 6, 1, 6); d('m', 8, 8, 1, 3); d('y', 11, 5, 1, 4); d('y', 5, 5, 1, 1); // coat, rim on shoulder and sleeve
+    d('k', 4, 11, 8, 2); d('d', 5, 12, 6, 1);                                                            // hem
+    if (f) { d('d', 5, 13, 2, 2); d('d', 9, 13, 2, 1); } else { d('d', 6, 13, 2, 2); d('d', 8, 13, 2, 2); }
+  });
+  lazy('hc_president', () => pres(0));
+  lazy('hc_president_move', () => anim([pres(1), pres(0)], 180));
+  // Crowd strips: rows of heads and shoulders seen from behind (one object fills four tiles). v 0-2; f 1 = the bob and the clap.
+  const HAIR = ['k', 'd', 'F', '5', 'G', 'y', 'd', 'k'], COAT = ['m', 'I', 'A', 'B', 'h', 'K', 'm'];
+  const strip = (v, f) => sheetPaint(64, 16, g => {
+    const d = P(g, false, 64), up = f ? 1 : 0;
+    for (let i = 0; i < 8; i++) { const x = 1 + i * 8; d(HAIR[(i + v * 3) % 8], x + 2, 2 - up, 4, 4); d(COAT[(i + v) % 7], x, 6 - up, 8, 3); }
+    for (let i = 0; i < 7; i++) {
+      const x = 4 + i * 8, coat = (v === 2 && i === 3) ? 's' : COAT[(i * 3 + v) % 7];
+      d(HAIR[(i * 5 + v) % 8], x + 1, 6 - up, 5, 5); d(coat, x - 1, 10 - up, 9, 6 + up);
+      if (v === 2 && i === 3) d('V', x + 3, 13 - up, 1, 1);
+      if (f && i % 3 === 0 && !(v === 2 && i === 3)) { d('3', x - 1, 7, 1, 2); d('3', x + 7, 7, 1, 2); }
+    }
+    if (v === 1) { d('F', 14, 0, 1, 7); d('y', 15, 0, 3, 2); d('J', 15, 2, 3, 1); d('F', 46, 0, 1, 7); d('y', 47, 0, 3, 2); d('J', 47, 2, 3, 1); }
+    if (v === 2) { d('2', 30, 0 - up, 3, 3); d('d', 30, 0 - up, 3, 1); }
+  });
+  for (const v of [0, 1, 2]) lazy('hc_crowd_' + 'abc'[v], () => anim([strip(v, 0), strip(v, 1)], 650));
+  // E8 in a still: the crowd strips' clap frame, for the beat when the Officer raises a hand (reduced motion keeps frame 0).
+  for (const v of [0, 1, 2]) lazy('hc_crowd_' + 'abc'[v] + '_clap', () => strip(v, 1));
+  if (!T.hc_court_step) T.hc_court_step = mkTile(g => {   // the Court's wide steps (layout A14, PLACEHOLDER)
+    const d = P(g, false, 16);
+    d('w', 0, 0, 16, 16); for (const y of [4, 9, 14]) { d('h', 0, y, 16, 1); d('m', 0, y + 1, 16, 1); }
+    d('y', 14, 14, 1, 1); d('d', 15, 15, 1, 1);
+  });
+  if (!A.hc_court_step) A.hc_court_step = T.hc_court_step;
 }
 // E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).
 // Lab maps keep LAB_SKIN.variants; hand-placed chars (`f`, `t`, …) never vary.
