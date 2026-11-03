@@ -130,11 +130,11 @@ test('signed scene lines and tap lines read the new copy', async ({ page }) => {
   expect(await page.evaluate(() => PixelPets.runScene('gb_briefing'))).toBe(true);
   await showLines(page, ['THE ROAD AHEAD · Route 3 to Brinewick'], ['Not today', 'close']);
 
-  await tapLine(page, 'hc_sign_gym', 'DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome.');
+  await tapLine(page, 'hc_sign_gym', 'DOJO · Practice before the Hall next door. Stones, tides, and blooms are all welcome.');
   await tapLine(page, 'mom', 'Tell Warden Ilse what you dreamed. She gave you your Walkling.');
   await page.evaluate(() => PixelPets.setFlag('story.hc_council_done', true));
   await tapLine(page, 'hc_lumen', 'The coast road is lit. Ships still fly.');
-  await tapLine(page, 'hc_sol', 'No Seal here. Hall Masters keep those.');
+  await tapLine(page, 'hc_sol', "No Seal here. The Hall next door's been shut since the war.");
 
   await page.locator('#questBtn').click();
   await expect(page.locator('#ovQuest')).toBeVisible();

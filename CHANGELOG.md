@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 01:18 ET: Copy: Floor Keeper Sol's shut-Hall line, the Dojo sign, and the Governor's settled surname (build 20261103-0118)
+- What changed and why: Vincent's copy asks for High Charity (HIGH_CHARITY_LAYOUT v0.2 §5, design 131287e). Floor Keeper Sol (`hc_sol`, `data/highcharity.json`) now says "No Seal here. The Hall next door's been shut since the war." (was "No Seal here. Hall Masters keep those."); the Glimmer line is unchanged. There is no Muster Hall open flag in the game yet, so only the shut line ships; the open line ("No Seal here. Next door's open again. Go on, holder.") waits for that flag. The Dojo sign (`hc_sign_gym`) reads "DOJO · Practice before the Hall next door. Stones, tides, and blooms are all welcome." `archive/DECISIONS_SETTLED.md`: the Governor is Alexandros Merriden (D1240); no other "Orokin" outside CHANGELOG history.
+- Files touched: `data/highcharity.json`, `data/mapdata.js` (generated), `tests/story_copy_fix.spec.js` (the two pins), `archive/DECISIONS_SETTLED.md`, `handoff/shots/copy_hc_sol_dojo/` (before and after at 390 and 320), `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/walklings-repo-takeover-3080yo, build 20261103-0118.
+- Tests run and result (widths, checks): `story_copy_fix` and `smoke` at 390 and 320; `node tools/scans/run.js` (see the PR).
+- Decisions made (colour + reasoning): green, Vincent's own copy. C4 (`news.json:525`, `:556`), C17 (Fen's deny lines while the Hall is shut, `FACTION.hall1_fen`) and C19 ("The President" label) are not in this PR: the design repo (master 131287e) holds exact text only for `:556` (SEALS_BOTH_PATHS §7.11), and D1327 ships that line with the Halls 2-3 Seals PR; no exact text exists for `:525` or C17, and the game has no President speaker line yet for C19.
+- Anything left unfinished: Sol's open-Hall line (needs the Muster Hall open flag); C4 `:525`, C17 and C19 wait on June's exact text.
+
 ## 2026-11-03 00:15 ET: Audit: what the core loop needs to hook players (CORE_LOOP_HOOK_AUDIT v0.1), docs only
 
 - What changed and why: Morgan asked for an honest audit of the core loop, with concrete things to build. New doc `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` covers:
