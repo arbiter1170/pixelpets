@@ -69,6 +69,24 @@ function readDebugPref(){
   return on;
 }
 let DEBUG = readDebugPref();     // E/G/F keys, fast mode, "Pick a place" and the cheat console hooks need this
+/* HIGH_CHARITY_LAYOUT v0.2.1 phase 1 ("the capital, day one"; D1268, D1270-D1281). The five-chunk city lives in
+   data/hc_city_v2.js (window.PP_HC_V2, built by tools/build_hc_city.py), outside MAPDATA. HC_CITY_V2 is the ship switch:
+   it stays false until Vincent's yes on the 390 previews (layout §13 test 10), then flips in one line. Until then the city
+   is a preview on ?debug=1&hccity=2 only (kept for this tab in sessionStorage; ?hccity=0 turns it off). Plain ?debug=1
+   never turns it on. While it is a preview, the save is held (nothing writes pixelpets.save.v2), as the #268 preview lot does. */
+const HC_CITY_V2 = false;
+const HC_STREET_SOLID_BAYS = true, HC_TANK_POSTS = true, HC_GOV_HOUSE = true;   // D1271, D1272, D1276 (yellow, at their defaults, inside the city)
+const HCCITY_KEY = 'pixelpets.hccity';
+function readHcCityPref(){
+  let on = false;
+  if (!DEBUG) { try { sessionStorage.removeItem(HCCITY_KEY); } catch(e) {} return false; }
+  try { on = sessionStorage.getItem(HCCITY_KEY) === '2'; } catch(e) {}
+  const q = new URLSearchParams(location.search).get('hccity');
+  if (q !== null) { on = q === '2'; try { if (on) sessionStorage.setItem(HCCITY_KEY, '2'); else sessionStorage.removeItem(HCCITY_KEY); } catch(e) {} }
+  return on;
+}
+const HC_V2_ON = !!window.PP_HC_V2 && (HC_CITY_V2 || readHcCityPref());
+const HC_PREVIEW = HC_V2_ON && !HC_CITY_V2;
 function writeDebugPref(on){ try { if (on) sessionStorage.setItem(DEBUG_KEY, '1'); else sessionStorage.removeItem(DEBUG_KEY); } catch(e) {} }
 function syncDebugQuery(on){
   try {
@@ -351,8 +369,13 @@ let resetting = false, gameReplaced = false;
 // A write that fails (storage full or blocked, or another tab took the save) used to be silent: progress stopped saving.
 // Tell the player once per page load; the game keeps playing in memory.
 let saveFailTold = false;
+let hcPreviewTold = false;
 function save(){
   if (!S || readOnly || resetting) return;
+  if (HC_PREVIEW) {   // the city preview never writes the save (see HC_CITY_V2)
+    if (!hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
+    return;
+  }
   S.last = Date.now(); if (DEBUG) S.debugSave = true;
   if (PPSave.writeV2(S) !== false || saveFailTold) return;
   saveFailTold = true;
@@ -3870,6 +3893,30 @@ function applyObjPatch(W, patch){
     }
   }
 }
+/* HIGH_CHARITY_LAYOUT phase 1: swap in the five-chunk city after every overlay and object patch, so each kept object is the
+   merged copy (its lines, shop and patches intact) and only its map, tile and a few door fields move. Retired ids (`null`)
+   and the old outdoor dressing are dropped; the city's own dressing comes from the data. */
+function applyHcCity(W){
+  const V = window.PP_HC_V2; if (!V) return;
+  Object.assign(TILE_DEF, V.tiles || {});
+  const cast = MD.reputation && MD.reputation.cast;   // the city's new cast (a name the cast already has keeps its entry)
+  if (Array.isArray(cast)) for (const e of V.cast || []) if (!cast.some(c => c && c.name === e.name)) cast.push(Object.assign({}, e));
+  const old = {};
+  for (const [mid, m] of Object.entries(W)) if (m && (mid === 'highcharity' || mid.indexOf('hc_') === 0)) for (const o of m.objs || []) old[mid + ':' + o.id] = o;
+  Object.assign(W, JSON.parse(JSON.stringify(V.maps)), JSON.parse(JSON.stringify(V.rooms)));
+  for (const [key, to] of Object.entries(V.keep || {})) {
+    const o = old[key], m = to && W[to.map];
+    if (!o || !m) continue;
+    m.objs.push(Object.assign(JSON.parse(JSON.stringify(o)), { x: to.x, y: to.y }, to.facing ? { facing: to.facing } : {}, to.set || {}));
+  }
+  for (const [rid, mv] of Object.entries(V.matMoves || {})) {
+    const r = W[rid]; if (!r) continue;
+    if (mv.outdoor) r.outdoor = mv.outdoor;
+    const mat = r.objs.find(o => o.id === mv.mat); if (mat) Object.assign(mat, { to: mv.to, tx: mv.tx, ty: mv.ty });
+  }
+  for (const [id, ln] of Object.entries(V.linesPatch || {}))
+    for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o.id === id) o.lines = Object.assign({}, o.lines || {}, ln);
+}
 const WORLD = (() => {
   const W = JSON.parse(JSON.stringify(MD.maps_slice.maps));
   applyMapPatch(W, MD.interiors.slicePatch);
@@ -3907,6 +3954,7 @@ const WORLD = (() => {
   }
   if (MD.rook_crossroads) applyMapPatch(W, MD.rook_crossroads.slicePatch);   // Rook's Crossroads: objects only, after detail so the crates stay
   for (const k of DETAIL_KEYS) if (MD[k].objPatch) applyObjPatch(W, MD[k].objPatch);   // DAY1_TRIAL1_FLOW: last, so every overlay's copy is the one patched
+  if (HC_V2_ON) applyHcCity(W);                                        // HIGH_CHARITY_LAYOUT phase 1 (flag or ?debug=1&hccity=2 only)
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -3921,6 +3969,7 @@ if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
 if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
 SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
 for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
+if (HC_V2_ON) Object.assign(SCENES, JSON.parse(JSON.stringify(window.PP_HC_V2.scenes || {})));   // the city's story hooks (HB1-HB13)
 // FACE_ME (Vincent, Nov 3, 2026): Lizzy's reunion can start from Buddy, with Lizzy wandered off or facing away. She walks
 // back beside the holder and faces them first (whichever of her bodies is here: the morning plaza, the plaza, the school).
 if (SCENES.lizzy_intro) SCENES.lizzy_intro = [['faceMe', ['hm_lizzy_pre', 'hm_lizzy', 'school_lizzy']]].concat(SCENES.lizzy_intro);
@@ -4374,6 +4423,10 @@ if (MD.heights && MD.heights.speakers) for (const [k, v] of Object.entries(MD.he
 for (const k of DETAIL_KEYS) {
   for (const [n, v] of Object.entries(MD[k].looks || {})) if (!n.startsWith('_') && v && typeof v === 'object') NPC_LOOKS[n] = v;
   for (const [n, v] of Object.entries(MD[k].speakers || {})) if (typeof v === 'string' && !n.startsWith('_')) LOOK_OF_NAME[n] = v;
+}
+if (HC_V2_ON) {   // HIGH_CHARITY_LAYOUT phase 1: the city's new cast; a speaker name another file already owns keeps its look
+  for (const [n, v] of Object.entries(window.PP_HC_V2.looks || {})) if (!NPC_LOOKS[n]) NPC_LOOKS[n] = v;
+  for (const [n, v] of Object.entries(window.PP_HC_V2.speakers || {})) if (!LOOK_OF_NAME[n]) LOOK_OF_NAME[n] = v;
 }
 // Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
 (function wireIlseLetter(){
@@ -6693,6 +6746,7 @@ function tickPatrol(dt){
   for (const o of CUR.objs) {
     const path = o.patrol;
     if (!path || !path.length || !present(o)) continue;
+    if (o._pi == null && o.patrolStart) o._pi = o.patrolStart;   // a pair on one beat starts half a loop apart (HIGH_CHARITY_LAYOUT §8.3)
     const cur = mapRT.pos[o.id] || { x: o.x, y: o.y };
     const near = Math.abs(cur.x - S.world.x) + Math.abs(cur.y - S.world.y);
     if (near <= 2) {                        // the keeper is close: wait, so a walker never steps into the keeper's way (face them when adjacent)
@@ -6768,7 +6822,7 @@ function tickGlides(){
   }
 }
 function wanderable(o){
-  if (!o || o.kind !== 'npc' || o.cast || o.pet || o.frozen || o.patrol || o.catch || o.roll || o.hold) return false;
+  if (!o || o.kind !== 'npc' || o.cast || o.pet || o.frozen || o.patrol || o.catch || o.roll || o.hold || o.still) return false;   // still: a fixed anchor (HIGH_CHARITY_LAYOUT §8.1)
   if (o.shop || o.meals || o.wardrobe || o.panel || o.booth || o.board || o.keeper || o.shot) return false;
   return !(LANTERN_GUIDE_IDS[o.id] || NPC_STILL[o.id] || MATCH_WALKUP[CUR.id + ':' + o.id]);
 }
@@ -8386,7 +8440,8 @@ function propArtKey(o){
 }
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
-  if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
+  const wide = o.ox ? 48 : 0;   // a 64 px tank or 32 px car drawn across its bay: cull by its full width
+  if (X < -26 - wide || Y < -24 - wide || X > VW + 10 + wide || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
     if (o.pet === 'maze' && WART.maze_sit) { drawMaze(g, X, Y, t); return; }
@@ -8407,7 +8462,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
   else if (o.kind === 'prop') {
     const key = propArtKey(o);
-    const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y);
+    const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X + (o.ox || 0), Y + (o.oy || 0));   // ox/oy: wide art across its bay (a parked car or tank)
   }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') {
@@ -11444,6 +11499,7 @@ const LANTERN_NEAR = {
   cobble_quarry: [['cobblecrest'], ['fernbrook']],
   mahopac: [['hearthmoor']],
   highcharity: [['highcharity']],
+  hc_civic: [['highcharity']], hc_exchange: [['highcharity']], hc_waterfront: [['highcharity']], hc_college: [['highcharity']],   // HIGH_CHARITY_LAYOUT chunks
   fb_heights: [['fernbrook']],
   route3: [['cobblecrest', 'brinewick']],   // BRINEWICK: Route 3 runs from Cobblecrest's east gate down to the harbour
   brinewick: [['brinewick']],
@@ -12340,6 +12396,8 @@ const REGION_MAP = {
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook', fbh_press_in: 'fernbrook', fbh_picker_in: 'fernbrook', fbh_stitch_in: 'fernbrook',   // FERNBROOK_HOMES
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
+    hc_civic: 'highcharity', hc_exchange: 'highcharity', hc_waterfront: 'highcharity', hc_college: 'highcharity',   // HIGH_CHARITY_LAYOUT: one node for every chunk (D1275)
+    hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_3: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut',
@@ -17919,8 +17977,23 @@ const DEBUG_EXTRAS = {
   hc_plaza: { place: 'High Charity plaza', text: 'Keeper capital. The invite is open.', map: 'highcharity', x: 32, y: 20, facing: 'down',
     flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite'] },
   hc_hall: { place: 'Event Hall', text: 'The five High Charity games.', map: 'hc_hall_in', x: 5, y: 9, facing: 'up',
-    flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'] },
-};
+    flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'] },};
+// HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
+if (HC_V2_ON) {
+  const HC_F = ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'];
+  const ACT5 = HC_F.concat(['story.act=5', 'story.hc_gov_met']);
+  Object.assign(DEBUG_EXTRAS, {
+    hc2_square: { place: 'HC Lantern Square', text: 'The coach stop, the gate tanks.', map: 'highcharity', x: 32, y: 37, facing: 'up', flags: HC_F },
+    hc2_hill: { place: 'HC Charter Hill', text: "The Governor's House, the Parade.", map: 'hc_civic', x: 32, y: 19, facing: 'up', flags: HC_F },
+    hc2_exchange: { place: 'HC Exchange Quarter', text: 'Block News House, Store Row.', map: 'hc_exchange', x: 52, y: 16, facing: 'up', flags: HC_F },
+    hc2_quay: { place: 'HC Lantern Quay', text: 'The Promenade, the piers.', map: 'hc_waterfront', x: 61, y: 19, facing: 'left', flags: HC_F },
+    hc2_green: { place: 'HC College Green', text: 'The College, Charity Park.', map: 'hc_college', x: 23, y: 2, facing: 'down', flags: HC_F },
+    hc2_lantern: { place: 'HC grand Lantern House', text: 'Twelve beds, the lantern wall.', map: 'hc_lantern_in', x: 8, y: 19, facing: 'up', flags: HC_F },
+    hc2_news: { place: 'HC Block News House', text: 'Front hall and wire room.', map: 'hc_news_1', x: 7, y: 14, facing: 'up', flags: HC_F },
+    hc2_gov: { place: "HC Governor's House (Act 5)", text: 'Keepers path, Act 5, Governor met.', map: 'hc_gov_1', x: 7, y: 14, facing: 'up', flags: ACT5 },
+    hc2_pres: { place: "HC President's rooms (Act 5)", text: 'Keepers path, Act 5.', map: 'hc_gov_3', x: 2, y: 12, facing: 'up', flags: ACT5 },
+  });
+}
 const DEBUG_SEALS = {
   'story.seal1': { keepers: 'seal_fernbrook', glimmer: 'seal_glim_1' },
   'story.seal2': { keepers: 'seal_cobblecrest', glimmer: 'seal_glim_2' },
@@ -18116,7 +18189,10 @@ function applyCheckpoint(id){
     reconcileChain(PPQuests.SIDE, sideI);
     S.flags['story.intro_seen'] = true;
     S.flags['story.starter_received'] = true;
-  } else for (const f of extra.flags) S.flags[f] = true;
+  } else for (const f of extra.flags) {   // "key=value" sets a value (story.act=5 for the HIGH_CHARITY_LAYOUT Act 5 places)
+    const kv = /^([^=]+)=(.+)$/.exec(f);
+    if (kv) S.flags[kv[1]] = isNaN(+kv[2]) ? kv[2] : +kv[2]; else S.flags[f] = true;
+  }
   if (S.flags['story.starter_received'] || allPets().length) readyParty();
   else setRestDue(false);
   syncSide();
@@ -19352,6 +19428,40 @@ function highCharityDevCheck(){
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek'])
     if (!PPQuests.NOT_STEPS.includes(f)) bad.push('not step ' + f);
   if (!REGION_MAP.nodes.highcharity) bad.push('region');
+  if (HC_V2_ON) bad.push(...hcCityCheck());
+  return bad;
+}
+/* HIGH_CHARITY_LAYOUT phase 1, in the running game: every chunk and new room is in WORLD, every door with a room leads to
+   one with a facade above and a walk step, every mouth warp lands on a walk tile of a chunk, every kept id arrived once,
+   the new flags are off the quest chain, and the §6.4 budgets hold. Empty list = pass. */
+const HC_CHUNKS = ['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college'];
+function hcCityCheck(){
+  const bad = [], V = window.PP_HC_V2;
+  if (!V) return ['no city data'];
+  for (const id of HC_CHUNKS.concat(Object.keys(V.rooms))) if (!WORLD[id]) bad.push('missing ' + id);
+  const walkAt = (m, x, y) => !!(m && m.grid[y] && (TILE_DEF[m.grid[y][x]] || {}).walk);
+  for (const id of HC_CHUNKS) {
+    const m = WORLD[id]; if (!m) continue;
+    if (m.w > 64 || m.h > 48) bad.push(id + ' size');
+    for (const o of m.objs) {
+      if (o.kind === 'door') {
+        if (o.to && !WORLD[o.to]) bad.push('door ' + o.id + ' to ' + o.to);
+        if (!m.grid[o.y - 1] || m.grid[o.y - 1][o.x] !== 'H') bad.push('door wall ' + o.id);
+        if (!walkAt(m, o.x, o.y)) bad.push('door step ' + o.id);
+      }
+      if (o.kind === 'warp' && WORLD[o.to] && HC_CHUNKS.includes(o.to) && !walkAt(WORLD[o.to], o.tx, o.ty)) bad.push('mouth ' + o.id);
+    }
+    const n = m.objs.length, people = m.objs.filter(o => o.kind === 'npc').length, tanks = m.objs.filter(o => /^hc_tank/.test(o.sprite || '')).length;
+    if (n > 240) bad.push(id + ' objects ' + n);
+    if (people > 24) bad.push(id + ' people ' + people);
+    if (tanks > 3) bad.push(id + ' tanks ' + tanks);
+  }
+  for (const [key, to] of Object.entries(V.keep)) {
+    if (!to) continue;
+    const id = key.split(':')[1], hits = (WORLD[to.map] ? WORLD[to.map].objs : []).filter(o => o.id === id && o.x === to.x && o.y === to.y);
+    if (hits.length !== 1) bad.push('kept ' + key);
+  }
+  for (const f of V.notStepFlags || []) if (!PPQuests.NOT_STEPS.includes(f)) bad.push('not step ' + f);
   return bad;
 }
 PPMinigames.bind({
@@ -19877,6 +19987,12 @@ function boot(){
   api.wildGuard = (dmg, hp, maxHp, attLv, foeLv) => wildGuardDmg(dmg, hp, maxHp, attLv, foeLv);
   api.weekKey = ms => weekKey(ms);
   api.charityCheck = () => highCharityDevCheck();
+  // HIGH_CHARITY_LAYOUT phase 1 (debug only): is the city on, its chunks and counts, its check, and the PLACEHOLDER art list.
+  api.hcCity = () => DEBUG ? { on: HC_V2_ON, preview: HC_PREVIEW, ship: HC_CITY_V2, chunks: HC_V2_ON ? HC_CHUNKS.map(id => ({ id, w: WORLD[id].w, h: WORLD[id].h,
+    objs: WORLD[id].objs.length, people: WORLD[id].objs.filter(o => o.kind === 'npc').length,
+    tanks: WORLD[id].objs.filter(o => /^hc_tank/.test(o.sprite || '')).length, cars: WORLD[id].objs.filter(o => /^hc_car/.test(o.sprite || '')).length })) : [],
+    check: HC_V2_ON ? hcCityCheck() : null } : null;
+  api.hcPlaceholders = () => DEBUG && typeof HC_PLACEHOLDER_ART !== 'undefined' ? Object.assign({}, HC_PLACEHOLDER_ART) : null;
   api.exportSave = () => exportText();
   api.importSave = text => { if (!stageCopy(text)) return false; confirmCopy(); return true; };
   let warned = false;

@@ -262,6 +262,13 @@ const OUT = {
     S.deco(() => { S.art('lm_big_tree', S.W - 10, S.H - 2, 0.6); }); },
   highcharity(S){ sky(S); FAR.roofs(S, [[0, 1, 2], [9, 2, 3], [26, 1, 2]]); S.ground('P', 2); S.band('A', 18, 16, 1, S.W - 34, 30);
     S.deco(() => { S.art('flag_pole', 8, S.hz + 14) || S.art('lamp_post', 8, S.hz + 14); }); },
+  // HIGH_CHARITY_LAYOUT phase 1 chunks (only in WORLD while the city preview is on): the capital's backdrop, per district.
+  hc_civic(S){ OUT.highcharity(S); },
+  hc_exchange(S){ OUT.highcharity(S); },
+  hc_waterfront(S){ sky(S); FAR.roofs(S, [[0, 1, 2], [20, 2, 3]]); S.ground('D', 2); S.band('w', 22, 10, 1, 0, S.W);
+    S.deco(() => { S.art('rope_coil', 10, S.hz + 14) || S.art('lamp_post', 10, S.hz + 14); }); },
+  hc_college(S){ sky(S); FAR.roofs(S, [[4, 2, 3]]); S.ground('g', 5); S.band('P', 20, 8, 0.5, 0, S.W);
+    S.deco(() => { S.art('lm_big_tree', S.W - 10, S.H - 2, 0.6); }); },
   fb_heights(S){ sky(S); FAR.hills(S, 'l', 1.6); FAR.roofs(S, [[6, 3]]); S.ground('g', 7); S.band('p', 8, 8, 0.5, 0, S.W);
     S.deco(() => { S.art('rock_big', S.W - 9, S.H - 2, 0.75); }); },
   hm_plaza(S){ sky(S); FAR.roofs(S, [[0, 2], [17, 2]]); S.ground('P', 1); S.band('f', 26, 8, 0.5, 0, 24); S.fill('w', S.W - 28, S.hz + 22, 24, 10, 1, 8, 6);
@@ -291,6 +298,7 @@ const ROOMS = {
   hc_airport_in: {}, hc_command_in: {}, hc_barracks_in: {}, hc_marina_in: {}, hc_school_in: {}, hc_bank_in: {}, hc_gym_in: {},
   hc_lantern_in: {}, hc_church_in: {}, hc_hall_in: {}, hc_apt_in: {}, hc_mall_1: {}, hc_mall_2: {},
   sm_tunnel: {}, bw_lantern_in: {}, bw_store_in: {}, fb_lantern_in: {},
+  hc_news_1: {}, hc_news_2: {}, hc_gov_1: {}, hc_gov_3: {},   // HIGH_CHARITY_LAYOUT phase 1 rooms (city preview)
 };
 // A room with no named props takes its own first two prop sprites (back, then front), so every room still shows its things.
 function autoProps(env, o){
