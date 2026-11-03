@@ -275,7 +275,8 @@ test('the rest choice names the Acorns it takes, on the bed and at the door', as
 });
 
 test('the switch tip is not offered', async ({ page }) => {
-  const s = save({ 'story.rc_climax': true, 'story.act': 5 });
+  // Act 5 from the act flags (D915), not a stored story.act
+  const s = save({ 'story.rc_climax': true, 'story.ep1_end': true, 'story.seal5': true, 'story.seal7': true, 'story.skyloom_done': true });
   s.settings.tips = true;
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), s, { quietDay: true });
