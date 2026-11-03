@@ -862,6 +862,11 @@
       "base": 50,
       "rank": "Field Lead",
       "given": "Imogen"
+    },
+    {
+      "name": "Vincent Chi",
+      "faction": "none",
+      "base": 50
     }
   ],
   "tiers": [
