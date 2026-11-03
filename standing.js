@@ -121,6 +121,28 @@
   const switchCost = pts => Math.floor(clampPts(pts) / STANDING_CFG.switch.costDiv);
   // Chapter = Seals earned so far. story.seal3 counts when Brinewick writes it (D132). That chapter is not built yet.
   const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3'].filter(k => !!(flags || {})[k]).length;
+  // SEALS_BOTH_PATHS: a Seal is a Hall's Seal; a Bright Tier lanyard is Glimmerwell's tag clipped to one (STORY v0.7.13 §9).
+  // Tags never count as Seals. Read aliases for old saves (no write, save stays v2, no migrator):
+  //   seal_glim_1 alone reads as the Fernbrook Seal (old-flow Hall 1; Fen's Hall is shut after the pick);
+  //   seal_glim_2 + trainer.hall2_hale, and seal_glim_3 + trainer.hall3_marisol, read as that Hall's Seal (the match was won).
+  const SEAL_TAGS = Object.freeze({ seal_glim_1: 'seal_fernbrook', seal_glim_2: 'seal_cobblecrest', seal_glim_3: 'seal_brinewick' });
+  const SEAL_TAG_WIN = Object.freeze({ seal_glim_1: null, seal_glim_2: 'trainer.hall2_hale', seal_glim_3: 'trainer.hall3_marisol' });
+  const isTag = id => Object.prototype.hasOwnProperty.call(SEAL_TAGS, id);
+  function sealAliasIn(seals, flags, tag){ const w = SEAL_TAG_WIN[tag]; return !!(seals || {})[tag] && (!w || !!(flags || {})[w]); }
+  function hasSealIn(seals, flags, id, both){
+    const s = seals || {};
+    if (s[id]) return true;
+    if (!both || isTag(id)) return false;
+    for (const t of Object.keys(SEAL_TAGS)) if (SEAL_TAGS[t] === id && sealAliasIn(s, flags, t)) return true;
+    return false;
+  }
+  function sealsHeldIn(seals, flags, both){
+    const s = seals || {}, ids = Object.keys(s).filter(k => !!s[k]);
+    if (!both) return ids.length;
+    const held = new Set(ids.filter(k => !isTag(k)));
+    for (const t of Object.keys(SEAL_TAGS)) if (sealAliasIn(s, flags, t)) held.add(SEAL_TAGS[t]);
+    return held.size;
+  }
   // Can the pledge change right now? `flags` is S.flags; `standing` is S.standing; `to` the side being joined.
   // Returns { ok, why } with why in: 'no_pick', 'same_side', 'locked' (before Act 5, D161), 'no_rook', 'cooldown', 'join_tier'.
   // no_rook is checked before the cooldown so a quest that has not finished yet says "not yet", not "refused".
@@ -158,7 +180,8 @@
     return bad;
   }
 
-  const api = { CFG: STANDING_CFG, SIDES, isSide, clampPts, tierOf, tierInfo, switchCost, chapterOf, canSwitch, fill, devCheck };
+  const api = { CFG: STANDING_CFG, SIDES, isSide, clampPts, tierOf, tierInfo, switchCost, chapterOf, canSwitch, fill, devCheck,
+    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.STANDING_CFG = STANDING_CFG;
   root.PPStanding = api;

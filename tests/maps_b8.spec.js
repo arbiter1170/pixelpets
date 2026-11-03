@@ -1,4 +1,4 @@
-/* B8 Fernbrook rooms: Lantern House and Bloom Trial Hall.
+/* B8 Fernbrook rooms: Lantern House and Fernbrook Trial Hall.
    Doors keep their panel ids and also warp. Amos and Fen still run those panels.
    New skins only. Palette keys A–K and P stay as they are. Save v stays 2. */
 const { test, expect } = require('@playwright/test');
