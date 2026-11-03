@@ -220,7 +220,7 @@ add({'kind': 'npc', 'id': 'hc_moss', 'name': 'Keeper Moss', 'look': 'moss', 'x':
      'lines': {'story.side=glimmer': 'Guests are welcome. The hall is south of the plaza.',
                'else': 'The lanterns stay lit. The hall is just south.'}})
 add({'kind': 'npc', 'id': 'hc_shop', 'name': 'Mira', 'look': 'mira', 'x': 30, 'y': 22, 'facing': 'down',
-     'shop': ['heal_snack', 'hearty_snack', 'wake_tonic', 'befriend_treat', 'energy_sip', 'joy_crumb'],
+     'shop': ['heal_snack', 'hearty_snack', 'wake_tonic', 'befriend_treat', 'energy_sip', 'joy_crumb', 'lanternfly'],
      'lines': {'else': 'Welcome to Lantern Market!'},
      'chatter': {'story.side=glimmer': 'We sell to guests. Have a seat.', 'else': 'Warm buns in the back, holder.'}})
 add({'kind': 'prop', 'id': 'hc_stall_l', 'x': 29, 'y': 23, 'sprite': 'stall_counter',
@@ -254,7 +254,7 @@ SIGNS = {
     'hc_mall': 'TWO-FLOOR MALL · Coats upstairs, crumbs downstairs. Walk your Walkling between the benches.',
     'hc_apt': 'KEEPER APARTMENTS · Rooms for holders new to the city. The landlord keeps the spare keys.',
     'hc_gym': 'DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome.',
-    'hc_lantern': 'LANTERN HOUSE · Rest is free. The beds stay warm, and nobody asks why you are tired.',
+    'hc_lantern': 'LANTERN HOUSE · Rest and recover. 5 Acorns, or what you have.',
     'hc_hall': 'EVENT HALL · Five booths, one evening. Play kindly. The prizes are small on purpose.',
 }
 for did, text in SIGNS.items():
@@ -332,7 +332,7 @@ rooms['hc_airport_in'] = room('hc_airport_in', 'Airship Field', 9, 7, 'charity',
 rooms['hc_command_in'] = room('hc_command_in', 'Sky-Dock Command', 9, 7, 'charity', 'hc_command', [
     {'kind': 'npc', 'id': 'hc_lumen', 'name': 'Captain Lumen', 'look': 'petra', 'x': 2, 'y': 3, 'facing': 'down',
      'lines': {
-         'story.hc_council_done': 'That road stays dark. Ships still fly.',
+         'story.hc_council_done': 'The coast road is lit. Ships still fly.',
          'story.cobble_end&!story.side=glimmer': '@hc_council',
          'story.side=glimmer': "The dock is open. Please don't touch the lines.",
          'else': 'Lantern ships. No thunder, no guns.',
@@ -342,7 +342,7 @@ rooms['hc_command_in'] = room('hc_command_in', 'Sky-Dock Command', 9, 7, 'charit
      'scene': 'hc_council'},
     {'kind': 'prop', 'id': 'hc_console', 'x': 6, 'y': 2, 'sprite': 'skydock_console',
      'lines': {
-         'story.hc_council_done': 'Brinewick is marked. Its light is dark.',
+         'story.hc_council_done': 'Brinewick is marked. Its light is on.',
          'else': 'A board of little lights. Each one is a ship, not a weapon.',
      }},
 ])
@@ -370,9 +370,9 @@ rooms['hc_bank_in'] = room('hc_bank_in', 'Civic Bank', 9, 7, 'charity', 'hc_bank
     {'kind': 'prop', 'id': 'hc_counter', 'x': 5, 'y': 2, 'sprite': 'bank_counter',
      'lines': {'else': 'The counter is polished. Your Acorns never leave your bag.'}},
 ])
-rooms['hc_gym_in'] = room('hc_gym_in', 'Trial Hall', 9, 7, 'charity', 'hc_gym', [
+rooms['hc_gym_in'] = room('hc_gym_in', 'Dojo', 9, 7, 'charity', 'hc_gym', [
     {'kind': 'npc', 'id': 'hc_sol', 'name': 'Floor Keeper Sol', 'look': 'sol', 'x': 4, 'y': 3, 'facing': 'down',
-     'lines': line_pair('No Seal here. Fen and Hale keep those.', 'No trial today. The floor is just clean.')},
+     'lines': line_pair('No Seal here. Hall Masters keep those.', 'No trial today. The floor is just clean.')},
     {'kind': 'sign', 'id': 'hc_gym_note', 'x': 2, 'y': 4, 'text': 'Practice floor. No Seals. Wipe your boots.'},
 ])
 rooms['hc_lantern_in'] = room('hc_lantern_in', 'Lantern House', 9, 7, 'charity', 'hc_lantern', [
@@ -381,7 +381,7 @@ rooms['hc_lantern_in'] = room('hc_lantern_in', 'Lantern House', 9, 7, 'charity',
     {'kind': 'prop', 'id': 'hc_bed_c', 'x': 3, 'y': 2, 'sprite': 'rest_bed', 'lines': {'else': '@lantern_rest'}},
     {'kind': 'prop', 'id': 'hc_lantern_light', 'x': 6, 'y': 2, 'sprite': 'floor_lantern',
      'lines': {'else': 'The city lantern. Its glow feels like a hand on your shoulder.'}},
-    {'kind': 'sign', 'id': 'hc_lantern_note', 'x': 6, 'y': 4, 'text': 'Rest as long as you like. The city can wait. — High Charity'},
+    {'kind': 'sign', 'id': 'hc_lantern_note', 'x': 6, 'y': 4, 'text': 'Rest the whole party. 5 Acorns, or what you have. The city can wait. — High Charity'},
 ])
 rooms['hc_lantern_in']['respawnSpot'] = {'x': 2, 'y': 3, 'facing': 'up'}
 
@@ -484,10 +484,10 @@ scenes = {
         ['if', 'story.hc_invite', [
             ['say', 'Captain Lumen', "Ilse's letter arrived ahead of you. She said the Seals would."],
         ]],
-        ['say', 'Captain Lumen', 'The coastal road to Brinewick is on the board. We are not opening it.'],
-        ['say', '', 'The chart names the road. The light beside it stays dark.'],
+        ['say', 'Captain Lumen', 'The coastal road to Brinewick is on the board. We are opening it. Walk it carefully.'],
+        ['say', '', 'The chart names the road. A small light beside it flickers on.'],
         ['standing', 'keepers', None, 'hc_council_k'],
-        ['say', '', "COMING LATER · The Keepers' next lantern. Thanks for playing!"],
+        ['say', '', "THE ROAD AHEAD · Route 3 to Brinewick, from Cobblecrest's east road."],
         ['setFlag', 'story.hc_council_done', True],
     ],
     'hc_invite': [
