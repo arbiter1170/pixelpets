@@ -38,7 +38,9 @@ D1159-D1165 reserved: NPC_RANKS and SIDE_BADGE (claude/npc-ranks-side-badge). D1
 
 D1189-D1196 reserved: TRIAL_HALL_FERNBROOK_MAP (`handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md`, the contested Fernbrook Trial Hall; checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:15 PM ET). This block starts above ids held by unmerged work: draft #261 records D1175 and holds D1186-D1188, and `claude/fernbrook-plaza` and `claude/fernbrook-homes` (no PRs) label D1175-D1185.
 
-Next free id is D1197.
+D1197-D1209 reserved: POST_TRIAL_CRACKDOWN (`handoff/specs/POST_TRIAL_CRACKDOWN.md`, the quest in the D1175 slot; same PR, checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:45 PM ET).
+
+Next free id is D1210.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -146,6 +148,19 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 | D1194 | green, TRIAL_HALL_FERNBROOK_MAP §7.2 | Floor and ledges stay split after the pick; only props flip (no hold-based skin swap) | Not built. Default: yes | none |
 | D1195 | yellow, TRIAL_HALL_FERNBROOK_MAP §6 | Glimmerwell's Hall floor is a light polished grey with a soot/wine grid, not a soot field; red is accent only | Not built. Default: yes (contrast at 320) | `sprites.js` |
 | D1196 | green, TRIAL_HALL_FERNBROOK_MAP §7.3 | New Hall prop lines are PLACEHOLDER for Story; none asks the holder to join a side (D1145) | Not built. Default: ship the drafts until Story's pass | `data/fernbrook_rooms.json` |
+| D1197 | red, POST_TRIAL_CRACKDOWN §13 | The crackdown after Trial 1: a Keeper Commander with Watch Coaches and officers closes Fernbrook, stops its Trials, sends Glimmerwell away, threatens the holder's Seal (words only) and orders the holder and Fen out; Fen defies him and appeals to the Warden. Fills D1175 | Not built. Spec and storyboard in `handoff/shots/post_trial_crackdown/` | `data/detail_zz_crackdown.json` (new) |
+| D1198 | red, POST_TRIAL_CRACKDOWN §13 | The Commander: canon rank (STORY §3a), name PLACEHOLDER, look, whether he returns | Not built. Default: rank Commander, name by Story | Story |
+| D1199 | red, POST_TRIAL_CRACKDOWN §13 | What a Seal unlocks: A the town's voice (a say at the town meeting; later town steering, D1173), B Solvane's lock (the way to the Stormbell Spire), C the Masters' archive (record rooms, the lamp-case paper trail) | Nothing built. Default A; no mechanic until D1173 | STORY.md |
+| D1200 | red, POST_TRIAL_CRACKDOWN §5 | Fernbrook curfew: scene-scoped from the crackdown to the pick result; residents indoors, visitors out by first light; a read (`story.crackdown & !story.side_pick_done`), not a flag | Not built | `when`s in the new overlay |
+| D1201 | red, POST_TRIAL_CRACKDOWN §7.4 | The Seal-gain ban is world news and NPC reaction only; it never blocks the player or removes a Seal (Vincent's clarification) | Not built | `data/news.json` |
+| D1202 | red, POST_TRIAL_CRACKDOWN §8 | No tanks: Watch Coaches (armoured Keeper coaches, lantern searchlight, no guns) | Not built. Default: Watch Coach | `sprites.js` |
+| D1203 | red, POST_TRIAL_CRACKDOWN §6 | Leave at first light, not now; the pick stays at `fb_side_pick` at dawn as built; FPT Part D's morning cart is replaced by the crackdown night; Amos's pitch moves into the Lantern House, Juniper's to the east road. Amends D1142's waits | Not built. Default option A | quests.js, the new overlay |
+| D1204 | yellow, POST_TRIAL_CRACKDOWN §11 | New `walkAll` step (parallel walks); vehicles glide as props via `walkTo` (prototype) | Not built. Default: add both | `game.js` |
+| D1205 | yellow, POST_TRIAL_CRACKDOWN §13 | A Keeper wire set prop plays Block News as `say` lines; three Block News stories in NEWS | Not built. Default yes, Fernbrook only | the new overlay, `data/news.json` |
+| D1206 | yellow, POST_TRIAL_CRACKDOWN §12 | The Trial Hall is closed by `deny` during the curfew only; open as a place after the pick | Not built. Default yes | `data/fernbrook_rooms.json` |
+| D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
+| D1208 | green, POST_TRIAL_CRACKDOWN §4 | All crackdown lines are PLACEHOLDER for June | Not built | Story |
+| D1209 | yellow, POST_TRIAL_CRACKDOWN §8 | Pick balance: the §8 ledger is the target; June signs it off before the build; QA watches the pick ratio | Not built. Default yes | Story, QA |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

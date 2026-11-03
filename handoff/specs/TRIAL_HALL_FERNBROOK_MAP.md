@@ -6,7 +6,7 @@ Target path: `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (PUBLIC repo; not `docs
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.1, Mon Nov 2, 2026, ~10:15 PM ET. Waits on Morgan (Chief of Staff), then Vincent (rule 9 previews, red rows D1189, D1190, D1192). |
+| Status | Draft v0.2, Mon Nov 2, 2026, ~11:30 PM ET. v0.2 answers "the two sides look a little rubbery": a tone bible (§6.3), redrawn draft art with material and light cues (§8, `draft_art_sheet.png`), and Keeper wall dressing (honour board, oil sconces). v0.1 was earlier the same evening. Waits on Morgan (Chief of Staff), then Vincent (rule 9 previews, red rows D1189, D1190, D1192). |
 | Ask | Vincent: the Hall must read as a contested building, and its design language must show the power struggle between the Keepers and Glimmerwell. |
 | Builds on | Draft PR #261 (`claude/day1-trial1-build-gtkcop`, bc38b01): the three mixed holders `h1_cadet`, `h1_challenger`, `h1_local`, the sign "FERNBROOK TRIAL HALL · Master Fen", and the Fernbrook hold flip (D1171). Positions and line numbers marked "#261" are on that branch. |
 | Read first | `handoff/specs/DAY1_TRIAL1_FLOW.md` (§8 roster as amended by D1170, §9 flip; #261 carries v0.4), `data/fernbrook_rooms.json` (`fb_hall_in`), `REGION_MAP.nodes.fernbrook` (main `game.js:11880`; #261 `game.js:12069-12073`), `.cursor/skills/gamedev-level-design`, `.cursor/skills/walklings-room-packet`, `.cursor/skills/walklings-decision-ids` |
@@ -72,7 +72,7 @@ Run with a sub-agent on Mon Nov 2, 2026, ~10:15 PM ET. Reference only; nothing i
 | Walk mask | every cell keeps its walk / solid / hop value | no (checked cell by cell, §12) |
 | Grid | west half (x 0-7) and rows 0-2, 23 byte-identical; east half (x 8-14, rows 3-22) re-glyphed | yes |
 | Holders | ids unchanged; three positions move (below) | positions only |
-| Props | every existing prop id kept; 13 gain a `when` (12 east-half props and `fb_hall_lamp_w`); 3 move; 33 new objects | yes |
+| Props | every existing prop id kept; 13 gain a `when` (12 east-half props and `fb_hall_lamp_w`); 3 move; 36 new objects | yes |
 | Retired ids | **none** | |
 
 ### 5.2 Grids
@@ -144,7 +144,7 @@ The critical path zig-zags: up through the hedge gap (x 5-7, row 19), east along
 | Holder (#261 id) | Role (D1170) | #261 spot | New spot | Faces | Sees (in-engine `sightLines`) | Why here |
 |---|---|---|---|---|---|---|
 | `h1_local` | neutral Fernbrook holder | 13,18 | **8,20** | left (as #261) | 7,20 6,20 5,20 | Stands **on the seam** in the entrance garden, at the end of the rope line: the first thing you meet is someone who belongs to neither side. Sight covers the whole entry path, so the match can't be missed |
-| `h1_challenger` | Glimmerwell-leaning local | 12,12 | **12,12** (no move) | left (as #261) | 11,12 to 7,12 | Already on the Glimmerwell half, in the east pocket of row 12, on polished tile between two soot planter tiers |
+| `h1_challenger` | Glimmerwell-leaning local | 12,12 | **12,12** (no move) | left (as #261) | 11,12 to 7,12 | Already on the Glimmerwell half, in the east pocket of row 12, on polished tile between two lacquer planter tiers |
 | `h1_cadet` | Keeper cadet | 12,8 | **3,5** | **right** (was left) | 4,5 to 8,5 | Moves from the Glimmerwell half to the **Keeper half of the dais**: the Keeper cadet guards the Keeper master. Not on the path; 4 tiles from Fen |
 | Fen | Master Fen | 7,4 | 7,4 | down | | Keeper dais half, under the crest (7,2), one tile from the seam and the plaque (8,2) |
 
@@ -158,15 +158,15 @@ Fen's gate (#261 `hallCrewDone`) still needs all three beaten. The cadet's sight
 
 | Element | West half: the old Keeper hall (x 1-7) | Seam (x 7 / x 8) | East half: Glimmerwell (x 8-14) |
 |---|---|---|---|
-| Floor | today's tiers, unchanged: moss, worn flagstone, path, boards, earth, stepping stones; petal and leaf scatter | `Z`: the first polished tile has a lifted bright lip (`w`), a soot shadow (`N`) and moss (`g`/`l`) poking through a warm crack (`F`) | `P`: one light polished grey tile (`h`) on a straight grid (`m` edges, `K` inner lines), one gloss tick, a soot pin (variant: wine pin). No scatter |
-| Ledges | today's flower hedges, each tier its own flower | the hop column `V` (x 7) stays on the Keeper side, untouched | `M`: identical soot planter boxes, clipped hedge tops, a wine band and honey bolts. Every tier the same |
-| Steps (gaps) | today's `hall_step` | | `U`: polished treads, grey nosing, wine corner marks. Light, so they read as walkable, not as ledge |
+| Floor | today's tiers: moss, flagstone (now with a cracked, mossy variant), path, boards, earth, stepping stones; petal and leaf scatter | `Z`: the first polished tile has a lifted bright lip (`w`), a soot shadow (`N`) and moss (`g`/`l`) poking through a warm crack (`F`) | `P`: one large polished slab per tile: `h` field, `w` bevel light top-left, `K` bevel shade bottom-right, `m` joint, a diagonal `w` reflection streak (variant: a subtle `K` vein instead). No scatter |
+| Ledges | today's flower hedges, each tier its own flower | the hop column `V` (x 7) stays on the Keeper side, untouched | `M`: identical black lacquer planter boxes with a chrome rim, a wine enamel band and a flat-clipped hedge top. Every tier the same |
+| Steps (gaps) | today's `hall_step` | | `U`: two polished treads with chrome nosing and small red anti-slip marks. Light, so they read as walkable, not as ledge |
 | Dais | cream `hall_dais`, Fen stands here | the dais is split in half (x 3-7 cream, x 8-12 white) | `I` / `C`: white polished slab and lip |
-| North wall row (y 2) | two old mended Keeper banners (2,2) (5,2); the Keeper crest (7,2) | **the crest and the plaque side by side** (7,2) (8,2), right above Fen | half-hung Glimmerwell banner over an old Keeper banner (9,2); sponsor banner (12,2) |
+| North wall row (y 2) | oil sconces (1,2) (6,2); two old mended Keeper banners (2,2) (5,2); an oak honour board with names in gold leaf (3,2); the Keeper crest (7,2) | **the crest and the plaque side by side** (7,2) (8,2), right above Fen | half-hung Glimmerwell banner over an old Keeper banner (9,2); sponsor banner (12,2) |
 | Lamps | old `dais_lamp` (4,3) | | Comfort Lamps: (11,3) (13,7) (14,8) (14,18) (14,20) |
 | Planters | `hedge_planter`, urns, pots as today | | `glim_planter`: one clipped ball per black box (13,10) (13,16) |
 | Notice boards | Keeper board (3,20): hand-written slips, one Glimmerwell flyer pinned over a corner | | Glimmerwell board (10,20): glossy posters, one Keeper slip hanging on in a corner |
-| Work in progress | | rope line on the seam (8,21); the neutral holder stands at its end (8,20) | grout bucket and trowel (9,20); sample stand (12,20) |
+| Work in progress | | a chrome stanchion with a red velvet rope on the seam (8,21); the neutral holder stands at its end (8,20) | grout bucket and trowel (9,20); sample stand (12,20) |
 
 The walls are not split. The Hall keeps its INTERIOR_WALLS kit and its wall colour row. The building is still the old Keeper hall; Glimmerwell has only resurfaced the floor and hung its things. That keeps the wall kit rule (room packet step 4) and keeps the story honest.
 
@@ -184,6 +184,40 @@ No new PAL keys. Every key below already exists in `sprites.js` (`PAL`, line 13)
 | Green through the seam | `g`, `l` | moss in `Z` |
 
 Distinct from every other room: no interior uses a light grey 8 px grid with soot pins (`floor_marble` is a large `h`/`w` checker, `floor_lobby_tile` is near-white, `floor_sealed` is flat white), and no room splits its floor in two.
+
+### 6.3 Tone bible (v0.2)
+
+**Why v0.1 looked rubbery.** Every v0.1 draft used flat, single-value fills with even outlines and no light direction. The Glimmerwell ledges were saturated lime boxes on black. Nothing said what anything was made of, so both halves read as moulded plastic. The fix is in the materials, not in more props.
+
+**The one-line read: living versus sterile.**
+- The Keeper half is alive, handmade and worn: kept by the same hands for years.
+- The Glimmerwell half is new, bought and installed this month: clean, cold and identical.
+
+**Rules for both halves:**
+- One light source, top-left (the north windows): highlight top and left edges, shade bottom and right.
+- At least three values per material.
+- No dark outline inside a tile; outline only where a form meets the floor.
+- Every new piece of art gets a 5x look on the art sheet before it goes in the room.
+
+| | Keeper (west) | Glimmerwell (east) |
+|---|---|---|
+| Story the room tells | looked after for years; mended, not replaced | delivered and installed this month; replaced, not mended |
+| Shape | irregular, chipped, asymmetric; each tier its own plants | straight, modular, repeated; every tile and planter identical |
+| Materials (PAL ramps) | oak `G` > `A` > `F`; gold leaf `y`/`A`; mended cloth `D`/`E` with `C` thread; cracked flagstone `I` with `F` cracks; moss `E`/`g`/`l`; oil light `y` | polished slab `w`/`h`/`K` with `m` joints; black lacquer `N` with `d` gloss; chrome `w`/`h`/`m`; wine enamel `V` with `p`/`r` edge; red velvet `V`/`p`; mint glass (Comfort Lamp) |
+| Light | warm and soft: window light on the north strip, oil sconces; no specular shine | hard specular shine: a diagonal gloss streak on slabs, 1 px chrome lines, a red light strip under the dais lip |
+| Texture density | texture across the whole surface (cracks, grain, moss, petals), low contrast | clean fields; detail only at edges and joints, high contrast |
+| Wear | patches, stitches, faded names, frayed fringe | none. Damage shows only where it meets the old stone: chips, a grout smear, moss through the crack |
+| Words and signs | hand-lettered slips with a tack, gold-leaf names, chalk | engraved steel plate, a stamped honey diamond logo, printed posters all one size |
+| Repetition | never the same prop twice in a row | the same planter, lamp and banner, repeated on purpose |
+| Green | living and varied: moss, flowers, herbs | clipped into geometry: flat-top boxes, perfect balls |
+| Red | none | accent only: enamel bands, nosing marks, light strip, plaque inlay. `Q` only in the Comfort Lamp sparkle |
+| Motion (build, optional) | oil sconces flicker on an uneven 2-frame beat | Comfort Lamps sparkle all on the same beat; reduced motion shows frame 0 |
+
+**Value check.** In a greyscale screenshot at 320, each half must still be identifiable: the Keeper half mid-to-dark and busy, the Glimmerwell half light and quiet (T12).
+
+**Not proposed: light pools under the Comfort Lamps.** Tiles can't flip with the hold (D1194), so a pool would keep glowing after the Keepers cover the lamps. If the engine later gets a light layer or hold-based tiles, pools are the next step.
+
+The same language carries outside the Hall. POST_TRIAL_CRACKDOWN (`handoff/specs/POST_TRIAL_CRACKDOWN.md`) uses it for the Keeper officers and their vehicles.
 
 ## 7. Before and after the pick
 
@@ -210,7 +244,7 @@ On a new save the hold flips only at the pick result, after Seal 1 and the post-
 | Floor and ledges | split (§6) | **still split** (D1194): the polish stays, pried tiles are crated | still split; west keeps its moss |
 | Crest (7,2) | crest | crest | covered by a black cloth with a red tag |
 | Plaque (8,2) | "brought to you by" plaque | a hand-lettered slip pinned over it | plaque |
-| North banners | two old Keeper banners west; half-hung banner at the seam; sponsor banner east | Keeper banners; the seam banner hangs straight; east sponsor banner down | sponsor banners everywhere |
+| North wall | sconces, honour board and two old Keeper banners west; half-hung banner at the seam; sponsor banner east | all Keeper; the seam banner hangs straight; east sponsor banner down | sponsor banners everywhere; sconces and honour board taken down |
 | Lamps | dais lamp west, Comfort Lamps east | dais lamps both sides; one Comfort Lamp left switched off under a cloth | Comfort Lamps both sides; old lamps boxed by the door |
 | East props | Glimmerwell planters, stand, lamps | today's flower props come back (hedges, pot, bowl, basket, bench, stool, spout, tier lamp) | Glimmerwell props |
 | Boards | each side's board, each with one poster from the other side | both boards Keeper | both boards Glimmerwell |
@@ -255,6 +289,9 @@ Generated from the checked layout. "Shows when" names a row of §7.1. Holder and
 | `fb_hall_banner_k2` | 5,2 | `banner_keeper_old` | contested + Keepers hold | NEW | Another old Keeper banner. The fringe is half gone. |
 | `fb_hall_banner_k1_g` | 2,2 | `banner_glim` | Glimmerwell holds | NEW | A Glimmerwell banner, black and red. It hangs where the Keeper banner was. |
 | `fb_hall_banner_k2_g` | 5,2 | `banner_glim` | Glimmerwell holds | NEW | Another Glimmerwell banner. The hooks are new. |
+| `fb_hall_sconce_w1` | 1,2 | `keep_lamp_wall` | contested + Keepers hold | NEW | An oil lamp in an old iron bracket. The wall above it is dark with soot. |
+| `fb_hall_honour` | 3,2 | `keep_honour_board` | contested + Keepers hold | NEW | An oak board with names in gold leaf. Most have faded. The last one is still bright. |
+| `fb_hall_sconce_w2` | 6,2 | `keep_lamp_wall` | contested + Keepers hold | NEW | An oil lamp. Someone trims the wick every morning. |
 | `fb_hall_crest` | 7,2 | `keep_insignia` | contested + Keepers hold | NEW | The Keeper crest, carved into the old stone. |
 | `fb_hall_crest_cover` | 7,2 | `crest_cover` | Glimmerwell holds | NEW | A black cloth hangs over the old crest. A small red tag says: 'Under renovation.' |
 | `fb_hall_plaque` | 8,2 | `glim_plaque` | contested + Glimmerwell holds | NEW | A new plate, bolted beside the crest: 'FERNBROOK TRIAL HALL. Brought to you by Glimmerwell Co.' |
@@ -265,7 +302,7 @@ Generated from the checked layout. "Shows when" names a row of §7.1. Holder and
 | `fb_hall_banner_g1` | 12,2 | `banner_glim` | contested + Glimmerwell holds | NEW | A Glimmerwell banner. Black, red and very clean. |
 | `fb_hall_clamp_w` | 4,3 | `comfort_lamp` | Glimmerwell holds | NEW | A Comfort Lamp where the old dais lamp stood. It hums a little. |
 | `fb_hall_clamp_e` | 11,3 | `comfort_lamp` | contested + Glimmerwell holds | NEW | A Comfort Lamp by the dais. Its glass is spotless. |
-| `fb_hall_banner_g2` | 13,6 | `banner_glim` | contested + Glimmerwell holds | NEW | A Glimmerwell banner on a stand, where the ribbons were. |
+| `fb_hall_banner_g2` | 13,6 | `banner_glim_stand` | contested + Glimmerwell holds | NEW | A Glimmerwell banner on a stand, where the ribbons were. |
 | `fb_hall_clamp_t6` | 13,7 | `comfort_lamp` | contested + Glimmerwell holds | NEW | A Comfort Lamp clipped to the top planter. Fen's dais is one more step up. |
 | `fb_hall_clamp_8` | 14,8 | `comfort_lamp` | contested + Glimmerwell holds | NEW | A Comfort Lamp. A small red tag hangs off it. |
 | `fb_hall_clamp_8_off` | 14,8 | `comfort_lamp_off` | Keepers hold | NEW | A Comfort Lamp, switched off, with a cloth thrown over it. |
@@ -291,38 +328,42 @@ Generated from the checked layout. "Shows when" names a row of §7.1. Holder and
 
 | Glyph | Tile | Variants | Walk | Draft used in the previews | What Pia should keep |
 |---|---|---|---|---|---|
-| `P` | `glim_tile` | `glim_tile_b` 0.3 (wine pin) | 1 | `h` field; `m` edges top and left; `K` lines at 8 px; one `w` gloss tick; `N` pin at 8,8 | light value, straight grid, almost no texture |
-| `Z` | `glim_seam` | none (vertical runs are 3 or fewer) | 1 | `glim_tile` with x0 `F` crack plus `g`/`l` moss, x1 `N` shadow, x2 `w` lifted lip | the lip must read as "laid on top"; moss shows the old floor is alive |
-| `U` | `glim_step` | none (runs of 5 or fewer) | 1 | two `h` treads, `w` nose, `m`/`d` riser lines, `V` 2 px corner marks | must read as walkable steps, clearly lighter than `M` |
-| `M` | `hall_ledge_glim` | `hall_ledge_glim_b` 0.45 (honey logo dot) | 0 | clipped `g` hedge top with `E` clip lines, `N` box, `V` band, `y` bolts | **needs the variant:** rows 7, 11, 15, 19 have 7 in a row, over the run limit of 6 |
-| `I` | `glim_dais` | none | 1 | `w` slab, `h` edges, `N` corner pin | white, plainly not the cream Keeper dais |
-| `C` | `glim_dais_lip` | none | 1 | `w` lip, `h`/`m` shadow, 1 px `V`, `d` base | light: an earlier soot draft read as a wall across the dais |
+| `P` | `glim_tile` | `glim_tile_b` 0.35 (a subtle `K` vein, no streak) | 1 | one slab: `h` field, `w` bevel light top and left, `K` bevel shade bottom and right, `m` joint right and bottom, a 2 px diagonal `w` reflection streak | light value, big clean field, one hard gloss |
+| `Z` | `glim_seam` | none (vertical runs are 3 or fewer) | 1 | a slab whose left 4-5 px are the old `I` flagstone with an uneven, chipped edge, `F` cracks, `g`/`l`/`E` moss and a `C` grout smear; then an `N` slab side and a `w` lifted lip | the slab must read as laid on top of the old floor, and the old floor as alive |
+| `U` | `glim_step` | none (runs of 5 or fewer) | 1 | two `h` treads, each with a `w` chrome nosing and `m` shadow; `V` 2 px anti-slip marks at the ends | must read as walkable steps, clearly lighter than `M` |
+| `M` | `hall_ledge_glim` | `hall_ledge_glim_b` 0.45 (stamped honey logo) | 0 | flat-clipped hedge top (`l` clipped edge, `g`, `E` texture, `E` gap between boxes); `w`/`h` chrome rim; `N` lacquer box with a `d` gloss stripe; `V` enamel band with an `r` gleam; `k` foot shadow | **needs the variant:** rows 7, 11, 15, 19 have 7 in a row, over the run limit of 6 |
+| `I` | `glim_dais` | none | 1 | white `w` marble with `K`/`h` veins, `h` joints | white marble, plainly not the cream Keeper dais |
+| `C` | `glim_dais_lip` | none | 1 | marble top, `h`/`K` riser, `m` line, a 1 px `V` light strip, `N` foot | light: an earlier soot draft read as a wall across the dais |
 
-Skin entries (build): `remap` P `glim_tile`, Z `glim_seam`, U `glim_step`, M `hall_ledge_glim`, I `glim_dais`, C `glim_dais_lip`; `walk` P 1, Z 1, U 1, M 0, I 1, C 1; `variants` as above. The six glyphs have no engine-wide meaning: `game.js` and `sprites.js` have no `=== 'P'` style test on them, and the shared tile table only defines `P` (High Charity plaza stone, walk true), which the skin's walk table overrides anyway (`tileWalks`, `game.js:4753`). Optional: `hall_flag_worn`, a cracked variant of `hall_flag` for the west half (not in the previews).
+Skin entries (build): `remap` P `glim_tile`, Z `glim_seam`, U `glim_step`, M `hall_ledge_glim`, I `glim_dais`, C `glim_dais_lip`; `walk` P 1, Z 1, U 1, M 0, I 1, C 1; `variants` as above. The six glyphs have no engine-wide meaning: `game.js` and `sprites.js` have no `=== 'P'` style test on them, and the shared tile table only defines `P` (High Charity plaza stone, walk true), which the skin's walk table overrides anyway (`tileWalks`, `game.js:4753`). West half: `hall_flag_worn`, a cracked, mossy variant of `hall_flag` (variant weight 0.25; in the v0.2 previews). It only shows on the west, because the east half has no `hall_flag` cells.
 
 ### 8.2 New props (16 x 16, `WART`)
 
-| Sprite | Draft (previews) | Notes |
-|---|---|---|
-| `banner_keeper_old` | `banner_keeper` with `g` to `D`, `y` to `A`, three `C` mend stitches | faded and mended, not torn to bits |
-| `banner_glim` | `banner_red` with `r` to `V`, `N` hem | the live Glimmerwell recolor (D1080); `banner_red` itself still uses the old `r` |
-| `banner_glim_half` | `banner_keeper_old` with a `V` banner pinned at the top right corner, drooping left, `N` edge, `y` pin | the seam image on the wall |
-| `glim_plaque` | `N` frame, `V` plate, `y` text ticks, `h` bolts | honey marks, never crimson text |
-| `glim_plaque_covered` | `glim_plaque` plus a `C` slip with `d` writing and one `Q` pin | Keepers hold |
-| `crest_cover` | `keep_insignia` under a `N` cloth with `k` folds and a `V` tag | Glimmerwell holds |
-| `bulletin_keepers_x` | `bulletin_keepers` plus a `V`/`N` flyer at the top right | contested |
-| `bulletin_glimmer_x` | `bulletin_glimmer` plus a `C` slip at the bottom left | contested |
-| `seam_rope` | `N` post, `y` cap, `V` rope running north | a vertical rope line (`arena_rope` is horizontal) |
-| `grout_bucket` | `N` bucket, `V` band, `h` grout, trowel | |
-| `tile_crate` | `F`/`G` crate with `h`/`w` tiles sticking out | Keepers hold |
-| `glim_planter` | round `g` ball with `l`/`E`, `N` box, `V` band, `y` dot | every one identical on purpose |
-| `comfort_lamp_off` | `comfort_lamp` with dark glass, no sparkles, a `C`/`A` cloth over the top | Keepers hold |
+The 5x look is in `handoff/shots/trial_hall_fernbrook/draft_art_sheet.png`.
+
+| Sprite | Side | Draft v2 (previews) | Notes for Pia |
+|---|---|---|---|
+| `banner_keeper_old` | Keeper | `banner_keeper` faded (`g` to `D`, `y` to `A`), `E` fold shade, a `G` patch with `F` stitches, `C` frayed fringe | faded and mended, not torn |
+| `keep_honour_board` | Keeper | oak (`G` frame, `F` board, `B` foot), a gold-leaf crest band, five name lines in faded `A` and the latest in bright `y` | lore prop, history: who has held this Hall. No names are written |
+| `banner_glim` | Glimmerwell | chrome rod, `N` header bar, `V` cloth with `p` folds, a honey diamond logo with a `w` glint, a straight `N` hem (no fringe) | corporate: a straight cut against the Keeper swallowtail and fringe |
+| `banner_glim_stand` | Glimmerwell | `banner_glim` on a chrome pole and base | the floor version (13,6) |
+| `banner_glim_half` | seam | `banner_keeper_old` with a `V` banner clipped at one corner by a chrome clip, drooping across it | the seam on the wall |
+| `glim_plaque` | Glimmerwell | brushed steel (`h`, `m` frame, `w` screws), a `V` enamel strip with honey lettering, engraved `K` lines | engraved, never painted; no crimson text |
+| `glim_plaque_covered` | Keepers hold | the plaque under a slightly curled `C` paper slip with `F` writing and an `F` tack | the Keepers' answer to the plaque |
+| `crest_cover` | Glimmerwell holds | the crest under a black satin cloth (`N`, `d`/`k` folds) with a `V` tag | |
+| `bulletin_keepers_x` | seam | `bulletin_keepers` plus a glossy `N`/`V` poster with a honey mark | |
+| `bulletin_glimmer_x` | seam | `bulletin_glimmer` plus a hand-cut `C` slip with uneven edges, `F` writing and a tack | |
+| `seam_rope` | Glimmerwell | chrome stanchion (`w`/`h`/`m`) with a red velvet rope (`V`/`p`) sagging to the floor | velvet rope, not plain rope: the brand's idea of a barrier |
+| `grout_bucket` | seam | `N` bucket, `V` band, `d` gloss, `C` grout, a steel trowel with an `F` handle | |
+| `tile_crate` | Keepers hold | an oak Keeper crate (`G`/`A`/`F`/`B`) with prised-up slabs at angles and a `C` tag | |
+| `glim_planter` | Glimmerwell | a dithered topiary ball on a lacquer cube with a chrome rim, `V` band and honey dot | |
+| `comfort_lamp_off` | Keepers hold | `comfort_lamp` unlit, with a `C`/`A` cloth and `F` folds | |
 
 ### 8.3 Reused as they are
 
-`keep_insignia`, `banner_keeper` (via the faded copy), `bulletin_keepers`, `bulletin_glimmer`, `comfort_lamp` (two frames; reduced motion uses frame 0), `glimmer_stand`, `keep_crate`, `dais_lamp`, and every existing `fb_hall` tile and prop.
+`keep_insignia`, `keep_lamp_wall`, `banner_keeper` (via the faded copy), `bulletin_keepers`, `bulletin_glimmer`, `comfort_lamp` (two frames; reduced motion uses frame 0), `glimmer_stand`, `keep_crate`, `dais_lamp`, and every existing `fb_hall` tile and prop.
 
-Total new art: 6 tiles plus 2 variants, and 13 props (14 with the optional worn flagstone).
+Total new art: 6 tiles, 3 variants (`glim_tile_b`, `hall_ledge_glim_b`, `hall_flag_worn`) and 15 props.
 
 ## 9. Readability at 390 and 320
 
@@ -350,7 +391,7 @@ Contested (during Trial 1):
     x 0123456789012345
 y  0   ################
 y  1   ################
-y  2   #-*--*-***--*--#
+y  2   #***-*****--*--#
 y  3   #...*...|::*:::#
 y  4   #..ooooF00000::#
 y  5   #..3oooo00000::#
@@ -380,7 +421,7 @@ Keepers hold:
     x 0123456789012345
 y  0   ################
 y  1   ################
-y  2   #-*--*-***-----#
+y  2   #***-*****-----#
 y  3   #...*...|::*:::#
 y  4   #..ooooF00000::#
 y  5   #..3oooo00000::#
@@ -439,6 +480,7 @@ y 23   #######D########
 In `handoff/shots/trial_hall_fernbrook/`:
 
 - `compare-390.png`, `compare-320.png`: before, contested, Keepers hold and Glimmerwell holds, at the door and at the dais.
+- `draft_art_sheet.png`: every new tile and prop at 5x, grouped Keeper, seam and Glimmerwell, beside the existing art they sit with.
 - Full screens: `before-split-{door,mid,dais}-{390,320}.png`, `after-split-{door,mid,dais}-{390,320}.png`, `after-keep-{door,dais}-{390,320}.png`, `after-glim-{door,dais}-{390,320}.png`.
 
 How they were made:
@@ -446,11 +488,11 @@ How they were made:
 - The real game (#261's build) at 390 x 844 and 320 x 568, modern controls.
 - For "after", Playwright adds this spec's grid and objects to `MAPDATA` at load, plus the draft tiles and props from §8, drawn in `PAL` with `px()`.
 - Nothing in the game repo was changed. Zero console errors in every run.
-- The draft art is a stand-in for Pia's, not a proposal to ship.
+- The draft art (v2) is a stand-in for Pia's, not a proposal to ship. It is there to show the materials and values §6.3 asks for.
 
 ## 11. Build notes (for the later build PR, not this one)
 
-1. `data/fernbrook_rooms.json` `fb_hall_in`: replace rows 3-22 with §5.2's after grid (west half byte-identical); add the 33 objects and the 13 `when`s from §7.3; move `fb_hall_basket`, `fb_hall_bench_w`, `fb_hall_jar` and the three holders.
+1. `data/fernbrook_rooms.json` `fb_hall_in`: replace rows 3-22 with §5.2's after grid (west half byte-identical); add the 36 objects and the 13 `when`s from §7.3; move `fb_hall_basket`, `fb_hall_bench_w`, `fb_hall_jar` and the three holders.
 2. #261's `data/detail_zz_day1.json`: `trainers.h1_cadet.facing` becomes `right`.
 3. `sprites.js`: the art from §8 and the six `fb_hall` skin entries. No new PAL keys.
 4. Optional (D1191): the `hold:` term in `cond()`.
@@ -474,6 +516,7 @@ New spec `tests/trial_hall_contested.spec.js`: 320, 375 and 390; reduced motion;
 | T9 | At 320 and 390, from the door and from (7,6), the seam column x 8 is inside the canvas; from (7,6) Fen and the cadet are fully on screen |
 | T10 | Painted runs no longer than 6 (`maps_b8` rule; `M` needs its variant), floor share 0.7 or less, `maps_b8` and `interior_walls` unchanged for `fb_hall_in` |
 | T11 | Every new art key exists in `TILES`/`WART`; the art scan counts `Q` within limits (D1080) |
+| T12 | Value check (§6.3): in a greyscale capture at 320 from the door, the mean value of the east-half floor is clearly lighter than the west half, and the seam column is visible |
 
 Suites touched: `maps_b8`, `art_pass`, `interior_walls`, `room_zoom_all`, `map_reach_sweep`, `match_marker`, `day1_flow` (#261). None should need a change except for the holders' new spots.
 
