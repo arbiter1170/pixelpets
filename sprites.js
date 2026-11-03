@@ -3236,7 +3236,7 @@ const HC_PLACEHOLDER_ART = {
   hc_tank_escort: "A24 Keeper tank, escort (4 frames, 350 ms)",
   hc_tank_command: "A24 Keeper tank, command (4 frames, 350 ms)",
 };
-function addExteriorArt(T, A){
+function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
   });
@@ -3246,8 +3246,8 @@ function addExteriorArt(T, A){
   for (const [k, rows] of Object.entries(LIZZY_ART.art)) if (!A[k]) A[k] = paint(rows);
   for (const [k, rows] of Object.entries(MAZE_ART)) if (!A[k]) A[k] = paint(rows);
   // HIGH_CHARITY placeholders. Existing names are never replaced. door_chained is also mirrored into WART like door_heavy.
-  for (const [k, rows] of Object.entries(HC_CITY_ART.tiles)) if (!T[k]) T[k] = paint(rows);
-  for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(HC_CITY_ART[grp])) if (!A[k]) A[k] = paint(rows);
+  if (city) for (const [k, rows] of Object.entries(HC_CITY_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  if (city) for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(HC_CITY_ART[grp])) if (!A[k]) A[k] = paint(rows);
   if (!A.door_chained && T.door_chained) A.door_chained = T.door_chained;
   const frames = (ids, ms) => { const a = ids.map(id => A[id]); a.ms = ms; return a; };
   // Frame 0 is what reduced motion shows: the tank lantern lit, the lantern wall lit, the printer at rest.

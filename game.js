@@ -8376,7 +8376,7 @@ function drawObjectiveCue(g, cx, cy, t){
   }
 }
 const WART = buildWorldArt();
-addExteriorArt(TILES, WART);
+addExteriorArt(TILES, WART, HC_V2_ON);   // the city's PLACEHOLDER art only while the city is on
 const drawArt = (g, img, X, Y) => g.drawImage(img, X - (img.width - TS) / 2, Y - (img.height - TS));   // 32x32 art stands bottom-centred on its one blocking cell
 // Animated props and decals are arrays of canvases with .ms. Reduced motion stays on frame 0.
 function artFrame(a, t){
