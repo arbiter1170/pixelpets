@@ -149,6 +149,7 @@ test.describe('post-Trial crackdown', () => {
   });
 
   test('the Trial Hall stays shut, before and after the pick (D1224)', async ({ page }) => {
+    test.setTimeout(60000);   // about 16 s alone; two door walks and a scene each, slower under parallel workers
     await boot(page, 'warden_summons');
     // A checkpoint writes only done flags; the street scene writes hall1_shut beside story.crackdown.
     await page.evaluate(() => PixelPets.setFlag('story.hall1_shut', true));
