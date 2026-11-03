@@ -2,6 +2,31 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 11:21 ET: Build: the Keeper High Court moves to Charter Hill's Parade, facing Muster Road (D1354, HIGH_CHARITY_LAYOUT v0.3)
+- What changed and why:
+  - D1354 (red, SETTLED by Vincent, Tue Nov 3, 2026; design `specs/HC_PARADE.md` §3.1): the Court moves from `hc_civic` 8,45 to the south half of the Parade, so the HC_PARADE speech can play on its steps.
+    - Box 26,21-38,25 (13 wide: roof rows 21-23, columned facade rows 24-25), door 32,26, on the axis from the Governor's House door to the Muster Road crosswalk.
+    - Its front and wide steps (rows 26-27) face south onto Muster Road, because the engine draws every building from the south.
+    - The old corner 2,38-14,44 is plain grass; the build tool places nothing there.
+    - Muster Road keeps its nine-tile cross-section (rows 28-36); both Governor's House tank posts stay; the flag row moves from row 21 to row 20; the Parade pair beat loops round the Court and past its steps.
+  - Every id is kept: the door `hc_court`, its line "The Court is not sitting.", its sign "KEEPER HIGH COURT." and its roof style. No warp, NPC or flag is added.
+  - The steps are PLACEHOLDER art (A14, now P0): three 16x32 decals in `PAL`, listed in `HC_PLACEHOLDER_ART`, until Pia's pass.
+  - Preview only, as before: `HC_CITY_V2` stays false; `?debug=1&hccity=2` shows it. Normal play is unchanged.
+- Files touched:
+  - code and data: `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `sprites.js`, `tools/GAMEJS_MAP.txt`;
+  - tests: `tests/hc_court_move.spec.js` (new);
+  - shots: `handoff/shots/hc_court_move/` (new; before and after at 390 and 320);
+  - docs: `handoff/maps/HC_CITY_V2.md`, `BACKLOG.md`, `tests/README.md`, `CHANGELOG.md`, plus the build stamp.
+- Commit(s) + build id: claude/hc-court-move, build 20261103-1121. Built from design `master` 91ef326 (HIGH_CHARITY_LAYOUT v0.3).
+- Tests run and result (widths, checks): `tests/hc_court_move.spec.js`, `tests/hc_city_v2.spec.js` and `tests/highcharity.spec.js` at 320, 375 and 390: 66 passed, 0 failed. Zero console errors. Save `v` 2 and unchanged. `build_hc_city.py` PASS (no one-wide choke); design `high_charity_layout_check.py` PASS.
+- Decisions made (colour + reasoning):
+  - D1354 (red) is built as settled. No new decision id.
+  - Green (engineer): the steps are three decal kinds (west end, middle, east end) rather than one 208 px sprite, so they reuse the 16x32 sheet pool.
+- Anything left unfinished:
+  - Rule 9: Vincent sees the previews before this deploys. The PR stays DRAFT.
+  - The HC_PARADE scene itself (the speech staging, Muster Road closed between two tanks) is not built.
+  - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (see the PR).
+
 ## 2026-11-03 08:12 ET: Build: Fen's pacing (D1128): the bench XP share and Fen's challenge hint
 - What changed and why: D1128 is built as Vincent settled it (Nov 3, 8:07 AM ET, from the research).
   - **Bench XP share.** After each foe is beaten or befriended, every other Walkling in the holder's own party gets half of the XP it would earn at its own level: after the level-gap clamp, rounded down (`STAT_RULES.BENCH_SHARE` 0.5, `benchXpAward` in `stats.js`, `awardFoe` in `game.js`).
@@ -12,13 +37,14 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - **Fen's challenge hint.** While the lead is below Lv 12, Fen's Trial panel adds one line before "Begin the trial?": "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first." It is PLACEHOLDER for June, and it never blocks.
   - Fen's team (12/13/14) and her 420-Acorn purse are unchanged.
 - Files touched: `stats.js`, `game.js`, `tools/GAMEJS_MAP.txt`, `tests/fen_pacing.spec.js` (new), `tests/maps_b8.spec.js` (Fen's panel now has the hint line before the choice when the lead is below Lv 12), `tests/README.md`, `CHANGELOG.md`, `handoff/shots/fen_pacing_d1128/`, plus the build stamp.
-- Commit(s) + build id: claude/fen-pacing-d1128, build 20261103-1032 (first stamped 20261103-0821; restamped after catching up with main 656ae76, which has #284, #283, #281, #280 and #277).
+- Commit(s) + build id: claude/fen-pacing-d1128, build 20261103-1200 (first stamped 20261103-0821; restamped after catching up with main 656ae76, then again after 6844bb7 (#287)).
 - Tests run and result (widths, checks):
   - `tests/fen_pacing.spec.js`: 12 of 12 passed at 320, 375 and 390.
   - 19 battle, level and Fen suites (level_grow, battle_no_reload, day1_flow, maps_b8, glimmer_fernbrook, match_marker, rematch_party, deploy_held, battle_tips_once, fetch_line, arbiter_units, five_answer, hushwater, brinewick, crash_growup_people, cue_rail, qa_gaps, art_pass): 283 passed, 2 failed.
     - `maps_b8` Fen panel: fixed here (the hint line), and the re-run passed.
     - `rematch_party:316`: fails the same way on clean main 8cd1510.
   - After the main catch-up (656ae76, build 20261103-1032): fen_pacing, maps_b8, day1_flow, level_grow, battle_no_reload, trial_hall_contested, seals_both_paths, glimmer_fernbrook, qa_gaps, deploy_held, battle_tips_once and match_marker at 320, 375 and 390: 173 passed, 0 failed, 20 skipped (width-gated).
+  - After the second catch-up (6844bb7, #287; build 20261103-1200): fen_pacing, maps_b8, level_grow and battle_no_reload at 320, 375 and 390: 36 passed, 0 failed, 4 skipped (width-gated).
   - Scans pass.
 - Shots (before = main, after = this branch, at 390 and 320): `handoff/shots/fen_pacing_d1128/` (`compare-390.png`, `compare-320.png`).
 - Decisions made (colour + reasoning): D1128 (red), as settled. No new ids. Save stays `pixelpets.save.v2`, `v` 2, no new field.
