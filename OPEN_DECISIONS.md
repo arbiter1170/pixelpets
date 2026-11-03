@@ -40,11 +40,11 @@ D1189-D1196 reserved: TRIAL_HALL_FERNBROOK_MAP (`handoff/specs/TRIAL_HALL_FERNBR
 
 D1197-D1209 reserved: POST_TRIAL_CRACKDOWN (`handoff/specs/POST_TRIAL_CRACKDOWN.md`, the quest in the D1175 slot; same PR, checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:31 PM ET).
 
-D1210-D1219 are held by unmerged branches with no PR yet (line copied from draft #261's header, Tue Nov 3, 2026): D1210-D1214 `claude/fernbrook-plaza` (Fernbrook plaza standoff), D1215-D1219 `claude/fernbrook-homes` (south Fernbrook homes).
+D1210-D1242 reserved: Seals canon (Design, design repo; Vincent's renumbering, Mon Nov 2, 2026, ~11:15 PM ET).
 
-D1220-D1224 reserved: LANTERN_HOUSE_FERNBROOK (`handoff/specs/LANTERN_HOUSE_FERNBROOK.md`, the Fernbrook Lantern House as the town's wire station; checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:20 PM ET).
+D1243-D1252 reserved by unmerged branches, renumbered Mon Nov 2, 2026, ~11:15 PM ET (Vincent) from D1210-D1219, which clashed with Design's Seals canon block: D1243-D1247 `claude/fernbrook-plaza` (Fernbrook plaza standoff), D1248-D1252 `claude/fernbrook-homes` (south Fernbrook homes).
 
-Next free id is D1225.
+Next free id is D1253.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -61,7 +61,6 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 - **Vincent's ruling (Mon Nov 2, 2026, 5:03 PM ET):** "Picking a side should be after the class, same with hall door." The Hall door and the faction pick both come after Lizzy's class. D1153 is HELD (superseded by D1169), and D1172 (does picking a side alone open the Hall door?) is answered **NO**. D1166-D1173 stay reserved by #255 (`claude/day1-trial1-spec`); they are cited here, not re-reserved, and #255 records the rows.
 - **Vincent's rulings (Mon Nov 2, 2026, 5:05 PM ET):** "Not worried about old saves right now." and "Ok to edit main quest chain". (1) #255 Q7 (Fernbrook flip on old saves) and Q5 (old-save gating by the three Keeper holders) are **deprioritized**: old saves are not a concern for now. Claude takes the simplest save-safe option (no save writes, save stays `pixelpets.save.v2`, no migrator) and spends no effort on old-save edge cases. (2) #255's main-quest-chain override is **APPROVED**: OK to edit the main CHAIN for the new rows, keeping the `orchard` row in its current position.
 - **Vincent's ruling (Mon Nov 2, 2026, 5:41 PM ET), amends D1170 (#255 R3):** the three Trial Hall holders before Fen are **mixed, not all Keepers**, because Fernbrook is contested: one Keeper cadet, one Glimmerwell-leaning local challenging the Hall, one neutral Fernbrook holder. Fen stays a Keeper. The Hall sign changes from "FERNBROOK TRIAL HALL · A Keepers' Hall. Master Fen." to "FERNBROOK TRIAL HALL · Master Fen" (this also answers #255 Q8). No new id: recorded as an amendment of D1170 (see the archive). **Claude must update** `handoff/specs/DAY1_TRIAL1_FLOW.md` R3, §8 (Trial Hall roster: only the Keeper cadet carries a D1161 Keeper rank; the other two need their own looks and lines from Story), Q8, conflict row 6 and Slice 8 before Slice 8 builds.
-
 
 ## Open
 

@@ -540,7 +540,7 @@ Next free id checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:12 PM E
 - origin/main's header says D1175.
 - Unmerged work already holds D1175-D1188: #261 records D1175 and reserves D1186-D1188; `claude/fernbrook-plaza` uses D1175-D1179; `claude/fernbrook-homes` uses D1179-D1185.
 - The design repo's highest id is D1159.
-- So this spec reserves **D1189-D1196**. POST_TRIAL_CRACKDOWN (same PR, #263) then reserved D1197-D1209, so the next free id was **D1210** when #263 merged. Since then (Tue Nov 3, 2026): `claude/fernbrook-plaza` and `claude/fernbrook-homes` renumbered to D1210-D1219 (from draft #261's header), and LANTERN_HOUSE_FERNBROOK reserved D1220-D1224. **The next free id is now D1225** (`OPEN_DECISIONS.md` header).
+- So this spec reserves **D1189-D1196**. POST_TRIAL_CRACKDOWN (same PR, #263) then reserved D1197-D1209, so the next free id was **D1210** when #263 merged. Since then (Vincent, Mon Nov 2, 2026, ~11:15 PM ET): Design holds **D1210-D1242** for the Seals canon, and `claude/fernbrook-plaza` and `claude/fernbrook-homes` moved to **D1243-D1252**. **The next free id is D1253** (`OPEN_DECISIONS.md` header).
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
