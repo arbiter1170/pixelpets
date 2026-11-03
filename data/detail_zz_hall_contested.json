@@ -1,0 +1,803 @@
+{
+ "spec": "handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md (v0.3; D1189-D1196)",
+ "_about": "Two parts. slicePatch (live, unflagged): D1192, the town sign says Fernbrook Trial Hall (maps_slice.json is verbatim design data, so it is overridden here). hallPatch (FLAGGED): the contested Hall, applied by game.js only when HALL2_ON (debug plus ?hall2=1, or HALL2_RELEASED after Vincent's yes; AGENTS rule 9). It runs after fernbrook_rooms.json, so its rows and objects win. Flag off, fb_hall_in is exactly today's room.",
+ "_placeholders": "Every line under hallPatch.addObjs is PLACEHOLDER copy from the spec (D1196); Story replaces it. No line asks the holder to join a side (D1145).",
+ "slicePatch": {
+  "maps": {
+   "fernbrook": {
+    "replaceObjs": [
+     {
+      "kind": "sign",
+      "id": "fb_sign_town",
+      "x": 2,
+      "y": 7,
+      "text": "FERNBROOK · Orchard village. Home of the Fernbrook Trial Hall."
+     }
+    ]
+   }
+  }
+ },
+ "hallPatch": {
+  "_whenKey": {
+   "split": [
+    "!story.side_pick_done | !story.seal1"
+   ],
+   "glimmer": [
+    "story.side_pick_done",
+    "story.seal1",
+    "story.side=glimmer"
+   ],
+   "keepers": [
+    "story.side_pick_done",
+    "story.seal1",
+    "!story.side=glimmer"
+   ],
+   "notKeepers": [
+    "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+   ],
+   "notGlimmer": [
+    "!story.side_pick_done | !story.seal1 | !story.side=glimmer"
+   ]
+  },
+  "maps": {
+   "fb_hall_in": {
+    "gridRows": {
+     "3": "#f;;;;;;ZPPPPPP#",
+     "4": "#ffdddddIIIIIPP#",
+     "5": "#ffeeeeeCCCCCPP#",
+     "6": "#;;aaaaaUUUUUPP#",
+     "7": "#aaaaJJVMMMMMMM#",
+     "8": "#;;f;;q;ZPPPPPP#",
+     "9": "#GGGGGGVMMMUUUU#",
+     "10": "#,,f,,j,ZPPPPPP#",
+     "11": "#aaaaLLVMMMMMMM#",
+     "12": "#b:fb:qbZPPPPPP#",
+     "13": "#QQQQQQVMMMUUUU#",
+     "14": "#qkkkfkkZPPPPPP#",
+     "15": "#aaaaOOVMMMMMMM#",
+     "16": "#jzzzzzzZPPPPPP#",
+     "17": "#NNNNNNVMMMUUUU#",
+     "18": "#;f;;;;;ZPPPPPP#",
+     "19": "#TTTTaaaMMMMMMM#",
+     "20": "#f::q,,,ZPPPPPP#",
+     "21": "#q:j:,,,ZPPPPPP#",
+     "22": "#:j:q,,,ZPPPPPP#"
+    },
+    "replaceObjs": [
+     {
+      "kind": "prop",
+      "id": "fb_hall_lamp_w",
+      "x": 4,
+      "y": 3,
+      "sprite": "dais_lamp",
+      "lines": {
+       "else": "A lamp by the flower dais."
+      },
+      "when": [
+       "!story.side_pick_done | !story.seal1 | !story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_lamp_e",
+      "x": 11,
+      "y": 3,
+      "sprite": "dais_lamp",
+      "lines": {
+       "else": "A lamp by the flower dais."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_ribbon_e",
+      "x": 13,
+      "y": 6,
+      "sprite": "ribbon_stand",
+      "lines": {
+       "else": "A stand of pale ribbons."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_hedge_b",
+      "x": 13,
+      "y": 10,
+      "sprite": "hedge_planter",
+      "lines": {
+       "else": "A hedge in a low planter."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_hedge_d",
+      "x": 13,
+      "y": 16,
+      "sprite": "hedge_planter",
+      "lines": {
+       "else": "A hedge in a low planter."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_pot",
+      "x": 14,
+      "y": 18,
+      "sprite": "bloom_pot",
+      "lines": {
+       "else": "A round pot of cut blooms."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_bowl_e",
+      "x": 12,
+      "y": 20,
+      "sprite": "petal_bowl",
+      "lines": {
+       "else": "A bowl of loose petals."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_basket",
+      "x": 9,
+      "y": 20,
+      "sprite": "bloom_basket",
+      "lines": {
+       "else": "A basket of pink blooms."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_bench_w",
+      "x": 2,
+      "y": 22,
+      "sprite": "bloom_bench",
+      "lines": {
+       "else": "A bench along the path."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_bench_e",
+      "x": 12,
+      "y": 21,
+      "sprite": "bloom_bench",
+      "lines": {
+       "else": "A bench along the path."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_jar",
+      "x": 1,
+      "y": 22,
+      "sprite": "petal_jar",
+      "lines": {
+       "else": "A jar of dried petals."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_stool",
+      "x": 14,
+      "y": 21,
+      "sprite": "bloom_stool",
+      "lines": {
+       "else": "A stool pulled off the path."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_t6_lamp",
+      "x": 13,
+      "y": 7,
+      "sprite": "orchard_lamp",
+      "lines": {
+       "else": "A lamp in the top hedge. Fen's dais is one more step up."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_t4_spout",
+      "x": 12,
+      "y": 11,
+      "sprite": "fountain_small",
+      "lines": {
+       "else": "A little spout keeps the lily trough full."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_t2_pot",
+      "x": 9,
+      "y": 15,
+      "sprite": "bloom_pot",
+      "lines": {
+       "else": "Rose cuttings, potted to grow on."
+      },
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ]
+     },
+     {
+      "kind": "trainer",
+      "id": "h1_local",
+      "x": 8,
+      "y": 20,
+      "look": "h1_local",
+      "_note": "DAY1_TRIAL1_FLOW §8 (D1170 as amended): the neutral Fernbrook holder. PLACEHOLDER look and lines (Story); trainer row in detail_zz_day1.json"
+     },
+     {
+      "kind": "trainer",
+      "id": "h1_cadet",
+      "x": 3,
+      "y": 5,
+      "look": "h1_cadet",
+      "_note": "the Keeper cadet, the only one with a D1161 Keeper rank (title PLACEHOLDER until Design assigns it)"
+     }
+    ],
+    "addObjs": [
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_k1",
+      "x": 2,
+      "y": 2,
+      "sprite": "banner_keeper_old",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | !story.side=glimmer"
+      ],
+      "lines": {
+       "else": "An old Keeper banner. The gold lantern is faded. Someone mended the hem by hand."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_k2",
+      "x": 5,
+      "y": 2,
+      "sprite": "banner_keeper_old",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | !story.side=glimmer"
+      ],
+      "lines": {
+       "else": "Another old Keeper banner. The fringe is half gone."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_k1_g",
+      "x": 2,
+      "y": 2,
+      "sprite": "banner_glim",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Glimmerwell banner, black and red. It hangs where the Keeper banner was."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_k2_g",
+      "x": 5,
+      "y": 2,
+      "sprite": "banner_glim",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "lines": {
+       "else": "Another Glimmerwell banner. The hooks are new."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_sconce_w1",
+      "x": 1,
+      "y": 2,
+      "sprite": "keep_lamp_wall",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | !story.side=glimmer"
+      ],
+      "lines": {
+       "else": "An oil lamp in an old iron bracket. The wall above it is dark with soot."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_honour",
+      "x": 3,
+      "y": 2,
+      "sprite": "keep_honour_board",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | !story.side=glimmer"
+      ],
+      "lines": {
+       "else": "An oak board with names in gold leaf. Most have faded. The last one is still bright."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_sconce_w2",
+      "x": 6,
+      "y": 2,
+      "sprite": "keep_lamp_wall",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | !story.side=glimmer"
+      ],
+      "lines": {
+       "else": "An oil lamp. Someone trims the wick every morning."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_crest",
+      "x": 7,
+      "y": 2,
+      "sprite": "keep_insignia",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | !story.side=glimmer"
+      ],
+      "lines": {
+       "else": "The Keeper crest, carved into the old stone."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_crest_cover",
+      "x": 7,
+      "y": 2,
+      "sprite": "crest_cover",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A black cloth hangs over the old crest. A small red tag says: 'Under renovation.'"
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_plaque",
+      "x": 8,
+      "y": 2,
+      "sprite": "glim_plaque",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A new plate, bolted beside the crest: 'FERNBROOK TRIAL HALL. Brought to you by Glimmerwell Co.'"
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_plaque_k",
+      "x": 8,
+      "y": 2,
+      "sprite": "glim_plaque_covered",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A hand-lettered slip is pinned over the new plate. It just says: 'Fernbrook Trial Hall.'"
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_half",
+      "x": 9,
+      "y": 2,
+      "sprite": "banner_glim_half",
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "lines": {
+       "else": "A Glimmerwell banner, pinned up at one corner. Under it, an old Keeper banner still shows."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_half_g",
+      "x": 9,
+      "y": 2,
+      "sprite": "banner_glim",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Glimmerwell banner, pinned up straight now."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_half_k",
+      "x": 9,
+      "y": 2,
+      "sprite": "banner_keeper_old",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ],
+      "lines": {
+       "else": "The old Keeper banner, hanging straight again."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_g1",
+      "x": 12,
+      "y": 2,
+      "sprite": "banner_glim",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Glimmerwell banner. Black, red and very clean."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_clamp_w",
+      "x": 4,
+      "y": 3,
+      "sprite": "comfort_lamp",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Comfort Lamp where the old dais lamp stood. It hums a little."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_clamp_e",
+      "x": 11,
+      "y": 3,
+      "sprite": "comfort_lamp",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Comfort Lamp by the dais. Its glass is spotless."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_banner_g2",
+      "x": 13,
+      "y": 6,
+      "sprite": "banner_glim_stand",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Glimmerwell banner on a stand, where the ribbons were."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_clamp_t6",
+      "x": 13,
+      "y": 7,
+      "sprite": "comfort_lamp",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Comfort Lamp clipped to the top planter. Fen's dais is one more step up."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_clamp_8",
+      "x": 14,
+      "y": 8,
+      "sprite": "comfort_lamp",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Comfort Lamp. A small red tag hangs off it."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_clamp_8_off",
+      "x": 14,
+      "y": 8,
+      "sprite": "comfort_lamp_off",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Comfort Lamp, switched off, with a cloth thrown over it."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_planter_g1",
+      "x": 13,
+      "y": 10,
+      "sprite": "glim_planter",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A black planter with one round, clipped shrub. Every one is the same."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_planter_g2",
+      "x": 13,
+      "y": 16,
+      "sprite": "glim_planter",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "Another black planter. The shrub is trimmed into a perfect ball."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_clamp_18",
+      "x": 14,
+      "y": 18,
+      "sprite": "comfort_lamp",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Comfort Lamp. The floor under it shines."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_board_k",
+      "x": 3,
+      "y": 20,
+      "sprite": "bulletin_keepers_x",
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "lines": {
+       "else": "The Keeper board, all hand-written slips. A Glimmerwell flyer is pinned over one corner."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_board_k_k",
+      "x": 3,
+      "y": 20,
+      "sprite": "bulletin_keepers",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ],
+      "lines": {
+       "else": "The Keeper board. Only hand-written slips now."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_board_k_g",
+      "x": 3,
+      "y": 20,
+      "sprite": "bulletin_glimmer",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "lines": {
+       "else": "Glimmerwell posters cover the old Keeper board, edge to edge."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_board_g",
+      "x": 10,
+      "y": 20,
+      "sprite": "bulletin_glimmer_x",
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "lines": {
+       "else": "A Glimmerwell board of bright posters, all one size. One hand-written Keeper slip hangs on in a corner."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_board_g_g",
+      "x": 10,
+      "y": 20,
+      "sprite": "bulletin_glimmer",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Glimmerwell board. Every poster is new."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_board_g_k",
+      "x": 10,
+      "y": 20,
+      "sprite": "bulletin_keepers",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ],
+      "lines": {
+       "else": "The posters are gone. Keeper slips are pinned up in their place."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_rope",
+      "x": 8,
+      "y": 21,
+      "sprite": "seam_rope",
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "lines": {
+       "else": "A rope line where the new tile starts. A tag: 'Glimmerwell Co. works. Mind the polish.'"
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_grout",
+      "x": 9,
+      "y": 20,
+      "sprite": "grout_bucket",
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "lines": {
+       "else": "A bucket of grout and a trowel. The work isn't finished."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_tilecrate",
+      "x": 14,
+      "y": 22,
+      "sprite": "tile_crate",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A crate of shiny tiles, pried up and stacked."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_lampbox",
+      "x": 13,
+      "y": 22,
+      "sprite": "keep_crate",
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A crate of the old hall lamps, boxed up by the door."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_stand",
+      "x": 12,
+      "y": 20,
+      "sprite": "glimmer_stand",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Glimmerwell stand with neat rows of samples. Nobody is minding it."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_hall_clamp_21",
+      "x": 14,
+      "y": 20,
+      "sprite": "comfort_lamp",
+      "when": [
+       "!story.side_pick_done | !story.seal1 | story.side=glimmer"
+      ],
+      "lines": {
+       "else": "A Comfort Lamp by the door. It's the first thing you see."
+      }
+     }
+    ]
+   }
+  },
+  "trainers": {
+   "h1_cadet": {
+    "facing": "right"
+   }
+  }
+ }
+}

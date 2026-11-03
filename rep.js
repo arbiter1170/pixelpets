@@ -34,7 +34,8 @@
   // NPC_RANKS (Vincent, Nov 2, 2026): one name per person, so trust and the phone card never split (STORY.md §12).
   // save.js copies a mark saved under an old name to the new one when the new key is absent (FOLD_KEYS there).
   const REP_CANON = { Marisol: 'Master Marisol', Fen: 'Master Fen', Hale: 'Master Hale', Tobin: 'Associate Tobin',
-    Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen' };
+    Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen',
+    Ash: 'Sefton' };   // the Trial Hall cadet was "Ash" (name clash, Nov 3, 2026)
   function key(name) {
     if (typeof name !== 'string') return '';
     const k = name.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
