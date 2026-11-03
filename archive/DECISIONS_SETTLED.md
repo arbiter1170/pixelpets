@@ -2,6 +2,31 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026, 9:57 AM ET: Vincent settles the rest of GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
+
+Vincent, in his own words in the Claude Code session that wrote #268: "Defaults are fine, merge is approved if no conflicts". This settles the fleet's remaining yellow and green rows on their defaults (the reds were settled at 7:44 AM ET, below).
+
+- **D1339 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 9:57 AM ET: yes, the default).** SPEC: The four civilians (Receptionist, Swap Clerk, Mast Tech, Bay Attendant): no rank, Glimmerwell-lock colours, no lanyard, not on the WS-PALETTE locked list. Build: Preview lot only.
+- **D1340 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 9:57 AM ET: yes, the default).** SPEC: What each building shows on a Keepers or Glimmerwell hold. Build: Preview lot only, three holds.
+- **D1342 (Tue Nov 3, 2026, green, SETTLED by Vincent, 9:57 AM ET: yes, the default).** SPEC: Build behind a flag: an in-memory `?debug=1` preview lot, no save writes, nothing in normal play. Build: Built (PixelPets.fleetPreview / fleetExit).
+- **D1343 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 9:57 AM ET: yes, the default).** SPEC: Vehicles move on fixed scripted paths, not a new system; a scene step that moves them waits for D1204. Build: Built.
+- **D1344 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 9:57 AM ET: yes, the default).** SPEC: The air unit draws above every actor, never blocks, casts a shadow, and is grounded on a Keepers hold. Build: Built.
+- **D1345 (Tue Nov 3, 2026, green, SETTLED by Vincent, 9:57 AM ET: yes, the default).** SPEC: All art is engineer draft in PAL; Pia redraws before any story placement. Build: Drafts on the preview lot only.
+- **D1346 (Tue Nov 3, 2026, green, SETTLED by Vincent, 9:57 AM ET: yes, the default).** SPEC: All lines are PLACEHOLDER for June; none names the chip, the Tuning or an implant. Build: Placeholder lines on the preview lot.
+- **D1347 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 9:57 AM ET: yes, the default).** SPEC: `glimmer_fleet.js` (about 37 KB) loads on every page; its art installs only when the preview opens. Option: load it only on `?debug=1`. Build: Loads always; one check per frame.
+
+## Tue Nov 3, 2026, 7:44 AM ET: Vincent's rulings on GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
+
+Vincent approved every red default in `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md` §14, in his own words in the Claude Code session: "Approve all the #268 red defaults". The yellows (D1339, D1340, D1343, D1344, D1347) stay on their own clock; the greens (D1342, D1345, D1346) were already decided.
+
+- **D1333 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Naming: Glimmerwell's ground vehicle (the Watch Coach's answer) is the Courtesy Cruiser. Alternatives: Escort Glider, Brightline.
+- **D1334 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Naming: the air unit is the Sky Concierge. Alternatives: Hover Lamp, Glow Scout.
+- **D1335 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Naming: the buildings Glow Care (clinic), Bright Swap (buy-back stall), Glimmerwell Relay (mast), Fleet Bay (vehicle depot).
+- **D1336 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Canon: Glimmerwell runs a fleet that hovers on the hum (no wheels, no rotors, no weapons), sent to reassure a town; a Keepers hold holds it at a Keeper yard.
+- **D1337 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Canon and CHIP_SECRECY: Glow Care is where the chip is fitted, implied only; a member clinic for Walklings with a shut door; its inside is Glimmer-side only and later.
+- **D1338 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Glimmerwell buildings never carry the Lantern House heart or the store acorn; a Walkling clinic never heals; the badge plate is the one exterior piece every Glimmerwell building shares.
+- **D1341 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Story placement: a Cruiser getaway and a Concierge fly-by in the crackdown; a Concierge over Juniper's camp at the pick, Glimmer-pick props on the east road; Act 2 mast, bay and Glow Care.
+
 ## Tue Nov 3, 2026, 12:51 AM EST: SEALS_BOTH_PATHS (Vincent, "Yes to all defaults", per the Chief of Staff)
 
 Design `specs/SEALS_BOTH_PATHS.md` v0.1.1 and STORY_DECISIONS v0.69; Story's SBP-A to SBP-H and the caps note. Built in the SEALS_BOTH_PATHS PR.
