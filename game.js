@@ -3999,15 +3999,25 @@ if (HC_V2_ON) Object.assign(SCENES, JSON.parse(JSON.stringify(window.PP_HC_V2.sc
 // FACE_ME (Vincent, Nov 3, 2026): Lizzy's reunion can start from Buddy, with Lizzy wandered off or facing away. She walks
 // back beside the holder and faces them first (whichever of her bodies is here: the morning plaza, the plaza, the school).
 if (SCENES.lizzy_intro) SCENES.lizzy_intro = [['faceMe', ['hm_lizzy_pre', 'hm_lizzy', 'school_lizzy']]].concat(SCENES.lizzy_intro);
+// A top-level say first (as before); else one inside an `if` branch, so a second file's swap can wrap a line an earlier file
+// already wrapped (B-2: the crackdown's "After last night," variant wraps Fen's Glimmer-pick line before day1's swap does).
+function swapLine(steps, sw){
+  const at = steps.findIndex(st => Array.isArray(st) && st[0] === 'say' && st[2] === sw.text);
+  if (at >= 0) { const copy = steps.slice(); copy[at] = ['if', sw.when, JSON.parse(JSON.stringify(sw.to)), [steps[at]]]; return copy; }
+  for (let i = 0; i < steps.length; i++) {
+    const st = steps[i]; if (!Array.isArray(st) || st[0] !== 'if') continue;
+    for (const b of [2, 3]) {
+      const inner = Array.isArray(st[b]) && swapLine(st[b], sw); if (!inner) continue;
+      const step = st.slice(), copy = steps.slice(); step[b] = inner; copy[i] = step; return copy;
+    }
+  }
+  return null;
+}
 // DAY1_TRIAL1_FLOW: a detail file may append steps to a built scene (`sceneTails`, e.g. Mom's ask after mom_wake) or wrap one
 // built line so a condition swaps it (`lineSwaps`: { scene, text, when, to }). The design JSON stays verbatim.
 for (const k of DETAIL_KEYS) {
   for (const [id, tail] of Object.entries(MD[k].sceneTails || {})) if (SCENES[id] && id[0] !== '_') SCENES[id] = SCENES[id].concat(JSON.parse(JSON.stringify(tail)));
-  for (const sw of MD[k].lineSwaps || []) {
-    const steps = SCENES[sw.scene]; if (!steps) continue;
-    const at = steps.findIndex(st => Array.isArray(st) && st[0] === 'say' && st[2] === sw.text);
-    if (at >= 0) { const copy = steps.slice(); copy[at] = ['if', sw.when, JSON.parse(JSON.stringify(sw.to)), [steps[at]]]; SCENES[sw.scene] = copy; }
-  }
+  for (const sw of MD[k].lineSwaps || []) { const out = SCENES[sw.scene] && swapLine(SCENES[sw.scene], sw); if (out) SCENES[sw.scene] = out; }
 }
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 // HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
@@ -4916,6 +4926,7 @@ function needMet(need){
 }
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
 function present(o){
+  if (o.cutGone) return false;   // a real map NPC a scene walked off a map edge (`walkTo ... {drop: true}`), until the scene ends
   if (o.when && !o.when.every(c => cond(c, false, String(c).indexOf('away:') >= 0 ? o : undefined))) return false;
   if (!schedHere(o)) return false;
   if (o.kind === 'pickup' && S.flags['item.' + o.id]) return false;
@@ -9526,7 +9537,7 @@ async function walkCast(paths){
 }
 // INTRO_CUTSCENE (D801-D809): scene staging. A walk or wait hides the text box but keeps the tap layer: the first tap
 // doubles the pace, the second ends the beat (D808). Casts and prop swaps last until the scene ends (cutReset).
-const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [] };
+const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [], gone: [] };
 function cutFast(sc){ return !!(sc && sc.skip) || signalCastFast(); }
 function cutVar(sc, v){
   if (typeof v !== 'string' || v[0] !== '$') return v;
@@ -9611,7 +9622,11 @@ async function cutWalkTo(sc, who, x, y, opts){
       await glideCast(mv, ms); for (const m of mv) { const P = mapRT.pos[m.id]; if (P) P.moving = false; } }
     prev = p;
   }
-  if (opts.drop) dropCastIds([who].concat(mate ? [mate.id] : []));
+  if (opts.drop) {   // a cast leaves the map; a real map NPC (B-2, D1442: the supporter led away) only hides until the scene ends,
+    const ids = [who].concat(mate ? [mate.id] : []), real = ids.map(id => CUR.objs.find(q => q.id === id)).filter(q => q && !q.cast && !((scene && scene.cast) || []).some(c => c.o === q));
+    for (const q of real) { q.cutGone = true; cutRT.gone.push(q); delete mapRT.pos[q.id]; }   // so it is back on its tile next time
+    dropCastIds(ids.filter(id => !real.some(q => q.id === id)));
+  }
   if (!fast) cutHold(false);
 }
 function cutStepPlayer(p, ms){            // the frame loop skips updateWalk while the scene box is open, so this drives its own tween
@@ -9626,6 +9641,7 @@ function cutStepPlayer(p, ms){            // the frame loop skips updateWalk whi
 function cutReset(sc){
   cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
   for (const p of cutRT.props) p.o.sprite = p.sprite; cutRT.props = [];
+  for (const o of cutRT.gone) delete o.cutGone; cutRT.gone = [];
   const box = $('#sbox'); if (box) box.hidden = false;
 }
 async function relayStart(){
