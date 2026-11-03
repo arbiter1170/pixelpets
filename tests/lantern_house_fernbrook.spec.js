@@ -49,6 +49,14 @@ test.describe('Fernbrook Lantern House: the wire station', () => {
     for (const [id, [x, y]] of Object.entries(crowd)) expect(r.objs[id], id).toMatchObject({ x, y });
   });
 
+  test('the President in person wears the look of his wire-set bust (D1414)', async ({ page }) => {
+    await boot(page);
+    expect(await page.evaluate(() => PixelPets.spriteLook('president'))).toEqual({ skin: '3', hair: 'short', hairCol: 'h', outfit: 'cardigan', outfitCol: 'J', accent: 'y', accessory: 'none' });
+    const grid = await page.evaluate(() => PixelPets.lookGrid('president'));
+    expect(grid && grid.length).toBe(16);
+    expect(grid.join('')).toContain('J');
+  });
+
   test('walk mask and paths (spec §9), in both states', async ({ page }) => {
     for (const flags of [{ 'story.post_trial_done': true, 'story.side': 'keepers', 'story.side_pick_done': true }, {}]) {
       await boot(page, flags);

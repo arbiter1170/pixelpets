@@ -10,7 +10,7 @@
   "story.warden_met": "D1395: the Lodge debrief done; the pick waits on it until the rendezvous build; RENDEZVOUS_VINCENT's story.ilse_debrief"
  },
  "looks": {
-  "_note": "PLACEHOLDER (D1198). The Commander keeps the Keeper set (rule 11): a long green cloak and a cap set him apart from the officers' coats. The three Lantern House residents (LANTERN_HOUSE_FERNBROOK §7.2) are kit looks, PLACEHOLDER.",
+  "_note": "PLACEHOLDER (D1198). The Commander keeps the Keeper set (rule 11): a long green cloak and a cap set him apart from the officers' coats. The three Lantern House residents (LANTERN_HOUSE_FERNBROOK §7.2) are kit looks, PLACEHOLDER. The President (D1414, Vincent Nov 3: built from his wire-set bust, wire_wall_pres): grey hair, Keeper-green J coat, a gold front for the bust's gold lapels.",
   "cd_cmdr": {
    "skin": "2",
    "hair": "short",
@@ -45,10 +45,18 @@
    "outfitCol": "m",
    "accent": "w",
    "accessory": "glasses"
+  },
+  "president": {
+   "skin": "3",
+   "hair": "short",
+   "hairCol": "h",
+   "outfit": "cardigan",
+   "outfitCol": "J",
+   "accent": "y"
   }
  },
  "castAt": {
-  "_note": "game.js cutCastAt (E1): { name, look } places a person, { sprite } a prop. Draft art in sprites.js (Pia redraws). The Lantern House casts get their own ids (_lh): a cast dropped by id in one map would otherwise orphan its street twin.",
+  "_note": "game.js cutCastAt (E1): { name, look } places a person, { sprite } a prop. Draft art in sprites.js (Pia redraws). The Lantern House casts get their own ids (_lh): a cast dropped by id in one map would otherwise orphan its street twin. cd_president: the President in person, the look taken from his broadcast bust (D1414); no scene casts him yet.",
   "cd_cmdr": {
    "name": "Commander",
    "look": "cd_cmdr"
@@ -88,6 +96,10 @@
   "cd_off_b_lh": {
    "name": "Officer",
    "look": "officer"
+  },
+  "cd_president": {
+   "name": "The President",
+   "look": "president"
   }
  },
  "scenes": {
