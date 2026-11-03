@@ -18032,7 +18032,7 @@ const DEBUG_EXTRAS = {
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
 if (HC_V2_ON) {
   const HC_F = ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'];
-  const ACT5 = HC_F.concat(['story.act=5', 'story.hc_gov_met']);
+  const ACT2 = HC_F.concat(['story.act=2']), ACT5 = HC_F.concat(['story.act=5', 'story.hc_gov_met']);   // D1426: the Governor is Act 2
   Object.assign(DEBUG_EXTRAS, {
     hc2_square: { place: 'HC Lantern Square', text: 'The coach stop, the gate tanks.', map: 'highcharity', x: 32, y: 37, facing: 'up', flags: HC_F },
     hc2_hill: { place: 'HC Charter Hill', text: "The Governor's House, the Parade.", map: 'hc_civic', x: 32, y: 19, facing: 'up', flags: HC_F },
@@ -18041,7 +18041,7 @@ if (HC_V2_ON) {
     hc2_green: { place: 'HC College Green', text: 'The College, Charity Park.', map: 'hc_college', x: 23, y: 2, facing: 'down', flags: HC_F },
     hc2_lantern: { place: 'HC grand Lantern House', text: 'Twelve beds, the lantern wall.', map: 'hc_lantern_in', x: 8, y: 19, facing: 'up', flags: HC_F },
     hc2_news: { place: 'HC Block News House', text: 'Front hall and wire room.', map: 'hc_news_1', x: 7, y: 14, facing: 'up', flags: HC_F },
-    hc2_gov: { place: "HC Governor's House (Act 5)", text: 'Keepers path, Act 5, Governor met.', map: 'hc_gov_1', x: 7, y: 14, facing: 'up', flags: ACT5 },
+    hc2_gov: { place: "HC Governor's House (Act 2)", text: 'Keepers path, Act 2, the Governor.', map: 'hc_gov_1', x: 7, y: 14, facing: 'up', flags: ACT2 },
     hc2_pres: { place: "HC President's rooms (Act 5)", text: 'Keepers path, Act 5.', map: 'hc_gov_3', x: 2, y: 12, facing: 'up', flags: ACT5 },
   });
 }

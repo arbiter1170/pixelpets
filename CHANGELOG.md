@@ -2,6 +2,20 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 14:18 ET: Build: Governor Merriden opens in Act 2 in the city preview (D1426, D1439, HIGH_CHARITY_LAYOUT v0.4 §5.3)
+- What changed and why:
+  - D1426 and D1439 (red, SETTLED by Vincent, Tue Nov 3, 2026): the holder meets the Governor in Act 2, before the President. In `tools/build_hc_city.py` the Governor's House door (`hc_gov`) now needs `!story.side=glimmer & story.act>=2` (was `>=5`), still "By appointment." otherwise; Governor Merriden stands at his desk from `story.act>=2`; his PLACEHOLDER line says "Act 2 lines are Story's". The ORDERS DOWN chute (HB12) is on floor 1, so it opens with the door.
+  - The Governor is a civil post, not a Keeper: his cast faction is `none` (the cast only knows `keepers`, `glimmer` and `none`; `none` is what civilians use), so he no longer needs a D1374 rank flag.
+  - The President's rooms (`hc_gov_3`) keep their gate: Keepers path, Act 5, after meeting the Governor. The Cabinet Room (`hc_gov_2`, floor 2) is not built yet (phase 2); the tool notes it follows the Act 2 gate when it lands.
+  - `story.act`: `cond()` reads it as a plain stored flag through `flagOf`; nothing in the game writes it yet (D915's derived `actOf` was never built), so in normal play these rooms stay shut until an act writer lands. Debug places seed it.
+  - Debug place "HC Governor's House (Act 2)" now seeds `story.act=2` (no `hc_gov_met`); the President's rooms place still seeds Act 5.
+  - Preview only: `HC_CITY_V2` stays false; `?debug=1&hccity=2` shows it.
+- Files touched: `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `game.js` (debug places), `tests/hc_city_v2.spec.js`, `tests/README.md`, `handoff/maps/HC_CITY_V2.md`, `OPEN_DECISIONS.md` (D1373 row), `handoff/shots/hc_governor_act2/` (new), `CHANGELOG.md`, build stamp.
+- Commit(s) + build id: claude/b4-governor-act2, build 20261103-1418. Built from design `claude/bible-v0714-vincent-nov3` (HIGH_CHARITY_LAYOUT v0.4).
+- Tests run and result (widths, checks): `tests/hc_city_v2.spec.js`, `tests/hc_court_move.spec.js`, `tests/npc_ranks.spec.js` at 320, 375 and 390: 75 passed, 0 failed. Zero console errors; save unchanged, `v` 2. `build_hc_city.py` PASS.
+- Decisions made (colour + reasoning): D1426, D1439 built as settled. Green (engineer): cast faction `none` for the Governor, since no civil value exists.
+- Anything left unfinished: Governor Merriden's Act 2 lines (Story, PLACEHOLDER); the Cabinet Room (phase 2); an act writer for `story.act`.
+
 ## 2026-11-03 11:21 ET: Build: the Keeper High Court moves to Charter Hill's Parade, facing Muster Road (D1354, HIGH_CHARITY_LAYOUT v0.3)
 - What changed and why:
   - D1354 (red, SETTLED by Vincent, Tue Nov 3, 2026; design `specs/HC_PARADE.md` §3.1): the Court moves from `hc_civic` 8,45 to the south half of the Parade, so the HC_PARADE speech can play on its steps.
