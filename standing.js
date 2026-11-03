@@ -34,10 +34,10 @@
       glimmer: {
         name: 'Glimmerwell Co.', short: 'Glimmerwell',
         earn: 'output and quotas: befriends, battles won, Census logs, crates packed',
-        asks: 'Glimmerwell asks for output: log the Census, pack the crates, hit quarterly targets, smile on stage. In return you get the mint lanyard, Acorn bonuses, early looks at new gear, and a company that is always delighted to see you. Brighter by nature, as long as the numbers are.',
+        asks: 'Glimmerwell asks for output: log the Census, pack the crates, hit quarterly targets, smile on stage. In return you get the lanyard, Acorn bonuses, early looks at new gear, and a company that is always delighted to see you. Brighter by nature, as long as the numbers are.',
         tiers: [
           { name: 'Guest',          blurb: 'Free lantern, free smile.',      toast: 'Welcome! Have a bright day!' },
-          { name: 'Associate',      blurb: 'Mint vest, first targets.',      toast: "Associate! Vest's in the mail." },
+          { name: 'Associate',      blurb: 'Wine vest, first targets.',      toast: "Associate! Vest's in the mail." },
           { name: 'Junior Bright',  blurb: "Lanyard holder. Rook's level.",  toast: 'Junior Bright! Clip it on!' },
           { name: 'Bright Lead',    blurb: 'You set the targets now.',       toast: 'Bright Lead! Targets up 10%!' },
           { name: "Founder's Pick", blurb: 'Marlowe knows your name.',       toast: "Founder's Pick! So bright!" },
@@ -66,7 +66,7 @@
         },
         review: {
           keepers: 'Word travels along the lanterns. Nobody says anything unkind, but the waves are slower now.',
-          glimmer: 'A mint envelope arrives. Your file is closed. Thank you for exploring other opportunities!',
+          glimmer: 'A wine envelope arrives. Your file is closed. Thank you for exploring other opportunities!',
         },
         welcome: {
           keepers: "Welcome to the slow side, {name}. It's nicer here. Promise.",

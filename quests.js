@@ -306,7 +306,7 @@
     [
       { id: 'rc_meet', label: 'The last crates', when: ['story.cobble_end'], givers: ['rook_road', 'rook_gate', 'rook_after'], done: ['story.rc_start'],
         text: 'Rook is sitting by the Brinewick road sign. He wants a word.', place: 'Cobblecrest, east road',
-        glimmer: { text: 'Rook is by the Brinewick road sign. His mint lanyard is still on.', place: 'Cobblecrest, east road' },
+        glimmer: { text: 'Rook is by the Brinewick road sign. His Glimmerwell lanyard is still on.', place: 'Cobblecrest, east road' },
         target: { map: 'cobblecrest', x: 28, y: 7 } },
       { id: 'rc_crates', when: ['story.rc_start'], done: ['story.rc_c1', 'story.rc_c2', 'story.rc_c3'],
         text: 'Three Pebblit crates wait in the quarry yard. Open them gently.', place: 'Quarry yard',
