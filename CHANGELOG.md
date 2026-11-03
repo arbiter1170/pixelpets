@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 07:52 ET: Decisions: Vincent leaves the names as they are for now (D1348-D1350), docs only
+- What changed and why: Vincent: "Everything that's names are OK to leave for now, we can fill in placeholders later". D1348 (civilians named Keeper or Watch), D1349 (Warden Teodor) and D1350 (Rowan) settle on their defaults and leave Open for the archive.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/npc-ranks-style-guide-f3fde8; docs only, no build stamp (the PR's build stays 20261103-0132).
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1348-D1350 (red) settled by Vincent. No new ids.
+- Anything left unfinished: the placeholder names, listed in `handoff/backlog/REVISIT_LATER.md` (claude/vincent-rulings-nov3).
+
 ## 2026-11-03 01:32 ET: NPC ranks checked against the Keeper ladder; hosts and shopkeepers stay unranked; the Trial Hall cadet is Cadet Sefton (build 20261103-0132)
 
 - What changed and why: the cleared task asked for #262's merged ranks to be checked against the lore rank ladder and each faction's guide in the design repo (KEEPER_RANKS v0.2 and STORY.md §3, §3a, §6, §12), for the leftover rank placeholders to be replaced, and for the Ash name clash to be fixed. Hosts and shopkeepers are civilians aligned to a faction and get no rank.

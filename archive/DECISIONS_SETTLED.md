@@ -2,6 +2,14 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026, 7:52 AM ET: Vincent's ruling on #277's naming rows (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the contested Trial Hall: "Everything that's names are OK to leave for now, we can fill in placeholders later".
+
+- **D1348 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** the default: the six civilians keep their names as today (no rank); revisit with the other placeholder names.
+- **D1349 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** the default: Warden Teodor keeps "Warden" for now.
+- **D1350 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** the default: Sergeant Rowan is shown as is until renamed; the name is a placeholder to fill later.
+
 ## Mon Nov 2, 2026, 10:19 PM ET: Vincent's rulings on TRIAL_HALL_FERNBROOK_MAP (recorded by Claude Code)
 
 Recorded from Vincent's rulings on `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (merged in #263), relayed in the Claude Code session that wrote the spec.
