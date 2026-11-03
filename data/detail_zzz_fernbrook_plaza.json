@@ -1,6 +1,6 @@
 {
- "spec": "No design spec. Vincent's ask (Nov 2, 2026): expand Fernbrook with a plaza east of the orchard crates where Keepers and Glimmerwell, with their Walklings, argue over who controls the town; townsfolk scared; both sides watch the Hall before the first trial; the losing side vanishes when the town flips. D1210-D1214 (FERNBROOK_PLAZA).",
- "note": "Repaves the stream field (rows 10-17, x17-30; row 9 and rows 18+ unchanged) into plaza stone around the old pond (now the fountain), drops wild zone 2, and adds the standoff. Speaker labels, looks for the four townsfolk, the Walklings and every line are placeholders for Design (D1212). The phase reads live in game.js fbPlazaPhase (`fbplaza:` conds, D1211); the flip follows Vincent's D1171 (the picked side holds Fernbrook after Trial 1). Sorts after detail_zz_stores.",
+ "spec": "No design spec. Vincent's ask (Nov 2, 2026): expand Fernbrook with a plaza east of the orchard crates where Keepers and Glimmerwell, with their Walklings, argue over who controls the town; townsfolk scared; both sides watch the Hall before the first trial; the losing side vanishes when the town flips. D1243-D1247 (FERNBROOK_PLAZA).",
+ "note": "Repaves the stream field (rows 10-17, x17-30; row 9 and rows 18+ unchanged) into plaza stone around the old pond (now the fountain), drops wild zone 2, and adds the standoff. Speaker labels, looks for the four townsfolk, the Walklings and every line are placeholders for Design (D1245). The phase reads live in game.js fbPlazaPhase (`fbplaza:` conds, D1244); the flip follows Vincent's D1171 (the picked side holds Fernbrook after Trial 1). Sorts after detail_zz_stores.",
  "speakers": {
   "Constable": "officer",
   "Sergeant": "captain",
@@ -14,7 +14,7 @@
   "Fernbrook Elder": "fbp_elder"
  },
  "looks": {
-  "_note": "FERNBROOK_PLAZA townsfolk (D1212): built from the existing creator parts only, outside the Keeper and Glimmerwell palettes.",
+  "_note": "FERNBROOK_PLAZA townsfolk (D1245): built from the existing creator parts only, outside the Keeper and Glimmerwell palettes.",
   "fbp_orchard_hand": {
    "skin": "5",
    "hair": "buzz",

@@ -1,6 +1,6 @@
-/* FERNBROOK_PLAZA (D1210-D1214): the stream field east of the orchard crates is a plaza. Three Keepers and three Glimmerwell
+/* FERNBROOK_PLAZA (D1243-D1247): the stream field east of the orchard crates is a plaza. Three Keepers and three Glimmerwell
    holders, each with a Walkling, face off over who controls Fernbrook while four townsfolk stand around them, scared. Phases
-   come from one helper (game.js fbPlazaPhase, `fbplaza:` conds, D1211): argue; watch (the first trial is next: today
+   come from one helper (game.js fbPlazaPhase, `fbplaza:` conds, D1244): argue; watch (the first trial is next: today
    story.heights_done & !story.seal1) where everyone turns to the Hall; after (Seal, no pick yet); and held_keepers /
    held_glimmer (Vincent's D1171: the picked side holds Fernbrook after Trial 1), where the other side and its Walklings vanish.
    The `hold` / `faceWhen` / `bangWhen` npc fields are the engine hook. Runs at 320, 375 and 390. Save stays v2, no new keys. */

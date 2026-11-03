@@ -1,10 +1,10 @@
-# FERNBROOK_PLAZA: the contested plaza (D1210-D1214)
+# FERNBROOK_PLAZA: the contested plaza (D1243-D1247)
 
 Branch `claude/fernbrook-plaza`. Data: `data/detail_zzz_fernbrook_plaza.json` (one overlay; sorts after `detail_zz_stores`). Engine: `game.js` `fbPlazaPhase` / `fbPlazaIs` (the `fbplaza:` cond prefix) and `stanceFace` / `tickStance` (the `hold`, `faceWhen`, `bangWhen` npc fields). Spec: `tests/fernbrook_plaza.spec.js`. Previews: `handoff/shots/fernbrook_plaza/`.
 
 ## Goal
 
-Vincent (Nov 2, 2026; D1210): a plaza east of the orchard crates where Keepers and Glimmerwell holders, each with a Walkling, yell at each other over who controls Fernbrook, ringed by scared townsfolk. Before the first trial they stop and watch the Trial Hall: the Keepers root for the holder to learn from Master Fen; Glimmerwell wants Fen removed and its own lead installed. Neutral holders are told to stay out of it; the holder's own side greets and thanks them; the other side gives a cold brush-off. When the town flips, the side that lost vanishes.
+Vincent (Nov 2, 2026; D1243): a plaza east of the orchard crates where Keepers and Glimmerwell holders, each with a Walkling, yell at each other over who controls Fernbrook, ringed by scared townsfolk. Before the first trial they stop and watch the Trial Hall: the Keepers root for the holder to learn from Master Fen; Glimmerwell wants Fen removed and its own lead installed. Neutral holders are told to stay out of it; the holder's own side greets and thanks them; the other side gives a cold brush-off. When the town flips, the side that lost vanishes.
 
 ## Layout (rows 10-17 replaced; x17-30 is new, x0-16 and x31 are the base rows)
 
@@ -31,14 +31,14 @@ New props: lamp_post (18,10), (18,17); stone_urn (18,12), (18,15); bench_long (2
 | Phase | Read today | Notes |
 |---|---|---|
 | argue | before watch | sides face each other, `!` balloons, townsfolk face in |
-| watch | `story.heights_done & !story.seal1` | the first trial is next (trialReady's read). DAY1_TRIAL1_FLOW will retarget this one line to the new Hall-door gate (D1211) |
+| watch | `story.heights_done & !story.seal1` | the first trial is next (trialReady's read). DAY1_TRIAL1_FLOW will retarget this one line to the new Hall-door gate (D1244) |
 | after | `story.seal1`, no `story.side_pick_done` | the argument resumes; lines react to the Seal |
 | held_keepers | `story.side_pick_done & story.seal1 & !story.side=glimmer` | Vincent's D1171; Glimmerwell, their Walklings and Comfort Lamps vanish |
 | held_glimmer | `story.side_pick_done & story.seal1 & story.side=glimmer` | Vincent's D1171; Keepers, their Walklings and banners vanish |
 
 `fbplaza:held` matches either held phase and `fbplaza:contested` the others. No flag is written and the save gains no field. REGION_MAP / `matchHold` are not touched: the map-hold flip is `claude/fernbrook-flip` (slice 8b), which should read the same rule.
 
-## Engine hook (D1214)
+## Engine hook (D1247)
 
 - `hold: true`: no walk route (`wanderable`), skipped by `tickWander` (no glance, no turning to watch the holder). A talk still turns the npc to the holder (`faceKeeper`) and `endScene` turns it back.
 - `faceWhen: { cond: facing, ..., else: facing }`: first passing cond picks the drawn facing (`drawObj`, debug `objPos`).
@@ -66,9 +66,9 @@ New props: lamp_post (18,10), (18,17); stone_urn (18,12), (18,15); bench_long (2
 | `fbp_stall_hand` | Stall Hand | fbp_stall_hand | (30,14) | left / up / down | always |
 | `fbp_elder` | Fernbrook Elder | fbp_elder | (24,12) | right / up / down | always |
 
-Cast rows (`data/reputation.json`): the Keepers `keepers`, Glimmerwell `glimmer`, townsfolk `none`. Townsfolk looks are new, built from existing creator parts only, outside both faction palettes (D1212).
+Cast rows (`data/reputation.json`): the Keepers `keepers`, Glimmerwell `glimmer`, townsfolk `none`. Townsfolk looks are new, built from existing creator parts only, outside both faction palettes (D1245).
 
-## Every line, by condition (first match wins; placeholders for Design, D1212)
+## Every line, by condition (first match wins; placeholders for Design, D1245)
 
 ### Constable (`fbp_constable`)
 
@@ -253,8 +253,8 @@ Keeper Walklings use `fbp_kpet_*`, Glimmerwell's `fbp_gpet_*`: `fbplaza:held` ca
 
 ## Open questions
 
-- D1211: the phase reading ("prior to the first trial" = watch). Retarget the watch line when the Day 1 flow moves the Hall-door gate.
-- D1212: labels, looks, Walkling species and every line need Design sign-off.
-- D1213: Vincent sees the previews before it deploys. Row 18 was left as is for the south-growth branch.
-- D1214: once slice 8b flips REGION_MAP, a Glimmerwell-held Fernbrook also counts as a Glimmerwell place for the hum and align-glow arrivals (existing systems). Building faction art (`factionOfMap`) still says keepers for Fernbrook.
+- D1244: the phase reading ("prior to the first trial" = watch). Retarget the watch line when the Day 1 flow moves the Hall-door gate.
+- D1245: labels, looks, Walkling species and every line need Design sign-off.
+- D1246: Vincent sees the previews before it deploys. Row 18 was left as is for the south-growth branch.
+- D1247: once slice 8b flips REGION_MAP, a Glimmerwell-held Fernbrook also counts as a Glimmerwell place for the hum and align-glow arrivals (existing systems). Building faction art (`factionOfMap`) still says keepers for Fernbrook.
 - Overlap with #255 (DAY1_TRIAL1_FLOW): slice 7 (contested Fernbrook signs, props, NPC lines) may want to reuse or replace these lines; slice 8 (Hall roster) is `fb_hall_in` only and does not overlap; slice 8b (flip) owns REGION_MAP.
