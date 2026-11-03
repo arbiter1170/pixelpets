@@ -1,5 +1,7 @@
 # POST_TRIAL_CRACKDOWN v0.3.1: the Keeper crackdown after Trial 1 (the D1175 slot)
 
+**Build (Tue Nov 3, 2026):** built on `claude/post-trial-crackdown` (build 20261103-0849) with the defaults Vincent accepted, plus his change D1333: the curfew lifts at dawn and there is no pick at dawn; Warden Ilse's summons comes first (`handoff/specs/WARDEN_SUMMONS.md`). Staging changes found in play are D1339 in `OPEN_DECISIONS.md`.
+
 **Design copy, v0.3.1 on top of Claude's v0.3** (game branch `claude/fernbrook-trial-hall-spec-acsv52` @ `44370c0`; v0.3 is `15c269d`, `44370c0` only fixes its times; v0.2 was `263956e`; game `main` 505e835 still has
 v0.1). Design repo, Mon Nov 2, 2026, about 11:40 PM EST. One version, not two: this file is Claude's v0.3 text with **only** the Seals
 alignment laid on top (Vincent, Mon Nov 2, 2026, 11:05 PM EST, defaults accepted: the settled Seals calls SEALS-A to SEALS-AD win over

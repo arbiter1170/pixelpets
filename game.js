@@ -3867,6 +3867,9 @@ function applyObjPatch(W, patch){
       }
       if (P.scheduleFirst && Array.isArray(o.schedule)) o.schedule = P.scheduleFirst.concat(o.schedule);
       if (P.shopAdd && Array.isArray(o.shop)) for (const it of P.shopAdd) if (o.shop.indexOf(it) < 0) o.shop.push(it);
+      // POST_TRIAL_CRACKDOWN (D1224): a door can be shut by a cond on top of its `need`, with keyed deny lines put first.
+      if (P.shutWhen) o.shutWhen = P.shutWhen;
+      if (P.denyFirst) o.deny = Object.assign({}, P.denyFirst, o.deny && typeof o.deny === 'object' ? o.deny : { else: o.deny || 'The door is locked.' });
     }
   }
 }
@@ -4764,11 +4767,11 @@ function repCond(c, o){
    in `when`, `lines`, `chatter`, `faceWhen` and `bangWhen` keys (with `!`, `&` and `|` as usual). First match wins:
      held_glimmer / held_keepers  Fernbrook flipped to the picked side at the faction pick result after Trial 1 (Vincent's D1171:
                                   story.side_pick_done & story.seal1, then story.side; absent counts as the Keepers, as side() does).
-     curfew                       story.seal1 & story.crackdown, no pick yet: POST_TRIAL_CRACKDOWN §5's curfew (D1200, D1207). The
-                                  plaza's people are indoors (their `when` holds `!fbplaza:curfew`); the props stay. It lifts at the
-                                  pick result, the same read that flips the hold (D1171).
-     after                        story.seal1, no pick and no crackdown yet: the argument is back on (the short gap between the Seal
-                                  and the crackdown).
+     curfew                       story.seal1 & story.crackdown & !story.post_trial_done: the crackdown night (POST_TRIAL_CRACKDOWN,
+                                  D1200, D1207). The plaza's people are indoors (their `when` holds `!fbplaza:curfew`); the props stay.
+                                  Vincent, Nov 3, 2026 (D1333): the curfew lifts at dawn, when the night scene sets post_trial_done.
+     after                        story.seal1, no pick yet, outside the crackdown night: the argument is back on (the gap before the
+                                  crackdown, and the days between the dawn release and the pick).
      watch                        the first trial is next: story.lizzy_class & !story.seal1 on the Day 1 flow (#261: the Hall door
                                   opens after Lizzy's class, and story.heights_done only comes after the pick), or story.heights_done
                                   & !story.seal1 for an older save (trialReady's read) (D1244).
@@ -4776,7 +4779,7 @@ function repCond(c, o){
    `held` matches either held_ phase and `contested` any other. Reads only; never writes a flag or the save. */
 function fbPlazaPhase(live){
   const f = k => flagOf(k, live);
-  if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : (f('story.crackdown') ? 'curfew' : 'after');
+  if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : (f('story.crackdown') && !f('story.post_trial_done') ? 'curfew' : 'after');
   if (f('story.lizzy_class') || f('story.heights_done')) return 'watch';
   return 'argue';
 }
@@ -7063,7 +7066,7 @@ function denyLine(dr){
 }
 function enterDoor(dr){
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
-  if (dr.need && !needMet(dr.need)) { runSteps([['say', '', denyLine(dr)]]); return; }
+  if ((dr.need && !needMet(dr.need)) || (dr.shutWhen && cond(dr.shutWhen, false))) { runSteps([['say', '', denyLine(dr)]]); return; }
   // BRINEWICK: a door may write one story flag on entry, the same `setFlag` field a warp already carries (the depot door).
   if (dr.to && WORLD[dr.to]) { sfx('tap'); if (dr.setFlag) S.flags[dr.setFlag] = true; warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
@@ -8384,9 +8387,11 @@ function propArtKey(o){
   if (o && o.sprite === 'lab_tank' && glimmerBayDark()) return 'rx4b_tank';
   return o && o.sprite;
 }
+function propCullMargin(o){ const a = WART[o.sprite]; const w = a ? (a.width || (a[0] && a[0].width) || TS) : TS; return Math.max(0, (w - TS) / 2); }
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
-  if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
+  const wm = o.kind === 'prop' ? propCullMargin(o) : 0;   // E4 (D1204): wide art (a 64 px tank, a 96 px beam) keeps drawing past the edge
+  if (X < -26 - wm || Y < -24 || X > VW + 10 + wm || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
     if (o.pet === 'maze' && WART.maze_sit) { drawMaze(g, X, Y, t); return; }
@@ -8406,7 +8411,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     g.drawImage(img, X - 1 + b.dx, Y - 2 + b.dy); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
   else if (o.kind === 'prop') {
-    const key = propArtKey(o);
+    let key = propArtKey(o); if (q.moving && WART[key + '_move']) key += '_move';   // E3 (D1204): a moving prop shows its `_move` frames
     const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y);
   }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
@@ -9322,6 +9327,7 @@ const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', m
   mom_wake: [{ id: 'mom_up', name: 'Mom', look: 'mom', map: 'hm_home_up' }] };   // PARTNER_DAY: Mom lives downstairs now
 // Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the holder).
 const CAST_AT_LOOK = { rook_walk: { name: 'Rook', look: 'rook' }, rook_walk_in: { name: 'Rook', look: 'rook' } };
+for (const k of DETAIL_KEYS) for (const [id, c] of Object.entries(MD[k].castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;   // POST_TRIAL_CRACKDOWN: data casts ({ name, look } or { sprite })
 function castOnSay(who, text){
   const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
   for (const c of cast) {
@@ -9410,7 +9416,7 @@ async function walkCast(paths){
 }
 // INTRO_CUTSCENE (D801-D809): scene staging. A walk or wait hides the text box but keeps the tap layer: the first tap
 // doubles the pace, the second ends the beat (D808). Casts and prop swaps last until the scene ends (cutReset).
-const cutRT = { busy: false, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [] };
+const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [] };
 function cutFast(sc){ return !!(sc && sc.skip) || signalCastFast(); }
 function cutVar(sc, v){
   if (typeof v !== 'string' || v[0] !== '$') return v;
@@ -9420,7 +9426,11 @@ function cutVar(sc, v){
   return val == null ? null : val;
 }
 function cutTap(){ if (!cutRT.busy) return false; if (cutRT.speed < 2) cutRT.speed = 2; else cutRT.end = true; return true; }
-function cutHold(on){ const box = $('#sbox'); if (box) box.hidden = on; cutRT.busy = on; if (on) { cutRT.speed = 1; cutRT.end = false; } }
+function cutHold(on){   // nested holds (E5 walkAll runs several walks at once): the box comes back when the last one ends
+  if (on) { if ((cutRT.holds = (cutRT.holds | 0) + 1) > 1) return; }
+  else { cutRT.holds = Math.max(0, (cutRT.holds | 0) - 1); if (cutRT.holds) return; }
+  const box = $('#sbox'); if (box) box.hidden = on; cutRT.busy = on; if (on) { cutRT.speed = 1; cutRT.end = false; }
+}
 function cutWait(ms){
   cutHold(true); let t = 0, last = now();
   return new Promise(res => (function tick(){
@@ -9440,6 +9450,10 @@ function drawCurtain(g, cx, cy, VW, VH){   // the room is centred on a PAL k voi
 function cutCastAt(sc, id, x, y, facing){
   if (!CUR || CUR.objs.some(o => o.id === id)) return;
   const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || CAST_AT_LOOK[id] || { id, name: '', look: 'villager' };
+  if (c.sprite) {   // E1 (D1204): a cast entry with a sprite places a prop (a Keeper tank, its beam), not a person
+    pushCast({ kind: 'prop', id, sprite: c.sprite, x, y, cast: true });
+    mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' }; return;
+  }
   pushCast(Object.assign({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true }, c.pet ? { pet: c.pet } : {}));
   mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' };
 }
@@ -9480,7 +9494,7 @@ async function cutWalkTo(sc, who, x, y, opts){
   let prev = { x: from.x, y: from.y };
   for (const p of path) {
     if (!scene) break;
-    const ms = fast || cutRT.end ? 0 : (isP ? STEP_MS : 120) / cutRT.speed;
+    const ms = fast || cutRT.end ? 0 : (isP ? STEP_MS : (opts.ms > 0 ? opts.ms : 120)) / cutRT.speed;   // E2 (D1204): a slow walker (a Keeper tank) sets its own ms a tile
     if (isP && mate) await Promise.all([cutStepPlayer(p, ms), glideCast([{ id: mate.id, x: prev.x, y: prev.y }], ms)]).then(() => { const P = mapRT.pos[mate.id]; if (P) P.moving = false; });
     else if (isP) await cutStepPlayer(p, ms);
     else { const mv = [{ id: who, x: p.x, y: p.y }]; if (mate) mv.push({ id: mate.id, x: prev.x, y: prev.y });
@@ -9500,7 +9514,7 @@ function cutStepPlayer(p, ms){            // the frame loop skips updateWalk whi
   })());
 }
 function cutReset(sc){
-  cutRT.busy = false; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
+  cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
   for (const p of cutRT.props) p.o.sprite = p.sprite; cutRT.props = [];
   const box = $('#sbox'); if (box) box.hidden = false;
 }
@@ -9781,6 +9795,7 @@ async function execStep(st){
     case 'faceMe': await faceMeWalk(a); return;   // FACE_ME: walk back beside the holder and face them
     // INTRO_CUTSCENE (D801): staging for any scene. None takes a tap; SKIP and reduced motion snap them (D809).
     case 'walkTo': await cutWalkTo(sc, a, b, c, d); return;
+    case 'walkAll': { await Promise.all((a || []).map(w => cutWalkTo(sc, w[0], w[1], w[2], w[3]))); return; }   // E5 (D1204): [[id, x, y, opts], ...] walk together
     case 'wait': { if (!cutFast(sc)) await cutWait(a | 0); return; }
     case 'curtain': { cutCurtain(a === 'on', cutFast(sc)); return; }
     case 'castAt': { cutCastAt(sc, a, b, c, d); return; }

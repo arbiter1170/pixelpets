@@ -1,0 +1,967 @@
+{
+ "spec": "handoff/specs/POST_TRIAL_CRACKDOWN.md v0.3.1 + LANTERN_HOUSE_FERNBROOK.md; Vincent's Nov 3, 2026 change: no pick at dawn, the Warden's summons first (handoff/specs/WARDEN_SUMMONS.md)",
+ "_about": "Ours, not a design copy. The post-Trial crackdown (scenes crackdown_street and crackdown_lantern), the shut Trial Hall, the dawn wire from Warden Ilse and her PLACEHOLDER meeting (warden_meet), which now gates the faction pick (D1333). Casts use castAt (E1); tanks walk with ms (E2); walkAll (E5). Lantern House room objects (fb_wire_set_live, the six lh_* bodies, cd_resume) live in fernbrook_rooms.json, because its maps load after every detail patch.",
+ "_placeholders": "Every line here is PLACEHOLDER for June (D1208). The Commander is unnamed (D1198). 'Keeper tank' wording and the tanks' look are drafts (D1202). The Warden's lines and the dawn wire are placeholders until WARDEN_SUMMONS is written and settled (D1340-D1346). story.fen_lean steps (+1 Keep it, +1 He's hiding something, -1 He means well, 0 Hand it over) are PLACEHOLDER until Seals lore v3.1's encoding lands (D1334).",
+ "flags": {
+  "story.crackdown": "POST_TRIAL_CRACKDOWN: set at the end of the street scene (done flag of crackdown_street)",
+  "story.hall1_shut": "D1224 (SEALS-O): the Fernbrook Trial Hall is shut by order of High Charity until Fen's Act 2 turn",
+  "story.fen_lean": "Seals lore v3.1: Fen's hidden lean, moved by the Beat 1 and Beat 7 choices (inc; encoding PLACEHOLDER)",
+  "story.warden_called": "D1333: Amos hands over Warden Ilse's wire at dawn",
+  "story.warden_met": "D1333: the PLACEHOLDER meeting with Warden Ilse at the Lodge; the faction pick waits on it"
+ },
+ "looks": {
+  "_note": "PLACEHOLDER (D1198). The Commander keeps the Keeper set (rule 11): a long green cloak and a cap set him apart from the officers' coats. The three Lantern House residents (LANTERN_HOUSE_FERNBROOK §7.2) are kit looks, PLACEHOLDER.",
+  "cd_cmdr": {
+   "skin": "2",
+   "hair": "short",
+   "hairCol": "h",
+   "outfit": "cloak",
+   "outfitCol": "g",
+   "accent": "y",
+   "accessory": "cap"
+  },
+  "lh_res_kid": {
+   "skin": "4",
+   "hair": "spiky",
+   "hairCol": "d",
+   "outfit": "hoodie",
+   "outfitCol": "g",
+   "accent": "y"
+  },
+  "lh_res_b": {
+   "skin": "1",
+   "hair": "bun",
+   "hairCol": "o",
+   "outfit": "sweater",
+   "outfitCol": "p",
+   "accent": "w",
+   "accessory": "scarf"
+  },
+  "lh_res_c": {
+   "skin": "5",
+   "hair": "short",
+   "hairCol": "w",
+   "outfit": "coat",
+   "outfitCol": "m",
+   "accent": "w",
+   "accessory": "glasses"
+  }
+ },
+ "castAt": {
+  "_note": "game.js cutCastAt (E1): { name, look } places a person, { sprite } a prop. Draft art in sprites.js (Pia redraws). The Lantern House casts get their own ids (_lh): a cast dropped by id in one map would otherwise orphan its street twin.",
+  "cd_cmdr": {
+   "name": "Commander",
+   "look": "cd_cmdr"
+  },
+  "cd_off_a": {
+   "name": "Officer",
+   "look": "officer"
+  },
+  "cd_off_b": {
+   "name": "Officer",
+   "look": "officer"
+  },
+  "cd_fen": {
+   "name": "Master Fen",
+   "look": "fen"
+  },
+  "cd_tank_a": {
+   "sprite": "keeper_tank_cmd_r"
+  },
+  "cd_tank_b": {
+   "sprite": "keeper_tank_r"
+  },
+  "cd_beam": {
+   "sprite": "tank_beam_r"
+  },
+  "cd_dust": {
+   "sprite": "tank_dust"
+  },
+  "cd_cmdr_lh": {
+   "name": "Commander",
+   "look": "cd_cmdr"
+  },
+  "cd_off_a_lh": {
+   "name": "Officer",
+   "look": "officer"
+  },
+  "cd_off_b_lh": {
+   "name": "Officer",
+   "look": "officer"
+  }
+ },
+ "scenes": {
+  "crackdown_street": [
+   [
+    "curtain",
+    "on"
+   ],
+   [
+    "wait",
+    400
+   ],
+   [
+    "castAt",
+    "cd_beam",
+    4,
+    8,
+    "right"
+   ],
+   [
+    "castAt",
+    "cd_tank_a",
+    3,
+    8,
+    "right"
+   ],
+   [
+    "say",
+    "",
+    "A white beam slides up the road. Then the ground starts to hum."
+   ],
+   [
+    "walkTo",
+    "cd_beam",
+    20,
+    8,
+    {
+     "with": "cd_tank_a",
+     "ms": 300
+    }
+   ],
+   [
+    "castAt",
+    "cd_dust",
+    17,
+    8
+   ],
+   [
+    "wait",
+    500
+   ],
+   [
+    "castAt",
+    "cd_tank_b",
+    3,
+    8,
+    "right"
+   ],
+   [
+    "walkTo",
+    "cd_tank_b",
+    13,
+    8,
+    {
+     "ms": 260
+    }
+   ],
+   [
+    "wait",
+    300
+   ],
+   [
+    "prop",
+    "cd_tank_a",
+    "keeper_tank_cmd_r_hatch1"
+   ],
+   [
+    "wait",
+    220
+   ],
+   [
+    "prop",
+    "cd_tank_a",
+    "keeper_tank_cmd_r_hatch2"
+   ],
+   [
+    "wait",
+    220
+   ],
+   [
+    "prop",
+    "cd_tank_a",
+    "keeper_tank_cmd_r_hatch3"
+   ],
+   [
+    "wait",
+    700
+   ],
+   [
+    "prop",
+    "cd_tank_a",
+    "keeper_tank_cmd_r"
+   ],
+   [
+    "castAt",
+    "cd_cmdr",
+    20,
+    9,
+    "right"
+   ],
+   [
+    "castAt",
+    "cd_off_a",
+    15,
+    9,
+    "right"
+   ],
+   [
+    "castAt",
+    "cd_off_b",
+    16,
+    7,
+    "right"
+   ],
+   [
+    "walkAll",
+    [
+     [
+      "cd_cmdr",
+      22,
+      9
+     ],
+     [
+      "cd_off_a",
+      21,
+      9
+     ],
+     [
+      "cd_off_b",
+      24,
+      8
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Commander",
+    "By order of High Charity, this square is closed. Everyone home. Now."
+   ],
+   [
+    "walkTo",
+    "player",
+    21,
+    8
+   ],
+   [
+    "say",
+    "Commander",
+    "Glimmerwell staff will pack up and leave Fernbrook tonight."
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "We have a permit! ...Fine. Fine! Glimmerwell is relocating."
+   ],
+   [
+    "say",
+    "Commander",
+    "Holder. This Hall is shut. Unvetted holders were tested here."
+   ],
+   [
+    "say",
+    "Commander",
+    "A Seal is the Keepers' to give, {name}. And ours to take back."
+   ],
+   [
+    "choice",
+    "",
+    [
+     [
+      "Hand it over",
+      [
+       [
+        "say",
+        "",
+        "{name} holds out the Seal."
+       ],
+       [
+        "inc",
+        "story.fen_lean",
+        0
+       ]
+      ]
+     ],
+     [
+      "Keep it",
+      [
+       [
+        "say",
+        "Master Fen",
+        "Take it, then. Watch it go dull in your hand. It knows whose it is."
+       ],
+       [
+        "inc",
+        "story.fen_lean",
+        1
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "",
+    "The Seal sits in the Commander's glove. Its shine goes out."
+   ],
+   [
+    "say",
+    "Commander",
+    "Dull as a button. Keep your trinket."
+   ],
+   [
+    "say",
+    "",
+    "The Seal hums. Then it's quiet."
+   ],
+   [
+    "castAt",
+    "cd_fen",
+    22,
+    7,
+    "down"
+   ],
+   [
+    "walkTo",
+    "cd_fen",
+    22,
+    8
+   ],
+   [
+    "say",
+    "Master Fen",
+    "Commander. Stand down. That Seal was won fair, in my Hall, in front of my roots."
+   ],
+   [
+    "say",
+    "Commander",
+    "Master Fen. Your Hall is closed."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "{name}. Go to the Lantern House. Amos will keep you. I'll be right behind you."
+   ],
+   [
+    "prop",
+    "fb_lantern_stand",
+    "glimmer_stand_empty"
+   ],
+   [
+    "walkAll",
+    [
+     [
+      "juniper",
+      30,
+      8
+     ],
+     [
+      "fb_wynne",
+      27,
+      7
+     ],
+     [
+      "odile",
+      28,
+      9
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "Brighter by nature! Brighter... somewhere else!"
+   ],
+   [
+    "say",
+    "Officer",
+    "Walk."
+   ],
+   [
+    "walkTo",
+    "player",
+    11,
+    8,
+    {
+     "with": "cd_fen"
+    }
+   ],
+   [
+    "walkAll",
+    [
+     [
+      "cd_cmdr",
+      14,
+      8
+     ],
+     [
+      "cd_off_a",
+      15,
+      7
+     ],
+     [
+      "cd_off_b",
+      15,
+      9
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Constable Rue",
+    "Orders came from over my head, citizen. Go on in. Keep your head down."
+   ],
+   [
+    "walkTo",
+    "player",
+    5,
+    6,
+    {
+     "with": "cd_fen"
+    }
+   ],
+   [
+    "walkAll",
+    [
+     [
+      "cd_cmdr",
+      7,
+      8
+     ],
+     [
+      "cd_off_a",
+      8,
+      8
+     ],
+     [
+      "cd_off_b",
+      9,
+      8
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.crackdown",
+    true
+   ],
+   [
+    "setFlag",
+    "story.hall1_shut",
+    true
+   ],
+   [
+    "curtain",
+    "off"
+   ],
+   [
+    "warp",
+    "fb_lantern_in",
+    5,
+    14,
+    "up"
+   ],
+   [
+    "run",
+    "crackdown_lantern"
+   ]
+  ],
+  "crackdown_lantern": [
+   [
+    "walkTo",
+    "player",
+    5,
+    10
+   ],
+   [
+    "castAt",
+    "cd_fen",
+    5,
+    14,
+    "up"
+   ],
+   [
+    "walkTo",
+    "cd_fen",
+    6,
+    10
+   ],
+   [
+    "castAt",
+    "cd_off_a_lh",
+    5,
+    14,
+    "up"
+   ],
+   [
+    "walkTo",
+    "cd_off_a_lh",
+    4,
+    13
+   ],
+   [
+    "castAt",
+    "cd_off_b_lh",
+    5,
+    14,
+    "up"
+   ],
+   [
+    "walkTo",
+    "cd_off_b_lh",
+    6,
+    13
+   ],
+   [
+    "say",
+    "Officer",
+    "You'll stay in here tonight, holder. You can't leave."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "Can't leave? A Lantern House is for rest, not for keeping people. On what law?"
+   ],
+   [
+    "say",
+    "Officer",
+    "The Commander's word is the law tonight."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "Then let's settle it the old way. Your Walkling and mine, right here."
+   ],
+   [
+    "castAt",
+    "cd_cmdr_lh",
+    5,
+    14,
+    "up"
+   ],
+   [
+    "walkTo",
+    "cd_cmdr_lh",
+    5,
+    13
+   ],
+   [
+    "say",
+    "Commander",
+    "Nobody battles in my town tonight."
+   ],
+   [
+    "say",
+    "Commander",
+    "New order. You and Master Fen stay in this house tonight. Step out before dawn, and you're both arrested."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "You'd arrest a Hall Master in her own town? Listen to yourself."
+   ],
+   [
+    "say",
+    "Commander",
+    "A Seal says a holder can help run things here. Fernbrook doesn't need the help."
+   ],
+   [
+    "say",
+    "Officer",
+    "The Seal only matters if you comply."
+   ],
+   [
+    "say",
+    "Officer",
+    "And stay clear of Glimmerwell. Folk who help them get a name for it. Then we come asking."
+   ],
+   [
+    "walkTo",
+    "player",
+    5,
+    6
+   ],
+   [
+    "walkTo",
+    "cd_fen",
+    6,
+    7
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "Hush, all of you. The wire's on."
+   ],
+   [
+    "prop",
+    "fb_wire_set_live",
+    "wire_wall_news"
+   ],
+   [
+    "wait",
+    500
+   ],
+   [
+    "say",
+    "Block News",
+    "Block News, evening edition. We go now to the capital."
+   ],
+   [
+    "say",
+    "",
+    "The picture flickers and cuts to the President."
+   ],
+   [
+    "prop",
+    "fb_wire_set_live",
+    "wire_wall_pres"
+   ],
+   [
+    "wait",
+    400
+   ],
+   [
+    "say",
+    "The President",
+    "Good evening, Fernbrook. For your safety, a curfew is in force tonight."
+   ],
+   [
+    "say",
+    "The President",
+    "So, from tonight, Fernbrook keeps a curfew from dusk to dawn. Stay in. Keep your Walklings close."
+   ],
+   [
+    "say",
+    "The President",
+    "And no new Seals will be given in Fernbrook until further notice. A Seal is a promise. We keep it carefully."
+   ],
+   [
+    "emote",
+    "lh_odile",
+    "emote_bang"
+   ],
+   [
+    "emote",
+    "lh_res_kid",
+    "emote_ask"
+   ],
+   [
+    "emote",
+    "lh_res_b",
+    "emote_dots"
+   ],
+   [
+    "emote",
+    "lh_tobin",
+    "emote_dots"
+   ],
+   [
+    "wait",
+    900
+   ],
+   [
+    "say",
+    "The President",
+    "Every Seal ever earned is written down in High Charity, as it was in the Great War. It will stay that way."
+   ],
+   [
+    "say",
+    "The President",
+    "A Seal is not for sale. Not to anyone. Remember that."
+   ],
+   [
+    "say",
+    "The President",
+    "The Keepers keep you, and I keep the Keepers. Good night. Be kind in the streets."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "Not for sale. Then who's been buying?"
+   ],
+   [
+    "choice",
+    "",
+    [
+     [
+      "He means well",
+      [
+       [
+        "say",
+        "Keeper Amos",
+        "Maybe. He's always sounded kind. Kind isn't the same as right."
+       ],
+       [
+        "inc",
+        "story.fen_lean",
+        -1
+       ]
+      ]
+     ],
+     [
+      "He's hiding something",
+      [
+       [
+        "say",
+        "Keeper Amos",
+        "Careful who hears you say that. ...But I heard it too."
+       ],
+       [
+        "inc",
+        "story.fen_lean",
+        1
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "prop",
+    "fb_wire_set_live",
+    "wire_wall_news"
+   ],
+   [
+    "say",
+    "Master Fen",
+    "They can't take the one you've earned, {name}. Hold onto that."
+   ],
+   [
+    "say",
+    "Commander",
+    "Dusk to dawn. Not a minute before."
+   ],
+   [
+    "walkTo",
+    "cd_cmdr_lh",
+    5,
+    14,
+    {
+     "drop": true
+    }
+   ],
+   [
+    "walkTo",
+    "cd_off_a_lh",
+    5,
+    14,
+    {
+     "drop": true
+    }
+   ],
+   [
+    "walkTo",
+    "cd_off_b_lh",
+    5,
+    14,
+    {
+     "drop": true
+    }
+   ],
+   [
+    "say",
+    "Master Fen",
+    "I'm writing to the Warden tonight. A Commander doesn't outrank the lantern's law."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "The beds are made. Rest your team. I'll keep the lamp low."
+   ],
+   [
+    "rest"
+   ],
+   [
+    "curtain",
+    "on"
+   ],
+   [
+    "say",
+    "",
+    "At dawn the curfew lifts. Fen and {name} are let go."
+   ],
+   [
+    "curtain",
+    "off"
+   ],
+   [
+    "say",
+    "Master Fen",
+    "I asked them for help with the crates. They sent boots. I won't forget it."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "{name}. A wire came in at first light, for you. From Warden Ilse."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "She wants you home in Hearthmoor. At the Lodge, as soon as you can walk it."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "The Warden read my letter, then. Go, {name}. I have a Hall to look after, shut or not."
+   ],
+   [
+    "setFlag",
+    "story.warden_called",
+    true
+   ],
+   [
+    "setFlag",
+    "story.post_trial_done",
+    true
+   ]
+  ],
+  "warden_meet": [
+   [
+    "say",
+    "Warden Ilse",
+    "{name}. Come in, come in. I had Fen's letter, and the wire from Fernbrook."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "A Commander shut a Trial Hall and kept a Hall Master indoors. That is not a small thing."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "This isn't yours to carry alone. Let me ask some questions of my own first."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Fernbrook still has a question for you. Answer it at the orchard gate when you are ready."
+   ],
+   [
+    "setFlag",
+    "story.warden_met",
+    true
+   ]
+  ],
+  "warden_after": [
+   [
+    "say",
+    "Warden Ilse",
+    "I'm still asking my questions. Go on back to Fernbrook when you're ready. The gate is waiting."
+   ]
+  ]
+ },
+ "slicePatch": {
+  "maps": {
+   "fernbrook": {
+    "addObjs": [
+     {
+      "kind": "trigger",
+      "id": "cd_start",
+      "x": 22,
+      "y": 6,
+      "r": 1,
+      "when": [
+       "story.seal1",
+       "!story.crackdown",
+       "!story.post_trial_done",
+       "!story.side_pick_done",
+       "!story.orchard_cleared",
+       "!story.side=glimmer"
+      ],
+      "scene": "crackdown_street",
+      "_note": "POST_TRIAL_CRACKDOWN Beat 0: the first step after leaving the Hall with Seal 1 (r 1 covers the doorstep 22,7)"
+     },
+     {
+      "kind": "npc",
+      "id": "cd_post_hall",
+      "name": "Officer",
+      "look": "officer",
+      "x": 21,
+      "y": 7,
+      "facing": "down",
+      "hold": true,
+      "when": [
+       "story.hall1_shut"
+      ],
+      "lines": {
+       "else": "The Trial Hall is shut by order of High Charity. Move along, holder."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "cd_cordon",
+      "x": 23,
+      "y": 7,
+      "sprite": "lantern_cordon",
+      "when": [
+       "story.hall1_shut"
+      ],
+      "lines": {
+       "else": "A Keeper cordon. A brass plate: BY ORDER OF HIGH CHARITY."
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fen_dawn",
+      "name": "Master Fen",
+      "look": "fen",
+      "x": 10,
+      "y": 9,
+      "facing": "left",
+      "when": [
+       "story.crackdown",
+       "story.post_trial_done",
+       "!story.side_pick_done",
+       "!story.orchard_cleared"
+      ],
+      "lines": {
+       "story.warden_called & !story.warden_met": "Go on. Ilse doesn't send wires for nothing.",
+       "story.warden_met": "You saw Ilse? Good. Then let's settle the rest, here at the gate.",
+       "else": "The roots held through the night. So did we."
+      },
+      "_note": "WARDEN_SUMMONS §3: Fen waits at the orchard gate from the dawn release until the pick (fen_orchard is hidden by then)."
+     }
+    ]
+   }
+  }
+ },
+ "objPatch": {
+  "_note": "Outdoor townsfolk shelter indoors during the crackdown night only (the curfew lifts at dawn, D1333); the plaza cast hides through fbplaza:curfew.",
+  "odile": {
+   "whenAdd": [
+    "!story.crackdown | story.post_trial_done"
+   ]
+  },
+  "fb_wynne": {
+   "whenAdd": [
+    "!story.crackdown | story.post_trial_done"
+   ]
+  },
+  "fb_tobin": {
+   "whenAdd": [
+    "!story.crackdown | story.post_trial_done"
+   ]
+  },
+  "juniper": {
+   "whenAdd": [
+    "!story.crackdown | story.post_trial_done"
+   ]
+  },
+  "fb_hall": {
+   "shutWhen": "story.hall1_shut",
+   "denyFirst": {
+    "story.hall1_shut": "Shut by order of High Charity. A Keeper cordon blocks the door."
+   }
+  },
+  "ilse_lodge_after": {
+   "linesFirst": {
+    "story.warden_called & !story.warden_met": "@warden_meet",
+    "story.warden_met & !story.side_pick_done": "@warden_after"
+   }
+  },
+  "fb_side_pick": {
+   "whenAdd": [
+    "story.warden_met | !story.crackdown"
+   ]
+  }
+ }
+}

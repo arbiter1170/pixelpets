@@ -2,6 +2,23 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026: Vincent's rulings on POST_TRIAL_CRACKDOWN (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the crackdown packet: "Let's build it", then on the spec's defaults "Yes, but I'll change some", with one change: "There should be no pick yet, need placeholder and to spec a quest from the warden in starting area who summons the keeper back home to meet her." He also chose the full Lantern House redesign (still behind rule 9 previews, D1336) and draft art now (D1335).
+
+- **D1333 (Tue Nov 3, 2026, red, SETTLED by Vincent).** No faction pick at dawn after the crackdown night. The curfew lifts at dawn (`story.post_trial_done`); Amos hands over a wire from Warden Ilse; the holder goes home to the Lodge (`warden_summons`, PLACEHOLDER `warden_meet`); the pick waits on `story.warden_met`. The real quest is specced in `handoff/specs/WARDEN_SUMMONS.md` (D1340-D1346, open). Supersedes D1203's "pick at dawn" and amends D1200.
+- **Rows closed with this ruling (moved word for word from Open).** D1197, D1198, D1201, D1202, D1204, D1205 and D1207: the spec defaults, accepted and built. D1200: built with the curfew ending at dawn (D1333), not at the pick. D1203: superseded by D1333. D1206: already superseded by D1224 (the Hall stays shut, `story.hall1_shut`), which is what is built.
+| D1197 | red, POST_TRIAL_CRACKDOWN §13 | The crackdown after Trial 1: a Keeper Commander with two Keeper tanks (no guns) and officers closes Fernbrook, stops its Trials, sends Glimmerwell away, threatens the holder's Seal (words only) and orders the holder and Fen out; Fen defies him and appeals to the Warden. Fills D1175 | Not built. Spec and storyboard in `handoff/shots/post_trial_crackdown/` | `data/detail_zz_crackdown.json` (new) |
+| D1198 | red, POST_TRIAL_CRACKDOWN §13 | The Commander: canon rank (STORY §3a), name PLACEHOLDER, look, whether he returns | Not built. Default: rank Commander, name by Story | Story |
+| D1200 | red, POST_TRIAL_CRACKDOWN §5 | Fernbrook curfew: scene-scoped from the crackdown to the pick result; residents indoors, visitors out by first light; a read (`story.crackdown & !story.side_pick_done`), not a flag | Not built | `when`s in the new overlay |
+| D1201 | red, POST_TRIAL_CRACKDOWN §7.4 | The Seal-gain ban is world news and NPC reaction only; it never blocks the player or removes a Seal (Vincent's clarification) | Not built | `data/news.json` |
+| D1202 | red, POST_TRIAL_CRACKDOWN §10a | The vehicles are tanks with no gun: low hull, treads, a dominant turret carrying a caged searchlight lantern and a loudhailer bell; Keeper green, iron and brass. Name in player text: "tank" or a Keeper name | Not built. Default: shape as §10a; "Keeper tank" in narration until Vincent picks | `sprites.js` |
+| D1203 | red, POST_TRIAL_CRACKDOWN §6 | Leave at first light, not now; the pick stays at `fb_side_pick` at dawn as built; FPT Part D's morning cart is replaced by the crackdown night; Amos's pitch moves into the Lantern House, Juniper's to the east road. Amends D1142's waits | Not built. Default option A | quests.js, the new overlay |
+| D1204 | yellow, POST_TRIAL_CRACKDOWN §10a.5 | Engine E1-E5: prop casts, per-tile `ms`, `_move` frames for moving props, width-aware cull, `walkAll` step (all prototyped); E6 footprint only if needed | Not built. Default: add E1-E5 | `game.js` |
+| D1205 | yellow, POST_TRIAL_CRACKDOWN §13 | A Keeper wire set prop plays Block News as `say` lines; three Block News stories in NEWS | Not built. Default yes, Fernbrook only | the new overlay, `data/news.json` |
+| D1206 | yellow, POST_TRIAL_CRACKDOWN §12 | The Trial Hall is closed by `deny` during the curfew only; open as a place after the pick | Not built. Default yes | `data/fernbrook_rooms.json` |
+| D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
+
 ## Mon Nov 2, 2026, 10:19 PM ET: Vincent's rulings on TRIAL_HALL_FERNBROOK_MAP (recorded by Claude Code)
 
 Recorded from Vincent's rulings on `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (merged in #263), relayed in the Claude Code session that wrote the spec.
