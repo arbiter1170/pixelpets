@@ -16,7 +16,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning):
   - Yellow: D1312-D1316, D1318, D1320 and D1321 (surface the existing dailies, a rare-wild signal, Bond unlocks, a Seal card, area species, one booth, a counter-type hint).
   - Red: D1317 (the Hall Stone room, rule 9), D1319 (daily slips while Q19 is on hold) and D1322 (no battle-system additions before Episode 1).
-- Anything left unfinished: Morgan's triage of §8. The quick wins wait for #262 to merge, since only one `game.js` build is in flight at a time.
+- Anything left unfinished: Morgan's triage of §8. The quick wins go in one small `game.js` build when Morgan clears it (one build in flight at a time); #262 has merged.
 
 ## 2026-11-02 23:45 ET: FERNBROOK_HOMES: Picker's Cottage gets a red clay tile roof, not sod (build 20261102-2341)
 - What changed and why: Vincent: "That home looks like it has a grass roof." Picker's Cottage (`fbh_picker`) drew `roof_turf`, the same sod tile D910 already took off Cobblecrest's cottage because it reads as lawn; `tests/cc_cottage_roof.spec.js` requires no building to use it, and this branch had been failing that check. It now uses the existing `roof_tile_r` (red clay tile): it reads as a roof at 320 and 390, picks up the red door, and stays apart from the Press House's yellow thatch and the Stitcher's Loft's purple shingle. One data value; no new art, no save change.

@@ -17,7 +17,7 @@ Target path: `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` (PUBLIC repo; not `docs/`).
 | Item | Value |
 |---|---|
 | Live builds played | **20261102-2259** (`version.json` on https://arbiter1170.github.io/pixelpets/, Tue Nov 3, 2026): #258 partner day plus #261/#265 Day 1 to Trial 1. This is the main run. The opening was also played on **20261102-2141** (before #261) for comparison; it differs only by the mirror-arrow fix. Main is `37802ab`. |
-| Not on live | #262 (ranks, place-chip control, open), POST_TRIAL_CRACKDOWN (now v0.3.1 on main, aligned with the Seals canon) and TRIAL_HALL_FERNBROOK_MAP, both specs only; the LANTERN_HOUSE_FERNBROOK spec (LH-1 to LH-5). The `post_trial` slot is a placeholder Fen line today. |
+| Not on live | #262 (ranks, place-chip control) merged after the play (`dd6d78b`), so its rank-first names and the hold stripe on the place chip were not seen; POST_TRIAL_CRACKDOWN (now v0.3.1 on main, aligned with the Seals canon) and TRIAL_HALL_FERNBROOK_MAP, both specs only; the LANTERN_HOUSE_FERNBROOK spec (LH-1 to LH-5). The `post_trial` slot is a placeholder Fen line today. |
 | How it was played | A Playwright script at **390×844**, touch on, fresh `localStorage`, **arcade** controls (so TALK is a button), `?debug=1` used only to **read** state (`PixelPets.scene`, `.quest`, `.battle`, `.lesson`, `.findPath`). It moved with real arrow-key steps (the game's 170 ms step) and tapped real buttons. No `goto`, `winBattle` or flag writes. **One exception:** the Trial Hall was reached with the game's own `hall1_holders` debug checkpoint on the real save (party and levels kept), skipping Day 1, the home trip and the class, which are estimated from data in §2.4. When the script got stuck it was fixed and resumed from the save it wrote at the last quest change (a page reload; the resume time isn't counted). Firebase traffic was blocked: no sign-in, no cloud writes (rule 7). Zero console errors in every run. |
 | Battle and befriend policy | Pick the strongest move after the shown type hint; swap once if the best move is resisted; befriend any species not yet in the party (tap when the marker is inside the zone); on Route 1 and in Fernbrook, meet up to 5 visible wilds before following the cue (a casual holder's habit; the first 2141 run went straight down the road). Unlock tips: SKIP. Picks: ARCADE, "Looks good!", Ilse's pick (Pipkit, EMBER), first choice elsewhere. |
 | Human time | Script time advances each text box the moment it finishes typing. **Human time = script time + reading time** at 15 characters a second (a steady adult reader; a child or a skimmer will differ) + 0.3 s per tap. Both columns are in §2. |
@@ -220,7 +220,7 @@ Ranked by hook value against effort. Effort: **S** about a day, **M** 2-4 days, 
 | Big interface change (rule 3, red) | R1 (a new card on boot), R2 (TODAY rows) | Both are small and reuse existing surfaces. If Vincent reads R1 as an interface change, it goes red. | Yellow with that note; Morgan decides the routing |
 | Save v2 | rule 2 | R1-R3 need no new save key (they read `daily.*`, `S.care` and the Journal's save key). R4 needs at most one additive key per partner (e.g. `bondSeen`), via `normalizeV2`. R6's one-time gift needs a `story.area_<id>_full` flag. R7 needs a `daily.slips` object. `v` stays 2 and nothing is renamed. | Additive only |
 | Open decisions | D1159-D1165 (#262), D1186-D1188 (#261), D1189-D1196 and D1197-D1209 (#263; D1242: the settled Seals calls win over the crackdown's rows), the Seals calls D1210-D1239, Q19 (town boards on hold) | R5b must follow SEALS-B exactly; R7 waits on Q19; R9 reads `SPAWNS` and the TODAY list only. | This block starts at D1312 |
-| One build in flight | `roles/morgan-hale.md` | The quick wins touch `game.js`, which #262 (open) also touches heavily. | Queue R1-R3 as one small build **after** #262 merges |
+| One build in flight | `roles/morgan-hale.md` | The quick wins touch `game.js`; #262 has merged (`dd6d78b`), so they build on top of it. | Queue R1-R3 as one small `game.js` build when Morgan clears it |
 | Pacing debt | #261 + crackdown | Day 1, the home trip, the class, three Hall holders, Fen and the crackdown night all come before the pick. Seal 1 already lands at ~30-40 min (§2.4); the crackdown adds a few minutes of reading after it. | Trim text before adding any more required beats before the pick |
 
 ### 9.2 The gamedev-skill rule
@@ -240,7 +240,7 @@ This block was first written as D1255-D1265, then D1287-D1297, as Design's block
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
-| D1312 | yellow | R1 return card on WALK | Yes, after #262 merges; shots at 390/320 |
+| D1312 | yellow | R1 return card on WALK | Yes, built on top of #262 (merged); shots at 390/320 |
 | D1313 | yellow | R2 TODAY ticks for the existing dailies, no new reward | Yes |
 | D1314 | yellow | R3 sparkle and toast for 5% second forms and the weather-only Vanelet | Yes |
 | D1315 | yellow | R4 Bond levels 2-5 unlock small things for that partner | Yes; Design writes the list |
