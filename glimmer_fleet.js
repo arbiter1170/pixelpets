@@ -1,14 +1,14 @@
-/* GLIMMERWELL_VEHICLES_BUILDINGS v0.1 (handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md; decisions D1295-D1309).
+/* GLIMMERWELL_VEHICLES_BUILDINGS v0.1 (handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md; decisions D1333-D1347).
    Glimmerwell's answer to the Keeper Watch Coach: the Courtesy Cruiser (ground, the tank's job), the Sky Concierge (air,
    the helicopter's job) and four buildings (Glow Care, Bright Swap, the relay mast, Fleet Bay) with one shared badge plate.
    Art is PAL keys only (sprites.js), black and red per GLIMMERWELL_PALETTE v0.3.1: soot N, wine V, crimson Q (accent
    only, under 10% of a figure), honey y marks, mint l lamp glass, white w and greys.
 
-   OFF in normal play (D1304). Nothing here installs art, draws, or touches a map until a ?debug=1 session calls
+   OFF in normal play (D1342). Nothing here installs art, draws, or touches a map until a ?debug=1 session calls
    PixelPets.fleetPreview(hold). The preview map lives only in memory. While it is open the game writes no save, and
    leaving restores the state from before it, so pixelpets.save.v2 stays exactly as it was (v 2, no new field).
    Vehicles move on fixed scripted paths (no new system); reduced motion parks them on frame 0.
-   All player text is PLACEHOLDER (D1308). None of it names the chip or the Tuning (CHIP_SECRECY): they are only drawn. */
+   All player text is PLACEHOLDER (D1346). None of it names the chip or the Tuning (CHIP_SECRECY): they are only drawn. */
 'use strict';
 const GW_ART = {
   gw_cruiser: [["................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","..............NmmmmmmNNNNNNNNNNN................","............NNNdddddddNddddddddsNNN.............","...........NNdddddddddNdddddddswdNNNNN..........","..........NNddddddddddNdddddddsdddNNNNNN........","....NdmmmmmmmmdddddddddddddddddddddddddddNN.....","...NNNNNNNyNyNNNNNNNNNNNNNNNNNNNNNNNNNNNNwwwN...","..QNNNNNNyyyyyNNNNNNNNNNyyNyyyNyyNyyyyNNNNwwwN..","..QNNNNNNyNlNyNNNNNNNNNNyyyyyyyyyyyyyyNNNNwwws..","..NNNNNNNyyyyyNNQQQQQQQQQQQQQQQQQQQQQQQQNNwwww..","..NVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVhhhN..","...NVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVNNN...",".....NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.......",".......lllllllllllllllllllllllllllllllll........","................................................","................................................","................................................","................................................"], ["................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","................................................","..............NmmmmmmNNNNNNNNNNN................","............NNNdddddddNddddddddsNNN.............","...........NNdddddddddNdddddddswdNNNNN..........","..........NNddddddddddNdddddddsdddNNNNNN........","....NdmmmmmmmmdddddddddddddddddddddddddddNN.....","...NNNNNNNyNyNNNNNNNNNNNNNNNNNNNNNNNNNNNNwwwN...","..QNNNNNNyyyyyNNNNNNNNNNyyNyyyNyyNyyyyNNNNwwwN..","..QNNNNNNyNlNyNNNNNNNNNNyyyyyyyyyyyyyyNNNNwwws..","..NNNNNNNyyyyyNNQQQQQQQQQQQQQQQQQQQQQQQQNNwwww..","..NVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVhhhN..","...NVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVNNN...",".....NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.......","........l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.l.........","................................................","................................................","................................................","................................................","................................................"]],
@@ -40,7 +40,7 @@ window.PPFleet = (() => {
   const TILE_KEYS = ['roof_gw_panel', 'wall_gw_panel'];
   const MS = { gw_relay_mast: 900 };
 
-  // Looks: faction-aligned civilians with no rank (D1301). Inside the Glimmerwell lock: tops V/w/h, trims N/w/s, no lanyard.
+  // Looks: faction-aligned civilians with no rank (D1339). Inside the Glimmerwell lock: tops V/w/h, trims N/w/s, no lanyard.
   const LOOKS = {
     gw_receptionist: { skin: '2', hair: 'bob', hairCol: 'k', outfit: 'jacket', outfitCol: 'w', accent: 'N' },
     gw_swap_clerk: { skin: '5', hair: 'short', hairCol: 'o', outfit: 'apron', outfitCol: 'V', accent: 'w' },
@@ -89,7 +89,7 @@ window.PPFleet = (() => {
     gw_bay: { x0: 16, y0: 2, x1: 22, y1: 3, roof: 'roof_gw_panel', wall: 'wall_gw_panel', door: 'door_gw_bay', trim: 'V', shape: 'arch' },
   };
   const PARKED = { x: 20, y: 7, facing: 'left' };   // Cruiser B on the Fleet Bay apron (blocks its three cells)
-  const LINES = {   // PLACEHOLDER (D1308), by hold
+  const LINES = {   // PLACEHOLDER (D1346), by hold
     clinic_sign: 'GLOW CARE · A Glimmerwell partner clinic. Members by appointment. Brighter by nature.',
     clinic_door: { split: "The glass door stays shut. A plaque: 'By appointment. We'll call you.'", glimmer: "The glass door stays shut. A plaque: 'Fully booked. We'll call you.'", keepers: "Shuttered. A Keeper slip: 'CLOSED PENDING REVIEW. By order.'" },
     receptionist: { split: "Glow Care is by appointment. We'll call you when it's your Walkling's turn!", keepers: "The Keepers shut us for a 'review'. I just answer the phone.", glimmer: "Booked through next season! Everyone wants their Walkling glowing." },

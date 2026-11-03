@@ -1,5 +1,5 @@
-/* GLIMMERWELL_VEHICLES_BUILDINGS v0.1 (handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md, D1295-D1309).
-   The Courtesy Cruiser, the Sky Concierge and four Glimmerwell buildings, on the ?debug=1 preview lot only (D1304).
+/* GLIMMERWELL_VEHICLES_BUILDINGS v0.1 (handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md, D1333-D1347).
+   The Courtesy Cruiser, the Sky Concierge and four Glimmerwell buildings, on the ?debug=1 preview lot only (D1342).
    Widths are the Playwright projects (320, 375, 390). Reduced motion, zero console errors (trackErrors), and the save:
    nothing is written while the lot is open, and leaving puts the state back as it was (pixelpets.save.v2, v 2, no field). */
 const { test, expect } = require('@playwright/test');

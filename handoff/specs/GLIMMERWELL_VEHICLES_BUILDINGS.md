@@ -1,6 +1,6 @@
 # GLIMMERWELL_VEHICLES_BUILDINGS: Glimmerwell's answer to the Keeper Watch Coach
 
-Target path: `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md` (PUBLIC repo; not `docs/`). **Spec and preview build in one PR.** Everything in this spec is built, but only on a debug preview lot (§11). Normal play does not change: no map, scene, save field or player flow is touched. The vehicles and buildings go into the story (§10) only after Vincent signs off the shots (§12) and rules on the red rows (§14). All player text is PLACEHOLDER (D1308); June writes the real lines.
+Target path: `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md` (PUBLIC repo; not `docs/`). **Spec and preview build in one PR.** Everything in this spec is built, but only on a debug preview lot (§11). Normal play does not change: no map, scene, save field or player flow is touched. The vehicles and buildings go into the story (§10) only after Vincent signs off the shots (§12) and rules on the red rows (§14). All player text is PLACEHOLDER (D1346); June writes the real lines.
 
 ## 1. Status and sources
 
@@ -14,7 +14,7 @@ Target path: `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md` (PUBLIC repo; not
 | Open PRs checked | #261 (draft), #262, #264 (§13) |
 | Inspiration | a sub-agent brief (§3), as rule 9 asks for new looks |
 | Shots | `handoff/shots/glimmer_fleet/` (§12) |
-| Decision ids | D1295-D1309 (§14), renumbered Tue Nov 3, 2026 from D1295-D1309, which clashed with Design's Seals block |
+| Decision ids | D1333-D1347 (§14). Renumbered twice on Tue Nov 3, 2026: from D1220-D1234 (clashed with Design's Seals block D1210-D1242) to D1295-D1309, then from D1295-D1309 (clashed with Design's HCT and High Charity Trial Hall blocks D1295-D1311) to D1333-D1347 |
 
 ## 2. The read, in one table
 
@@ -84,25 +84,25 @@ y  0   TTTTTTTTTTTTTTTTTTTTTTTTTT
 
 | | |
 |---|---|
-| Name | **Courtesy Cruiser** (D1295, red). Corporate euphemism for a show of force: it arrives "where you need us" |
+| Name | **Courtesy Cruiser** (D1333, red). Corporate euphemism for a show of force: it arrives "where you need us" |
 | Job | show of force (parks across a square), patrol (runs the road), arrival at a scene (glides in, glow on) |
 | Silhouette | long, low lozenge, 44 x 13 visible px inside a 48 x 32 cell (a 3 x 2 tile footprint; it blocks 3 cells when parked). A fastback cabin of tinted glass, a white nose band, a soot body, a wine skirt that runs to the ground, no wheels, no roof light |
 | Light | a mint underglow line under the skirt; a honey "lettering" bar on the flank; a white headlamp; a crimson tail light and one crimson pinstripe |
 | Frames | idle 2 (700 ms): frame 0 solid glow, frame 1 a dithered glow and a 1 px hover bob. Moving 2 (160 ms): the glow runs, a glow trail and two speed lines behind. Facing right and left (left is a mirror). Up and down facings are later |
 | Read vs the Watch Coach at 320 | `cruiser_vs_watch_coach.png`: the Coach is about 30 x 30 and square on two big wheels with a lantern on top; the Cruiser is 44 x 13 (3.4:1), wheel-less, lit from below. In silhouette one is a box on legs, the other a flat pebble. In greyscale the Coach is mid-grey and busy, the Cruiser near-black with one white nose |
 | Never | a barrel, a turret, treads, a gun shape, a ram, camouflage, a number plate or any real-world police or military look |
-| Moves | fixed scripted paths only (no new system, D1305): end to end on a road with a pause at each end; reduced motion parks it on frame 0 |
+| Moves | fixed scripted paths only (no new system, D1343): end to end on a road with a pause at each end; reduced motion parks it on frame 0 |
 
 ## 5. Air unit: the Sky Concierge (the helicopter's job)
 
 | | |
 |---|---|
-| Name | **Sky Concierge** (D1296, red) |
+| Name | **Sky Concierge** (D1334, red) |
 | Job | overwatch (hovers over a square), fly-by (crosses the map), arrival (hovers with a mint pool of light on the ground under it, the "searchlight") |
 | Silhouette | a flat lens, 30 x 10 visible px in a 32 x 20 cell: a white dome, the wine relay ring with six honey studs on the rim, two soot stub fins, a grey underside and a mint lens underneath. No rotors, no blades, no wings |
 | Frames | hover 2 (600 ms): running lights blink left and right, the crimson beacon on top swaps with honey. Fly-by 2 (140 ms): tilted 1 px nose-down, two trail lines behind. A 1.5 px sine bob while hovering |
 | Ground shadow | a 22 x 4 px soft oval (PAL `k` at 38%) on the ground point, about 2 tiles below the craft (30 px up hovering, 40 px on a fly-by). It shrinks by 2 px at the top of the bob |
-| Layer | the shadow and the light pool draw under every actor; the craft draws after every NPC, the holder and the follower, so it is always on top (D1306) |
+| Layer | the shadow and the light pool draw under every actor; the craft draws after every NPC, the holder and the follower, so it is always on top (D1344) |
 | Paths | never blocks: it adds no object to the map, and the tile under it stays walkable (tested). Hover at a fixed point; a fly-by every 9 s, 3 s across. Reduced motion: it hovers still and the fly-by is skipped |
 
 ## 6. Buildings
@@ -123,9 +123,9 @@ Four pieces, all in one exterior language: white panel walls with a soot plinth 
 
 ## 7. Rule 10 and CHIP_SECRECY
 
-- **Not a Lantern House:** no Glimmerwell building carries the heart lantern (`lantern_sign`, `TOWN_DOOR_ART`), and Glow Care never heals. A player who walks up to it gets a shut door, not a bed. D1300 (red) asks Vincent to confirm that a Walkling "clinic" is not read as a healing spot; the default is the cover name, the shut door and no heart.
+- **Not a Lantern House:** no Glimmerwell building carries the heart lantern (`lantern_sign`, `TOWN_DOOR_ART`), and Glow Care never heals. A player who walks up to it gets a shut door, not a bed. D1338 (red) asks Vincent to confirm that a Walkling "clinic" is not read as a healing spot; the default is the cover name, the shut door and no heart.
 - **Not a General Store:** Bright Swap is a stall that gives lanterns away; it has no acorn board (`+emblem`) and no shop list. Fleet Bay and the mast are not stores.
-- **The shared Glimmerwell piece** is the badge plate, beside every door (D1300).
+- **The shared Glimmerwell piece** is the badge plate, beside every door (D1338).
 - **CHIP_SECRECY rule 1 (a)-(c):** no player line names the chip, the Tuning or an implant (the spec's test scans every line). Glow Care's door is the natural blocker for (b); any interior is Glimmer-side only and is "later". No Keeper line confirms anything (c): the Keeper slips say "review", "power cut" and "held".
 
 ## 8. Palette ledger
@@ -164,13 +164,13 @@ Keeper green `g` and deep green `J` appear on no Glimmerwell piece (tested), exc
 | `gw_relay_mast` | prop | 16 x 48 | 2, 900 ms | N d V y h m l w Q | Act 2 |
 | `gw_banner` | prop | 16 x 32 | 1 | h w m N V p y l | the pick (Glimmer) |
 | `gw_badge_slip`, `gw_door_shut`, `gw_swap_stall_shut`, `gw_relay_mast_off` | Keepers-hold props | as their base | 1 | adds C F G J A | Act 2 (Keepers) |
-| looks `gw_receptionist`, `gw_swap_clerk`, `gw_mast_tech`, `gw_bay_attendant` | NPC looks | 16 x 16 | the look kit | tops w/V/h, trims N/w/s, no lanyard (D1301) | Act 2 |
+| looks `gw_receptionist`, `gw_swap_clerk`, `gw_mast_tech`, `gw_bay_attendant` | NPC looks | 16 x 16 | the look kit | tops w/V/h, trims N/w/s, no lanyard (D1339) | Act 2 |
 
-All of it is engineer draft art (D1307). Pia redraws before anything goes into the story. The 5x sheet is `draft_art_sheet.png`.
+All of it is engineer draft art (D1345). Pia redraws before anything goes into the story. The 5x sheet is `draft_art_sheet.png`.
 
 ## 10. Where each shows up first, and later
 
-Nothing below is built. Each row is its own later build, after #261 and the crackdown build land, with June's lines. These are defaults for D1303 (red).
+Nothing below is built. Each row is its own later build, after #261 and the crackdown build land, with June's lines. These are defaults for D1341 (red).
 
 | Beat | What appears | Why there |
 |---|---|---|
@@ -199,7 +199,7 @@ Nothing below is built. Each row is its own later build, after #261 and the crac
 
 **How to open it:** on a `?debug=1` page, in the console: `PixelPets.fleetPreview('split')`, `('keepers')` or `('glimmer')`. Walk the path south, or call `PixelPets.fleetExit()`, to go back.
 
-**Why it changes nothing in normal play (D1304):**
+**Why it changes nothing in normal play (D1342):**
 - Without `?debug=1`, `fleetPreview` returns false, no art is installed, no map exists, and `factionOfMap('gw_preview')` is null (tested).
 - The lot is built in memory only. It is never in `data/`, `MAPDATA` or a save.
 - While it is open, `save()` writes nothing (tested: the stored save is byte-for-byte the same).
@@ -227,29 +227,29 @@ In `handoff/shots/glimmer_fleet/`:
 
 Merge order advice: #264, then #262, then #261 (merge main, fix the two text hunks, give Ash a rank, restamp, rerun both generators). This PR can go before or after any of them; whichever lands second keeps both sides of the doc entries, restamps (`bump_build.py`) and regenerates `GAMEJS_MAP`. It changes no data file, so `gen_mapdata.py` is not needed for it.
 
-## 14. Decisions (D1295-D1309)
+## 14. Decisions (D1333-D1347)
 
-First reserved as D1295-D1309 (Mon Nov 2, 2026, ~11:00 PM ET). Those ids clash with Design's Seals block (D1210-D1242, STORY_DECISIONS v0.65), so the block was renumbered in order on Tue Nov 3, 2026: D1295 is now D1295, through D1309, now D1309. Morgan's review proposed D1287-D1301, which collides with WARDROBE_SHOP (D1287-D1294), so it starts above that (Vincent's call).
+First reserved as D1220-D1234 (Mon Nov 2, 2026, ~11:00 PM ET). Those ids clash with Design's Seals block (D1210-D1242, STORY_DECISIONS v0.65), so the block was renumbered in order on Tue Nov 3, 2026 to D1295-D1309. Those clash with Design's HCT and High Charity Trial Hall blocks (D1295-D1311, STORY_DECISIONS v0.68), so the Supervisor renumbered it again in order, about 1:20 AM ET: D1295 is now D1333, through D1309, now D1347 (the first free block after Design's SEALS_BOTH_PATHS, D1323-D1332). Morgan's review proposed D1287-D1301, which collides with WARDROBE_SHOP (D1287-D1294), so it starts above that (Vincent's call).
 - Checked with walklings-decision-ids over main (`af1ba3f`), every origin branch and the design repo (STORY_DECISIONS v0.67): High Charity holds D1255-D1281, the Lantern House D1282-D1286, WARDROBE_SHOP D1287-D1294.
-- **Reserved: D1295-D1309. Next free: D1310.**
+- **Reserved: D1333-D1347. Next free: D1310.**
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
-| D1295 | **red** (naming) | The ground vehicle's name. Alternatives: "Escort Glider", "Brightline" | **Courtesy Cruiser** |
-| D1296 | **red** (naming) | The air unit's name. Alternatives: "Hover Lamp", "Glow Scout" | **Sky Concierge** |
-| D1297 | **red** (naming) | The building names: Glow Care, Bright Swap, Glimmerwell Relay, Fleet Bay | As named |
-| D1298 | **red** (canon) | Glimmerwell runs a fleet: vehicles that hover on the hum (no wheels, no rotors, no weapons), sent to reassure a town. A Keepers hold holds them at a Keeper yard | Yes; the hover is drawn, never explained |
-| D1299 | **red** (canon, CHIP_SECRECY) | Glow Care is where the chip is fitted, implied only: a member clinic for Walklings with a shut door. Its inside is Glimmer-side only and later | Yes, as §6-§7 |
-| D1300 | **red** (rule 10) | Glimmerwell buildings never carry the Lantern House heart or the store acorn; a "clinic" for Walklings never heals; the badge plate is the one piece every Glimmerwell building shares | Yes |
-| D1301 | yellow | The four civilians: no rank, Glimmerwell-lock colours (tops w/V/h, trims N/w/s), no lanyard, and not on the WS-PALETTE locked list (they are not uniformed staff) | As built |
-| D1302 | yellow | What changes on a Keepers or Glimmerwell hold (§6) | As §6 |
-| D1303 | **red** (story placement) | First appearances: the crackdown (a Cruiser getaway for Juniper, a Concierge fly-by), the pick (a Concierge over Juniper's camp; Glimmer-pick props on the east road), Act 2 (Cobblecrest mast and bay; Glow Care in Story's Act 2 Glimmerwell town) | As §10; each is its own build |
-| D1304 | green | Build behind a flag: a `?debug=1` preview lot in memory, no save writes, nothing in normal play | Built |
-| D1305 | yellow | Vehicles move on fixed scripted paths in `glimmer_fleet.js`, not a new system; a scene step that moves them waits for D1204 | Built |
-| D1306 | yellow | The air unit draws above everyone, never blocks, casts a shadow, and is grounded on a Keepers hold | Built |
-| D1307 | green | All art is engineer draft in PAL; Pia redraws before any story placement | Drafts on the preview only |
-| D1308 | green | All lines are PLACEHOLDER for June; none names the chip, the Tuning or an implant | Ship nothing to the story until June's pass |
-| D1309 | yellow | `glimmer_fleet.js` (about 37 KB) loads on every page; the art installs only when the preview opens; the per-frame cost is one check | Load always (simplest, cached by the service worker). Option: load it only on `?debug=1` |
+| D1333 | **red** (naming) | The ground vehicle's name. Alternatives: "Escort Glider", "Brightline" | **Courtesy Cruiser** |
+| D1334 | **red** (naming) | The air unit's name. Alternatives: "Hover Lamp", "Glow Scout" | **Sky Concierge** |
+| D1335 | **red** (naming) | The building names: Glow Care, Bright Swap, Glimmerwell Relay, Fleet Bay | As named |
+| D1336 | **red** (canon) | Glimmerwell runs a fleet: vehicles that hover on the hum (no wheels, no rotors, no weapons), sent to reassure a town. A Keepers hold holds them at a Keeper yard | Yes; the hover is drawn, never explained |
+| D1337 | **red** (canon, CHIP_SECRECY) | Glow Care is where the chip is fitted, implied only: a member clinic for Walklings with a shut door. Its inside is Glimmer-side only and later | Yes, as §6-§7 |
+| D1338 | **red** (rule 10) | Glimmerwell buildings never carry the Lantern House heart or the store acorn; a "clinic" for Walklings never heals; the badge plate is the one piece every Glimmerwell building shares | Yes |
+| D1339 | yellow | The four civilians: no rank, Glimmerwell-lock colours (tops w/V/h, trims N/w/s), no lanyard, and not on the WS-PALETTE locked list (they are not uniformed staff) | As built |
+| D1340 | yellow | What changes on a Keepers or Glimmerwell hold (§6) | As §6 |
+| D1341 | **red** (story placement) | First appearances: the crackdown (a Cruiser getaway for Juniper, a Concierge fly-by), the pick (a Concierge over Juniper's camp; Glimmer-pick props on the east road), Act 2 (Cobblecrest mast and bay; Glow Care in Story's Act 2 Glimmerwell town) | As §10; each is its own build |
+| D1342 | green | Build behind a flag: a `?debug=1` preview lot in memory, no save writes, nothing in normal play | Built |
+| D1343 | yellow | Vehicles move on fixed scripted paths in `glimmer_fleet.js`, not a new system; a scene step that moves them waits for D1204 | Built |
+| D1344 | yellow | The air unit draws above everyone, never blocks, casts a shadow, and is grounded on a Keepers hold | Built |
+| D1345 | green | All art is engineer draft in PAL; Pia redraws before any story placement | Drafts on the preview only |
+| D1346 | green | All lines are PLACEHOLDER for June; none names the chip, the Tuning or an implant | Ship nothing to the story until June's pass |
+| D1347 | yellow | `glimmer_fleet.js` (about 37 KB) loads on every page; the art installs only when the preview opens; the per-frame cost is one check | Load always (simplest, cached by the service worker). Option: load it only on `?debug=1` |
 
 ## 15. Acceptance tests (`tests/glimmer_fleet.spec.js`; 320, 375, 390)
 

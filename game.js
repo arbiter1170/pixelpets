@@ -7578,7 +7578,7 @@ function drawMap(t){
   if (window.PPNet && PPNet.mapEnts) PPNet.mapEnts(g, cx, cy).forEach(e => ents.push(e));
   needHeartSkipped = false;
   drawCurtain(g, cx, cy, VW, VH);             // INTRO_CUTSCENE D803: under the actors, so a walker crosses in front of it
-  // GLIMMERWELL_VEHICLES_BUILDINGS (D1304): only on the ?debug=1 preview lot. Shadows first, Cruisers y-sorted, the air unit above everyone.
+  // GLIMMERWELL_VEHICLES_BUILDINGS (D1342): only on the ?debug=1 preview lot. Shadows first, Cruisers y-sorted, the air unit above everyone.
   const fleetOn = !!(window.PPFleet && PPFleet.live(CUR.id));
   if (fleetOn) { PPFleet.drawGround(g, cx, cy, VW, VH, t); PPFleet.mapEnts(g, cx, cy, VW, VH, t).forEach(e => ents.push(e)); }
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
@@ -19691,7 +19691,7 @@ function boot(){
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map
   api.exteriorCell = (x, y) => DEBUG ? exteriorCell(x, y) : null;  // map pass B4: how cell (x, y) of this map is painted
-  // GLIMMERWELL_VEHICLES_BUILDINGS (D1304): the preview lot, ?debug=1 only. glimmer_fleet.js owns it; this is its window into the game.
+  // GLIMMERWELL_VEHICLES_BUILDINGS (D1342): the preview lot, ?debug=1 only. glimmer_fleet.js owns it; this is its window into the game.
   const fleetHost = { debug: () => DEBUG, busy: () => !S || !!scene || !!(battle && battle.on) || fade.busy, get S(){ return S; }, WORLD, TILES, WART, NPC_LOOKS,
     arrive: at => arriveAt(at), save: () => save(), showWalk: () => { dismissForDebug(); showTab('walk'); } };
   api.fleetPreview = hold => DEBUG && window.PPFleet ? PPFleet.open(fleetHost, hold) : false;   // hold: 'split' | 'keepers' | 'glimmer'
