@@ -127,9 +127,16 @@
   "slicePatch": {
     "maps": {
       "fernbrook": {
+        "_note": "FACTION_PICK_TIMING v0.2.4 §7 step 1 (design ffada0b): the OR gates of §7.1. maps_slice.json and act1_route2.json stay verbatim, so their changed objects are restated here by id with only `when` changed. Each OR sits in its own when entry; '|' splits before '&'. Nothing sets story.crates_seen yet, so every gate reads as before on every save.",
         "replaceObjs": [
           {"kind": "door", "id": "fb_lantern", "x": 5, "y": 5, "panel": "lantern", "keeper": "Keeper Amos", "to": "fb_lantern_in", "tx": 5, "ty": 14, "facing": "up"},
-          {"kind": "door", "id": "fb_hall", "x": 22, "y": 6, "panel": "hall1", "need": "story.orchard_cleared", "deny": "The door is latched. A note: 'Out in the orchard. — Fen'", "to": "fb_hall_in", "tx": 7, "ty": 22, "facing": "up"}
+          {"kind": "door", "id": "fb_hall", "x": 22, "y": 6, "panel": "hall1", "need": "story.crates_seen | story.orchard_cleared", "deny": "The door is latched. A note: 'Out in the orchard. — Fen'", "to": "fb_hall_in", "tx": 7, "ty": 22, "facing": "up"},
+          {"kind": "warp", "id": "fb_east", "x": 31, "y": 8, "to": "route2", "tx": 1, "ty": 8, "facing": "right", "when": ["story.seal1", "story.side_pick_done | story.orchard_cleared"], "setFlag": "story.reached_route2"},
+          {"kind": "sign", "id": "fb_sign_route2_open", "x": 29, "y": 7, "when": ["story.seal1", "story.side_pick_done | story.orchard_cleared"], "text": "ROUTE 2 · Open again! Rockslide cleared by Glimmerwell Co. Brighter by nature."},
+          {"kind": "prop", "id": "fb_rubble", "x": 31, "y": 8, "sprite": "rubble", "when": ["!story.seal1 | !story.side_pick_done & !story.orchard_cleared"]},
+          {"kind": "sign", "id": "fb_sign_route2", "x": 29, "y": 7, "when": ["!story.seal1 | !story.side_pick_done & !story.orchard_cleared"], "text": "ROUTE 2 · Closed after a rockslide. The crews say: soon!"},
+          {"kind": "npc", "id": "rook_fb", "name": "Rook", "x": 22, "y": 8, "when": ["seal:seal_fernbrook", "!story.slice_end", "story.side_pick_done | story.orchard_cleared"], "scene": "teaser"},
+          {"kind": "trigger", "id": "fb_teaser", "x": 22, "y": 6, "r": 0, "when": ["seal:seal_fernbrook", "!story.slice_end", "story.side_pick_done | story.orchard_cleared"], "scene": "teaser"}
         ]
       }
     }

@@ -8,7 +8,8 @@
    while story.side is 'glimmer'; one when/done chain serves both sides. Text <= 110 chars, place <= 24, no tokens.
    Entries are in story order. The first entry that is not done (its own `done` flags, or any later entry's) and whose
    optional `when` holds is the current objective; `when` is only for skips (the first-wild meet when a second Walkling
-   already joined). Conditions use the scene `cond()` syntax subset: 'flag', '!flag', 'flag=value', 'seal:id', plus 'pets>=N'. */
+   already joined). Conditions use the scene `cond()` syntax subset: 'flag', '!flag', 'flag=value', 'seal:id', plus 'pets>=N',
+   joined by '|' (or) and '&' (and). As in cond(), '|' splits first, then '&', then '!', with no brackets. */
 (function (root) {
   'use strict';
   const LINE_MAX = 110;   // same as interiors.json dialog.lineMax
@@ -94,7 +95,8 @@
     { id: 'fen', done: ['story.met_fen'],
       text: 'Master Fen is out in the orchard, west of the square. She looks worried.', place: 'Fernbrook orchard',
       target: { map: 'fernbrook', x: 10, y: 9 } },
-    { id: 'heights', when: ['story.side_pick_done'], done: ['story.heights_done'], skipIf: ['story.seal1'], noImply: true,
+    // FACTION_PICK_TIMING §7.1: Cobblecrest reached, or (Seal 1 and the old order). Right only because '|' splits before '&'.
+    { id: 'heights', when: ['story.side_pick_done'], done: ['story.heights_done'], skipIf: ['story.reached_cobblecrest | story.seal1 & !story.crates_seen'], noImply: true,
       text: 'Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', place: 'Fernbrook Heights',
       glimmer: { text: 'Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.', place: 'Fernbrook Heights' },
       target: { map: 'fb_heights', x: 12, y: 10 } },
@@ -371,6 +373,9 @@
   ];
 
   function evalCond(c, st){
+    // FACTION_PICK_TIMING §7 step 1: the same order as cond() in game.js, so 'a | b & c' reads as a, or (b and c).
+    if (typeof c === 'string' && c.includes('|')) return c.split('|').some(part => !!part.trim() && evalCond(part.trim(), st));
+    if (typeof c === 'string' && c.includes('&')) return c.split('&').every(part => !!part.trim() && evalCond(part.trim(), st));
     if (c === 'else') return true;
     let neg = false; if (c[0] === '!') { neg = true; c = c.slice(1); }
     let v;

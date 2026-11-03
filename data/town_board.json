@@ -117,6 +117,7 @@
           "id": "fb_hall_latched",
           "text": "The Trial Hall is latched. Fen is outside, pacing by the steps.",
           "when": [
+            "!story.crates_seen",
             "!story.orchard_cleared"
           ]
         },
@@ -124,7 +125,7 @@
           "id": "fb_hall_open",
           "text": "The Trial Hall is open. The steps were swept this morning.",
           "when": [
-            "story.orchard_cleared",
+            "story.crates_seen | story.orchard_cleared",
             "!story.seal1"
           ]
         },
