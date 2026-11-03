@@ -9,7 +9,8 @@
    Meter: integers min..max per side, both sides always tracked. Tier = the highest threshold reached (index into tiers).
    Chapter (one switch per chapter; D16, extended by D132): the number of Seals earned so far
    (story.seal1, story.seal2, and story.seal3 once Brinewick writes it), derived in chapterOf() only.
-   Side changes go through Rook after his crate quest (D127). Pledge desks are retired. */
+   Side changes go through Rook after his crate quest (D127). Pledge desks are retired.
+   Act (D915, D977): derived in actOf() only, never stored; the switch opens at openAct. */
 (function (root) {
   'use strict';
   const deepFreeze = o => { if (o && typeof o === 'object' && !Object.isFrozen(o)) { Object.freeze(o); Object.values(o).forEach(deepFreeze); } return o; };
@@ -53,7 +54,7 @@
     switch: {
       costDiv: 2,
       cooldown: 'perChapter',                       // one switch per chapter (chapterOf); 'none' = never refused
-      openAct: 5,                                   // D161 (Vincent, Oct 28, 2026): no switching until Act 5 (story.act >= 5; nothing writes it yet)
+      openAct: 5,                                   // D161 (Vincent, Oct 28, 2026): no switching until Act 5 (story.act >= 5, read through actOf, D915)
       joinMinTier: 0,                               // NEXT_PLAN proposed 1 (tier 1 with the side you join); spec v0.2 drops it. Default: not required
       confirm: 'Really?', yes: 'Yes', no: 'Not yet',
       costLine: '{side} Standing {from} \u2192 {to}',
@@ -121,6 +122,16 @@
   const switchCost = pts => Math.floor(clampPts(pts) / STANDING_CFG.switch.costDiv);
   // Chapter = Seals earned so far. story.seal3 counts when Brinewick writes it (D132). That chapter is not built yet.
   const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3'].filter(k => !!(flags || {})[k]).length;
+  // The act number (D915, re-issued for seven acts as D977): derived, never stored. 1 plus one for each act start reached.
+  // Only story.ep1_end is written today (the Episode 1 card); the others are written by the acts that build them.
+  // Acts 3 and 4 also start from Seals held (5 and 7, D1329 count, tags never count), the same boundary as their flags.
+  // Nothing writes story.act; a stored one is ignored here (game.js honours it only under ?debug=1). Save stays v2.
+  const ACT_FLAGS = Object.freeze(['story.ep1_end', 'story.seal5', 'story.seal7', 'story.skyloom_done', 'story.climb_open', 'story.summit_open']);
+  const ACT_SEALS = Object.freeze({ 'story.seal5': 5, 'story.seal7': 7 });
+  function actOf(flags, sealsHeld){
+    const F = flags || {}, n = Number(sealsHeld) || 0;
+    return ACT_FLAGS.filter(k => !!F[k] || (ACT_SEALS[k] != null && n >= ACT_SEALS[k])).length + 1;
+  }
   // SEALS_BOTH_PATHS: a Seal is a Hall's Seal; a Bright Tier lanyard is Glimmerwell's tag clipped to one (STORY v0.7.13 §9).
   // Tags never count as Seals. Read aliases for old saves (no write, save stays v2, no migrator):
   //   seal_glim_1 alone reads as the Fernbrook Seal (old-flow Hall 1; Fen's Hall is shut after the pick);
@@ -143,15 +154,16 @@
     for (const t of Object.keys(SEAL_TAGS)) if (sealAliasIn(s, flags, t)) held.add(SEAL_TAGS[t]);
     return held.size;
   }
-  // Can the pledge change right now? `flags` is S.flags; `standing` is S.standing; `to` the side being joined.
+  // Can the pledge change right now? `flags` is S.flags; `standing` is S.standing; `to` the side being joined;
+  // `act` the act number the caller read (game.js passes its own, so a ?debug=1 stored act counts); default actOf(flags).
   // Returns { ok, why } with why in: 'no_pick', 'same_side', 'locked' (before Act 5, D161), 'no_rook', 'cooldown', 'join_tier'.
   // no_rook is checked before the cooldown so a quest that has not finished yet says "not yet", not "refused".
   // Scenes and battles are the caller's check.
-  function canSwitch(flags, standing, from, to){
+  function canSwitch(flags, standing, from, to, act){
     const F = flags || {}, cfg = STANDING_CFG.switch;
     if (!F['story.side_pick_done']) return { ok: false, why: 'no_pick' };
     if (to != null && to === from) return { ok: false, why: 'same_side' };
-    if (cfg.openAct && !(Number(F['story.act']) >= cfg.openAct)) return { ok: false, why: 'locked' };
+    if (cfg.openAct && !((act != null ? Number(act) : actOf(F)) >= cfg.openAct)) return { ok: false, why: 'locked' };
     if (!F['story.rc_climax']) return { ok: false, why: 'no_rook' };
     if (cfg.cooldown === 'perChapter' && F['story.switch_chapter'] != null && Number(F['story.switch_chapter']) === chapterOf(F)) return { ok: false, why: 'cooldown' };
     if (to != null && cfg.joinMinTier > 0 && tierOf((standing || {})[to]) < cfg.joinMinTier) return { ok: false, why: 'join_tier' };
@@ -181,7 +193,7 @@
   }
 
   const api = { CFG: STANDING_CFG, SIDES, isSide, clampPts, tierOf, tierInfo, switchCost, chapterOf, canSwitch, fill, devCheck,
-    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn };
+    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.STANDING_CFG = STANDING_CFG;
   root.PPStanding = api;

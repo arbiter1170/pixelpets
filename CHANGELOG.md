@@ -2,6 +2,20 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 15:04 ET: Build: the act number works in normal play, derived and never stored (B-11; D915, D977, D1426)
+- What changed and why:
+  - Nothing in normal play wrote `story.act`, so act gates opened only through `?debug=1` places and seeded test saves. D915 (re-issued for seven acts as D977; design `specs/CHIP_SECRECY.md` §7 ruling 7) settled a derived act that was never built. Now `PPStanding.actOf(flags, sealsHeld)` in `standing.js` is 1 plus one for each of `story.ep1_end`, `story.seal5`, `story.seal7`, `story.skyloom_done`, `story.climb_open`, `story.summit_open` (1-7). Only `story.ep1_end` (the Episode 1 card) is written on main today.
+  - Acts 3 and 4 also start at 5 and 7 Seals held (the D1329 count; tags never count), the same boundaries as `story.seal5` / `story.seal7` in the act layout (Act 2 = Halls 4-5, Act 3 = Halls 6-7). Engineer's read for Design to confirm. Acts 5-7 need story flags that do not exist yet.
+  - `game.js` `flagOf` reads `story.act` through it (every `cond()`, `when`, `need`, lines key and `if` step); `canSwitch` (D161 `openAct: 5`) takes the game's act. New read-only hook `PixelPets.act`.
+  - A stored `story.act` (debug places, old seeded saves) counts only under `?debug=1` (AGENTS rule 7); without debug it is ignored and left in the save as it was. Save `v` stays 2, no new field, no migrator.
+  - `tests/standing.spec.js` and `tests/story_copy_fix.spec.js` now reach Act 5 through the act flags, not a stored `story.act`.
+  - Interacts with open PR #291: its Governor's House door and Governor Merriden (`story.act>=2`) become reachable in play after the Episode 1 card once both merge. None of #291's files are edited.
+- Files touched: `standing.js`, `game.js`, `tools/GAMEJS_MAP.txt`, `tests/act_number.spec.js` (new), `tests/standing.spec.js`, `tests/story_copy_fix.spec.js`, `tests/README.md`, `CHANGELOG.md`, build stamp.
+- Commit(s) + build id: claude/b11-act-number, build 20261103-1504. Built from design `claude/bible-v0714-vincent-nov3` (a0812dd).
+- Tests run and result (widths, checks): `tests/act_number.spec.js` at 320, 375 and 390: 27 passed. `tests/standing.spec.js`, `tests/story_copy_fix.spec.js`, `tests/rook_crossroads.spec.js`, `tests/hc_city_v2.spec.js`, `tests/npc_ranks.spec.js` at 320, 375 and 390: 129 passed. Zero console errors; save unchanged, `v` 2, no act written. Scans: wording, decisions, gamejs_map, test_mistakes PASS.
+- Decisions made (colour + reasoning): D915, D977 built as settled. Green (engineer): Seals held start Acts 3 and 4 (the docs' boundaries); a stored act counts only under `?debug=1`.
+- Anything left unfinished: the flags for Acts 3-7 are written by the acts that build them; #291's D1373 row and CHANGELOG say "nothing writes `story.act` yet", which now reads "derived".
+
 ## 2026-11-03 11:21 ET: Build: the Keeper High Court moves to Charter Hill's Parade, facing Muster Road (D1354, HIGH_CHARITY_LAYOUT v0.3)
 - What changed and why:
   - D1354 (red, SETTLED by Vincent, Tue Nov 3, 2026; design `specs/HC_PARADE.md` §3.1): the Court moves from `hc_civic` 8,45 to the south half of the Parade, so the HC_PARADE speech can play on its steps.
