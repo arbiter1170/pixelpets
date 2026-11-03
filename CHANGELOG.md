@@ -2,6 +2,19 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 08:20 ET: Decisions: Vincent settles D1128 (Fen's pacing) as the research recommends, docs only
+- What changed and why: D1128 settled.
+  - Keep the bench XP share at 50%.
+  - Keep Fen at 12/13/14 and test, cutting one level only if the test fails.
+  - The hint goes on Fen's challenge, when the lead is below Lv 12, and suggests a second Walkling.
+  - The payout stays at 420 Acorns.
+  - The build is on its own branch.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1128 (red) settled by Vincent.
+- Anything left unfinished: the build (claude/fen-pacing-d1128) and Nina's Fen test.
+
 ## 2026-11-03 08:05 ET: Decisions: the curfew runs through dawn; after the crackdown, Ilse's call and the Vincent rendezvous lead to the pick (D1200, D1203, D1353, D1354), docs only
 - What changed and why:
   - D1200 settled: the Fernbrook curfew runs through dawn.

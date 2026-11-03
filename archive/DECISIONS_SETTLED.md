@@ -2,6 +2,10 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026, 8:20 AM ET: Vincent's ruling on Fen's pacing (recorded by Claude Code)
+
+- **D1128 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:20 AM ET):** yes, as the research recommends (`D1128_fen_pacing_research`, three Hall holders now stand before Fen): (1) **keep** the bench XP share, 50%; (2) **keep Fen at 12/13/14** and run the Fen test after the share is built (one clean run of the new flow, 12 tries, pass at 6 or more wins); only if it fails, drop one level (11/12/13); (3) the hint moves from the Hall door to **Fen's challenge**, shown when the lead is **below Lv 12**, and suggests a second Walkling; it never blocks; (4) **drop** the payout change: Fen still pays 420 Acorns. Vincent: "Yes, the research I agree, go ahead and build it"
+
 ## Tue Nov 3, 2026, 8:05 AM ET: Vincent's rulings on the curfew and what follows the crackdown (recorded by Claude Code)
 
 - **D1200 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:05 AM ET):** the Fernbrook curfew runs through dawn (dusk to dawn, ending at the dawn release, as reworded by D1222 and D1231). Vincent: "The curfew is good to run through dawn."
@@ -9,7 +13,7 @@ Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read 
 
 ## Tue Nov 3, 2026, 7:52 AM ET: Vincent's rulings on the open red rows (recorded by Claude Code)
 
-Vincent answered the open red list in the Claude Code session that built the contested Trial Hall. His words are quoted with each ruling (dictation slips fixed: "Lauren" is "lore", "Fern book" is "Fernbrook"). Still open after this: D1128 (research first), D1044, D971, D1000, D1087, D1159 (on #277). Parked, not settled: D1160 and D1319 (`handoff/backlog/REVISIT_LATER.md`).
+Vincent answered the open red list in the Claude Code session that built the contested Trial Hall. His words are quoted with each ruling (dictation slips fixed: "Lauren" is "lore", "Fern book" is "Fernbrook"). Still open after this: D1044, D971, D1000, D1087, D1159 (on #277). Parked, not settled: D1160 and D1319 (`handoff/backlog/REVISIT_LATER.md`).
 
 - **D1248 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: the three south-lane homes deploy (rule 9 previews approved). Vincent: "The Fernbrook homes are good to go"
 - **D1250 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: Fernbrook grows south to 32x32 (exception to D81, settles with D1248). Vincent: "The Fernbrook homes are good to go"
