@@ -13,7 +13,7 @@ Target path: `handoff/specs/LANTERN_HOUSE_FERNBROOK.md` (PUBLIC repo; not `docs/
 | Read first | AGENTS.md rules 1, 2, 6, 8, 9, 10; `TRIAL_HALL_FERNBROOK_MAP.md` §6.3 (tone bible); `data/fernbrook_rooms.json` `maps.fb_lantern_in`; `sprites.js` `SKINS.fb_lantern` (main line 2066) and the INTERIOR_WALLS kit (`wallRow`, line 2010) |
 | Skills | walklings-room-packet, gamedev-level-design, walklings-decision-ids, walklings-wording-check, walklings-dialog-camera |
 | Previews | `handoff/shots/lantern_house_fernbrook/` (§10). "Before" is #261's build. "After" is the same build with this spec's grid, objects and **draft** art injected at load (not committed; Pia redraws) |
-| Decision ids | D1220-D1224, reserved in this PR (§14). The brief named D1210 as next free; it is not: #261, `claude/fernbrook-plaza` and `claude/fernbrook-homes` hold D1210-D1219 (§14) |
+| Decision ids | **LH-1 to LH-5, ids pending: five ids at or above HIGH_CHARITY_LAYOUT's block, picked once that block is reserved (Vincent, Mon Nov 2, 2026, ~11:45 PM ET; design STORY_DECISIONS v0.65).** This spec first reserved LH-1-LH-5, which collide with Vincent's settled Seals calls (SEALS-K to SEALS-O, design STORY_DECISIONS v0.65), so they were withdrawn. Nothing here reads an id |
 
 ## 2. Diagnosis and goal
 
@@ -35,7 +35,7 @@ Done in-session on Mon Nov 2, 2026, ~11:10 PM ET (no sub-agent was available to 
 - **Layouts considered:**
   - **A. North wire wall on the door axis (picked).** A 48x48 set on the north wall at col 5, the door's column; racks and lamps mirrored either side; a runner from the mat to the screen; the crowd stands in front, leaving the aisle open.
   - B. A freestanding wire console in mid-room (rows 5-6), crowd south of it. Rejected: it hides Amos behind it, breaks the door-to-Amos sightline, and reads as furniture, not an institution.
-  - C. Expand the room east to 14 or 16 wide and add a separate "wire hall". Rejected for now: at 390 the 12-wide room is shown whole at scale 2 (12.2 tiles visible); a wider room scrolls and loses the at-a-glance read, and every crackdown actor tile would need checking against a new grid. Kept as D1223 option B.
+  - C. Expand the room east to 14 or 16 wide and add a separate "wire hall". Rejected for now: at 390 the 12-wide room is shown whole at scale 2 (12.2 tiles visible); a wider room scrolls and loses the at-a-glance read, and every crackdown actor tile would need checking against a new grid. Kept as LH-4 option B.
 - **Why A:** the holder enters on col 5 and looks straight up the runner at the glowing screen: the strongest "important" read the tile grid allows. Amos already stands at 6,3, right beside the set, so he becomes its operator without moving.
 - **Pitfalls named, and what this spec does:**
   - "High tech" drifting into Glimmerwell gloss: no `V`, `N` or `Q` anywhere; no black lacquer, no chrome, no red light strip. Tech is oak, brass, green, and teal glow (§6).
@@ -219,7 +219,7 @@ All six use `when: CURFEW`, `facing: up` (toward the set), lines PLACEHOLDER (Ju
 | `lh_res_b` | Resident (PLACEHOLDER) | new look `lh_res_b` (skin 1, bun `o`, sweater `p`, scarf) | 7,4 | "A curfew. In Fernbrook. Whatever next." | |
 | `lh_wynne` | Wynne (exists: `fb_wynne`, stall 25,7) | `fb_wynne` | 7,5 | "My stall is still out there. Picked this morning, every one." | no shop indoors |
 | `lh_res_c` | Resident (PLACEHOLDER) | new look `lh_res_c` (skin 5, short `w`, coat `m`, glasses) | 6,6 | "Forty years in this town. Never once a curfew." | "forty years" is PLACEHOLDER, not canon |
-| `lh_tobin` | Tobin (exists: `fb_tobin`, a Glimmerwell hand, cast faction glimmer) | `associate` | 8,5 | "I just count crates. That is all I do." | a Glimmerwell local who stays when Glimmerwell runs; Story call (D1222) |
+| `lh_tobin` | Tobin (exists: `fb_tobin`, a Glimmerwell hand, cast faction glimmer) | `associate` | 8,5 | "I just count crates. That is all I do." | a Glimmerwell local who stays when Glimmerwell runs; Story call (LH-3) |
 
 - The three new looks are look entries built from the existing kit (no new art); "Resident" needs a `reputation.json` cast row (`faction: none`), which the boot check requires (seen in the previews).
 - POST_TRIAL §7.2 `whereNow` for Wynne, Odile and Tobin changes from "home (curfew)" to "Lantern House (curfew)", and the marker rule (no step points at a hidden body) holds: the indoor bodies are live.
@@ -231,7 +231,7 @@ All six use `when: CURFEW`, `facing: up` (toward the set), lines PLACEHOLDER (Ju
 |---|---|---|---|
 | `wire_wall` | **new** | 48x48, drawn bottom-centred on 5,2: covers cols 4-6, rows 0-2 | oak cabinet `A`/`G`/`F` with grain `B`; brass bezel `y` with four rivets; dark glass `d`/`k` with an `m` reflection; brass grille, two knobs, pilot lamp (off `B`); oak cornice; a gold-rimmed green roundel with a lantern (`y`, `J`, `C`) rising onto the cap row; porcelain insulators `w`/`h` with the wire `F`/`d` running out along the cap; a cable leaves the right foot toward the switchboard |
 | `wire_wall_news` | **new**, 2 frames, 500 ms | 48x48 | screen `t` lit `c` top-left; gold Block News emblem box (lantern mark); headline bars `w`/`s`; a navy `n` ticker with gold dashes that crawls; a scan line; pilot `l` |
-| `wire_wall_pres` | **new**, 2 frames, 260 ms (mouth) | 48x48 | **the President** as a simple bust: grey hair `h`/`w`, face `3` with `2` light and `4` shade, Keeper-green coat `J`, gold lapels, shoulder and pin `y`, white collar `w`; gold flag poles and green drapes either side; a lower-third caption strip `n`/`w` (no readable text). Look is a draft: Pia and Vincent decide it (D1221) |
+| `wire_wall_pres` | **new**, 2 frames, 260 ms (mouth) | 48x48 | **the President** as a simple bust: grey hair `h`/`w`, face `3` with `2` light and `4` shade, Keeper-green coat `J`, gold lapels, shoulder and pin `y`, white collar `w`; gold flag poles and green drapes either side; a lower-third caption strip `n`/`w` (no readable text). Look is a draft: Pia and Vincent decide it (LH-2) |
 | `relay_rack` | **new**, 2 frames, 700 ms | 16x32 | oak cabinet, gold top edge, dark panel `d`, 4x3 indicator lamps `y`/`l`/`s`/`B`, brass vent, wire into the wall |
 | `switchboard` | **new** | 16x32 | oak frame, terracotta `B` jack field with brass-rimmed jacks, patch cords `t`/`g`/`y`, oak ledge with keys, a cyan signal lamp on top |
 | `wire_desk` | **new** | 16x16 | oak desk; brass candlestick handset; a green ledger with cream pages |
@@ -323,21 +323,18 @@ How they were made: #261's build served locally; the grid, objects, `wall.window
 | 4 | POST_TRIAL §5 (townsfolk hidden, "home (curfew)") | Vincent wants civilians at the TV | new indoor bodies; outdoor ids unchanged and still hidden; `whereNow` says "Lantern House (curfew)" |
 | 5 | #261 (`fb_burrsnout` 3,7, `fb_juniper_tl` 8,6, triggers 5,13, quest targets 6,4) | | all kept free and reachable (§9); no #261 id changes |
 | 6 | POST_TRIAL §12 row 8 (Rook optional in the Lantern House) | crowd space | if Story adds Rook, 6,5 or 9,6 is free |
-| 7 | Tobin is a Glimmerwell hand (cast faction glimmer) | Glimmerwell is sent away in Beat 3 | default: Tobin stays as a resident, apart at 8,5; Story can swap him for a resident body (D1222) |
+| 7 | Tobin is a Glimmerwell hand (cast faction glimmer) | Glimmerwell is sent away in Beat 3 | default: Tobin stays as a resident, apart at 8,5; Story can swap him for a resident body (LH-3) |
 | 8 | TRIAL_HALL_FERNBROOK_MAP §6.3 tone bible | "high tech" | Keeper materials only (§6) |
 | 9 | Exterior `fb_lantern` | rule 10 exterior language | untouched |
 
-## 14. Decisions (D1220-D1224)
+## 14. Decisions (LH-1 to LH-5, ids pending)
 
-Checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:20 PM ET:
-- main's header says "Next free id is D1210", but draft #261's header records **D1210-D1219 as held by unmerged branches** (`claude/fernbrook-plaza` D1210-D1214, `claude/fernbrook-homes` D1215-D1219), and those branches use them. The highest id on any branch is D1220 (their next-free line).
-- Open PRs #261, #262, #264: no id above D1210 in their bodies.
-- **Reserved here: D1220-D1224. Next free: D1225.** Reported as a collision with the brief's D1210; nothing renumbered.
+Ids pending: five ids at or above HIGH_CHARITY_LAYOUT's block, picked once that block is reserved (Vincent, Mon Nov 2, 2026, ~11:45 PM ET; design STORY_DECISIONS v0.65). The first reservation, LH-1-LH-5, collided with Vincent's settled Seals calls and is withdrawn; the game repo's next free id is D1255 (D1253-D1254 are Design's, unused).
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
-| D1220 | **red** (room redesign, rule 9) | The Fernbrook Lantern House becomes the town's wire station, as previewed: 48x48 wire set on the door axis, relay racks, lamps, switchboard, wire desk, call box, benches, Keeper runner and rug, oak parquet, green-and-gold wall row `FyGJFyGFGcwF`, windows 1 and 9; 12 x 16 kept; beds and Amos unchanged | As §5-§8; nothing builds before Vincent's yes on the previews |
-| D1221 | **red** (canon look) | The President on the wire set: a simple bust in the Keeper set's colours with a gold accent, after a Block News card; how he looks and whether he is named on screen | Draft bust as `wire_wall_pres`; speaker label "The President"; on-screen naming left to Story |
-| D1222 | yellow | Six townsfolk shelter in the Lantern House during the curfew (`lh_*` bodies: Odile, Wynne, Tobin and three "Resident" bodies with new kit looks), facing the set, reacting in Beat 7 by emote | Yes; Tobin included (Story may swap him) |
-| D1223 | yellow | Room size: keep 12 x 16 (A) or expand east to 14-16 wide for a separate wire hall (B) | A: 390 keeps the whole room on screen; no actor tiles move |
-| D1224 | green | All lines here are PLACEHOLDER for June; all art is draft for Pia | Ship nothing until both passes |
+| LH-1 | **red** (room redesign, rule 9) | The Fernbrook Lantern House becomes the town's wire station, as previewed: 48x48 wire set on the door axis, relay racks, lamps, switchboard, wire desk, call box, benches, Keeper runner and rug, oak parquet, green-and-gold wall row `FyGJFyGFGcwF`, windows 1 and 9; 12 x 16 kept; beds and Amos unchanged | As §5-§8; nothing builds before Vincent's yes on the previews |
+| LH-2 | **red** (canon look) | The President on the wire set: a simple bust in the Keeper set's colours with a gold accent, after a Block News card; how he looks and whether he is named on screen | Draft bust as `wire_wall_pres`; speaker label "The President"; on-screen naming left to Story |
+| LH-3 | yellow | Six townsfolk shelter in the Lantern House during the curfew (`lh_*` bodies: Odile, Wynne, Tobin and three "Resident" bodies with new kit looks), facing the set, reacting in Beat 7 by emote | Yes; Tobin included (Story may swap him) |
+| LH-4 | yellow | Room size: keep 12 x 16 (A) or expand east to 14-16 wide for a separate wire hall (B) | A: 390 keeps the whole room on screen; no actor tiles move |
+| LH-5 | green | All lines here are PLACEHOLDER for June; all art is draft for Pia | Ship nothing until both passes |

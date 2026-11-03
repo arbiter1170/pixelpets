@@ -40,11 +40,15 @@ D1189-D1196 reserved: TRIAL_HALL_FERNBROOK_MAP (`handoff/specs/TRIAL_HALL_FERNBR
 
 D1197-D1209 reserved: POST_TRIAL_CRACKDOWN (`handoff/specs/POST_TRIAL_CRACKDOWN.md`, the quest in the D1175 slot; same PR, checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:45 PM ET).
 
-D1210-D1219 are held by unmerged branches with no PR yet (line copied from draft #261's header, Tue Nov 3, 2026): D1210-D1214 `claude/fernbrook-plaza` (Fernbrook plaza standoff), D1215-D1219 `claude/fernbrook-homes` (south Fernbrook homes).
+D1210-D1242 reserved: STORY_DECISIONS v0.65, the Seals calls (design repo, Mon Nov 2, 2026; checked with walklings-decision-ids at about 11:20 PM EST). D1210-D1239 are Vincent's settled Seals calls (SEALS-A to SEALS-AD); D1240-D1242 were settled by Vincent at 11:05 PM EST (defaults accepted). All are recorded in the archive.
 
-D1220-D1224 reserved: LANTERN_HOUSE_FERNBROOK (`handoff/specs/LANTERN_HOUSE_FERNBROOK.md`, the Fernbrook Lantern House as the town's wire station; checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:20 PM ET).
+D1243-D1247 reserved: FERNBROOK_PLAZA (claude/fernbrook-plaza), renumbered in order from D1210-D1214 (Chief of Staff, Mon Nov 2, 2026, 11:08 PM EST).
 
-Next free id is D1225.
+D1248-D1252 reserved: FERNBROOK_HOMES (claude/fernbrook-homes), renumbered in order from D1215-D1219 (Chief of Staff, Mon Nov 2, 2026, 11:08 PM EST).
+
+D1253-D1254 reserved: STORY_DECISIONS v0.65 (design repo), unused.
+
+Next free id is D1255.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -61,7 +65,6 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 - **Vincent's ruling (Mon Nov 2, 2026, 5:03 PM ET):** "Picking a side should be after the class, same with hall door." The Hall door and the faction pick both come after Lizzy's class. D1153 is HELD (superseded by D1169), and D1172 (does picking a side alone open the Hall door?) is answered **NO**. D1166-D1173 stay reserved by #255 (`claude/day1-trial1-spec`); they are cited here, not re-reserved, and #255 records the rows.
 - **Vincent's rulings (Mon Nov 2, 2026, 5:05 PM ET):** "Not worried about old saves right now." and "Ok to edit main quest chain". (1) #255 Q7 (Fernbrook flip on old saves) and Q5 (old-save gating by the three Keeper holders) are **deprioritized**: old saves are not a concern for now. Claude takes the simplest save-safe option (no save writes, save stays `pixelpets.save.v2`, no migrator) and spends no effort on old-save edge cases. (2) #255's main-quest-chain override is **APPROVED**: OK to edit the main CHAIN for the new rows, keeping the `orchard` row in its current position.
 - **Vincent's ruling (Mon Nov 2, 2026, 5:41 PM ET), amends D1170 (#255 R3):** the three Trial Hall holders before Fen are **mixed, not all Keepers**, because Fernbrook is contested: one Keeper cadet, one Glimmerwell-leaning local challenging the Hall, one neutral Fernbrook holder. Fen stays a Keeper. The Hall sign changes from "FERNBROOK TRIAL HALL · A Keepers' Hall. Master Fen." to "FERNBROOK TRIAL HALL · Master Fen" (this also answers #255 Q8). No new id: recorded as an amendment of D1170 (see the archive). **Claude must update** `handoff/specs/DAY1_TRIAL1_FLOW.md` R3, §8 (Trial Hall roster: only the Keeper cadet carries a D1161 Keeper rank; the other two need their own looks and lines from Story), Q8, conflict row 6 and Slice 8 before Slice 8 builds.
-
 
 ## Open
 
@@ -165,11 +168,11 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 | D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
 | D1208 | green, POST_TRIAL_CRACKDOWN §4 | All crackdown lines are PLACEHOLDER for June | Not built | Story |
 | D1209 | yellow, POST_TRIAL_CRACKDOWN §8 | Pick balance: the §8 ledger is the target; June signs it off before the build; QA watches the pick ratio | Not built. Default yes | Story, QA |
-| D1220 | red, LANTERN_HOUSE_FERNBROOK §5-§8 (rule 9) | The Fernbrook Lantern House (`fb_lantern_in`) becomes the town's wire station: a 48x48 Keeper wire set on the door axis (5,2), relay racks, brass lamps, switchboard, wire desk, public wire box, benches, Keeper runner and rug, oak parquet, wall row `FyGJFyGFGcwF`, windows 1 and 9. 12 x 16, ids, warp, arrival, Amos and the beds unchanged | Not built. Default: as previewed in `handoff/shots/lantern_house_fernbrook/`; nothing builds before Vincent's yes | `data/fernbrook_rooms.json`, `sprites.js` |
-| D1221 | red, LANTERN_HOUSE_FERNBROOK §8 (canon look) | The President on the wire set in Beat 7: a simple bust in Keeper-set colours with a gold accent, after a Block News card; how he looks and whether he is named on screen | Not built. Default: the draft bust; speaker label "The President"; on-screen naming left to Story | `sprites.js`, crackdown scene data |
-| D1222 | yellow, LANTERN_HOUSE_FERNBROOK §7.2 | Six townsfolk shelter in the Lantern House during the curfew (`lh_odile`, `lh_wynne`, `lh_tobin`, three "Resident" bodies with kit looks), facing the set and reacting by emote in Beat 7 | Not built. Default yes; Tobin included unless Story swaps him | `data/fernbrook_rooms.json`, `reputation.json` |
-| D1223 | yellow, LANTERN_HOUSE_FERNBROOK §3 | Room size: keep 12 x 16 (A) or expand east for a separate wire hall (B) | Not built. Default A (390 keeps the whole room on screen; no actor tile moves) | `data/fernbrook_rooms.json` |
-| D1224 | green, LANTERN_HOUSE_FERNBROOK | All Lantern House lines are PLACEHOLDER for June; all art is draft for Pia | Not built | Story, Sprites |
+| LH-1 (id pending) | red, LANTERN_HOUSE_FERNBROOK §5-§8 (rule 9) | The Fernbrook Lantern House (`fb_lantern_in`) becomes the town's wire station: a 48x48 Keeper wire set on the door axis (5,2), relay racks, brass lamps, switchboard, wire desk, public wire box, benches, Keeper runner and rug, oak parquet, wall row `FyGJFyGFGcwF`, windows 1 and 9. 12 x 16, ids, warp, arrival, Amos and the beds unchanged | Not built. Default: as previewed in `handoff/shots/lantern_house_fernbrook/`; nothing builds before Vincent's yes | `data/fernbrook_rooms.json`, `sprites.js` |
+| LH-2 (id pending) | red, LANTERN_HOUSE_FERNBROOK §8 (canon look) | The President on the wire set in Beat 7: a simple bust in Keeper-set colours with a gold accent, after a Block News card; how he looks and whether he is named on screen | Not built. Default: the draft bust; speaker label "The President"; on-screen naming left to Story | `sprites.js`, crackdown scene data |
+| LH-3 (id pending) | yellow, LANTERN_HOUSE_FERNBROOK §7.2 | Six townsfolk shelter in the Lantern House during the curfew (`lh_odile`, `lh_wynne`, `lh_tobin`, three "Resident" bodies with kit looks), facing the set and reacting by emote in Beat 7 | Not built. Default yes; Tobin included unless Story swaps him | `data/fernbrook_rooms.json`, `reputation.json` |
+| LH-4 (id pending) | yellow, LANTERN_HOUSE_FERNBROOK §3 | Room size: keep 12 x 16 (A) or expand east for a separate wire hall (B) | Not built. Default A (390 keeps the whole room on screen; no actor tile moves) | `data/fernbrook_rooms.json` |
+| LH-5 (id pending) | green, LANTERN_HOUSE_FERNBROOK | All Lantern House lines are PLACEHOLDER for June; all art is draft for Pia | Not built | Story, Sprites |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

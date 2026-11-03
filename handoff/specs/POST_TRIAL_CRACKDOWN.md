@@ -1,4 +1,45 @@
-# POST_TRIAL_CRACKDOWN: the Keeper crackdown after Trial 1 (the D1175 slot)
+# POST_TRIAL_CRACKDOWN v0.3.1: the Keeper crackdown after Trial 1 (the D1175 slot)
+
+**Design copy, v0.3.1 on top of Claude's v0.3** (game branch `claude/fernbrook-trial-hall-spec-acsv52` @ `44370c0`; v0.3 is `15c269d`, `44370c0` only fixes its times; v0.2 was `263956e`; game `main` 505e835 still has
+v0.1). Design repo, Mon Nov 2, 2026, about 11:40 PM EST. One version, not two: this file is Claude's v0.3 text with **only** the Seals
+alignment laid on top (Vincent, Mon Nov 2, 2026, 11:05 PM EST, defaults accepted: the settled Seals calls SEALS-A to SEALS-AD win over
+this spec's own rows), marked **[v0.3.1]**. Claude's tanks with no gun, the D1202 and D1204 wording, the President on the set, Fen as she, the
+Lantern House layout and every engine and test row are kept. Canon: design `STORY.md` v0.7.10 (§2 "What Seals are", §12 names),
+Story's `handoff/story/SEALS_LORE_2026-11-02.md` v3.1 (§5, §5.1, §7, §8). Ids: `specs/STORY_DECISIONS.md` v0.65.
+
+## 0. [v0.3.1] Alignment with the Seals calls
+
+**Where Claude's v0.3 already matches (kept as is):** the President speaks the broadcast in the Lantern House (SEALS-W);
+the holder's "He means well" / "He's hiding something" choice writes `story.fen_lean` (SEALS-AA; Fen can turn); Fen is she
+throughout; the Seal is never removed (SEALS-N: nothing lost); the crackdown fills the post-Trial slot before the pick on every save
+(SEALS-G); the ban is world news only and never blocks the player (Vincent's clarification); the curfew read ends at the pick (the
+hold flip); no Seal unlock mechanic is built (SEALS-B and SEALS-C settle the meaning, not new code). Ids for each are in §13.
+
+**Exact edits for Claude on `claude/fernbrook-trial-hall-spec-acsv52` (`handoff/specs/POST_TRIAL_CRACKDOWN.md` at 44370c0, same lines as 15c269d;
+line numbers on that tip; this file shows each one applied):**
+
+| # | Where (44370c0) | Today | Becomes | Why |
+|---|---|---|---|---|
+| A1 | `:12` Canon read | design `STORY.md` v0.7.8 ... "this is new canon" | design `STORY.md` v0.7.10 §2 "What Seals are" (the crackdown is canon there) and SEALS_LORE v3.1 | STORY v0.7.9-v0.7.10 |
+| A2 | `:86` | Commander: "By order of the Keepers, this square is closed. Everyone home. Now." | "By order of High Charity, this square is closed. Everyone home. Now." | SEALS lore §8: the order comes from High Charity; the Governor's office signs it (D1236, SEALS-AB) |
+| A3 | `:89` | "Holder. All Trials in Fernbrook are stopped, as of now." | "Holder. This Hall is shut. Unvetted holders were tested here." | the public reason (STORY §2, SEALS-G); no more "never says why" for the public reason |
+| A4 | `:90`-`:92` | "And that Seal? ... taken back just as fast." and "The threat is words only." | the Seal threat with the "Hand it over" / "Keep it" choice; either way the Seal goes dull in his hand and comes back ("Keep your trinket"); the choice moves `story.fen_lean` (Beat 1 below) | D1223 (SEALS-N), Fen's lean (D1228, D1235) |
+| A5 | `:35` Commander "Never says" | "please"; any reason why | "please"; the real reason (the roll and the trade, STORY §2) | he gives the public reason |
+| A6 | `:156`, `:160` | "You and Master Fen leave Fernbrook at first light. Stay, and you're both arrested." / "Immediately becomes at first light" | "You and Master Fen stay in this house tonight. Step outside before dawn, and you're both arrested." / note: the night ends in the dawn release | D1222 (SEALS-M, Vincent: fine as written) |
+| A7 | `:190` | "Anyone who doesn't live in Fernbrook will leave by morning, or be detained. It's for everyone's good." | "So, from tonight, Fernbrook keeps a curfew from dusk to dawn. Stay in. Keep your Walklings close." | D1222, D1231; SEALS lore §5.1 |
+| A8 | `:191` | "And High Charity will hear a proposal: no more Seals won in Fernbrook for now. Calm first. Good night." | "And no new Seals will be given in Fernbrook until further notice. A Seal is a promise. We keep it carefully." then "A Seal is not for sale. Not to anyone. Remember that." | the ban is in force through the Governor's office, not a proposal (D1221, D1237, D1236); "not for sale" (D1238) |
+| A9 | `:195` | Fen: "They can't take the one you've earned, {name}. Hold onto that." | keep, and add before the choice Fen: "Not for sale. Then who's been buying?" | SEALS lore §5.1 |
+| A10 | `:212`, `:215` | "First light. Not a minute after." / "First light comes grey over the orchard." | Commander: "Dusk to dawn. Not a minute before." / narration "At dawn the curfew lifts. Fen and {name} are let go." | the dawn release (D1222) |
+| A11 | `:224` | officer post: "First light means now, holder. West road or east road." | "Curfew's lifted at the pick, holder. Not before." (PLACEHOLDER) | no "leave" order (D1222) |
+| A12 | `:227` | notice: "... Visitors leave Fernbrook by morning. By order of the Commander." | "CURFEW. Dusk to dawn. Residents indoors. By order of High Charity." | D1222, D1236 |
+| A13 | `:228` | Hall deny "Closed by order of the Commander." keyed to the curfew read; "reopens after the pick (D1206)" | keyed to Story's `story.hall1_shut` (set with `story.crackdown`): "Shut by order of High Charity." Stays shut on both paths until Fen's Act 2 turn | D1224 (SEALS-O) supersedes D1206 |
+| A14 | `:270` | "Meet Fen at the orchard gate at first light." | "Meet Fen at the orchard gate at dawn." | wording follows the dawn release |
+| A15 | `:27`, `:319`, `:559` | Hook "(D1199: what a Seal unlocks)"; D1199 options A/B/C, default A | Hook: "A Seal is not for sale. So who's been buying?"; D1199 superseded by D1211 and D1212 (a Seal opens its Hall Stone room; all eight open the Summit door); option A not taken | settled Seals calls |
+| A16 | §13 rows D1197-D1209 | all open | the disposition table in §13 below | D1242 |
+| A17 | `:17`, `:42`, `:546` and LANTERN_HOUSE_FERNBROOK | D1220-D1224 for the Lantern House | **id collision:** D1220-D1224 are settled Seals calls (SEALS-K to SEALS-O). The Chief of Staff renumbers them (STORY_DECISIONS v0.65, C10). Until then, cite LANTERN_HOUSE_FERNBROOK by section, not id | walklings-decision-ids |
+| A18 | `:41`, `:173` set | the 48x48 wire wall `fb_wire_set_live` (LANTERN_HOUSE_FERNBROOK §7, its red "D1220") | call it "the Lantern House TV" in prose; keep the wire wall if Vincent says yes to that room redesign, else fall back to the built `tv_set` sprite (`mahopac.json:141`), as D1231 says | D1231 (SEALS-W) |
+| A19 | `:42` speaker label | "The President" (name on screen is Story's call) | same; the name **Judas Accord** is now cleared for player text (D1241); the Governor is **Alexandros Merriden** (D1240) | name check done |
+
 
 Target path: `handoff/specs/POST_TRIAL_CRACKDOWN.md` (PUBLIC repo; not `docs/`). **Spec only.** Nothing here is built. It fills the post-Trial quest slot Vincent reserved as D1175 (#261: `post_trial` row, done on `story.post_trial_done`). Staging a scene every player sees is red, so nothing builds before Vincent rules on the red rows (§13) and has seen the storyboard (§9). All player text below is PLACEHOLDER; June (Story) writes the real lines.
 
@@ -6,40 +47,40 @@ Target path: `handoff/specs/POST_TRIAL_CRACKDOWN.md` (PUBLIC repo; not `docs/`).
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.3: Beat 7 rewritten for Vincent's change (the President on the wire set, then the `story.fen_lean` choice) and the Lantern House tiles moved to LANTERN_HOUSE_FERNBROOK (Mon Nov 2, 2026, ~11:08 PM ET). v0.2 (Mon Nov 2, 2026, ~10:46 PM ET) makes the Keeper tanks a showpiece (§10a): an inspiration brief, a detailed 64x40 design with every frame, two variants, the arrival prototyped in the engine and recorded at 390 and 320, five small engine changes, and tests. v0.1 was Mon Nov 2, ~11:45 PM ET |
+| Status | **v0.3.1 (Design, Mon Nov 2, 2026, about 11:40 PM EST): the Seals alignment (§0) on top of Claude's v0.3 (`claude/fernbrook-trial-hall-spec-acsv52` @ `44370c0`; v0.3 is `15c269d`, `44370c0` only fixes its times).** Draft v0.3: Beat 7 rewritten for Vincent's change (the President on the wire set, then the `story.fen_lean` choice) and the Lantern House tiles moved to LANTERN_HOUSE_FERNBROOK (Mon Nov 2, 2026, ~11:08 PM ET). v0.2 (Mon Nov 2, 2026, ~10:46 PM ET) makes the Keeper tanks a showpiece (§10a): an inspiration brief, a detailed 64x40 design with every frame, two variants, the arrival prototyped in the engine and recorded at 390 and 320, five small engine changes, and tests. v0.1 was Mon Nov 2, ~11:45 PM ET |
 | Ask | Vincent's eight-beat outline (via Morgan), plus his clarification: the Seal-gain ban never blocks the player. The holder already has the Fernbrook Seal. The ban is world news and NPC reactions only, foreshadowing that the Keepers do bad things too |
 | Builds on | Draft PR #261 (`claude/day1-trial1-build-gtkcop`, bc38b01): the `post_trial` and `pick` rows, `sceneTails.seal1`, the `fb_side_pick` trigger, Fen's whereabouts, and the D1171 flip. Main has #249 (Rook's Lantern House walk). `#261 file:N` cites that branch |
-| Canon read | design repo `STORY.md` v0.7.8: §2 Seals and levels, §2a Solvane, §3 Keepers, §3a Government and power, §9 Trial Halls; `specs/KEEPER_RANKS.md`; FACTION_PICK_TIMING Parts C-D and June's drafts (`story/drafts/*2026-10-31.md`). None of them has a crackdown, curfew or police action in Fernbrook: this is new canon |
+| Canon read | **[v0.3.1]** design repo `STORY.md` v0.7.10: §2 "What Seals are" (the crackdown, the President's broadcast, the dawn release), §2a Solvane, §3 Keepers and "Fen can turn", §3a Government and power, §9 Trial Halls, §12 names; Story's SEALS_LORE v3.1; `specs/KEEPER_RANKS.md`; FACTION_PICK_TIMING Parts C-D |
 | Decisions read | D1142, D1144, D1145, D1150, D1151, D1155, D1170, D1171, D1173, D1174, D1175 (and #261's D1186-D1188) |
 | Skills | walklings-story-craft, walklings-dialog-camera, walklings-dialog-npc-walk, walklings-cutscene, gamedev-level-design, walklings-decision-ids, walklings-wording-check |
 | Storyboard | `handoff/shots/post_trial_crackdown/` (§9, §10a): three beats rendered in #261's build at 390 and 320; the tank arrival recorded as GIFs; a tank frame sheet. All draft art, injected at runtime (not committed) |
-| Decision ids | D1197-D1209, reserved in this PR (§13) |
-| Lantern House | The room for Beats 4-8 is redesigned as Fernbrook's wire station in `handoff/specs/LANTERN_HOUSE_FERNBROOK.md` (D1220-D1224; Mon Nov 2, 2026, ~11:30 PM ET). Beat 7 is rewritten there and here for Vincent's change (the President on the wire set, then a choice; Mon Nov 2, ~10:55 PM ET). The Lantern House tiles, props and townsfolk below follow that spec |
+| Decision ids | D1197-D1209, reserved in this PR (§13; **[v0.3.1]** each marked superseded or still open). Seals calls D1210-D1239 and D1240-D1242 are in design `specs/STORY_DECISIONS.md`. No new id |
+| Lantern House | The room for Beats 4-8 is redesigned as Fernbrook's wire station in `handoff/specs/LANTERN_HOUSE_FERNBROOK.md` (its ids D1220-D1224 collide with the Seals calls; §0 A17; Mon Nov 2, 2026, ~11:30 PM ET). Beat 7 is rewritten there and here for Vincent's change (the President on the wire set, then a choice; Mon Nov 2, ~10:55 PM ET). The Lantern House tiles, props and townsfolk below follow that spec |
 
 ## 2. The quest on one page (walklings-story-craft §1)
 
 | | |
 |---|---|
 | **Want** | The holder just won the Fernbrook Seal and wants to use it. |
-| **Pressure** | A Keeper Commander shuts the town: Trials stopped, a curfew, Glimmerwell sent away, and the holder told to leave. |
+| **Pressure** | A Keeper Commander shuts Fen's Hall, threatens the holder's Seal, and walks Fen and the holder to the Lantern House for a dusk-to-dawn curfew; Glimmerwell is sent away. **[v0.3.1]** |
 | **Turn** | The Keepers are not one thing. Fen, a Keeper, defies the Commander; Amos is ashamed; the officers just follow orders. The law the holder trusted can be bent at the top. |
-| **Bottleneck** | Dawn at the orchard gate: the faction pick (D1142), exactly as built. Flags carried: `story.crackdown`, `story.post_trial_done`, the two pitches. |
-| **Hook** | A Commander is asking High Charity to stop Seals in Fernbrook. Why do Seals scare him? (D1199: what a Seal unlocks.) |
+| **Bottleneck** | **[v0.3.1]** At dawn the curfew lifts and Fen and the holder are let go; then the orchard gate: the faction pick (D1142), exactly as built. Flags carried: `story.crackdown`, `story.post_trial_done`, the two pitches. |
+| **Hook** | **[v0.3.1]** "A Seal is not for sale." So who's been buying? (the President's trade, STORY §3a; never said in Act 1) |
 
-Canon fit (STORY §3a, CANON): "the President and every Keeper commander know power is being stonewalled; everyone below them believes they protect people." Wardens outrank Commanders and are not in on it. So this Commander can be heavy-handed with no one ever saying why. Fen can appeal over his head to the Warden and stay a loyal Keeper, and the beat seeds Act 5, where Captain Lumen and Warden Ilse decide.
+Canon fit (STORY §3a, CANON): "the President and every Keeper commander know power is being stonewalled; everyone below them believes they protect people." Wardens outrank Commanders and are not in on it. So this Commander can be heavy-handed with only the public reason said aloud (**[v0.3.1]** "unvetted holders were tested here", STORY §2). Fen can appeal over his head to the Warden and stay a loyal Keeper, and the beat seeds Act 5, where Captain Lumen and Warden Ilse decide.
 
 ## 3. Cast and voice cards
 
 | Who | Id (new unless noted) | Look | Want / fear | Verbal habit | Never says | To a young holder |
 |---|---|---|---|---|---|---|
-| The Commander | `cd_cmdr` (cast); name PLACEHOLDER (D1198) | Keeper set (rule 11). New silhouette: long coat in deep Keeper green `J`, peaked cap, gold shoulder (the look kit has `cap`; a peaked cap may need Pia, §10) | wants order he can report upward; fears holders who can sway a town | short orders; calls everyone by role ("Holder." "Master Fen.") | "please"; any reason why | talks past them to Fen |
+| The Commander | `cd_cmdr` (cast); name PLACEHOLDER (D1198) | Keeper set (rule 11). New silhouette: long coat in deep Keeper green `J`, peaked cap, gold shoulder (the look kit has `cap`; a peaked cap may need Pia, §10) | wants order he can report upward; fears holders who can sway a town | short orders; calls everyone by role ("Holder." "Master Fen.") | "please"; the real reason (**[v0.3.1]** he does give the public one) | talks past them to Fen |
 | Officers | `cd_off_a`, `cd_off_b` (cast) | existing `officer` look (`data/civic.json:7`) | want the night to end quietly; fear the Commander | "Orders." Repeat what they were told | their own opinion | stiff, not cruel |
 | Master Fen | `fen_hall` / cast `cd_fen` (exists) | `fen` | wants her Hall and her holder treated fairly; fears the Keepers forgetting what they're for | plant talk: roots, pruning, seasons | a bad word about the Keepers as a whole | warm, protective |
 | Keeper Amos | `amos` (exists, `fb_lantern_in` 6,3) | as built | wants the Lantern House to stay a safe place; fears it becoming a cell | quiet, practical, ledger talk | that the Commander is right | gentle, apologetic |
 | Constable Rue | `fb_constable` (exists, fernbrook 4,9) | as built | keep Fernbrook calm; fears losing the town's trust | "Citizen." | defiance out loud | one quiet kind word |
 | Associate Juniper | `juniper` (exists, 14,6) | as built | keep her targets; fears being blamed | Glimmer words: "relocating", "partnership", "Brighter by nature!" | sorry | bright sales voice, even while running |
-| Block News (wire set) | props `fb_wire_set` / `fb_wire_set_live` at 5,2 (LANTERN_HOUSE_FERNBROOK §7) | new 48x48 prop | | anchor voice, flat and calm; one opening line | | |
-| The President (on the wire set) | speaker label "The President" (settled name in `archive/DECISIONS_SETTLED.md`, "Names"; on-screen naming is Story's call) | bust on `wire_wall_pres` (draft, D1221) | wants the town quiet and calm | calm, reasonable, fatherly; "for your safety" | **why**. Canon (STORY §3a): he plays both sides; never reveal it | addresses "Fernbrook", never the holder |
+| Block News (the Lantern House TV; **[v0.3.1]** §0 A18) | props `fb_wire_set` / `fb_wire_set_live` at 5,2 (LANTERN_HOUSE_FERNBROOK §7) | new 48x48 prop | | anchor voice, flat and calm; one opening line | | |
+| The President (on the wire set) | speaker label "The President" (**[v0.3.1]** Judas Accord, name cleared, D1241; on-screen naming is Story's call) | bust on `wire_wall_pres` (draft, D1221) | wants the town quiet and calm | calm, reasonable, fatherly; "for your safety" | **why**. Canon (STORY §3a): he plays both sides; never reveal it | addresses "Fernbrook", never the holder |
 | Townsfolk at the set | `lh_odile`, `lh_wynne`, `lh_tobin`, `lh_res_kid`, `lh_res_b`, `lh_res_c` (new bodies, LANTERN_HOUSE_FERNBROOK §7.2) | as built / kit looks | stay safe; hear the news | one short line each | | |
 | Townsfolk | `odile`, `fb_wynne`, `fb_tobin` (exist) | as built | go home safe | one short line each, or none | | |
 
@@ -83,13 +124,24 @@ This beat **ran in the engine** (§10a.6): #261's build with the §10a engine ch
 | Speaker | Line (PLACEHOLDER) |
 |---|---|
 | (narration) | A white beam slides up the road. Then the ground starts to hum. |
-| Commander | By order of the Keepers, this square is closed. Everyone home. Now. |
+| Commander | By order of High Charity, this square is closed. Everyone home. Now. |
 | Commander | Glimmerwell staff will pack up and leave Fernbrook tonight. |
 | Associate Juniper | We have a permit! ...Fine. Fine! Glimmerwell is relocating. |
-| Commander | Holder. All Trials in Fernbrook are stopped, as of now. |
-| Commander | And that Seal? Master Fen gave it. I can see it taken back just as fast. |
+| Commander | Holder. This Hall is shut. Unvetted holders were tested here. |
+| Commander | A Seal is the Keepers' to give, {name}. And ours to take back. |
+| (choice) | **"Hand it over"** / **"Keep it"** |
+| Master Fen (keep it) | Take it, then. Watch it go dull in your hand. It knows whose it is. |
+| (narration) | The Seal sits in the Commander's glove. Its shine goes out. |
+| Commander | Dull as a button. Keep your trinket. |
+| (toast) | The Seal hums. Then it's quiet. |
 
-The threat is words only. The Seal is never removed (`S.seals` and `story.seal1` stay; D1150, D1201).
+**[v0.3.1]** The Seal threat follows SEALS-N and SEALS lore §5 beat 3, §8. Either answer ends with the Seal in the Commander's
+hand for a moment; it goes dull (it is tuned to its pair, SEALS-C) and he hands it back. **Nothing is lost:** `S.seals` and `story.seal1`
+stay. Fen's line plays on "Keep it"; on "Hand it over" the holder holds it out and the narration follows. The choice
+writes only `story.fen_lean` ("Keep it" pulls her toward the holder's side, SEALS lore §7), with Story's v3.1 encoding. Because
+`crackdown_street` replays if the save quits before 3e, the `inc` must not apply twice (walklings-quests guard; the build picks the
+guard). The Fen line in Beat 2 ("That Seal was won fair") now answers the dull Seal. Both labels are 30 characters or fewer.
+Lines are PLACEHOLDER; the narration and toast are within 110 and 40.
 
 ### Beat 2. Fen steps out of the Hall (street)
 
@@ -112,7 +164,7 @@ The threat is words only. The Seal is never removed (`S.seals` and `story.seal1`
 | 3b | Constable Rue | stays at 4,9 | one line as the holder passes |
 | 3c | escort | `walkAll`: `cd_cmdr` to 6,8; `cd_off_a` to 7,7; `cd_off_b` to 9,8; then `walkTo player 5,6 {with: cd_fen}` | the camera follows the holder west along row 8; the storyboard's Beat 3 frame is 13,8 |
 | 3d | the tanks | stay parked on the road, lanterns sweeping (idle frames); dropped at the warp | |
-| 3e | | `setFlag story.crackdown`; `curtain off`; `warp fb_lantern_in 5,14` | |
+| 3e | | `setFlag story.crackdown`; **[v0.3.1]** `setFlag story.hall1_shut` (Story's name, SEALS lore §5 beat 2); `curtain off`; `warp fb_lantern_in 5,14` | |
 
 | Speaker | Line (PLACEHOLDER) |
 |---|---|
@@ -153,11 +205,12 @@ Fen's challenge is a line, not a battle: no forced battle in a cutscene (walklin
 | Speaker | Line (PLACEHOLDER) |
 |---|---|
 | Commander | Nobody battles in my town tonight. |
-| Commander | New order. You and Master Fen leave Fernbrook at first light. Stay, and you're both arrested. |
+| Commander | New order. You and Master Fen stay in this house tonight. Step out before dawn, and you're both arrested. |
 | Master Fen | You'd arrest a Hall Master in her own town? Listen to yourself. |
 | Commander | A Seal says a holder can help run things here. Fernbrook doesn't need the help. |
 
-"Immediately" becomes "at first light". The Lantern Coach doesn't run at night, and it gives the pick its dawn (D1142, FPT Part D). Default D1203; Vincent can make it "now" (then §6 option B).
+**[v0.3.1]** No "leave" order: the night ends in the dawn release (SEALS-M; Vincent: fine as written). The pick keeps its dawn
+at the orchard gate (FPT Part D). "Leave at first light" and §6 option B ("now") are superseded (§13).
 
 ### Beat 6. "The Seal only matters if you comply" (Lantern House)
 
@@ -168,7 +221,7 @@ Fen's challenge is a line, not a battle: no forced battle in a cutscene (walklin
 
 Words only: no `rep` or Standing step fires here.
 
-### Beat 7. The wire set: the President speaks (Lantern House)
+### Beat 7. The Lantern House TV: the President speaks (Lantern House)
 
 Vincent's change (Mon Nov 2, 2026, ~10:55 PM ET): Block News cuts to the President, who gives the curfew broadcast; then the holder answers. Room, tiles and art: `handoff/specs/LANTERN_HOUSE_FERNBROOK.md` (the set is a 48x48 wire wall at **5,2**, on the door axis, beside Amos).
 
@@ -187,8 +240,12 @@ Vincent's change (Mon Nov 2, 2026, ~10:55 PM ET): Block News cuts to the Preside
 | Block News | Block News, evening edition. We go now to the capital. |
 | (narration) | The picture flickers and cuts to the President. |
 | The President | Good evening, Fernbrook. For your safety, a curfew is in force tonight. |
-| The President | Anyone who doesn't live in Fernbrook will leave by morning, or be detained. It's for everyone's good. |
-| The President | And High Charity will hear a proposal: no more Seals won in Fernbrook for now. Calm first. Good night. |
+| The President | So, from tonight, Fernbrook keeps a curfew from dusk to dawn. Stay in. Keep your Walklings close. |
+| The President | And no new Seals will be given in Fernbrook until further notice. A Seal is a promise. We keep it carefully. |
+| The President | Every Seal ever earned is written down in High Charity, as it was in the Great War. It will stay that way. |
+| The President | A Seal is not for sale. Not to anyone. Remember that. |
+| The President | The Keepers keep you, and I keep the Keepers. Good night. Be kind in the streets. |
+| Master Fen | Not for sale. Then who's been buying? |
 | (choice) | **"He means well"** / **"He's hiding something"** |
 | Keeper Amos (means well) | Maybe. He's always sounded kind. Kind isn't the same as right. |
 | Keeper Amos (hiding) | Careful who hears you say that. ...But I heard it too. |
@@ -196,7 +253,7 @@ Vincent's change (Mon Nov 2, 2026, ~10:55 PM ET): Block News cuts to the Preside
 
 - **The choice writes only `story.fen_lean`** (Seals lore v3.1, pending its design commit): "He means well" and "He's hiding something" move it in opposite directions with `inc` (exact encoding, sign and step: PLACEHOLDER until v3.1 lands). No other new flag; the save stays `pixelpets.save.v2`, `v` 2. Nothing in this quest reads `story.fen_lean`; Fen turns on her first Act 2 return either way.
 - **His voice:** calm, reasonable, never says why. Canon (STORY §3a): he plays both sides; the scene never reveals it. The speaker label is "The President"; whether his name appears on screen is Story's call.
-- The ban is world news only (Vincent's clarification): the holder's progress is untouched (D1201). Other holders feel it later, through Block News stories and NPC lines (§7.4). "Fernbrook" stands in for "the plaza" so the line doesn't depend on `claude/fernbrook-plaza` (§12, row 9).
+- **[v0.3.1]** The broadcast lines are Story's SEALS lore §5.1 (PLACEHOLDER; Story may trim the first line). The ban is in force "until further notice", signed by the Governor's office (Governor Merriden is in the dark, SEALS-AB), not a proposal. The ban is world news only (Vincent's clarification): the holder's progress is untouched (D1201). Other holders feel it later, through Block News stories and NPC lines (§7.4). "Fernbrook" stands in for "the plaza" so the line doesn't depend on `claude/fernbrook-plaza` (§12, row 9).
 - Amos's and Fen's reactions can key on the choice with `if story.fen_lean...` reads (PLACEHOLDER: the condition follows v3.1's encoding).
 
 ### Beat 8. The night (Lantern House)
@@ -209,23 +266,25 @@ Vincent's change (Mon Nov 2, 2026, ~10:55 PM ET): Block News cuts to the Preside
 
 | Speaker | Line (PLACEHOLDER) |
 |---|---|
-| Commander | First light. Not a minute after. |
+| Commander | Dusk to dawn. Not a minute before. |
 | Master Fen | I'm writing to the Warden tonight. A Commander doesn't outrank the lantern's law. |
 | Keeper Amos | The beds are made. Rest your team. I'll keep the lamp low. |
-| (narration) | First light comes grey over the orchard. (D1155: "next morning" is narration and curtain only) |
+| (narration) | At dawn the curfew lifts. Fen and {name} are let go. (D1155: "next morning" is narration and curtain only) |
+
+**[v0.3.1]** The dawn release (SEALS-M): the curfew lifts at dawn and Fen and the holder are let go. Fen's dawn line is angry and short (Story, SEALS lore §7: "I asked them for help with the crates. They sent boots. I won't forget it."). The curfew **order** (the read below) still ends at the pick.
 
 ## 5. The town at dawn (the curfew)
 
-The curfew is **a read, not a flag**: `story.crackdown & !story.side_pick_done`. It starts when the street scene ends and lifts at the pick result, the same moment the hold flips (D1171).
+The curfew is **a read, not a flag**: `story.crackdown & !story.side_pick_done`. It starts when the street scene ends and lifts at the pick result, the same moment the hold flips (D1171). **[v0.3.1]** On screen, the night ends in the dawn release (Fen and the holder walk out at dawn); the officers and notice stand until the pick, and the Hall stays shut after it (`story.hall1_shut`).
 
 | Object | Tile | `when` | Line / role |
 |---|---|---|---|
 | Townsfolk (`odile`, `fb_wynne`, `fb_tobin`, `juniper` at 14,6, `fb_lantern_stand`, and the plaza cast if merged) | as built | add `"!story.crackdown \| story.side_pick_done"` | hidden outside. Odile, Wynne and Tobin shelter in the Lantern House as new bodies (`lh_*`, LANTERN_HOUSE_FERNBROOK §7.2); `whereNow` says "Lantern House (curfew)" for them, "home (curfew)" for the rest |
-| `cd_post_lantern` officer (new) | fernbrook 6,6 | `["story.crackdown", "!story.side_pick_done"]` | PLACEHOLDER: "First light means now, holder. West road or east road." |
+| `cd_post_lantern` officer (new) | fernbrook 6,6 | `["story.crackdown", "!story.side_pick_done"]` | PLACEHOLDER: "Curfew's lifted at the pick, holder. Not before." |
 | `cd_post_hall` officer (new) | fernbrook 21,7 | same | PLACEHOLDER: "The Trial Hall is closed by order." |
 | `cd_cordon_hall` prop (new, `lantern_cordon`) | fernbrook 23,7 | same | |
-| `cd_notice` (new sign, `curfew_notice`) | fernbrook 7,6 | same | PLACEHOLDER: "CURFEW. Residents indoors. Visitors leave Fernbrook by morning. By order of the Commander." |
-| `fb_hall` door | 22,6 | keyed `deny` adds `"story.crackdown & !story.side_pick_done": "PLACEHOLDER: Closed by order of the Commander."` | the Hall reopens after the pick as a place (D1206) |
+| `cd_notice` (new sign, `curfew_notice`) | fernbrook 7,6 | same | PLACEHOLDER: "CURFEW. Dusk to dawn. Residents indoors. By order of High Charity." |
+| `fb_hall` door | 22,6 | **[v0.3.1]** keyed `deny` adds `"story.hall1_shut": "PLACEHOLDER: Shut by order of High Charity."` | the Hall stays shut on both paths until Fen's Act 2 turn (D1224 supersedes D1206). Fen's built rematch and town-board slips that send the holder to the Hall need deny lines (SEALS lore §5) |
 | `fen_dawn` (new Fen body) | fernbrook 10,9 (the orchard) | `["story.post_trial_done", "!story.side_pick_done", "!story.orchard_cleared"]` | points the holder at the gate; the built pick follows |
 | `juniper_east` (new body of Juniper) | fernbrook 30,8, beside the rubble | `["story.crackdown", "!story.side_pick_done"]` | her pitch (§6) |
 | Constable Rue | 4,9 | unchanged | a curfew-keyed line |
@@ -241,7 +300,7 @@ The new bodies don't block the path: the road (row 8) stays open from the Lanter
 
 | Thing | Where it goes |
 |---|---|
-| Where the holder ends up | asleep in `fb_lantern_in`; wakes there at dawn (the holder stands at 5,10 when the scene ends) |
+| Where the holder ends up | asleep in `fb_lantern_in`; let go there at dawn (**[v0.3.1]** the dawn release, D1222; the holder stands at 5,10 when the scene ends) |
 | Amos's pitch (FPT Part C, `story.pitch_k`) | **moves inside, the night before**: optional talk with Amos after Beat 8 (his `lines` key `story.post_trial_done & !story.pitch_k`) |
 | Juniper's pitch (`story.pitch_g`) | **moves to the east road at dawn**: `juniper_east` at 30,8, on the far side of the rubble path, where her crew camp is |
 | STANDING | still opens on the pick or both pitches (D1144) |
@@ -252,7 +311,7 @@ How the crackdown changes the two pitches (Story writes the lines; these are the
 
 | | Before (FPT Part C) | After the crackdown |
 |---|---|---|
-| Amos (Keepers) | "Both are watching. Walk beside, not ahead." | **On the back foot, and honest:** "What you saw isn't the Keepers. It's one Commander. Fen's gone over his head. Walk with us and help fix it from inside." |
+| Amos (Keepers) | "Both are watching. Walk beside, not ahead." | **[v0.3.1]** SEALS lore: "The order came from High Charity. I don't like it either. I still keep." **On the back foot, and honest:** "What you saw isn't the Keepers. It's one Commander. Fen's gone over his head. Walk with us and help fix it from inside." |
 | Juniper (Glimmerwell) | warm beds, a vet, "Glimmerwell fixes things" | **Uses the crackdown:** "They locked a whole town indoors. We'd never." But she also shows Glimmerwell's side: "Our insurers advised a strategic relocation. The locals? They'll be fine." |
 
 Options considered:
@@ -267,7 +326,7 @@ Options considered:
 |---|---|---|---|---|---|
 | after `hall1` | **`crackdown_street`** (new) | `story.seal1`, `!story.side_pick_done`, `!story.orchard_cleared` | `story.crackdown` | fixed: `fb_hall_in` 7,22 (the way out), then fernbrook 22,7 | Something's happening outside the Trial Hall. |
 | then | `post_trial` (#261, id kept) | as #261 | `story.post_trial_done` | `npc: 'Keeper Amos'`, fallback `fb_lantern_in` 5,13 | Get to the Lantern House. |
-| then | `pick` (#261, kept) | as #261 | as #261 | fernbrook 9,10 (`npc: 'Master Fen'`, `npcIds ['fen_dawn']`) | Meet Fen at the orchard gate at first light. |
+| then | `pick` (#261, kept) | as #261 | as #261 | fernbrook 9,10 (`npc: 'Master Fen'`, `npcIds ['fen_dawn']`) | Meet Fen at the orchard gate at dawn. |
 | side, optional | `pitches` (FPT Part C card) | `story.post_trial_done`, `!story.side_pick_done` | `story.pitch_k & story.pitch_g` | Amos (Lantern House), Juniper (30,8) | Two people want a word before you go. |
 
 `doneMask` (#261 `quests.js:387`): `post_trial` done implies `crackdown_street` done, so saves that ran #261's placeholder (`post_trial_done` with no `crackdown`) skip the crackdown, as R10 wants: no old-save work.
@@ -287,9 +346,10 @@ Options considered:
 
 | Flag | Kind | Written by | Read by |
 |---|---|---|---|
-| `story.crackdown` | **new**, `done` flag of `crackdown_street` | end of `crackdown_street` | the curfew read, objects, deny, whereabouts |
+| `story.crackdown` | **new**, `done` flag of `crackdown_street` | end of `crackdown_street` | the curfew read, objects, whereabouts |
+| `story.hall1_shut` | **[v0.3.1]** Story's name (SEALS lore §5 beat 2, D1224) | end of `crackdown_street`, with `story.crackdown` | the Hall door deny; cleared only at Fen's Act 2 turn (not this quest) |
 | `story.post_trial_done` | #261 (D1175) | end of `crackdown_lantern` (moved from #261's `sceneTails.seal1`) | `pick`, `fb_side_pick` |
-| `story.fen_lean` | Seals lore v3.1 (pending design commit); hidden | the Beat 7 choice (`inc`, encoding PLACEHOLDER) | nothing in this quest; Fen's first Act 2 return |
+| `story.fen_lean` | Seals lore v3.1; hidden | **[v0.3.1]** the Beat 1 Seal choice and the Beat 7 choice (`inc`, encoding PLACEHOLDER) | nothing in this quest; Fen's first Act 2 return |
 | `story.pitch_k`, `story.pitch_g` | FPT Part C names (not built) | Amos's and Juniper's pitch scenes | `pitches`, STANDING (D1144) |
 
 - **Save.** Save stays `pixelpets.save.v2`, `v` 2. No migrator; nothing written at load; no new top-level field. The Seal is never removed: no `delete S.seals`, `story.seal1` untouched.
@@ -304,7 +364,7 @@ Options considered:
 
 Data only (`data/news.json` `when` gates; `news.js`):
 - Block News: "Fernbrook curfew" (`when story.crackdown`).
-- Block News: "Seal ban proposed" (`when story.crackdown`).
+- Block News: "New Seals paused in Fernbrook" (`when story.crackdown`; **[v0.3.1]** the ban is in force, not proposed).
 - Block News: "Curfew lifted" (`when story.side_pick_done`).
 
 Two NPC lines in other towns after the pick (PLACEHOLDER, Story): a holder in Cobblecrest who meant to try Fernbrook next, and Archivist Mo on what a Seal used to mean. No gate, cap or level rule changes anywhere.
@@ -316,17 +376,17 @@ Two NPC lines in other towns after the pick (PLACEHOLDER, Story): a holder in Co
 | Fen defies Keeper police but must stay a Keeper (D1170) | STORY §3a: Wardens outrank Commanders and aren't in the cover-up | Fen appeals **up** the ladder ("I'm writing to the Warden"), never against the Keepers as a whole. Her line: "A Commander doesn't outrank the lantern's law." |
 | The Keepers look heavy-handed right before the pick (balance) | the pick needs two fair options | Ledger below. Default: Amos owns it, the officers are uneasy, Rue is kind, Fen defies from inside. Glimmerwell runs and leaves locals, and Juniper spins it. Telemetry later: the pick ratio before and after (no new code; QA notes it) |
 | "Tanks" in a cozy pet game | STORY transport: Lantern Coach, lantern airships, Glimmerwell carts. No guns anywhere in canon | **They are tanks, with no gun** (D1202; §10a): a low hull on treads with a dominant turret, but the turret carries a great caged searchlight lantern and a loudhailer bell. It threatens by watching and ordering. Green lacquer, iron and brass: unmistakably Keeper, never Glimmerwell's gloss and red |
-| Curfew and ban vs town steering (D1173, red, open) | steering is "which side a Trial steered a town toward" | The curfew is scene-scoped (crackdown to pick) and the ban is world news; neither writes town state. D1173 stays untouched. If Vincent picks Seal option A (D1199), Seals become the steering key, and this beat is the first sign of it |
+| Curfew and ban vs town steering (D1173, red, open) | steering is "which side a Trial steered a town toward" | The curfew is scene-scoped (crackdown to pick) and the ban is world news; neither writes town state. D1173 stays untouched. **[v0.3.1]** D1199 is superseded (D1211, D1212), so Seals are not the steering key |
 | Tone and age | STORY.md:137-144 says the audience is 16-28 with "no blood on screen, ever"; walklings-story-craft says all-ages ("no peril without hope") | Pitched for both: no weapon drawn, no one taken away on screen, no Walkling harmed. "Arrested" and "detained" appear as words only. Hope arrives in the same scene (Fen's appeal, Amos's beds). The audience conflict is flagged to Morgan (§12, row 11) |
 | The Commander is in on the cover-up (canon) | STORY §3a | The line never says it. He just doesn't value Seals: a seed only |
-| The Seal threat | D1150 | words only; the Seal is never removed |
+| The Seal threat | D1150, **[v0.3.1]** D1223 | it goes dull in his hand and comes back; the Seal is never removed |
 | Rook | a competitor (walklings-story-craft) | not in the default script (optional, §12 row 8) |
 
 **Balance ledger.** How each side reads before the pick (target: roughly even):
 
 | Beat | Keepers look | Glimmerwell looks |
 |---|---|---|
-| 1 | heavy-handed (Commander) | scared, permit-waving (Juniper) |
+| 1 | heavy-handed (Commander; the dull Seal) | scared, permit-waving (Juniper) |
 | 2 | brave (Fen) | |
 | 3 | uneasy, kind (Rue); cold (escort) | runs and leaves the locals behind |
 | 4-6 | officers stiff; Fen principled | |
@@ -498,14 +558,14 @@ Further ideas from the brief, not yet in the default (Story and Design pick):
 
 | Slice | Who | Content | Effort |
 |---|---|---|---|
-| S0 | Vincent | rule on the red rows (D1197-D1203) and look at the storyboard | |
-| S1 | June | lines, voice cards, names; the balance pass | 1-2 days |
-| S2 | engineer | **engine, small (E1-E5, each a line or two, all prototyped):** prop casts, per-tile `ms`, `_move` frames, width-aware cull, `walkAll` (§10a.5). Plus the keyed `deny` entry for the Hall and the `whereNow` curfew rows | 1 day |
+| S0 | Vincent | rule on the red rows still open (**[v0.3.1]** D1198, D1200-D1202, D1203's pitch placement) and look at the storyboard | |
+| S1 | June | lines, voice cards, names; the balance pass; **[v0.3.1]** the Seal-threat choice and its two branches, the dawn-release lines, the Hall deny lines | 1.5-2.5 days |
+| S2 | engineer | **engine, small (E1-E5, each a line or two, all prototyped):** prop casts, per-tile `ms`, `_move` frames, width-aware cull, `walkAll` (§10a.5). Plus the keyed `deny` entry for the Hall (**[v0.3.1]** on `story.hall1_shut`, and on Fen's rematch and the board slips) and the `whereNow` curfew rows | 1.5 days |
 | S3 | Pia | **the tanks** (§10a: 2 variants x 2 facings; 6 idle + 4 drive + 3 hatch frames; beam; dust), plus the rest of §10 | 4-5 days (the tanks are about 3 of them) |
 | S4 | engineer | **data build:** `data/detail_zz_crackdown.json` (scenes, objects, `when`s, triggers, the `sceneTails.seal1` change); chain rows; `reputation.json` cast entries; `news.json` stories; `python3 tools/gen_mapdata.py`. Previews from a patched copy of main at 320, 375 and 390 before the PR | 2 days |
 | S5 | engineer and QA | tests (§11.1); walklings-qa-run on saves n, fresh, "Mahopac done", a2/b' (skip), c (never) | 1 day |
 
-About 9-11 working days in all, with the tanks as the largest art item. It can ship after #261 merges. It doesn't depend on the Trial Hall redesign, though both read the same hold.
+**[v0.3.1] About 10-12 working days in all** (v0.3 was 9-11: +0.5 day June, +0.5 day engineer for the Seal choice, the dawn release and the shut Hall; about 0.5-1 day less art if the TV falls back to the built `tv_set`), with the tanks as the largest art item. It can ship after #261 merges. It doesn't depend on the Trial Hall redesign, though both read the same hold.
 
 ### 11.1 Acceptance tests (`tests/post_trial_crackdown.spec.js`)
 
@@ -523,7 +583,8 @@ About 9-11 working days in all, with the tanks as the largest art item. It can s
 | T8 | Guards: a1, c and Glimmer saves never trigger the crackdown; a save with #261's `post_trial_done` and no `crackdown` skips it |
 | T9 | Tap x2, a second tap ends the beat, SKIP snaps walks, and reduced motion has no fractional tiles; `cutsceneMiss` empty |
 | T10 | At 320, with the holder at 5,6, the wire set (5,2) is fully on screen for every Block News and President line and every speaker is clear of the text box (LANTERN_HOUSE_FERNBROOK T7) |
-| T12 | The Beat 7 choice changes only `story.fen_lean`; both labels are 30 characters or fewer |
+| T12 | **[v0.3.1]** The Beat 1 and Beat 7 choices change only `story.fen_lean`, once each even after a replay; all labels are 30 characters or fewer; after Beat 1 `S.seals.seal_fernbrook` is unchanged |
+| T13 | **[v0.3.1]** After the pick, on both sides, the Hall door still shows the `story.hall1_shut` deny; the curfew read is false |
 | T11 | Markers: at every hour of a weekday during the curfew, no step points at a hidden body |
 
 ## 12. Conflicts
@@ -536,21 +597,43 @@ About 9-11 working days in all, with the tanks as the largest art item. It can s
 | 4 | D1151 (Route 2 waits for the pick) | Glimmerwell "flees east into the next map" while Route 2 is closed | the actors walk to 30,8 and are hidden at the rubble ("their crew camp past the slide"); the holder's exit still waits for the pick. That fits the open sign after the pick: "Rockslide cleared by Glimmerwell Co." |
 | 5 | D1171 (the flip) | | the curfew lifts at the same read (`side_pick_done`); no clash |
 | 6 | D1173 (red, open) | curfew and ban vs town steering | no town state is written (§8) |
-| 7 | TRIAL_HALL_FERNBROOK_MAP (this PR) | the Hall closes during the curfew | closed by `deny` only during the curfew; open after the pick, so the hold-flipped Hall is visible (D1206) |
+| 7 | TRIAL_HALL_FERNBROOK_MAP (this PR) | the Hall closes during the curfew | **[v0.3.1]** shut by `story.hall1_shut` on both paths until Fen's Act 2 turn (D1224 supersedes D1206); the hold-flipped Hall is seen from outside only |
 | 8 | #249 Rook ("Race you to Fernbrook! I'm meeting someone.") and FPT Part D ("Rook at the Lantern House door") | where is Rook during the curfew? | optional: Rook is also stuck in the Lantern House overnight, a competitor who teases and then helps (Story; not in the default script) |
 | 9 | `claude/fernbrook-plaza` (no PR) | its `after` phase (Seal 1, no pick) is exactly the curfew window; the broadcast names "the plaza" | plaza cast hidden by the curfew read; "plaza" in the broadcast only if that branch merges first |
-| 10 | Vincent's beat 5, "leave immediately" | | "at first light" (D1203); "now" is option B in §6 |
+| 10 | Vincent's beat 5, "leave immediately" | | **[v0.3.1]** superseded: the dawn release (D1222) |
 | 11 | Audience: STORY.md says 16-28; the skill says all-ages | | written to pass both (§8); flagged for Morgan to settle with Design |
 | 12 | Keeper ranks (D1161 on `ranks`, #262) | the Commander's title | "Commander" is a canon ladder rank (KEEPER_RANKS); the name is PLACEHOLDER (D1198) |
-| 13 | Seals lore v3.1 (pending design commit) | v0.2's Beat 7 had Block News read the curfew, with no President and no `story.fen_lean` | **resolved** by Vincent (Mon Nov 2, 2026, ~10:55 PM ET): the President gives the broadcast on the wire set and the holder's answer moves `story.fen_lean` (Beat 7) |
-| 14 | The Lantern House redesign (LANTERN_HOUSE_FERNBROOK, D1220) | the set moves from 8,2 to 5,2; the room gains townsfolk | Beats 4-8 updated here; every actor tile checked free in the new layout |
+| 13 | Seals lore v3.1 (**[v0.3.1]** settled as D1210-D1239) | v0.2's Beat 7 had Block News read the curfew, with no President and no `story.fen_lean` | **resolved** by Vincent (Mon Nov 2, 2026, ~10:55 PM ET): the President gives the broadcast on the wire set and the holder's answer moves `story.fen_lean` (Beat 7) |
+| 14 | The Lantern House redesign (LANTERN_HOUSE_FERNBROOK; its "D1220" collides, §0 A17) | the set moves from 8,2 to 5,2; the room gains townsfolk | Beats 4-8 updated here; every actor tile checked free in the new layout |
 
 ## 13. Decisions (D1197-D1209)
+
+**[v0.3.1] Dispositions** (Vincent, Mon Nov 2, 2026, 11:05 PM EST, defaults accepted, direct to Design: the settled Seals calls
+win; design `specs/STORY_DECISIONS.md` v0.65). All thirteen were raised Mon Nov 2, 2026 (v0.1, game #263) with no deadline written;
+red rows wait for Vincent. No new id.
+
+| Id | Colour | Disposition | Default (still open rows) |
+|---|---|---|---|
+| D1197 | red | **Superseded** by D1216 (SEALS-G, the crackdown before the pick) and D1222 (SEALS-M, the scene and the dawn release). The tanks stay under D1202; Fen's Warden letter stays as flavour | - |
+| D1198 | red | **Still open** (the Commander's name, look, return) | Rank "Commander", name PLACEHOLDER (Story), returns in Act 2 or 5 |
+| D1199 | red | **Superseded** by D1211 (SEALS-B, a Seal opens its Hall Stone room; all eight the Summit door) and D1212 (SEALS-C, tuned to its pair). None of A/B/C; A not taken | - |
+| D1200 | red | **Still open**, reworded to D1222 and D1231: the curfew runs dusk to dawn; the night ends in the dawn release; the curfew order (the read `story.crackdown & !story.side_pick_done`) ends at the pick. "Visitors out by first light" is dropped | As §5 |
+| D1201 | red | **Still open**, default unchanged; the ban's wording follows D1221, D1236 and D1237 (in force "until further notice", signed by the Governor's office) | As §7.4 |
+| D1202 | red | **Still open** (Claude's wording: tanks with no gun) | Shape as §10a; "Keeper tank" in narration, PLACEHOLDER |
+| D1203 | red | **Partly superseded:** "leave at first light" by D1222 (the dawn release). **Still open:** the pick stays at `fb_side_pick` at dawn; FPT Part D's morning cart is replaced by the night; Amos's pitch moves inside and Juniper's to the east road | Option A (§6) |
+| D1204 | yellow | **Still open** (E1-E5) | Add E1-E5 |
+| D1205 | yellow | **Broadcast superseded** by D1231 (SEALS-W, the President on the Lantern House TV). **Still open:** the Block News card and three NEWS stories (data only) | Yes; only Fernbrook's for now |
+| D1206 | yellow | **Superseded** by D1224 (SEALS-O): the Hall stays shut on both paths until Fen's Act 2 turn (`story.hall1_shut`) | - |
+| D1207 | yellow | **Still open** | As §5 |
+| D1208 | green | **Still open** | Ship nothing until June's pass |
+| D1209 | yellow | **Still open**; the ledger adds the dull-Seal beat | Yes |
+
+**Claude's original rows (v0.3, kept for the record):**
 
 Checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:45 PM ET:
 - This PR already holds D1189-D1196 (TRIAL_HALL_FERNBROOK_MAP), and #261 holds through D1189.
 - No other branch or the design repo uses D1197 or higher.
-- **Reserved: D1197-D1209. Next free: D1210.**
+- **Reserved: D1197-D1209.** Next free when #263 merged: D1210. After Vincent's renumbering (Mon Nov 2, 2026, ~11:15 PM ET: Design D1210-D1242, plaza and homes D1243-D1252; design STORY_DECISIONS v0.65 reserves D1253-D1254, unused), **next free: D1255**.
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
