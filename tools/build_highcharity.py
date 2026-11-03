@@ -253,7 +253,7 @@ SIGNS = {
     'hc_marina': 'CANAL MARINA · Tie up gently. The buoys mark the deep water. Wave if you need a hand.',
     'hc_mall': 'TWO-FLOOR MALL · Coats upstairs, crumbs downstairs. Walk your Walkling between the benches.',
     'hc_apt': 'KEEPER APARTMENTS · Rooms for holders new to the city. The landlord keeps the spare keys.',
-    'hc_gym': 'TRIAL GYM · Practice before a real Hall. Stones, tides, and blooms are all welcome.',
+    'hc_gym': 'DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome.',
     'hc_lantern': 'LANTERN HOUSE · Rest is free. The beds stay warm, and nobody asks why you are tired.',
     'hc_hall': 'EVENT HALL · Five booths, one evening. Play kindly. The prizes are small on purpose.',
 }

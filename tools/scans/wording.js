@@ -17,6 +17,36 @@ if (crypto.createHash('sha256').update(brandWord()).digest('hex') !== BRAND_SHA2
   throw new Error('brand encoding does not match its hash');
 }
 
+// Franchise names, kept as char codes for the same reason: the repo never
+// spells them. Matched case-insensitive, accents folded, at a word start, in
+// every string (a one-word speaker label counts). Add a name by appending its
+// codes and updating the hash (SHA-256 of the names joined with "|").
+const FRANCHISE_SHA256 = 'a52362553a256e045b458e2a07b475040e2db26d24432841c6562527316d59e1';
+const FRANCHISE_CODES = [
+  [112, 111, 107, 101, 109, 111, 110], [112, 111, 107, 101, 98, 97, 108, 108], [112, 105, 107, 97, 99, 104, 117],
+  [100, 105, 103, 105, 109, 111, 110], [110, 105, 110, 116, 101, 110, 100, 111], [103, 97, 109, 101, 32, 102, 114, 101, 97, 107],
+  [119, 97, 114, 102, 114, 97, 109, 101], [121, 111, 107, 97, 105], [121, 111, 45, 107, 97, 105],
+  [110, 101, 111, 112, 101, 116, 115], [112, 97, 108, 119, 111, 114, 108, 100], [116, 101, 109, 116, 101, 109],
+];
+const FRANCHISE_WORDS = FRANCHISE_CODES.map(c => String.fromCharCode.apply(null, c));
+if (crypto.createHash('sha256').update(FRANCHISE_WORDS.join('|')).digest('hex') !== FRANCHISE_SHA256) {
+  throw new Error('franchise encoding does not match its hash');
+}
+const FRANCHISE_RE = new RegExp('\\b(?:' + FRANCHISE_WORDS.map(w => w.replace(/[-\s]/g, m => (m === '-' ? '-?' : '\\s*'))).join('|') + ')', 'i');
+
+// Retired or unchecked story names (Nov 3, 2026). Orokin was replaced by
+// Merriden (D1240); Accord and bellgold stay out of player text. Checked in
+// every string, so a one-word speaker label counts.
+const NAME_RULES = [
+  [/\baccord\b/i, 'accord'],
+  [/\borokin\b/i, 'orokin'],
+  [/\bbellgold\b/i, 'bellgold'],
+];
+
+function foldAccents(text) {
+  return String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 // Genuine player-visible hits on main, for the Supervisor to route.
 // Do not put ids, flag keys, or author notes here. Tighten those rules instead.
 // Each entry is { file, line, reason } and must match a hit exactly.
@@ -25,7 +55,9 @@ const ALLOW = [];
 // id-like fields from the scan rules, plus implementer notes (engineAsks,
 // artRequests) that are not shown to the player. A leading "_" is the same
 // kind of author note (_note, _about, _lore).
-const SKIP_KEYS = new Set(['id', 'look', 'kind', 'when', 'faction', 'note', 'decisions', 'flags', 'tiles', 'engineAsks', 'artRequests']);
+// `furniture` is the art catalogue in data/interiors.json (name + art brief per
+// prop); the game never reads it.
+const SKIP_KEYS = new Set(['id', 'look', 'kind', 'when', 'faction', 'note', 'decisions', 'flags', 'tiles', 'engineAsks', 'artRequests', 'furniture']);
 const SELF_TEST_FN = /DevCheck$|^(devCheck|devChecks|repCastCheck|debugCheckpointList)$/;
 const REGEX_KW = new Set(['return', 'throw', 'case', 'else', 'do', 'typeof', 'void', 'delete', 'in', 'of', 'yield', 'await', 'instanceof']);
 
@@ -38,7 +70,8 @@ function allowed(file, line, reason) {
 }
 
 function maskIds(text) {
-  return String(text).replace(/\bisFainted\b/g, '').replace(/\bdexGrid\b/g, '');
+  // {rival}, {rivalType} and other {tokens} are filled in by code, not read as words.
+  return String(text).replace(/\bisFainted\b/g, '').replace(/\bdexGrid\b/g, '').replace(/\{[A-Za-z_]+\}/g, '');
 }
 
 // Prose has whitespace. Tokens, flag keys, conditions, selectors, CSS blobs
@@ -47,6 +80,8 @@ function maskIds(text) {
 function reasonsFor(text) {
   const reasons = [];
   if (text.toLowerCase().indexOf(brandWord()) >= 0) reasons.push('brand');
+  if (FRANCHISE_RE.test(foldAccents(text))) reasons.push('franchise');
+  for (const [re, reason] of NAME_RULES) if (re.test(text)) reasons.push(reason);
   if (!/\s/.test(text)) return reasons;
   const s = maskIds(text);
   if (/\bkeepers?\b/.test(s)) reasons.push('lowercase keeper');
@@ -57,6 +92,10 @@ function reasonsFor(text) {
   if (/\bappeared\b/i.test(s)) reasons.push('appeared');
   if (/\bgo, [a-z]+!/i.test(s)) reasons.push('go-x');
   if (/\b[a-z]+dex\b/i.test(s)) reasons.push('dex');
+  // House words: Trial Hall, wire set, competitor (Nov 3, 2026).
+  if (/\bgyms?\b/i.test(s)) reasons.push('gym');
+  if (/\btvs?\b|\btelevision/i.test(s)) reasons.push('tv');
+  if (/\brivals?\b/i.test(s)) reasons.push('rival');
   return reasons;
 }
 
@@ -453,4 +492,4 @@ function scanWording(root) {
   return { ok: fails.length === 0, fails };
 }
 
-module.exports = { scanWording, BRAND_CODES, ALLOW };
+module.exports = { scanWording, BRAND_CODES, FRANCHISE_CODES, ALLOW };

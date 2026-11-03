@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 01:19 ET: Banned-words sweep: one TV line, a stale GYM sign in a build script, and new words in the wording scan
+
+- What changed and why: a sweep of player text in `data/*.json` and `game.js` for trainer, lowercase keeper, coins, gym, TV, rival (meaning Rook), franchise names, Accord, Orokin and bellgold. Ids, keys and `{tokens}` were left alone. Two hits, both fixed to the house word: the dream TV prop in `data/mahopac.json` (`dream_tv`) now reads "The wire set hums. A ball game, with the sound turned low." and `tools/build_highcharity.py` no longer spells the `hc_gym` sign "TRIAL GYM": it now matches the live sign Design signed in STORY v0.5.1 ("DOJO · ..."). The live `data/highcharity.json` is unchanged (the build script is stale in other places, so it was not re-run). trainer, keeper, coins: no hits in player text (the scan already caught them). Every `rival` left is an id, a music slot or the `{rival}` token. No Accord, Orokin, bellgold or franchise name is in player text. The wording scan (`tools/scans/wording.js`) now fails on gym, TV/television, rival, Accord, Orokin, bellgold and a list of franchise names (stored as char codes like the toy brand, so the repo never spells them; accents folded). The names are checked in every string, so a one-word speaker label counts. `{tokens}` are masked before the check, and the art-only `furniture` catalogue in `data/interiors.json` is skipped (the game never reads it). The selftest proves each new reason.
+- Files touched: `data/mahopac.json`, `data/mapdata.js` (regenerated), `tools/build_highcharity.py`, `tools/scans/wording.js`, `tools/scans/selftest.js`, `index.html` and `version.json` (build stamp), `CHANGELOG.md`.
+- Commit(s) + build id: build 20261103-0116.
+- Tests run and result (widths, checks): `node tools/scans/run.js` all PASS; `node tools/scans/selftest.js` PASS; `tests/dream_toy.spec.js` and `tests/mahopac.spec.js` at 320 and 390, 15 passed; a scratch check tapped the wire set in `dream_2004` at 320, 375 and 390 (reduced motion, zero console errors): the line shows in full on two lines.
+- Decisions made (colour + reasoning): green. Text only; the scan words come from the house list. Accord is banned as asked, though D1241 cleared "Judas Accord" for player text: if Story uses it, the scan will fail until the rule is loosened. No decision id.
+- Anything left unfinished: `tools/build_highcharity.py` still differs from the live `data/highcharity.json` in other lines (Lantern sign, council lines, `hc_gym_in` name, a market item); someone should sync it before it is run again.
+
 ## 2026-11-03 00:15 ET: Audit: what the core loop needs to hook players (CORE_LOOP_HOOK_AUDIT v0.1), docs only
 
 - What changed and why: Morgan asked for an honest audit of the core loop, with concrete things to build. New doc `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` covers:

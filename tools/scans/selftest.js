@@ -5,10 +5,15 @@ const { spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { BRAND_CODES } = require('./wording');
+const { BRAND_CODES, FRANCHISE_CODES } = require('./wording');
 
 const RUN = path.join(__dirname, 'run.js');
 const brand = String.fromCharCode.apply(null, BRAND_CODES);
+// First franchise name, capitalised with an accent, so case and accent folding are both proved.
+const franchise = (function () {
+  const w = String.fromCharCode.apply(null, FRANCHISE_CODES[0]);
+  return w.charAt(0).toUpperCase() + w.slice(1, 3) + '\u00e9' + w.slice(4);
+}());
 let failed = 0;
 
 function check(cond, msg) {
@@ -58,7 +63,14 @@ function wordingFixtures() {
     '  "side": "keepers",',
     '  "intro": "the keeper waits by the gate",',
     '  "pay": "a pocket of coins",',
-    '  "toy": ' + JSON.stringify(brand),
+    '  "toy": ' + JSON.stringify(brand) + ',',
+    '  "hall": "Meet me at the gym",',
+    '  "box": "The TV hums.",',
+    '  "rook": "Your rival waits.",',
+    '  "who": "Accord",',
+    '  "gov": "Governor Orokin speaks.",',
+    '  "piece": "a bellgold piece",',
+    '  "fan": ' + JSON.stringify(franchise),
     '}',
     '',
   ].join('\n');
@@ -67,7 +79,11 @@ function wordingFixtures() {
     '  "side": "keepers",',
     '  "intro": "The Keeper waits by the gate.",',
     '  "pay": "a pocket of Acorns",',
-    '  "engineAsks": { "room_trainers": "Trainer objects inside rooms." }',
+    '  "engineAsks": { "room_trainers": "Trainer objects inside rooms." },',
+    '  "rook": "Rook scoops up the {rival} basket. {rivalType} wins.",',
+    '  "box": "The wire set hums.",',
+    '  "music": "rival",',
+    '  "furniture": { "glowbox": { "name": "glowbox (TV-equivalent)" } }',
     '}',
     '',
   ].join('\n');
@@ -332,7 +348,11 @@ function main() {
     check(badW.stdout.indexOf('SCAN FAIL wording: data/player.json:4 coins') >= 0, 'coins line');
     check(badW.stdout.indexOf('SCAN FAIL wording: data/player.json:5 brand') >= 0, 'brand line');
     check(badW.stdout.indexOf('SCAN PASS wording') < 0, 'wording bad must not pass');
-    check((badW.stdout.match(/SCAN FAIL wording:/g) || []).length === 3, 'wording bad hit count ' + badW.stdout);
+    const newHits = [[6, 'gym'], [7, 'tv'], [8, 'rival'], [9, 'accord'], [10, 'orokin'], [11, 'bellgold'], [12, 'franchise']];
+    for (const [ln, reason] of newHits) {
+      check(badW.stdout.indexOf('SCAN FAIL wording: data/player.json:' + ln + ' ' + reason) >= 0, reason + ' line');
+    }
+    check((badW.stdout.match(/SCAN FAIL wording:/g) || []).length === 3 + newHits.length, 'wording bad hit count ' + badW.stdout);
 
     const cleanW = run(w.clean, 'wording');
     show('wording clean', cleanW);
