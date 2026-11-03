@@ -67,7 +67,6 @@ function wordingFixtures() {
     '  "hall": "Meet me at the gym",',
     '  "box": "The TV hums.",',
     '  "rook": "Your rival waits.",',
-    '  "who": "Accord",',
     '  "gov": "Governor Orokin speaks.",',
     '  "piece": "a bellgold piece",',
     '  "fan": ' + JSON.stringify(franchise),
@@ -83,6 +82,8 @@ function wordingFixtures() {
     '  "rook": "Rook scoops up the {rival} basket. {rivalType} wins.",',
     '  "box": "The wire set hums.",',
     '  "music": "rival",',
+    '  "who": "Judas Accord",',
+    '  "says": "The President, Judas Accord, speaks.",',
     '  "furniture": { "glowbox": { "name": "glowbox (TV-equivalent)" } }',
     '}',
     '',
@@ -348,7 +349,7 @@ function main() {
     check(badW.stdout.indexOf('SCAN FAIL wording: data/player.json:4 coins') >= 0, 'coins line');
     check(badW.stdout.indexOf('SCAN FAIL wording: data/player.json:5 brand') >= 0, 'brand line');
     check(badW.stdout.indexOf('SCAN PASS wording') < 0, 'wording bad must not pass');
-    const newHits = [[6, 'gym'], [7, 'tv'], [8, 'rival'], [9, 'accord'], [10, 'orokin'], [11, 'bellgold'], [12, 'franchise']];
+    const newHits = [[6, 'gym'], [7, 'tv'], [8, 'rival'], [9, 'orokin'], [10, 'bellgold'], [11, 'franchise']];
     for (const [ln, reason] of newHits) {
       check(badW.stdout.indexOf('SCAN FAIL wording: data/player.json:' + ln + ' ' + reason) >= 0, reason + ' line');
     }

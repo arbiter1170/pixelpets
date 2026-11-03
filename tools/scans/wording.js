@@ -35,10 +35,10 @@ if (crypto.createHash('sha256').update(FRANCHISE_WORDS.join('|')).digest('hex') 
 const FRANCHISE_RE = new RegExp('\\b(?:' + FRANCHISE_WORDS.map(w => w.replace(/[-\s]/g, m => (m === '-' ? '-?' : '\\s*'))).join('|') + ')', 'i');
 
 // Retired or unchecked story names (Nov 3, 2026). Orokin was replaced by
-// Merriden (D1240); Accord and bellgold stay out of player text. Checked in
-// every string, so a one-word speaker label counts.
+// Merriden (D1240); bellgold stays out of player text. Accord is NOT banned:
+// D1241 cleared "Judas Accord" for player text. Checked in every string, so a
+// one-word speaker label counts.
 const NAME_RULES = [
-  [/\baccord\b/i, 'accord'],
   [/\borokin\b/i, 'orokin'],
   [/\bbellgold\b/i, 'bellgold'],
 ];
