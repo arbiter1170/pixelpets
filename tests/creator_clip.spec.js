@@ -73,6 +73,9 @@ test('a hat clips hair above the brim and every other look matches the build bef
   const now = loadKeeper(fs.readFileSync(path.join(ROOT, 'keeper.js'), 'utf8'));
   // Pinned to main 130f118. After this branch merges, HEAD is the new art, so git show HEAD would fail the check below.
   const old = loadKeeper(fs.readFileSync(BASELINE, 'utf8'));
+  // more_outfits (Vincent, Nov 3, 2026) redrew the hoodie and dress art. This test checks hat and accessory layering,
+  // not outfit art, so the pinned build gets today's two outfits; every other layer still comes from 130f118.
+  for (const id of ['hoodie', 'dress']) old.KEEPER_OUTFITS[id] = now.KEEPER_OUTFITS[id];
   const fails = [];
   const bad = (msg) => { if (fails.length < 12) fails.push(msg); else fails.push(''); };
 
@@ -264,8 +267,9 @@ async function assertLabels(page) {
   });
   expect(Math.round(fit.sw.w)).toBe(44);
   expect(Math.round(fit.sw.h)).toBe(44);
-  expect(fit.pv.w).toBeGreaterThanOrEqual(60);
-  expect(fit.pv.h).toBeGreaterThanOrEqual(60);
+  // more_outfits: the hair, outfit and accessory grids use buttons of at least 54x58 (was 60x60) so 12 outfits fit above DONE.
+  expect(fit.pv.w).toBeGreaterThanOrEqual(54);
+  expect(fit.pv.h).toBeGreaterThanOrEqual(58);
   expect(fit.small).toEqual([]);
   expect(fit.doneTop).toBeGreaterThanOrEqual(0);
   expect(fit.doneBottom).toBeLessThanOrEqual(fit.view + 1);
