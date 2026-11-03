@@ -327,8 +327,8 @@ test('10. town lines after a quota close, then after beating Hale; the Ferry Han
 test('12. Hale\'s live Glimmer lines come from loyalty; the row fallback stays true @w1', async ({ page }) => {
   await boot(page, mkSave(COBBLE_G, { seal_fernbrook: 1, seal_glim_1: 1 }));
   const r = await page.evaluate(() => ({ win: PixelPets.trainerLine('hall2_hale', 'win'), lose: PixelPets.trainerLine('hall2_hale', 'lose'), row: PixelPets.trainerFor('hall2_hale') }));
-  expect(r.win).toBe('You moved the hill. Gently, even in that vest. The Seal is yours, Tester.');
-  expect(r.lose).toBe("Stone's patient. Rest a while, and come back for the Seal, Tester.");
+  expect(r.win).toBe('You moved the hill. Gently, even in that vest. The Seal is yours, {player}.');
+  expect(r.lose).toBe("Stone's patient. Rest a while, and come back for the Seal, {player}.");
   expect(r.row.seal).toBe('seal_cobblecrest');
   expect(r.row.lines.win).toBe('Noted. You moved stone without a lamp. The Seal is yours. Quinn can have the paperwork.');
   expect(r.row.lines.lose).toBe('Stone is patient. My floor stays open. Come back for the Seal.');
