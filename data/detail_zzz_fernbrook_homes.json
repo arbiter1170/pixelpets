@@ -1,0 +1,1132 @@
+{
+  "spec": "handoff/maps/FERNBROOK_HOMES.md (D1248-D1252). Vincent asked for more NPC homes at the bottom of Fernbrook and chose enterable homes with interiors. Needs Vincent's yes on previews (rule 9) before it deploys.",
+  "note": "Sorts after every other detail_* overlay. Grows Fernbrook south (h 20 -> 32): rows 19-31 are new; the only change above is row 18 x18 (tree -> grass). No zones are set (the Fernbrook plaza branch owns zones). Roofs via addRoofs only. Resident labels and lines are placeholders for Design (D1251).",
+  "looks": {
+    "fbh_presser": {
+      "skin": "4",
+      "hair": "short",
+      "hairCol": "d",
+      "outfit": "vest",
+      "outfitCol": "o",
+      "accent": "y"
+    },
+    "fbh_picker": {
+      "skin": "2",
+      "hair": "pony",
+      "hairCol": "r",
+      "outfit": "tunic",
+      "outfitCol": "l",
+      "accent": "r",
+      "accessory": "satchel"
+    },
+    "fbh_young_picker": {
+      "skin": "2",
+      "hair": "spiky",
+      "hairCol": "r",
+      "outfit": "hoodie",
+      "outfitCol": "y",
+      "accent": "g",
+      "accessory": "cap"
+    },
+    "fbh_stitcher": {
+      "skin": "5",
+      "hair": "bun",
+      "hairCol": "h",
+      "outfit": "sweater",
+      "outfitCol": "p",
+      "accent": "w",
+      "accessory": "glasses"
+    },
+    "fbh_hedger": {
+      "skin": "3",
+      "hair": "buzz",
+      "hairCol": "n",
+      "outfit": "vest",
+      "outfitCol": "t",
+      "accent": "o",
+      "accessory": "goggles"
+    },
+    "fbh_gatherer": {
+      "skin": "6",
+      "hair": "curls",
+      "hairCol": "k",
+      "outfit": "dress",
+      "outfitCol": "y",
+      "accent": "r",
+      "accessory": "scarf"
+    }
+  },
+  "maps": {
+    "fbh_press_in": {
+      "name": "Press House",
+      "kind": "interior",
+      "outdoor": "fernbrook",
+      "door": "fbh_press",
+      "backdrop": "town",
+      "skin": "fbh_press",
+      "variants": true,
+      "wall": {
+        "windows": [
+          3,
+          8
+        ]
+      },
+      "w": 12,
+      "h": 14,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 12
+      },
+      "grid": [
+        "############",
+        "#WWWWWWWWWW#",
+        "#uvuvuvuvuv#",
+        "#,,,,......#",
+        "#,,,,......#",
+        "#,,,,..j...#",
+        "#..........#",
+        "#....===...#",
+        "#....===...#",
+        "#...j......#",
+        "#.j.....j..#",
+        "#......j...#",
+        "#......j...#",
+        "#####m######"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "fbh_press_mat",
+          "x": 5,
+          "y": 13,
+          "to": "fernbrook",
+          "tx": 4,
+          "ty": 24,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "fbh_presser",
+          "name": "Cider Presser",
+          "look": "fbh_presser",
+          "x": 4,
+          "y": 4,
+          "facing": "left",
+          "lines": {
+            "else": "First pressing of the day. Mind the floor, it gets sticky by noon."
+          },
+          "chatter": {
+            "else": "Apples in, cider out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_barrel_a",
+          "x": 1,
+          "y": 3,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A barrel of pressed apples. It smells sweet."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_barrel_b",
+          "x": 2,
+          "y": 3,
+          "sprite": "barrel",
+          "lines": {
+            "else": "This barrel is still empty."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_bench",
+          "x": 3,
+          "y": 3,
+          "sprite": "kitchen_counter",
+          "lines": {
+            "else": "The press bench. Sticky to the touch."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_jug_a",
+          "x": 4,
+          "y": 3,
+          "sprite": "cider_jug",
+          "lines": {
+            "else": "A jug of fresh cider. The cork is in."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_crate",
+          "x": 1,
+          "y": 5,
+          "sprite": "apple_crate",
+          "lines": {
+            "else": "Apples waiting for the press."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_hearth",
+          "x": 9,
+          "y": 3,
+          "sprite": "hearth",
+          "lines": {
+            "else": "A low fire. A pot of something warm sits on it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_woodpile",
+          "x": 10,
+          "y": 3,
+          "sprite": "woodpile",
+          "lines": {
+            "else": "Split apple wood. It burns sweet."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_table",
+          "x": 6,
+          "y": 7,
+          "sprite": "table_kitchen",
+          "lines": {
+            "else": "A table with two cups and an apple core."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_stool_a",
+          "x": 5,
+          "y": 7,
+          "sprite": "stool"
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_stool_b",
+          "x": 7,
+          "y": 7,
+          "sprite": "stool"
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_rack",
+          "x": 1,
+          "y": 8,
+          "sprite": "coat_rack",
+          "lines": {
+            "else": "An apron hangs here. It has seen a lot of apples."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_jug_b",
+          "x": 10,
+          "y": 7,
+          "sprite": "cider_jug",
+          "lines": {
+            "else": "Last week's cider. It has a little fizz now."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_bed",
+          "x": 1,
+          "y": 11,
+          "sprite": "bed_quilt_o",
+          "lines": {
+            "else": "A neat bed with an orange quilt."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_basket",
+          "x": 10,
+          "y": 11,
+          "sprite": "basket",
+          "lines": {
+            "else": "Clean cloths for straining."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_press_pot",
+          "x": 10,
+          "y": 12,
+          "sprite": "plant_pot",
+          "lines": {
+            "else": "A little apple seedling in a pot."
+          }
+        }
+      ]
+    },
+    "fbh_picker_in": {
+      "name": "Picker's Cottage",
+      "kind": "interior",
+      "outdoor": "fernbrook",
+      "door": "fbh_picker",
+      "backdrop": "town",
+      "skin": "fbh_picker",
+      "variants": true,
+      "wall": {
+        "windows": [
+          3,
+          10
+        ]
+      },
+      "w": 14,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 6,
+        "y": 10
+      },
+      "grid": [
+        "##############",
+        "#WWWWWWWWWWWW#",
+        "#uvuvuvuvuvuv#",
+        "#............#",
+        "#............#",
+        "#...====.....#",
+        "#...====..q..#",
+        "#............#",
+        "#.q..........#",
+        "#.......q....#",
+        "#............#",
+        "######m#######"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "fbh_picker_mat",
+          "x": 6,
+          "y": 11,
+          "to": "fernbrook",
+          "tx": 12,
+          "ty": 24,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "fbh_picker",
+          "name": "Apple Picker",
+          "look": "fbh_picker",
+          "x": 9,
+          "y": 4,
+          "facing": "down",
+          "lines": {
+            "else": "Up the ladder at dawn, home by supper. The baskets never stay empty for long."
+          },
+          "chatter": {
+            "else": "Ladder's by the door."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "fbh_young_picker",
+          "name": "Young Picker",
+          "look": "fbh_young_picker",
+          "x": 9,
+          "y": 7,
+          "facing": "left",
+          "lines": {
+            "else": "I picked up forty apples today! They were on the ground, but it still counts."
+          },
+          "chatter": {
+            "else": "Forty apples!"
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_bed_a",
+          "x": 1,
+          "y": 3,
+          "sprite": "bed_single_g",
+          "lines": {
+            "else": "A bed with a green blanket. Grown-up size."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_bed_b",
+          "x": 2,
+          "y": 3,
+          "sprite": "bed_single_b",
+          "lines": {
+            "else": "A small bed. There is an apple core under the pillow."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_stove",
+          "x": 6,
+          "y": 3,
+          "sprite": "stove",
+          "lines": {
+            "else": "The stove is warm. Something with apples in it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_basket_a",
+          "x": 9,
+          "y": 3,
+          "sprite": "orchard_basket",
+          "lines": {
+            "else": "An empty picking basket, ready for the morning."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_basket_b",
+          "x": 10,
+          "y": 3,
+          "sprite": "orchard_basket",
+          "lines": {
+            "else": "Another picking basket. The handle is mended."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_crate_a",
+          "x": 11,
+          "y": 3,
+          "sprite": "apple_crate",
+          "lines": {
+            "else": "Today's apples, sorted big to small."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_crate_b",
+          "x": 12,
+          "y": 3,
+          "sprite": "apple_crate",
+          "lines": {
+            "else": "The small ones. They go to the press."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_crate_c",
+          "x": 12,
+          "y": 5,
+          "sprite": "crate",
+          "lines": {
+            "else": "An empty crate, stacked for tomorrow."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_table",
+          "x": 4,
+          "y": 5,
+          "sprite": "table_small",
+          "lines": {
+            "else": "A small table. Somebody left a half-eaten apple."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_game",
+          "x": 6,
+          "y": 6,
+          "sprite": "domino_table",
+          "lines": {
+            "else": "A game left halfway through. Nobody is winning."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_beanbag",
+          "x": 7,
+          "y": 5,
+          "sprite": "beanbag",
+          "lines": {
+            "else": "A squashy seat. It has been sat on a lot."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_pegs",
+          "x": 1,
+          "y": 6,
+          "sprite": "coat_pegs",
+          "lines": {
+            "else": "Two coats, one big and one small."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_laundry",
+          "x": 1,
+          "y": 9,
+          "sprite": "laundry_basket",
+          "lines": {
+            "else": "Washing with grass stains on every knee."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_plant",
+          "x": 12,
+          "y": 7,
+          "sprite": "plant_pot_big",
+          "lines": {
+            "else": "A leafy plant by the window."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_petbed",
+          "x": 12,
+          "y": 9,
+          "sprite": "dog_bed_big",
+          "lines": {
+            "else": "A Walkling bed. Warm, and a bit hairy."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_picker_bowl",
+          "x": 11,
+          "y": 10,
+          "sprite": "water_bowl",
+          "lines": {
+            "else": "A water bowl, filled to the brim."
+          }
+        }
+      ]
+    },
+    "fbh_stitch_in": {
+      "name": "Stitcher's Loft",
+      "kind": "interior",
+      "outdoor": "fernbrook",
+      "door": "fbh_stitch",
+      "backdrop": "town",
+      "skin": "fbh_stitch",
+      "variants": true,
+      "wall": {
+        "windows": [
+          3,
+          7
+        ]
+      },
+      "w": 11,
+      "h": 15,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 13
+      },
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#uvuvuvuvu#",
+        "#.........#",
+        "#.........#",
+        "#.===.....#",
+        "#.===..j..#",
+        "#.===.....#",
+        "#.........#",
+        "#.........#",
+        "#.....j...#",
+        "#...j.....#",
+        "#..j......#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "fbh_stitch_mat",
+          "x": 5,
+          "y": 14,
+          "to": "fernbrook",
+          "tx": 24,
+          "ty": 24,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "fbh_stitcher",
+          "name": "Quilt Stitcher",
+          "look": "fbh_stitcher",
+          "x": 4,
+          "y": 4,
+          "facing": "up",
+          "lines": {
+            "else": "Every square in that rug was a shirt once. Sit if you like, just not on the pins."
+          },
+          "chatter": {
+            "else": "Mind the pins."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_lamp",
+          "x": 3,
+          "y": 3,
+          "sprite": "lamp_stand",
+          "lines": {
+            "else": "A reading lamp, angled at the sewing table."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_desk",
+          "x": 4,
+          "y": 3,
+          "sprite": "desk_small",
+          "lines": {
+            "else": "The sewing table. Thread, chalk and a thimble."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_form",
+          "x": 8,
+          "y": 3,
+          "sprite": "mannequin",
+          "lines": {
+            "else": "A dress form wearing half a jacket."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_curtain",
+          "x": 9,
+          "y": 3,
+          "sprite": "mr_curtain",
+          "lines": {
+            "else": "A curtain on a rail. Fabric scraps hang behind it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_quilt_a",
+          "x": 2,
+          "y": 5,
+          "sprite": "quilt_c",
+          "lines": {
+            "else": "A blue quilt, folded in four."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_quilt_b",
+          "x": 3,
+          "y": 6,
+          "sprite": "quilt_r",
+          "lines": {
+            "else": "A red quilt. The corner is not finished yet."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_quilt_c",
+          "x": 4,
+          "y": 7,
+          "sprite": "quilt_y",
+          "lines": {
+            "else": "A yellow quilt, soft as a cushion."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_wardrobe",
+          "x": 9,
+          "y": 6,
+          "sprite": "wardrobe",
+          "lines": {
+            "else": "A wardrobe full of folded fabric."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_mirror",
+          "x": 9,
+          "y": 8,
+          "sprite": "mirror",
+          "lines": {
+            "else": "A tall mirror for fittings."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_easel",
+          "x": 1,
+          "y": 9,
+          "sprite": "easel",
+          "lines": {
+            "else": "Pattern sketches. Squares, and more squares."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_bed",
+          "x": 1,
+          "y": 12,
+          "sprite": "bed_single_p",
+          "lines": {
+            "else": "A bed under a patchwork cover."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_yarn",
+          "x": 8,
+          "y": 12,
+          "sprite": "basket",
+          "lines": {
+            "else": "A basket of yarn balls."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "fbh_stitch_laundry",
+          "x": 9,
+          "y": 12,
+          "sprite": "laundry_basket",
+          "lines": {
+            "else": "Quilts waiting to be aired."
+          }
+        }
+      ]
+    }
+  },
+  "slicePatch": {
+    "maps": {
+      "fernbrook": {
+        "set": {
+          "w": 32,
+          "h": 32
+        },
+        "gridRows": {
+          "18": "TgFFFFFFFFFFFFFFFgggggggggggggTT",
+          "19": "TTgggggggggggggggppTTTTTTTTTTTTT",
+          "20": "TggfgggggggggggggppggggggggfgggT",
+          "21": "TgRRRRRRggRRRRRRgppgggRRRRRRgggT",
+          "22": "TgRRRRRRggRRRRRRgppgggRRRRRRgggT",
+          "23": "TgHHHHHHggHHHHHHgppgggHHHHHHgggT",
+          "24": "TgggpgggggggpggggppgggggpgggggfT",
+          "25": "TgppppppppppppppppppppppppppppgT",
+          "26": "TggggggfgggggggggggggggfgggggggT",
+          "27": "TgFFFgFFFggggggggggggssssssggggT",
+          "28": "TgFfffffFggTgggggggggswwwwsggggT",
+          "29": "TgFfffffFgggggTggggggswwwwsggggT",
+          "30": "TgFFFFFFFggggggggggggssssssggggT",
+          "31": "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+        },
+        "addRoofs": {
+          "fbh_press": {
+            "x0": 2,
+            "y0": 21,
+            "x1": 7,
+            "y1": 22,
+            "roof": "roof_thatch_y",
+            "wall": "wall_batten_o",
+            "door": "door_barn",
+            "win": "win_lamp",
+            "trim": "r",
+            "shape": "gable+chimney",
+            "porch": [
+              "fbh_press_porch_barrel",
+              "fbh_press_porch_hay"
+            ]
+          },
+          "fbh_picker": {
+            "x0": 10,
+            "y0": 21,
+            "x1": 15,
+            "y1": 22,
+            "roof": "roof_tile_r",
+            "wall": "wall_yellow",
+            "door": "door_red",
+            "win": "win_round",
+            "trim": "g",
+            "shape": "steep",
+            "porch": [
+              "fbh_picker_porch_basket",
+              "fbh_picker_porch_crate"
+            ]
+          },
+          "fbh_stitch": {
+            "x0": 22,
+            "y0": 21,
+            "x1": 27,
+            "y1": 22,
+            "roof": "roof_shingle_p",
+            "wall": "wall_plaster",
+            "door": "door_tall_t",
+            "win": "win_tall",
+            "trim": "p",
+            "shape": "gable+bunting",
+            "porch": [
+              "fbh_stitch_porch_line",
+              "fbh_stitch_porch_planter"
+            ]
+          }
+        },
+        "addObjs": [
+          {
+            "kind": "door",
+            "id": "fbh_press",
+            "x": 4,
+            "y": 23,
+            "to": "fbh_press_in",
+            "tx": 5,
+            "ty": 12,
+            "facing": "up"
+          },
+          {
+            "kind": "door",
+            "id": "fbh_picker",
+            "x": 12,
+            "y": 23,
+            "to": "fbh_picker_in",
+            "tx": 6,
+            "ty": 10,
+            "facing": "up"
+          },
+          {
+            "kind": "door",
+            "id": "fbh_stitch",
+            "x": 24,
+            "y": 23,
+            "to": "fbh_stitch_in",
+            "tx": 5,
+            "ty": 13,
+            "facing": "up"
+          },
+          {
+            "kind": "sign",
+            "id": "fbh_lane_sign",
+            "x": 19,
+            "y": 20,
+            "text": "South lane. Three cottages, a flower patch and the pond."
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_press_porch_barrel",
+            "x": 1,
+            "y": 24,
+            "sprite": "barrel",
+            "lines": {
+              "else": "A barrel by the press door. It smells of cider."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_press_porch_hay",
+            "x": 7,
+            "y": 24,
+            "sprite": "hay_bale",
+            "lines": {
+              "else": "Straw for packing apples."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_picker_porch_basket",
+            "x": 10,
+            "y": 24,
+            "sprite": "orchard_basket",
+            "lines": {
+              "else": "A picking basket left by the door."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_picker_porch_crate",
+            "x": 14,
+            "y": 24,
+            "sprite": "crate",
+            "lines": {
+              "else": "An empty apple crate."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_stitch_porch_line",
+            "x": 29,
+            "y": 23,
+            "sprite": "laundry_line",
+            "lines": {
+              "else": "Quilts airing in the sun."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_stitch_porch_planter",
+            "x": 22,
+            "y": 24,
+            "sprite": "planter_geranium",
+            "lines": {
+              "else": "Red flowers in a window box."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_gate_post",
+            "x": 19,
+            "y": 21,
+            "sprite": "fence_post"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_woodpile_out",
+            "x": 8,
+            "y": 22,
+            "sprite": "woodpile",
+            "lines": {
+              "else": "Wood for the press house fire."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_cart",
+            "x": 20,
+            "y": 23,
+            "sprite": "cart_prop",
+            "lines": {
+              "else": "A hand cart for moving apples."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_bush_w",
+            "x": 1,
+            "y": 27,
+            "sprite": "bush"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_bush_e",
+            "x": 30,
+            "y": 27,
+            "sprite": "bush"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_log",
+            "x": 9,
+            "y": 27,
+            "sprite": "log",
+            "lines": {
+              "else": "A log to sit on."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_windfalls",
+            "x": 13,
+            "y": 27,
+            "sprite": "apple_crate",
+            "lines": {
+              "else": "Windfalls from the two trees."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_stump",
+            "x": 16,
+            "y": 29,
+            "sprite": "stump"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_bench",
+            "x": 19,
+            "y": 29,
+            "sprite": "bench_long",
+            "lines": {
+              "else": "A bench by the pond."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_flowers_w",
+            "x": 3,
+            "y": 20,
+            "sprite": "flower_clump"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_flowers_e",
+            "x": 29,
+            "y": 20,
+            "sprite": "flower_clump"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_back_bush_a",
+            "x": 5,
+            "y": 20,
+            "sprite": "bush"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_back_planter",
+            "x": 7,
+            "y": 20,
+            "sprite": "planter_round",
+            "lines": {
+              "else": "A young apple tree in a tub."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_rain_barrel",
+            "x": 9,
+            "y": 21,
+            "sprite": "barrel",
+            "lines": {
+              "else": "A rain barrel between the cottages."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_kindling",
+            "x": 8,
+            "y": 23,
+            "sprite": "crate",
+            "lines": {
+              "else": "Kindling for the press house fire."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_back_flowers",
+            "x": 11,
+            "y": 20,
+            "sprite": "flower_clump"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_back_bush_b",
+            "x": 13,
+            "y": 20,
+            "sprite": "bush"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_back_bush_c",
+            "x": 21,
+            "y": 20,
+            "sprite": "bush"
+          },
+          {
+            "kind": "prop",
+            "id": "fbh_lane_flowers",
+            "x": 20,
+            "y": 26,
+            "sprite": "flower_clump"
+          },
+          {
+            "kind": "npc",
+            "id": "fbh_hedger",
+            "name": "Hedge Trimmer",
+            "look": "fbh_hedger",
+            "x": 4,
+            "y": 26,
+            "facing": "down",
+            "lines": {
+              "else": "One snip too many and the whole hedge sulks. I go slow."
+            },
+            "chatter": {
+              "else": "Snip, snip."
+            }
+          },
+          {
+            "kind": "npc",
+            "id": "fbh_gatherer",
+            "name": "Windfall Gatherer",
+            "look": "fbh_gatherer",
+            "x": 13,
+            "y": 28,
+            "facing": "left",
+            "lines": {
+              "else": "Windfalls go to the press. The bruised ones go to the Walklings. Nobody minds."
+            },
+            "chatter": {
+              "else": "Windfalls!"
+            }
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_step_press",
+            "x": 4,
+            "y": 24,
+            "sprite": "door_step"
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_step_picker",
+            "x": 12,
+            "y": 24,
+            "sprite": "door_step"
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_step_stitch",
+            "x": 24,
+            "y": 24,
+            "sprite": "door_step"
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_leaf_3_26",
+            "x": 3,
+            "y": 26,
+            "sprite": "leaf_litter"
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_leaf_12_26",
+            "x": 12,
+            "y": 26,
+            "sprite": "leaf_litter"
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_leaf_26_26",
+            "x": 26,
+            "y": 26,
+            "sprite": "leaf_litter"
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_leaf_15_20",
+            "x": 15,
+            "y": 20,
+            "sprite": "leaf_litter"
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_puddle_20_27",
+            "x": 20,
+            "y": 27,
+            "sprite": "puddle"
+          },
+          {
+            "kind": "decal",
+            "id": "fbh_puddle_10_26",
+            "x": 10,
+            "y": 26,
+            "sprite": "puddle"
+          }
+        ]
+      }
+    }
+  }
+}
