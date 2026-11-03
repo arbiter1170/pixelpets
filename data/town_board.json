@@ -89,7 +89,7 @@
         },
         {
           "id": "hm_mint_vest",
-          "text": "A mint vest was seen on the street. The paper here is still Keeper paper.",
+          "text": "A wine vest was seen on the street. The paper here is still Keeper paper.",
           "when": [
             "story.side=glimmer"
           ]

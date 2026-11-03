@@ -22,6 +22,14 @@ const ME = { holder: 'Wayfarer', partner: 'Pipkit', partnerSpecies: 'ember', par
 // Words that only the dark Glimmer-side batch uses; none may reach a Keeper-side paper.
 const HINTS = /\bINS\.\.\.|'IN'|dosage|facility|medicine first|still made medicine|Transferred north|turns its head toward nothing/i;
 
+// D1434: the merge base's "mint vest" copy and its new wording (data/news.json, data/ribbit_posts.json; B-7).
+const WINE = [
+  ["his friend in mint'. Half of Hearthmoor is now rereading", "his friend in a wine vest'. Half of Hearthmoor is rereading"],
+  ['Rook has a friend in mint.', 'Rook has a friend in a wine vest.'],
+  ['looks so good on mint.', 'looks so good on a wine vest.'],
+  ['mint vest', 'wine vest'], ['Mint vest', 'Wine vest'],
+];
+
 function loadNews(newsSrc, mapSrc) {
   const ctx = { console };
   ctx.globalThis = ctx; ctx.window = ctx;
@@ -77,7 +85,9 @@ test('the Glimmer-side paper leans dark and the Keeper-side paper is unchanged @
     const st = stateFor('keepers', d, map);
     const e = cur.PPNews.edition(st);
     // D1192 (Vincent, Nov 2, 2026): "Fernbrook Trial Hall" everywhere; the base's old name is read as renamed, nothing else.
-    const was = JSON.stringify(old.PPNews.edition(st)).replace(/Bloom Trial Hall/g, 'Fernbrook Trial Hall').replace(/BLOOM TRIAL HALL/g, 'FERNBROOK TRIAL HALL');
+    // D1434 (Vincent, Nov 3, 2026): Glimmerwell supporters wear wine vests; the base's mint-vest lines are read as re-voiced.
+    let was = JSON.stringify(old.PPNews.edition(st)).replace(/Bloom Trial Hall/g, 'Fernbrook Trial Hall').replace(/BLOOM TRIAL HALL/g, 'FERNBROOK TRIAL HALL');
+    for (const [from, to] of WINE) was = was.split(from).join(to);
     expect(JSON.stringify(e), 'keepers ' + map + ' day ' + d).toBe(was);
     expect(JSON.stringify(e)).not.toMatch(HINTS);
   }

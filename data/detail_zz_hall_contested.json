@@ -333,7 +333,7 @@
        "story.side=glimmer"
       ],
       "lines": {
-       "else": "A Glimmerwell banner, black and red. It hangs where the Keeper banner was."
+       "else": "A Glimmerwell banner. It hangs where the Keeper banner was."
       }
      },
      {
@@ -499,7 +499,7 @@
        "!story.side_pick_done | !story.seal1 | story.side=glimmer"
       ],
       "lines": {
-       "else": "A Glimmerwell banner. Black, red and very clean."
+       "else": "A Glimmerwell banner. Very new and very clean."
       }
      },
      {
