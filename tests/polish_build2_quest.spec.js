@@ -92,7 +92,7 @@ test('three side quests show the 3 badge, and TRACK moves the card', async ({ pa
   const before = await page.evaluate(() => ({ id: PixelPets.sideQuest.id, map: PixelPets.sideQuest.target.map }));
   expect(before.id).toBe('leak_ask');
   await page.locator('#questSideRows .q-row[data-chain="mom"] .q-track').click();
-  await expect(page.locator('#questSide')).toHaveText('Mom is upstairs. She wants to meet your Walkling.');
+  await expect(page.locator('#questSide')).toHaveText('Mom is home. She wants to meet your Walkling.');
   await expect(page.locator('#questSideTrack')).toHaveText('TRACKED');
   const after = await page.evaluate(() => ({
     id: PixelPets.sideQuest.id,
@@ -101,7 +101,7 @@ test('three side quests show the 3 badge, and TRACK moves the card', async ({ pa
     v: PixelPets.state.v,
   }));
   expect(after.id).toBe('mom');
-  expect(after.map).toBe('hm_home_up');
+  expect(after.map).toBe('hm_home_in');   // PARTNER_DAY: Mom lives downstairs
   expect(after.tracked).toBe('mom');
   expect(after.v).toBe(2);
   expect(before.map).not.toBe(after.map);
@@ -262,11 +262,11 @@ test("Marigold's card names Stitch & Lantern, and a cool tier stays private", as
   expect(live.source).toBe('fixed');
   await page.locator('#phoneBtn').click();
   await page.locator('.phone-app[data-app="contacts"]').click();
-  await page.locator('.contact-main', { hasText: '[Rank] Marigold' }).click();
+  await page.locator('.contact-main', { hasText: 'Keeper Marigold' }).click();
   await expect(page.locator('.contact-card .where-text')).toHaveText('Now: Stitch & Lantern \u00b7 AT WORK');
   await page.evaluate(() => PixelPets.repAdd('Keeper Marigold', -30));
   await page.locator('[data-contact-back]').click();
-  await page.locator('.contact-main', { hasText: '[Rank] Marigold' }).click();
+  await page.locator('.contact-main', { hasText: 'Keeper Marigold' }).click();
   const cool = await page.evaluate(() => PixelPets.whereNow('Keeper Marigold'));
   expect(cool.source).toBe('private');
   await expect(page.locator('.contact-card .where-text')).toHaveText('Keeps to themself.');

@@ -10,7 +10,7 @@ const W = '#f4f4f4';
 
 const MARKS = [
   { map: 'hm_home_in', x: 1, y: 5, ch: '^', tile: 'stair_home', sprites: ['wayin_glint_up'] },
-  { map: 'hm_home_up', x: 1, y: 5, ch: '^', tile: 'stair_loft', sprites: ['wayin_glint_down'] },
+  { map: 'hm_home_hall', x: 4, y: 4, ch: '^', tile: 'stair_loft', sprites: ['wayin_glint_down'] },   // PARTNER_DAY: the stairs come up into the hallway
   { map: 'hm_hq_f1', x: 12, y: 3, ch: ';', sprites: ['step_up', 'wayin_glint_up'] },
   { map: 'hm_hq_f2', x: 10, y: 3, ch: 'i', sprites: ['step_down', 'wayin_glint_down'] },
   { map: 'hm_flats_lobby', x: 3, y: 2, ch: ',', sprites: ['door_step'] },
@@ -186,7 +186,7 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
       if (d) for (let y = 0; y <= 2; y++) for (let x = 2; x <= 13; x++) if (hexOf(d, (y * 16 + x) * 4) !== K) ok = false;
       upOpen.push(m.map + ' ' + m.x + ',' + m.y + (ok ? ' black' : ' NOT black'));
     }
-    PixelPets.goto('hm_home_up', 4, 5, 'down');
+    PixelPets.goto('hm_home_hall', 4, 3, 'down');   // the living-room stairs lead to the hallway now
     await settle();
     PixelPets.goto('hm_home_in', 4, 6, 'down');
     await settle();
@@ -292,7 +292,7 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
   for (const line of report.upOpen) expect(line, 'rows 0-2 PAL.k').toMatch(/ black$/);
   expect(report.dimLit).toBe(false);
   expect(report.dimOpening).toBe(true);
-  expect(report.seen.hm_home_up).toBe(1);
+  expect(report.seen.hm_home_hall).toBe(1);
   expect(report.v).toBe(2);
   expect(report.junk.v).toBe(2);
   expect(report.junk.floorSeen).toEqual({ hm_home_up: 1 });
@@ -349,8 +349,8 @@ test('home stairs and the observatory exit still warp, and a locked stair stays 
   await boot(page);
   await page.evaluate(() => PixelPets.goto('hm_home_in', 1, 6, 'up'));
   await page.keyboard.press('ArrowUp');
-  await expect.poll(() => page.evaluate(() => PixelPets.fading ? null : PixelPets.mapInfo.id)).toBe('hm_home_up');
-  expect(await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual({ x: 2, y: 5 });
+  await expect.poll(() => page.evaluate(() => PixelPets.fading ? null : PixelPets.mapInfo.id)).toBe('hm_home_hall');
+  expect(await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual({ x: 4, y: 3 });
   await page.evaluate(() => PixelPets.goto('mahopac_obs', 4, 5, 'down'));
   await page.keyboard.press('ArrowDown');
   await expect.poll(() => page.evaluate(() => PixelPets.fading ? null : PixelPets.mapInfo.id)).toBe('mahopac');

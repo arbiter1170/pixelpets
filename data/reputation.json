@@ -16,11 +16,7 @@
     {
       "name": "Archivist Mo",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Mo",
-      "duty": "Archivist",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Associate Hollis",
@@ -122,11 +118,7 @@
       "faction": "keepers",
       "base": 50,
       "fixed": 50,
-      "note": "\"The Processor\" (default, D175): fixed 50, still Keepers for flavour, never moves",
-      "rank": "[Rank]",
-      "given": "Wynn",
-      "duty": "Clerk",
-      "rankOpen": "D1159"
+      "note": "\"The Processor\" (default, D175): fixed 50, still Keepers for flavour, never moves"
     },
     {
       "name": "Constable Corwin",
@@ -250,50 +242,32 @@
     {
       "name": "Keeper Amos",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Amos",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Keeper Marigold",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Marigold",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Keeper Moss",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Moss",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Keeper Rowan",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Rowan",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Keeper Quill",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Quill",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Keeper Teague",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Teague",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Keeper Scout",
@@ -304,10 +278,7 @@
     {
       "name": "Keeper Vesper",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Vesper",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Cadet Arlo",
@@ -472,11 +443,7 @@
     {
       "name": "Operator Rue",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Rue",
-      "duty": "Operator",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Ossabell",
@@ -553,11 +520,7 @@
     {
       "name": "Scout Linnea",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Linnea",
-      "duty": "Scout",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Sera",
@@ -579,11 +542,7 @@
     {
       "name": "Signaller Tamm",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Tamm",
-      "duty": "Signaller",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Tam",
@@ -627,11 +586,7 @@
     {
       "name": "Watch Ivo",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Ivo",
-      "duty": "Watch",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Willa",
@@ -646,10 +601,7 @@
     {
       "name": "Keeper Halvard",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Halvard",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Farmer Tibbet",
@@ -664,11 +616,7 @@
     {
       "name": "Watch Saffie",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Saffie",
-      "duty": "Watch",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Weaver Ilka",
@@ -697,10 +645,7 @@
     {
       "name": "Keeper Pryce",
       "faction": "keepers",
-      "base": 50,
-      "rank": "[Rank]",
-      "given": "Pryce",
-      "rankOpen": "D1159"
+      "base": 50
     },
     {
       "name": "Cadet Lisse",
@@ -1003,8 +948,104 @@
   ],
   "ranks": {
     "decision": "NPC_RANKS (Vincent, Nov 2, 2026): every Keeper and Glimmerwell NPC shows rank, then name, wherever the name is shown",
-    "fields": "rank: shown before given (\"Master\" + \"Fen\"). given: the bare name. duty: a job that is not a rank (KEEPER_RANKS D893), shown on the contact card. rankOpen: the D id for a placeholder rank (\"[Rank]\"). rankFlag: the D id asking whether this NPC is Keeper or Glimmerwell at all; shown as today. rankWhen: a named game condition (game.js RANK_WHEN) that must hold for the rank to show",
+    "fields": "rank: shown before given (\"Master\" + \"Fen\"). given: the bare name. duty: a job that is not a rank (KEEPER_RANKS D893), shown on the contact card. rankFlag: the D id asking whether this NPC is Keeper or Glimmerwell at all; shown as today. rankWhen: a named game condition (game.js RANK_WHEN) that must hold for the rank to show",
     "display": "game.js shownName(): rank + ' ' + given when the entry has a rank (and rankWhen holds), else label, else the raw name. Keys (S.rep, S.phoneBook, contactKey) stay the raw speaker name",
-    "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays"
+    "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays",
+    "pending": {
+      "Archivist Mo": {
+        "propose": "Officer",
+        "given": "Mo",
+        "decision": "D1159",
+        "duty": "Archivist"
+      },
+      "Clerk Wynn": {
+        "propose": "Officer",
+        "given": "Wynn",
+        "decision": "D1159",
+        "duty": "Clerk"
+      },
+      "Keeper Amos": {
+        "propose": "Officer",
+        "given": "Amos",
+        "decision": "D1159"
+      },
+      "Keeper Marigold": {
+        "propose": "Constable",
+        "given": "Marigold",
+        "decision": "D1159"
+      },
+      "Keeper Moss": {
+        "propose": "Constable",
+        "given": "Moss",
+        "decision": "D1159"
+      },
+      "Keeper Rowan": {
+        "propose": "Sergeant",
+        "given": "Rowan",
+        "decision": "D1159"
+      },
+      "Keeper Quill": {
+        "propose": "Constable",
+        "given": "Quill",
+        "decision": "D1159"
+      },
+      "Keeper Teague": {
+        "propose": "Cadet",
+        "given": "Teague",
+        "decision": "D1159"
+      },
+      "Keeper Vesper": {
+        "propose": "Officer",
+        "given": "Vesper",
+        "decision": "D1159"
+      },
+      "Operator Rue": {
+        "propose": "Officer",
+        "given": "Rue",
+        "decision": "D1159",
+        "duty": "Operator"
+      },
+      "Scout Linnea": {
+        "propose": "Constable",
+        "given": "Linnea",
+        "decision": "D1159",
+        "duty": "Scout"
+      },
+      "Signaller Tamm": {
+        "propose": "Constable",
+        "given": "Tamm",
+        "decision": "D1159",
+        "duty": "Signaller"
+      },
+      "Watch Ivo": {
+        "propose": "Constable",
+        "given": "Ivo",
+        "decision": "D1159",
+        "duty": "Watch"
+      },
+      "Keeper Halvard": {
+        "propose": "Constable",
+        "given": "Halvard",
+        "decision": "D1159"
+      },
+      "Watch Saffie": {
+        "propose": "Constable",
+        "given": "Saffie",
+        "decision": "D1159",
+        "duty": "Watch"
+      },
+      "Keeper Pryce": {
+        "propose": "Cadet",
+        "given": "Pryce",
+        "decision": "D1159"
+      },
+      "Ash": {
+        "propose": "Cadet",
+        "given": "Ash",
+        "decision": "D1159",
+        "note": "#261 Trial Hall holder (D1170: one Keeper cadet); cast row comes with #261"
+      }
+    },
+    "pendingNote": "pending: Keepers with no ladder rank yet (KEEPER_RANKS D893). They show their plain name (no rank, no placeholder) until Vincent OKs the proposed rank (D1159); then the cast row gains rank/given/duty from here. rankCheck counts a name listed here as pending, not missing."
   }
 }

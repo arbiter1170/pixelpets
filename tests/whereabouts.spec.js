@@ -7,8 +7,9 @@ const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = requir
 trackErrors(test, expect);
 
 const MET = ['Lizzy', 'Pip', 'Wren', 'Ossabell', 'Mr. Gristle', 'Keeper Teague', 'Keeper Quill', 'Mom', 'Dad', 'Warden Ilse', 'Officer Ness', 'Rook'];
-// NPC_RANKS (Vincent, Nov 2, 2026): People rows show rank first; these two wait on a ladder rank (D1159), so they show "[Rank] Name".
-const SHOWN = n => ({ 'Keeper Teague': '[Rank] Teague', 'Keeper Quill': '[Rank] Quill' }[n] || n);
+// NPC_RANKS (Vincent, Nov 2, 2026): People rows show rank first. Teague and Quill wait on a ladder rank (D1159), so they
+// keep their plain names for now; SHOWN stays the one place to change when their ranks land.
+const SHOWN = n => n;
 
 function save() {
   const s = starterSave();
@@ -96,7 +97,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
       const img = row && row.querySelector('.where-icon');
       return img ? img.getAttribute('src') : '';
     };
-    return { mom: src('Mom'), teague: src('[Rank] Teague'), ilse: src('Warden Ilse'), ness: src('Officer Ness') };
+    return { mom: src('Mom'), teague: src('Keeper Teague'), ilse: src('Warden Ilse'), ness: src('Officer Ness') };
   });
   expect(icons.mom.length).toBeGreaterThan(20);
   expect(icons.ilse).toBe(icons.teague);

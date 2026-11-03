@@ -34,14 +34,15 @@ async function speaker(page, who) {
   return { text: out, fits };
 }
 
-test('the dialog speaker tab shows rank, then name (Vincent decisions E, F, H)', async ({ page }) => {
+test('the dialog speaker tab shows rank, then name, and never a placeholder (Vincent decisions E, F, H)', async ({ page }) => {
   await boot(page);
   const want = {
     Fen: 'Master Fen', 'Master Fen': 'Master Fen', Hale: 'Master Hale', Marisol: 'Master Marisol',
     Tobin: 'Associate Tobin', Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen',
     'Associate Juniper': 'Associate Juniper', 'Dorian Pell': 'Head of Acquisitions Dorian Pell',
     'Officer Ness': 'Officer Ness', 'Warden Ilse': 'Warden Ilse', 'Captain Lumen': 'Captain Lumen', 'Cadet Arlo': 'Cadet Arlo',
-    'Keeper Amos': '[Rank] Amos', 'Watch Ivo': '[Rank] Ivo', 'Clerk Wynn': '[Rank] Wynn',
+    // Keepers whose ladder rank waits on Vincent (D1159) show their plain name, never a placeholder.
+    'Keeper Amos': 'Keeper Amos', 'Watch Ivo': 'Watch Ivo', 'Clerk Wynn': 'Clerk Wynn',
     Mom: 'Mom', Morolow: 'Caleb', 'Clerk Nia': 'Clerk Nia',
   };
   for (const [raw, shown] of Object.entries(want)) {
@@ -86,14 +87,22 @@ test('battle lines say Master Fen, never Trial Master, and stack no titles (deci
   expect(pia.intro).toContain(piaTitle);
 });
 
-test('rankCheck lists only the placeholders (D1159) and the flagged NPCs (D1160)', async ({ page }) => {
+test('rankCheck lists only the pending ranks (D1159) and the flagged NPCs (D1160); no label carries a placeholder', async ({ page }) => {
   await boot(page);
   const c = await page.evaluate(() => PixelPets.rankCheck());
   expect(c.missing).toEqual([]);
   expect(c.bad).toEqual([]);
   expect(c.battle).toEqual([]);
-  expect(c.placeholders.length).toBe(16);
+  // Every pending name that is in the cast (16 today; Ash too once #261's Trial Hall holders land) is listed, and only those.
+  const pend = await page.evaluate(() => {
+    const R = MAPDATA.reputation, names = new Set(R.cast.map((e) => e.name));
+    return Object.keys(R.ranks.pending).filter((n) => names.has(n)).sort();
+  });
+  expect(pend.length).toBeGreaterThanOrEqual(16);
+  expect(c.placeholders.map((p) => p.replace(/ \(D1159\)$/, '')).sort()).toEqual(pend);
   for (const p of c.placeholders) expect(p).toMatch(/\(D1159\)$/);
+  const labels = await page.evaluate(() => MAPDATA.reputation.cast.map((e) => PixelPets.shownName(e.name)));
+  for (const l of labels) expect(l).not.toMatch(/\[|\]/);
   expect(c.flagged.map((f) => f.replace(/ \(D1160\)$/, '')).sort()).toEqual(
     ['Clerk Mint', 'Clerk Nia', 'Clerk Penn', 'Floor Keeper Sol', 'Guide Tess', 'Keeper Scout', 'Porter Bram', 'Porter Quin', 'Reeve Tamsin']);
 });
@@ -141,16 +150,17 @@ test('an old Tobin / Hale save keeps its trust and gets one ranked contact card 
   await shot(page, 'npc-ranks-contacts');
 });
 
-test('a placeholder Keeper card keeps the duty line; the town board signs rank first', async ({ page }) => {
+test('a Keeper still waiting on a rank shows the plain name on the contact card; the town board signs rank first', async ({ page }) => {
   await boot(page, { 'story.phone_got': true }, { phoneBook: { met: { 'Watch Ivo': true }, fav: {} } });
   await page.locator('#phoneBtn').click();
   await expect(page.locator('#ovPhone')).toBeVisible();
   await page.locator('.phone-app[data-app="contacts"]').click();
-  const ivo = page.locator('.contact-name', { hasText: '[Rank] Ivo' });
+  const ivo = page.locator('.contact-name', { hasText: 'Watch Ivo' });
   await expect(ivo).toBeVisible();
   await ivo.click();
-  await expect(page.locator('.contact-card-name')).toHaveText('[Rank] Ivo');
-  await expect(page.locator('.contact-duty')).toHaveText('Watch');
+  await expect(page.locator('.contact-card-name')).toHaveText('Watch Ivo');
+  await expect(page.locator('.contact-duty')).toHaveCount(0);   // the duty line comes with the rank, once Vincent OKs it
+  expect(await page.locator('#ovPhone').innerText()).not.toMatch(/\[Rank\]/);
   const card = await page.locator('.contact-card-name').evaluate((el) => el.getBoundingClientRect().right <= window.innerWidth);
   expect(card).toBe(true);
   await shot(page, 'npc-ranks-card-ivo');

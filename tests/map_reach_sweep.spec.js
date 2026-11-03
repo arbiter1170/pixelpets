@@ -160,7 +160,7 @@ const LINES_HQ = [
 const PACKS = [
   { mode: 'b5', rooms: [
     { id: 'hm_home_in', ax: 4, ay: 6 },
-    { id: 'hm_home_up', ax: 2, ay: 5 },
+    { id: 'hm_home_up', ax: 4, ay: 6 },
     { id: 'hm_lodge_in', ax: 5, ay: 7 },
     { id: 'hm_lantern_in', ax: 4, ay: 5 },
     { id: 'hm_rook_in', ax: 3, ay: 4 },
@@ -340,8 +340,8 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
   }
   // Literal tallies from a full pass. A skipped map, or a map that dropped a person or prop, fails here.
   const COUNTS = {
-    hm_home_in: { npc: 0, trainer: 0, sign: 1, prop: 7, warp: 2 },
-    hm_home_up: { npc: 1, trainer: 0, sign: 0, prop: 6, warp: 1 },
+    hm_home_in: { npc: 2, trainer: 0, sign: 1, prop: 6, warp: 2 },   // PARTNER_DAY: Mom and Maze; the bed and mirror moved upstairs, coat pegs came
+    hm_home_up: { npc: 0, trainer: 0, sign: 0, prop: 7, warp: 1 },   // PARTNER_DAY: Mom moved down; Maze's cushion
     hm_lodge_in: { npc: 1, trainer: 0, sign: 0, prop: 7, warp: 1 },
     hm_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 6, warp: 1 },
     hm_rook_in: { npc: 1, trainer: 0, sign: 0, prop: 6, warp: 1 },
