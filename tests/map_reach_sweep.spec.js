@@ -352,7 +352,7 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
     dream_party: { npc: 0, trainer: 0, sign: 1, prop: 4, warp: 0 },
     dream_drive: { npc: 1, trainer: 0, sign: 0, prop: 3, warp: 0 },
     fb_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 12, warp: 1 },
-    fb_hall_in: { npc: 1, trainer: 0, sign: 1, prop: 24, warp: 1 },
+    fb_hall_in: { npc: 1, trainer: 3, sign: 1, prop: 24, warp: 1 },   // DAY1_TRIAL1_FLOW: the three holders before Fen
     hm_hq_f1: { npc: 5, trainer: 0, sign: 1, prop: 41, warp: 2 },
     hm_hq_f2: { npc: 4, trainer: 0, sign: 1, prop: 28, warp: 1 },
     hc_airport_in: { npc: 1, trainer: 0, sign: 0, prop: 4, warp: 1 },

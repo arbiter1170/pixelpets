@@ -24,8 +24,10 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // with Trial Hall #3 and its rooms (BRINEWICK v0.1) bring door 45, warp 93, sign 89, talk 669, scene 40,
     // trigger 34, board 7, trainer 25, shop 14 and wild 9.
     // FERNBROOK_PLAZA (D1243-D1247) adds talk 16: three Keepers, three Glimmerwell holders, their six Walklings and four townsfolk.
-    door: 45, warp: 93, sign: 89, talk: 677, scene: 40, trigger: 34, board: 7,
-    trainer: 25, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
+    // DAY1_TRIAL1_FLOW adds sign 6 (four contested Fernbrook signs, two held), talk 6 (three crates, Tobin's tally, Burrsnout,
+    // Juniper in the Lantern House), trainer 3 (the Trial Hall holders) and trigger 4 (Two Lights x3, Fen's west-road catch).
+    door: 45, warp: 93, sign: 95, talk: 683, scene: 40, trigger: 38, board: 7,
+    trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
   expect(audit.reachGaps).toEqual([
