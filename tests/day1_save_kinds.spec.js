@@ -108,7 +108,14 @@ for (const kind of ['p', 'mahopac_done', 'fen_away', 'seal_new', 'c']) {
     await seedRaw(context, raw);
     await gotoGame(page);
     await page.waitForFunction(() => window.ppAtBoot !== undefined);
-    expect(await page.evaluate(() => window.ppAtBoot)).toBe(raw);
+    const atBoot = await page.evaluate(() => window.ppAtBoot);
+    if (!s.flags['story.side_pick_done']) expect(atBoot).toBe(raw);
+    else {   // ACT1_KEEPER_JOIN §9.1 (D1546 B): a picked save is moved once at load, additive keys only
+      const moved = JSON.parse(atBoot);
+      for (const k of Object.keys(s.flags)) if (k !== 'story.side') expect(moved.flags[k], k).toEqual(s.flags[k]);
+      expect(moved.flags['story.keeper_cadet']).toBe(true);
+      expect(moved.flags['story.ilse_call_old']).toBe(true);
+    }
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')).v)).toBe(2);
   });
 }

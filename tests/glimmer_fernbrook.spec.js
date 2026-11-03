@@ -44,11 +44,13 @@ async function runAndShot(page, id, name) {
   if (page.viewportSize().width !== 375) await shot(page, name);
 }
 
-test('keepers pick leaves Fernbrook on the old path @w1', async ({ page }) => {
+// ACT1_KEEPER_JOIN 4.6: the gate is the orchard lean now. Opening the crates sets no side; the Keepers orchard result and
+// Fen's Seal stay as built; the side and the sp_pick grant come with the face at the enrolment (tests/act1_keeper_join.spec.js).
+test('opening the crates leaves Fernbrook on the Keepers orchard path, with no side yet @w1', async ({ page }) => {
   await installSave(page.context(), fernSave(), { quietDay: true });
   await gotoDebug(page);
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
+  await playScene(page, ['Open the crates with Fen']);
   const after = await page.evaluate(() => ({
     side: PixelPets.side,
     flags: PixelPets.state.flags,
@@ -58,13 +60,14 @@ test('keepers pick leaves Fernbrook on the old path @w1', async ({ page }) => {
     checks: PixelPets.glimmerCheck.concat(PixelPets.questCheck),
   }));
   expect(after.side).toBe('keepers');
-  expect(after.flags['story.side']).toBe('keepers');
-  expect(after.flags['story.side_pick_done']).toBe(true);
+  expect(after.flags['story.side']).toBeUndefined();
+  expect(after.flags['story.side_pick_done']).toBeUndefined();
+  expect(after.flags['story.orchard_lean']).toBe('open');
   expect(after.flags['story.met_fen']).toBe(true);
   expect(after.flags['story.orchard_cleared']).toBeUndefined();
   expect(after.orchard).toBe('orchard');
   expect(after.seal).toBe('seal_fernbrook');
-  expect(after.standing.keepers.points).toBe(12);
+  expect(after.standing.keepers.points).toBe(0);   // no grant at the lean
   expect(after.standing.glimmer.points).toBe(0);
   expect(after.checks).toEqual([]);
 });

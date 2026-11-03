@@ -676,3 +676,189 @@ test.describe('ACT1_KEEPER_JOIN: reports, the recall and the STANDING line (K7)'
     expect(said(lines, /^A letter for you/)).toBe(false);
   });
 });
+
+// §11.1 (T16): one fixture per old-save kind, loaded as a real old save (no move marker). D1546 B: the move is written once,
+// at load, with no call; a toast tells the holder. Every row: no key removed, v 2, zero console errors.
+const OLD_BASE = Object.assign({}, AFTER_NIGHT, { 'story.crackdown': null, 'story.hall1_shut': null, 'story.post_trial_done': null, 'story.fen_lean': null });
+const G = { 'story.side': 'glimmer', 'story.side_pick_done': true };
+const OLD = {
+  O1: { flags: Object.assign({}, G, { 'story.post_trial_done': true }), seals: ['seal_fernbrook', 'seal_glim_1'], quest: ['heights', 'tobin_crates'], tobin: true, hold: 'glimmer' },
+  O2: { flags: Object.assign({}, G, { 'story.seal1': null, 'story.orchard_cleared': true, 'story.heights_done': true, 'story.heights_path': 'lab', 'story.tour1_s1': true }), seals: [], quest: 'hall1_holders', strip: ['trainer.h1_cadet', 'trainer.h1_challenger', 'trainer.h1_local', 'trainer.hall1_fen', 'story.crates_seen', 'story.fen_sent_home', 'story.tally_done'] },
+  O3: { flags: Object.assign({}, G, { 'story.orchard_cleared': true, 'story.heights_done': true, 'story.slice_end': true, 'story.reached_route2': true, 'story.met_census': true, 'story.reached_glen': true, 'story.met_lead': true, 'story.glen_cleared': true, 'story.route2_end': true, 'story.reached_cobblecrest': true, 'story.cobble_arrived': true, 'story.reached_quarry': true, 'story.quarry_bought': true, 'story.gb_tune_asked': true }), seals: ['seal_fernbrook', 'seal_glim_1'], quest: 'hall2' },
+  O4: { base: 'O3', flags: { 'story.seal2': true }, seals: ['seal_fernbrook', 'seal_glim_1', 'seal_glim_2'], quest: 'hook', hale: true },
+  O5: { base: 'O4', flags: { 'story.cobble_end': true, 'story.rook_end': 'stays', 'story.rc_start': true, 'story.rc_done': true, 'story.rc_climax': true, 'story.gb_invited': true }, seals: ['seal_fernbrook', 'seal_glim_1', 'seal_glim_2'], quest: 'hc_council' },
+  O6: { base: 'O5', flags: { 'story.gb_relay_done': true, 'story.gb_hollis': true, 'story.gb_done': true }, quest: 'route3', road: true },   // E4 opens the road on the first map read
+  O7: { base: 'O6', flags: { 'story.route3_open': true, 'story.reached_brinewick': true, 'story.brine_depot': true, 'story.brine_manifest': true }, quest: 'brine_crate' },
+  O8: { base: 'O7', flags: { 'story.brine_freed': true, 'story.brine_dorian': true, 'story.seal3': true, 'story.ep1_end': true }, seals: ['seal_fernbrook', 'seal_glim_1', 'seal_glim_2', 'seal_glim_3'], quest: 'rpt_lodge', report: ['rpt_1', 'rpt_2', 'rpt_3'] },
+  O9: { flags: { 'story.side_pick_done': true, 'story.orchard_cleared': true, 'story.post_trial_done': true }, seals: ['seal_fernbrook'], hold: 'keepers', keepers: true },
+};
+function oldFixture(kind) {
+  const chain = []; for (let k = kind; k; k = OLD[k].base) chain.unshift(OLD[k]);
+  const flags = Object.assign({}, OLD_BASE);
+  let seals = [];
+  for (const row of chain) { Object.assign(flags, row.flags); if (row.seals) seals = row.seals; for (const k of row.strip || []) flags[k] = null; }
+  const s = joinSave(flags);
+  for (const k of Object.keys(OLD_BASE)) if (flags[k] === null) delete s.flags[k];
+  s.seals = Object.fromEntries(seals.map(id => [id, 1700000000000]));
+  s.bag = OLD[kind].keepers ? {} : { cracked_phone: 1 };
+  const want = {}; for (const r of chain) for (const k of ['quest', 'hold', 'hale', 'road', 'report', 'keepers', 'tobin']) if (r[k] !== undefined) want[k] = r[k];
+  if (!OLD[kind].hale) delete want.hale; if (!OLD[kind].road) delete want.road; if (!OLD[kind].tobin) delete want.tobin;
+  return { s, want };
+}
+
+test.describe('ACT1_KEEPER_JOIN: the old-save move at load (K8, T16)', () => {
+  for (const kind of Object.keys(OLD)) {
+    test(`${kind}: moved once at load, no call; next step and keepsakes as §9.3 says`, async ({ page }) => {
+      test.setTimeout(90000);
+      const { s, want } = oldFixture(kind);
+      const glim = !want.keepers;
+      await boot(page, s, { oldSave: true });
+      const f = await flags(page);
+      // §9.2, written once at load.
+      expect(f['story.keeper_cadet']).toBe(true);
+      expect(f['story.ilse_call_old']).toBe(true);
+      expect(f['story.cover_done']).toBe(true);
+      expect(f['story.side_pick_done']).toBe(true);
+      expect(f['story.side'] === 'glimmer').toBe(false);
+      if (glim) expect(f['story.side']).toBe('keepers');
+      expect(f['story.sway_fernbrook']).toBe(glim ? -2 : 3);
+      expect(f['story.fen_lean']).toBe(glim ? -1 : 1);
+      if (!s.flags['story.orchard_lean']) expect(f['story.orchard_lean']).toBe(glim ? 'pack' : 'open');
+      expect(f['story.switches'] | 0).toBe(0);
+      const st = await stored(page);
+      expect(st.v).toBe(2);
+      expect(st.flags['story.keeper_cadet']).toBe(true);   // on disk at load
+      for (const k of Object.keys(s.flags)) expect(st.flags, k).toHaveProperty([k]);
+      for (const k of Object.keys(s.seals)) expect(st.seals, k).toHaveProperty([k]);   // Seals and Tier lanyards stay (D1547)
+      if (glim) expect(st.bag.cracked_phone | 0).toBe(1);
+      expect(await sceneId(page)).toBeNull();   // no call card
+      // The one toast, on the first free moment.
+      await page.waitForFunction(() => PixelPets.toasts.includes("You're a Keeper Cadet now. See Ilse."), null, { timeout: 8000 });
+      if (want.quest) expect([].concat(want.quest)).toContain((await quest(page)).id);
+      if (want.tobin) expect((await gate(page, 'fernbrook', 'fern_associate')).whenOk).toBe(true);   // O1: Tobin's battle, then the Keepers result
+      if (want.hold) expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe(want.hold);
+      if (want.hale) {   // O4: Hale's floor stays open for the real Seal (D1547)
+        await goto(page, 'cc_hall_in', 5, 4, 'up');
+        expect(await page.evaluate(() => PixelPets.talkTo('hale'))).toBe(true);
+        const hl = await drive(page, ['Leave']);
+        expect(hl.map(l => l[1])).toContain("Stone stands firm. Show me how you'd move it.");
+      }
+      if (want.road) {   // O6: either finale opens Route 3 (E4, D1548); the Council is skipped
+        await goto(page, 'cobblecrest', 12, 8, 'down');
+        expect((await flags(page))['story.route3_open']).toBe(true);
+        expect((await quest(page)).id).toBe('route3');
+      }
+      if (want.report) {   // O8: the old-save Lodge talk fills every passed report point (D1549), then the send-off line
+        await goto(page, 'hm_lodge_in', 5, 5, 'up');
+        expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
+        expect(await sceneId(page)).toBe('rpt_old');
+        const lines = await drive(page, ['Tell her all of it']);
+        expect(lines[0]).toEqual(['Warden Ilse', 'What did they show you? What did you show them?']);
+        expect(said(lines, /^Someone I trust found Fernbrook's Seals in a lamp ledger\. Remember that\.$/)).toBe(true);
+        expect(said(lines, /^Captain Lumen has asked for you\./)).toBe(true);
+        const g = await flags(page);
+        for (const k of want.report) expect(g['story.' + k], k).toBe('told');
+        expect(g['story.rpt_old_seen']).toBe(true);
+        expect((await quest(page)).id).toBe('end');
+      }
+      // O11 (every kind): reloading never moves twice; nothing new is written.
+      const once = JSON.stringify((await stored(page)).flags);
+      await page.reload({ waitUntil: 'commit' });
+      await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && PixelPets.state);
+      const again = await stored(page);
+      expect(again.flags['story.ilse_call_old']).toBe(true);
+      expect(again.flags['story.sway_fernbrook']).toBe(glim ? -2 : 3);
+    });
+  }
+
+  test('O9 keepers pick: a keepers save hears its own Lodge line; O10: a placeholder save is not moved', async ({ page }) => {
+    test.setTimeout(90000);
+    const { s } = oldFixture('O9');
+    await boot(page, s, { oldSave: true });
+    await goto(page, 'hm_lodge_in', 5, 5, 'up');
+    expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
+    const lines = await drive(page, ['Keep some back']);
+    expect(lines[0]).toEqual(['Warden Ilse', "Tell me what you've seen on the road."]);
+    const f = await flags(page);
+    expect(f['story.rpt_old_seen']).toBe(true);
+    expect(f['story.rpt_1']).toBeUndefined();   // no report point passed yet
+  });
+
+  test('O10: a #261 placeholder save (no pick) is never moved @w1', async ({ page }) => {
+    await boot(page, joinSave({ 'story.crackdown': null, 'story.hall1_shut': null }), { oldSave: true });
+    const f = await flags(page);
+    expect(f['story.keeper_cadet']).toBeUndefined();
+    expect(f['story.ilse_call_old']).toBeUndefined();
+    expect((await quest(page)).id).toBe('pick');
+  });
+
+  test('D1515: a new Keepers Cadet\'s Rook stays with the company at the hook', async ({ page }) => {
+    await boot(page, joinSave(Object.assign({}, PIN, { 'story.seal2': true })));
+    const script = JSON.stringify(await page.evaluate(() => PixelPets.sceneScript('brinewick_hook')));
+    expect(script).toContain('["setFlag","story.rook_end","stays"]');
+    expect(script).not.toContain('"ally"');
+  });
+});
+
+// E9 (checker) and T18: nothing clears story.keeper_cadet; story.side is written only by the lanyard step, the recall, the
+// old-save move and switchSide; every new line fits and stays off the banned list.
+test('E9 / T18: the join data never clears the Cadet, writes story.side only where allowed, and every line fits @w1', async ({ page }) => {
+  await boot(page, joinSave());
+  const r = await page.evaluate(() => {
+    const out = { cadetCleared: [], sideWriters: [], says: [] };
+    const walk = (n, where) => {
+      if (!Array.isArray(n)) return;
+      if (n[0] === 'setFlag' && n[1] === 'story.keeper_cadet' && !n[2]) out.cadetCleared.push(where);
+      if ((n[0] === 'setFlag' && n[1] === 'story.side') || n[0] === 'pledge') out.sideWriters.push(where);
+      if (n[0] === 'say' && where.startsWith('join:')) out.says.push(n[2]);
+      if (n[0] === 'choice' && where.startsWith('join:')) { out.says.push(n[1]); for (const o of n[2] || []) out.says.push(o[0]); }
+      n.forEach(x => walk(x, where));
+    };
+    for (const [k, src] of Object.entries(MAPDATA)) for (const [id, steps] of Object.entries((src && src.scenes) || {})) walk(steps, (k === 'detail_zz_keeper_join' ? 'join:' : '') + id);
+    const J = MAPDATA.detail_zz_keeper_join;
+    for (const n of (J.hostNotes || [])) out.says.push(n.line);
+    for (const p of Object.values(J.objPatch)) if (p && p.linesFirst) for (const v of Object.values(p.linesFirst)) if (v[0] !== '@') out.says.push(v);
+    for (const o of J.slicePatch.maps.route2_glen.addObjs) for (const v of Object.values(o.lines || {})) if (v[0] !== '@') out.says.push(v);
+    return out;
+  });
+  expect(r.cadetCleared).toEqual([]);
+  expect(r.sideWriters).toEqual(expect.arrayContaining(['join:enrol_lanyard', 'join:recall']));
+  for (const w of r.sideWriters) expect(['join:enrol_lanyard', 'join:recall', 'rook_offer']).toContain(w);
+  for (const text of r.says) {
+    expect(Array.from(text).length, text).toBeLessThanOrEqual(110);
+    expect(text, text).not.toMatch(/\b(chips?|chipped|relays?|tuning|bellgold|arbiter|call-up|alien|fainted|evolv\w*|coins?|appeared|trainer)\b|dex\b|\s{2}/i);
+  }
+});
+
+test('D1560: one ?debug=1 place per beat; the old-save places run the move on their flags @w1', async ({ page }) => {
+  test.setTimeout(90000);
+  await boot(page, joinSave());
+  const ids0 = (await page.evaluate(() => PixelPets.checkpoints())).map(c => c.id);
+  for (const id of ['chi_meet', 'chi_shifts', 'chi_report', 'pick', 'enrol', 'enrol_lanyard', 'kj_hut', 'kj_day', 'kj_night', 'kj_lean', 'kj_lodge', 'kj_recall', 'kj_old_glimmer', 'kj_old_keepers']) expect(ids0, id).toContain(id);
+  expect((await page.evaluate(() => PixelPets.checkpoint('kj_recall'))).ok).toBe(true);
+  expect(await page.evaluate(() => PixelPets.mapInfo.id)).toBe('brinewick');
+  // the recall call is due here (it rings on the next free outdoor step; tests T13 rings it)
+  const due = await page.evaluate(() => MAPDATA.detail_zz_keeper_join.calls.find(c => c.id === 'ilse_recall').when.every(c => PixelPets.condRead(c).cond));
+  expect(due).toBe(true);
+  expect((await page.evaluate(() => PixelPets.checkpoint('kj_old_glimmer'))).ok).toBe(true);
+  const f = await flags(page);
+  expect([f['story.keeper_cadet'], f['story.side'], f['story.sway_fernbrook'], f['story.ilse_call_old']]).toEqual([true, 'keepers', -2, true]);
+  expect((await page.evaluate(() => PixelPets.checkpoint('kj_hut'))).ok).toBe(true);
+  expect(await page.evaluate(() => PixelPets.mapInfo.id)).toBe('hw_weir_hut_in');
+});
+
+test('T15 (with K2): the switch is locked in Act 2, opens in Act 3 to Glimmerwell only, and drops every sway by 2 @w1', async ({ page }) => {
+  await boot(page, joinSave(Object.assign({}, DONE, { 'story.orchard_lean': 'open', 'story.orchard_cleared': true, 'story.sway_fernbrook': 2, 'story.keeper_cadet': true, 'story.side_pick_done': true, 'story.cover': 'glimmer', 'story.cover_done': true, 'story.side': 'keepers', 'story.rc_climax': true })));
+  await page.evaluate(() => { PixelPets.state.standing.glimmer = 60; });
+  const r = await page.evaluate(() => {
+    const F = PixelPets.state.flags, st = PixelPets.state.standing;
+    return { a2: PPStanding.canSwitch(F, st, 'keepers', 'glimmer', 2), a3: PPStanding.canSwitch(F, st, 'keepers', 'glimmer', 3), back: PPStanding.canSwitch(F, st, 'glimmer', 'keepers', 3) };
+  });
+  expect(r.a2).toMatchObject({ ok: false, why: 'locked' });
+  expect(r.a3).toMatchObject({ ok: true });
+  expect(r.back).toMatchObject({ ok: false, why: 'one_way' });
+  expect(await page.evaluate(() => PixelPets.switchSide('glimmer'))).toBe(true);
+  const f = await flags(page);
+  expect(f['story.side']).toBe('glimmer');
+  expect(f['story.sway_fernbrook']).toBe(0);
+});

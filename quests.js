@@ -36,7 +36,7 @@
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
     'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
     'story.chi_jars', 'story.shift_lamp_w', 'story.shift_lamp_n', 'story.shift_lamp_e', 'story.shift_ledger', 'story.chi_told_ledger', 'story.chi_told_lamps', 'story.chi_told_list',   // ACT1_KEEPER_JOIN: Vincent Chi's jars (WEIR_HUT §3.3) and his report hub, not steps
-    'story.sway_fernbrook', 'story.cover', 'story.ilse_call2', 'story.ilse_call3', 'story.rpt_1', 'story.rpt_2', 'story.warden_cut',   // ACT1_KEEPER_JOIN: sway, face, calls, reports
+    'story.sway_fernbrook', 'story.cover', 'story.ilse_call2', 'story.ilse_call3', 'story.rpt_1', 'story.rpt_2', 'story.warden_cut', 'story.ilse_call_old',   // ACT1_KEEPER_JOIN: sway, face, calls, reports, the old-save move
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -214,8 +214,9 @@
       npc: 'Associate Juniper', npcIds: ['juniper_east', 'juniper'],
       text: "Juniper's trial lanyard offer still stands. Find her on the east road.", place: 'Fernbrook, east road',
       target: { map: 'fernbrook', x: 30, y: 7 } },
-    // noImply: the investigation reaches Route 2 before Rook's teaser; skipIf keeps a save past Cobblecrest from waiting on it.
-    { id: 'teaser', done: ['story.slice_end'], skipIf: ['story.reached_cobblecrest'], noImply: true,
+    // noImply: the investigation reaches Route 2 before Rook's teaser; skipIf keeps a save past it (Imogen's battle comes
+    // only after the enrolment) from waiting on it.
+    { id: 'teaser', done: ['story.slice_end'], skipIf: ['story.glen_cleared | story.reached_cobblecrest | story.cobble_end'], noImply: true,
       text: 'Rook has news, waiting outside the Trial Hall.', place: 'Trial Hall doorstep',
       glimmer: { text: 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', place: 'Trial Hall doorstep' },
       target: { map: 'fernbrook', x: 22, y: 8 } },
@@ -309,6 +310,11 @@
     { id: 'cadet_report', when: ['story.ep1_end', 'story.keeper_cadet', '!story.cover=glimmer', '!story.ilse_call_old | story.rpt_old_seen', '!story.switched_a3', '!story.warden_cut'], done: ['story.rpt_3'], noImply: true,
       npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
       text: 'Warden Ilse wants the last of it in person. Go to the Lodge.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    // §9.4 (D1549): an old save's one Lodge talk with Ilse, after the move. It waits behind the save's own next steps.
+    { id: 'rpt_lodge', when: ['story.ilse_call_old', 'story.keeper_cadet', '!story.rpt_old_seen'], done: ['story.rpt_old_seen', 'story.ep1_end'], noImply: true,
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: 'Warden Ilse wants to see you at the Lodge.', place: 'Hearthmoor, the Lodge',
       target: { map: 'hm_lodge_in', x: 5, y: 3 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },

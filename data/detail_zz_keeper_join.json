@@ -33,7 +33,9 @@
   "story.rpt_3": "4.9 R3 (after Brinewick, at the Lodge): told / kept",
   "story.ilse_call3": "4.9: the recall call answered (an undercover Cadet after Brinewick)",
   "story.cover_done": "9b: the cover is over (or there was none); the recall guard",
-  "story.warden_cut": "reserved: the Act 3 loyalist choice (D1514). Stops the reports"
+  "story.warden_cut": "reserved: the Act 3 loyalist choice (D1514). Stops the reports",
+  "story.ilse_call_old": "§9.1 (D1546 B): the old-save move is written (at load, once); its own guard",
+  "story.rpt_old_seen": "§9.4 (D1549): the old-save Lodge talk done"
  },
  "slicePatch": {
   "maps": {
@@ -182,6 +184,7 @@
   },
   "ilse_lodge_after": {
    "linesFirst": {
+    "story.ilse_call_old & story.keeper_cadet & !story.rpt_old_seen": "@rpt_old",
     "story.ilse_call3 & !story.cover_done": "@recall",
     "story.keeper_cadet & story.ep1_end & !story.rpt_3 & !story.cover=glimmer & !story.switched_a3 & !story.warden_cut": "@cadet_sendoff",
     "story.ilse_call2 & !story.keeper_cadet": "@enrol",
@@ -1283,6 +1286,178 @@
     "story.hc_council_done",
     true
    ]
+  ],
+  "rpt_old": [
+   [
+    "if",
+    "story.sway_fernbrook<0",
+    [
+     [
+      "say",
+      "Warden Ilse",
+      "What did they show you? What did you show them?"
+     ]
+    ],
+    [
+     [
+      "say",
+      "Warden Ilse",
+      "Tell me what you've seen on the road."
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Someone I trust found Fernbrook's Seals in a lamp ledger. Remember that."
+   ],
+   [
+    "choice",
+    "What do you tell her?",
+    [
+     [
+      "Tell her all of it",
+      [
+       [
+        "say",
+        "",
+        "You tell her all of it, just as you saw it."
+       ],
+       [
+        "if",
+        "story.seal2",
+        [
+         [
+          "setFlag",
+          "story.rpt_1",
+          "told"
+         ]
+        ]
+       ],
+       [
+        "if",
+        "story.hc_council_done | story.gb_done",
+        [
+         [
+          "setFlag",
+          "story.rpt_2",
+          "told"
+         ]
+        ]
+       ],
+       [
+        "if",
+        "story.ep1_end",
+        [
+         [
+          "setFlag",
+          "story.rpt_3",
+          "told"
+         ]
+        ]
+       ]
+      ]
+     ],
+     [
+      "Keep some back",
+      [
+       [
+        "say",
+        "",
+        "You tell her some of it. The rest you keep."
+       ],
+       [
+        "if",
+        "story.seal2",
+        [
+         [
+          "setFlag",
+          "story.rpt_1",
+          "kept"
+         ]
+        ]
+       ],
+       [
+        "if",
+        "story.hc_council_done | story.gb_done",
+        [
+         [
+          "setFlag",
+          "story.rpt_2",
+          "kept"
+         ]
+        ]
+       ],
+       [
+        "if",
+        "story.ep1_end",
+        [
+         [
+          "setFlag",
+          "story.rpt_3",
+          "kept"
+         ]
+        ]
+       ]
+      ]
+     ]
+    ],
+    "Warden Ilse"
+   ],
+   [
+    "if",
+    "story.ep1_end",
+    [
+     [
+      "say",
+      "Warden Ilse",
+      "Captain Lumen has asked for you. The capital is waiting, Cadet."
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.rpt_old_seen",
+    true
+   ]
+  ],
+  "brinewick_hook": [
+   [
+    "say",
+    "",
+    "A Glimmerwell cart rattles down from the quarry, piled with crates."
+   ],
+   [
+    "say",
+    "Rook",
+    "{name}. Routine run to Brinewick. I am staying with the company."
+   ],
+   [
+    "say",
+    "Rook",
+    "One crate hums. I will not ask it why. See you on the road."
+   ],
+   [
+    "setFlag",
+    "story.rook_end",
+    "stays"
+   ],
+   [
+    "say",
+    "",
+    "The cart rolls on toward the coast. The Brinewick road stays shut while crates are loaded."
+   ],
+   [
+    "setFlag",
+    "story.cobble_end",
+    true
+   ],
+   [
+    "standing",
+    "keepers",
+    5,
+    "r5_k"
+   ]
   ]
  },
  "calls": [
@@ -1359,5 +1534,9 @@
    "line": "A note from the Warden: come home to the Lodge. She wants the last of it in person.",
    "scene": "rpt_3_note"
   }
- ]
+ ],
+ "lines": {
+  "_note": "D1515: an old save whose Rook came over (story.rook_end ally) gets one Act 2 line from him. No Act 2 Rook body is built yet; the line waits here for the Act 2 packet.",
+  "rook_desk_ally": "They offered me a desk. I took it."
+ }
 }

@@ -88,7 +88,8 @@ test('thresholds and tier-up toasts come from the config, once per tier @w1', as
   expect(flags.g3).toBe('no');
 });
 
-test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', async ({ page }) => {
+// ACT1_KEEPER_JOIN: the pick's sp_pick grant moved to the face (Juniper's lanyard step under D1562).
+test('the face grants sp_pick once; a replay does not grant again @w1', async ({ page }) => {
   const save = starterSave(); Object.assign(save.flags, { 'story.reached_fernbrook': true, 'story.met_glimmerwell': true });
   save.world = { map: 'fernbrook', x: 9, y: 9, facing: 'down', respawn: 'fernbrook' };
   await installSave(page.context(), save, { quietDay: true });
@@ -96,18 +97,19 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', a
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   const before = await page.evaluate(() => PixelPets.standing.keepers.points);
   expect(before).toBe(0);
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
+  await page.evaluate(() => { PixelPets.setFlag('story.keeper_cadet', true); PixelPets.setFlag('story.cover', 'glimmer'); PixelPets.setFlag('story.orchard_cleared', true); });
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
   const after = await page.evaluate(() => ({ st: PixelPets.standing, got: PixelPets.state.flags['standing.got.sp_pick'], side: PixelPets.side, picked: PixelPets.state.flags['story.side_pick_done'] }));
-  expect(after.st.keepers.points).toBe(cfg.grants.sp_pick + 2);
-  expect(after.st.glimmer.points).toBe(0);
+  expect(after.st.glimmer.points).toBe(cfg.grants.sp_pick + 2);   // sp_pick plus know_us@glimmer's offer
+  expect(after.st.keepers.points).toBe(0);
   expect(after.got).toBe(true);
-  expect(after.side).toBe('keepers');
+  expect(after.side).toBe('glimmer');
   expect(after.picked).toBe(true);
   // replay (debug): the same choice path, no second grant
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
-  expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
+  expect(await page.evaluate(() => PixelPets.standing.glimmer.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
 test('no switch before Act 3 (D1536); the switch engine still halves the side you leave, once per Seal @w1', async ({ page }) => {
@@ -386,6 +388,7 @@ const COPY = {
   ep1_end: ['Rook is waiting outside the Trial Hall.', 'Brinewick, west pier'],
   recall: ['Warden Ilse wants you home at the Lodge. Take the lanyard off first.', 'Hearthmoor, the Lodge'],
   cadet_report: ['Warden Ilse wants the last of it in person. Go to the Lodge.', 'Hearthmoor, the Lodge'],
+  rpt_lodge: ['Warden Ilse wants to see you at the Lodge.', 'Hearthmoor, the Lodge'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 

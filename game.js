@@ -826,10 +826,9 @@ function bossRestTick(d){
 }
 // D848: the Brinewick road opens after Rook's last crates and that side's chapter end. One derived flag, so map objects
 // can gate on it without an OR: the Keepers close at the Lantern Council, Glimmerwell at the Signal Review. Never cleared.
-function openRoad3(){
+function openRoad3(){   // ACT1_KEEPER_JOIN E4 (D1548): either chapter finale opens the road, whatever the face
   if (!S || !S.flags || S.flags['story.route3_open'] || !S.flags['story.rc_done']) return;
-  const glim = S.flags['story.side'] === 'glimmer';
-  if (glim ? S.flags['story.gb_done'] : S.flags['story.hc_council_done']) S.flags['story.route3_open'] = true;
+  if (S.flags['story.gb_done'] || S.flags['story.hc_council_done']) S.flags['story.route3_open'] = true;
 }
 function toggleStill(p){
   if (!isAttune(p)) return false;
@@ -6655,7 +6654,32 @@ function checkTriggers(){
 // ACT1_KEEPER_JOIN E7: story calls (data/detail_*.json `calls`: { id, when, scene }). The first free outdoor step with no scene,
 // fade, sheet or battle rings the first call whose `when` holds (Ilse's second call, the recall). The scene's own answer writes
 // the flag that ends its `when`; until then it rings again on the next outdoor step, like the dawn call (D1404).
-function oldSaveMoveDue(){}   // ACT1_KEEPER_JOIN §9.1: the old-save move (K8)
+// ACT1_KEEPER_JOIN §9 (D1503 B, D1546 B): a save that picked a side before the join becomes a Keeper Cadet in public, once,
+// automatically at load (after normalizeV2, before the first map), with no call. story.ilse_call_old is written in the same step,
+// so it can never run twice. Only additive keys and one value change (story.side glimmer -> keepers, by assignment, never
+// switchSide: no cost, story.switches stays 0). Seals, Tier lanyards, the cracked handset, chips, standing and Rook stay (D1547).
+const OLD_MOVE_TOAST = "You're a Keeper Cadet now. See Ilse.";   // PLACEHOLDER, <= 40
+let oldMoveToast = false;
+const oldSaveMoveWanted = F => !!(F && F['story.side_pick_done'] && !F['story.keeper_cadet'] && !F['story.ilse_call_old']);
+function applyOldSaveMove(F){
+  const glim = F['story.side'] === 'glimmer';
+  F['story.keeper_cadet'] = true;
+  if (glim) F['story.side'] = 'keepers';
+  if (!F['story.orchard_lean']) F['story.orchard_lean'] = glim ? 'pack' : 'open';
+  if (F['story.fen_lean'] == null) F['story.fen_lean'] = glim ? -1 : 1;   // D1550: one step, only if unset
+  F['story.sway_fernbrook'] = glim ? -2 : 3;                               // D1545 A: the town stays as it was
+  F['story.cover_done'] = true;
+  F['story.ilse_call_old'] = true;
+  return true;
+}
+function oldSaveMoveAtLoad(){
+  if (!S || !oldSaveMoveWanted(S.flags)) return false;
+  applyOldSaveMove(S.flags); oldMoveToast = true; return true;
+}
+function oldSaveMoveDue(){   // the toast on the first free moment
+  if (!oldMoveToast || !S || scene || fade.busy || overlayOpen()) return;
+  oldMoveToast = false; toast(OLD_MOVE_TOAST);
+}
 const HOST_NOTES = [].concat(...DETAIL_KEYS.map(k => MD[k].hostNotes || [])).filter(n => n && n.scene && n.line);
 const hostNoteDue = () => HOST_NOTES.find(n => SCENES[n.scene] && (n.when || []).every(w => cond(w, false))) || null;
 const STORY_CALLS = [].concat(...DETAIL_KEYS.map(k => MD[k].calls || [])).filter(c => c && c.scene);
@@ -18191,6 +18215,26 @@ const DEBUG_EXTRAS = {
   hc_hall: { place: 'Event Hall', text: 'The five High Charity games.', map: 'hc_hall_in', x: 5, y: 9, facing: 'up',
     flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'] },
 };
+// ACT1_KEEPER_JOIN D1560: one debug place per beat. The chain checkpoints cover the trunk, the shifts, the report, the lean,
+// the Lodge and Juniper's step; these add the hut, both shifts' spots, the recall and the two old-save kinds (`move`: the
+// load-time move runs on the place's flags, as it would at load).
+{
+  const J0 = ['story.intro_seen', 'story.starter_received', 'story.reached_fernbrook', 'story.met_fen', 'story.lizzy_class', 'story.seal1', 'story.crates_seen',
+    'story.crackdown', 'story.hall1_shut', 'story.post_trial_done', 'story.warden_called', 'story.warden_met', 'story.phone_got'];
+  const J1 = J0.concat(['story.chi_met', 'story.chi_jars=1']);
+  const DONE = J1.concat(['story.shift_g', 'story.shift_k', 'story.met_lead', 'story.chi_done', 'story.chi_jars=6']);
+  const LAN = DONE.concat(['story.orchard_lean=pack', 'story.orchard_cleared', 'story.sway_fernbrook=-2', 'story.ilse_call2', 'story.keeper_cadet', 'story.cover=glimmer', 'story.side=glimmer', 'story.side_pick_done']);
+  Object.assign(DEBUG_EXTRAS, {
+    kj_hut: { place: 'Weir Hut (Act 1)', text: 'Vincent Chi, the first step in.', map: 'hw_weir_hut_in', x: 4, y: 10, facing: 'up', flags: J0 },
+    kj_day: { place: 'Wickerglen day shift', text: "Imogen's lamp crew.", map: 'route2_glen', x: 12, y: 6, facing: 'up', flags: J1 },
+    kj_night: { place: 'Wickerglen dusk watch', text: 'The Keeper Scout.', map: 'route2_glen', x: 12, y: 15, facing: 'right', flags: J1 },
+    kj_lean: { place: 'Orchard gate (the lean)', text: 'Open the crates, or pack them.', map: 'fernbrook', x: 9, y: 9, facing: 'down', flags: DONE },
+    kj_lodge: { place: 'The Lodge (the enrolment)', text: 'Ilse makes you a Cadet.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up', flags: DONE.concat(['story.orchard_lean=open', 'story.orchard_cleared', 'story.sway_fernbrook=2', 'story.ilse_call2']) },
+    kj_recall: { place: 'After Brinewick (recall)', text: 'Ilse calls the Cadet home.', map: 'brinewick', x: 6, y: 13, facing: 'down', flags: LAN.concat(['story.seal2', 'story.gb_done', 'story.route3_open', 'story.reached_brinewick', 'story.seal3', 'story.ep1_end']) },
+    kj_old_glimmer: { place: 'Old Glimmer save (moved)', text: 'A save that picked Glimmerwell.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side=glimmer', 'story.side_pick_done']) },
+    kj_old_keepers: { place: 'Old Keepers save (moved)', text: 'A save that picked the Keepers.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side_pick_done', 'story.orchard_cleared']) },
+  });
+}
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
 if (HC_V2_ON) {
   const HC_F = ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'];
@@ -18411,10 +18455,15 @@ function applyCheckpoint(id){
     reconcileChain(PPQuests.SIDE, sideI);
     S.flags['story.intro_seen'] = true;
     S.flags['story.starter_received'] = true;
-  } else for (const f of extra.flags) {   // "key=value" sets a value (story.act=5 for the HIGH_CHARITY_LAYOUT Act 5 places)
-    const kv = /^([^=]+)=(.+)$/.exec(f);
-    if (kv) S.flags[kv[1]] = isNaN(+kv[2]) ? kv[2] : +kv[2]; else S.flags[f] = true;
+  } else {
+    // ACT1_KEEPER_JOIN §9 debug places start from an unmoved save, then the move runs on their flags as it would at load.
+    if (extra.move) for (const k of ['story.keeper_cadet', 'story.ilse_call_old', 'story.cover', 'story.cover_done', 'story.orchard_lean', 'story.sway_fernbrook', 'story.fen_lean']) delete S.flags[k];
+    for (const f of extra.flags) {   // "key=value" sets a value (story.act=5 for the HIGH_CHARITY_LAYOUT Act 5 places)
+      const kv = /^([^=]+)=(.+)$/.exec(f);
+      if (kv) S.flags[kv[1]] = isNaN(+kv[2]) ? kv[2] : +kv[2]; else S.flags[f] = true;
+    }
   }
+  if (extra && extra.move && oldSaveMoveWanted(S.flags)) applyOldSaveMove(S.flags);   // ACT1_KEEPER_JOIN §9 debug places
   if (S.flags['story.starter_received'] || allPets().length) readyParty();
   else setRestDue(false);
   syncSide();
@@ -19733,11 +19782,13 @@ function boot(){
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
+  const movedOnLoad = oldSaveMoveAtLoad();             // ACT1_KEEPER_JOIN §9.1 (D1546 B), before the first map spawns
   const paidOnLoad = payHeldBx();                    // silent: a Seal already on the save pays held battle XP, no toast
   if (window.PPRep) PPRep.bind({ state: () => S, side: () => side() });   // LR5: rep.js reads S and the pledge, and does not own them
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
   if (paidOnLoad.moved) save();                      // after away-time is read, so the payout stays on disk
+  if (movedOnLoad) save();                           // the old-save move is written once (§9.1)
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen(); noteBoardTown();
   // D224: the room a save wakes in counts as seen. Same floorSeen object, no new key.
   if (CUR && CUR.kind === 'interior') {
@@ -19758,6 +19809,7 @@ function boot(){
     else if (!S.player.name && S.world.map === 'hearthmoor') setTimeout(() => toast('Warden Ilse would like a word at the Lodge.'), late);
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
+  if (movedOnLoad) setTimeout(oldSaveMoveDue, 3200);   // or on the first step, whichever is first and free
   applyControls();
   if (S && S.flags['story.tut_care'] === 'armed') careDoorLand();
   scheduleTutorial(false);

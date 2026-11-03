@@ -50,8 +50,11 @@ async function seedRaw(context, raw) {
   }, raw);
 }
 
-async function bootKind(page, context, kind, search) {
+// ACT1_KEEPER_JOIN §9.1: the gate fixtures are marked as past the old-save move (as tests/helpers.js installSave does), so
+// they read the gates they were written for; the §7.3 proof below loads a real old save (`real`).
+async function bootKind(page, context, kind, search, real) {
   const save = kindSave(kind);
+  if (!real && save.flags['story.side_pick_done']) save.flags['story.ilse_call_old'] = true;
   save.last = Date.now();
   const raw = JSON.stringify(save);
   await seedRaw(context, raw);
@@ -227,16 +230,29 @@ test('gate matrix: the §7.4 asserts hold on the seven kinds', () => {
 });
 
 // ---------- §7.3: no save change (CLEAN build, no debug) ----------
+const MOVE_KEYS = ['story.keeper_cadet', 'story.orchard_lean', 'story.fen_lean', 'story.sway_fernbrook', 'story.cover_done', 'story.ilse_call_old'];
 
 for (const kind of K.SEVEN) {
   test(`§7.3 save proof: kind ${kind} loads byte-identical, then one save only adds keys; v stays 2`, async ({ page, context }) => {
-    const raw = await bootKind(page, context, kind, '');
+    const raw = await bootKind(page, context, kind, '', true);
     expect(await page.evaluate(() => window.PixelPets.debug)).toBe(false);
     // After load: the raw save at the end of boot, before any save the game makes once it runs.
     const afterLoad = await page.evaluate(() => window.ppAtBoot);
     const writes = await page.evaluate(() => window.ppSaveWrites.slice());
-    expect(writes.filter(w => !w.booted), 'no save write during load').toEqual([]);
-    expect(afterLoad).toBe(raw);
+    const before0 = JSON.parse(raw);
+    // ACT1_KEEPER_JOIN §9.1 (D1546 B): a save that already picked is moved to the Keepers once, at load. That is the only
+    // write during load; it adds the move's keys (and turns a Glimmerwell side to keepers) and changes nothing else.
+    const picked = !!before0.flags['story.side_pick_done'];
+    if (!picked) {
+      expect(writes.filter(w => !w.booted), 'no save write during load').toEqual([]);
+      expect(afterLoad).toBe(raw);
+    } else {
+      expect(writes.filter(w => !w.booted).length, 'one move write during load').toBe(1);
+      const moved = JSON.parse(afterLoad), add = Object.keys(moved.flags).filter(k => !(k in before0.flags)).sort();
+      expect(add.every(k => MOVE_KEYS.includes(k)), add.join(',')).toBe(true);
+      expect(moved.flags['story.keeper_cadet']).toBe(true);
+      for (const k of Object.keys(before0.flags)) if (k !== 'story.side') expect(moved.flags[k], k).toEqual(before0.flags[k]);
+    }
     // One save through a real save path (the pagehide handler); the game may already have saved once after boot.
     await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
     await page.waitForFunction(() => window.ppSaveWrites.length > 0);
@@ -253,7 +269,7 @@ for (const kind of K.SEVEN) {
       } else if (JSON.stringify(a) !== JSON.stringify(b) && !FADE.test(p)) changed.push(p);
     };
     walk(before, after, '');
-    expect(changed).toEqual([]);
+    expect(changed.filter(p => !(picked && p === '.flags.story.side'))).toEqual([]);
     const flagKeys = Object.keys(after.flags);
     expect(flagKeys.filter(f => /[|&]/.test(f)), 'no literal a|b flag').toEqual([]);
     expect(flagKeys.filter(f => NEW_FLAGS.includes(f)), 'nothing sets the new flags yet').toEqual([]);
