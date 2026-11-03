@@ -2,6 +2,18 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 11:45 ET: Hall polish: the art pass, June's 36 lines, and the props switch on who controls the town (D1191, D1193, D1195)
+- What changed and why: Vincent asked for an agent to build the art and one for the 36 lines, settled D1191 (the props switch on who controls the town) and handed D1193 and D1195 to the art and design agent. Still behind `HALL2_RELEASED = false`; players see today's room until his yes on these shots (rule 9).
+  - D1191: `cond()` gains `hold:<node>=<id>` (reads `mapHold()`, live-aware); the overlay's 49 props use it instead of copied rule strings, checked equal on every flag combination.
+  - Art (rule 9: inspiration brief first, then PAL only): every Hall 2 tile and prop redrawn: an 8 px tile grid with soot pins, a straight seam with all the wear on the old-stone side, lighter planter ledges, a calmer white dais, a crest cover that no longer reads as a door, two notice boards told apart by frame, a rope that shows at 320. Same keys and sizes, no new PAL key, no crimson.
+  - D1193: the §5.3 holder spots kept. D1195: the polished floor is +21 luma lighter (band above 20, below 40); T12 gains the upper cap.
+  - The 36 prop lines: June's pass, drafted by Claude in June's role, Vincent to approve.
+- Files touched: `game.js` (`cond`), `sprites.js` (`HALL2_TILES`, `HALL2_ART`), `data/detail_zz_hall_contested.json`, `data/mapdata.js`, `tools/GAMEJS_MAP.txt`, `tests/trial_hall_contested.spec.js` (the `hold:` term in T6, T12's cap), `handoff/shots/trial_hall_fernbrook_art/` (art sheet, shots, `ART_NOTES.md`, compare sheets), `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/hall2-art-lines; build stamped when its PR opens (after #285).
+- Tests run and result (widths, checks): `trial_hall_contested` 20 passed at 320, 375 and 390 (16 width-skips); `art_pass` 9 passed; the touched suites in the PR. Scans pass.
+- Decisions made (colour + reasoning): D1191 settled by Vincent; D1193 and D1195 settled by the art and design agent on his delegation (reasons in `ART_NOTES.md`). No new ids.
+- Anything left unfinished: Vincent's yes on the shots, then the one-line flip PR; open art questions in `ART_NOTES.md` (oil-lamp soot halo, a Glimmerwell wall rail, the shared Comfort Lamp's sparkle pixels).
+
 ## 2026-11-03 07:05 ET: Build: the contested Fernbrook Trial Hall behind a flag (TRIAL_HALL_FERNBROOK_MAP, D1189-D1196), and "Fernbrook Trial Hall" everywhere (D1192)
 - What changed and why:
   - The contested Hall from #263, with Vincent's rulings of Nov 2, 10:19 PM ET (#264):
