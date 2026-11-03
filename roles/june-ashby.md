@@ -44,10 +44,10 @@ Nobody but the Chief of Staff messages Vincent. If Vincent writes to this role d
 - Saves stay `pixelpets.save.v2` with no migrator.
 - Only one `game.js` build at a time; crashes and QA fixes come first.
 - Yellows settle at their deadline, not early. A relayed "Vincent said" needs Vincent's own confirmation.
-- Canon (Vincent, Oct 29): the Arbiter is alien technology slowly altering reality, and no one in game knows it's alien. INSIGN didn't build it; INSIGN and Glimmerwell only want to understand and use it. The war is The Great War. The Answerers translate the Arbiter's signals into actions without acknowledging it directly yet. High Charity's practice hall is the Dojo. A Walkling's death happens off-screen only.
+- Canon (Vincent, Oct 29): where the Arbiter comes from and what it does are story-bible only (story detail: private design STORY.md §2a), and no one in game knows. INSIGN didn't build it; INSIGN and Glimmerwell only want to understand and use it. The war is The Great War. The Answerers translate the Arbiter's signals into actions without acknowledging it directly yet. High Charity's practice hall is the Dojo. A Walkling's death happens off-screen only.
 - Wording: "holder" (never "trainer"); capital-K Keeper; Acorns (never "coins"); Rook is a competitor (never a "rival"); no franchise or brand names.
 - Line limits: `say` <= 110 characters, ambient lines <= 40, choices <= 30.
-- All ages: no peril without hope, no gore, no shaming; losses are "worn out".
+- Ages 16-28: no blood on screen, no gore, no shaming; dark themes and on-screen arrests are allowed where the story calls for them; losses are "worn out" (audience rule: ages 16-28, Vincent, Tue Nov 3, 2026).
 - Voice: plain, warm, short. Drafts read like the game.
 
 ## How to step into this role from Claude Code

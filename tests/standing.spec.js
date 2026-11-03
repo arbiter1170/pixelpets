@@ -7,6 +7,7 @@ const { starterSave, installSave, trackErrors, gotoGame, shot, playScene } = req
 
 trackErrors(test, expect);
 
+const ACT5_FLAGS = ['story.ep1_end', 'story.seal5', 'story.seal7', 'story.skyloom_done'];   // D915: Act 5 starts at the Skyloom
 const SIDE_PICK_FLAGS = { 'story.reached_fernbrook': true, 'story.met_glimmerwell': true, 'story.met_fen': true, 'story.side_pick_done': true };
 
 async function gotoDebug(page) {
@@ -142,9 +143,12 @@ test('no switch before Act 5 (D161); the switch engine still halves the side you
   // the next Seal opens a new chapter, but the Act 5 lock still holds; with Act 5 reached the per-Seal rule applies again
   await page.evaluate(() => PixelPets.setFlag('story.seal1', true));
   expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
-  await page.evaluate(() => PixelPets.setFlag('story.act', 5));
+  // Act 5 is derived from the act flags (D915, CHIP_SECRECY §7), never a stored story.act
+  await page.evaluate((ks) => ks.forEach(k => PixelPets.setFlag(k, true)), ACT5_FLAGS);
+  expect(await page.evaluate(() => PixelPets.act)).toBe(5);
   expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(true);
-  await page.evaluate(() => PixelPets.setFlag('story.act', null));
+  await page.evaluate((ks) => ks.forEach(k => PixelPets.setFlag(k, null)), ACT5_FLAGS);
+  expect(await page.evaluate(() => PixelPets.act)).toBe(1);
   // a free debug switch does not halve
   expect(await page.evaluate(() => PixelPets.standing.chapter)).toBe(1);
   const free = await page.evaluate(() => {

@@ -71,7 +71,7 @@ TXT = {
     'hb15_door_seven': "Chained. Ask the duty Keeper.",
     'hb15_keeper': "Shut since the war, holder. Come back with seven on the roll.",
     'gov_door': "By appointment.",
-    'gov_line': "[PLACEHOLDER: Governor Merriden's Act 5 lines are Story's.]",
+    'gov_line': "[PLACEHOLDER: Governor Merriden's Act 2 lines are Story's.]",
     'gov_stair': "[PLACEHOLDER] Upstairs is the President's floor. Not today, holder.",
     'court': "The Court is not sitting.",
     'closed': "Closed for now.",                                # PLACEHOLDER facade line (Store Row a-c, the Exchange, Ferry House, College)
@@ -246,8 +246,9 @@ NEW_STYLE = {
 }
 
 # Doors: kept ids carry from WORLD; new doors are authored here.
+GOV1 = '!story.side=glimmer & story.act>=2'   # the Governor's House floors 1-2 (layout v0.4 §5.3); floor 3 is GOV3
 NEW_DOORS = {
-    'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': '!story.side=glimmer & story.act>=5', 'deny': TXT['gov_door']},
+    'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': GOV1, 'deny': TXT['gov_door']},   # D1426/D1439: Act 2 on
     'hc_news': {'to': 'hc_news_1', 'tx': 7, 'ty': 14, 'facing': 'up'},
     'hc_trial': {'need': 'story.hc_trial_called', 'deny': {'seals>=7': TXT['hb15_door_seven'], 'else': TXT['hb15_door']}},   # §5.2 keyed deny; seals>= counts Seals held (D1329)
     'hc_court': {'need': 'story.hc_no_room', 'deny': TXT['court']},
@@ -719,8 +720,10 @@ objs += [P(f'hc2_filing_{x}', x, 10, 'bookshelf', name='filing') for x in (10, 1
 objs.append(N('hc_reader', 'Keeper reader', 'clerk', 1, 6, 'right', lines={'else': TXT['hb10_reader']}))
 ROOMS['hc_news_2'] = room('hc_news_2', 'Block News House', 'hc_news', 'hc_exchange', g, 'hc_news_2', objs, (11, 12))
 
-# hc_gov_1, lobby and the Governor's office, 16x16 (§7.3 floor 1). The stair goes to floor 3 in phase 1 (the Cabinet
-# Room, floor 2, is phase 2); Keepers path, Act 5, after meeting the Governor (story.hc_gov_met, PLACEHOLDER flag).
+# hc_gov_1, lobby and the Governor's office, 16x16 (§7.3 floor 1). Keepers path, Act 2 on (D1426, D1439, layout v0.4
+# §5.3): the door, Governor Merriden and the ORDERS DOWN chute (HB12) open with GOV1. The stair goes to floor 3 in phase 1
+# (the Cabinet Room, floor 2, is phase 2 and follows GOV1 when built); the President's rooms stay Keepers path, Act 5, after
+# meeting the Governor (story.hc_gov_met, PLACEHOLDER flag).
 part = lambda: '#' + '.' * 8 + '#' + '.' * 5 + '#'
 g = ['#' * 16, '#' + 'W' * 14 + '#'] + [part() for _ in range(3)] + ['#' + '.' * 14 + '#'] * 2 + [part() for _ in range(8)] + ['#######m########']
 GOV3 = '!story.side=glimmer & story.act>=5 & story.hc_gov_met'
@@ -733,7 +736,7 @@ objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={GOV3:
 objs += [P(f'hc2_govdesk_{x}', x, 4, 'keep_desk', name="the Governor's desk") for x in (11, 12)]
 SC['hc2_chute'] = [['say', '', TXT['hb12_chute']], ['setFlag', 'story.hc_chute', True]]
 objs.append(P('hc_chute_mouth', 13, 4, 'hc_chute_mouth', name='the ORDERS DOWN chute', scene='hc2_chute', lines={'else': TXT['hb12_chute']}))
-objs.append(N('hc_governor', 'Governor Merriden', 'hc_governor', 12, 3, 'down', when=['story.act>=5'], lines={'else': TXT['gov_line']}))
+objs.append(N('hc_governor', 'Governor Merriden', 'hc_governor', 12, 3, 'down', when=['story.act>=2'], lines={'else': TXT['gov_line']}))
 objs += [P('hc2_gov_flag_w', 10, 2, 'banner_keeper'), P('hc2_gov_flag_e', 14, 2, 'banner_keeper')]
 ROOMS['hc_gov_1'] = room('hc_gov_1', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_1', objs, (7, 14))
 
@@ -796,7 +799,8 @@ for sid, steps in SC.items():
         if st[0] == 'say' and len(st[2]) > 110: fail(f'{sid}: say over 110')
 
 # ---------- the reputation cast (every named body needs an entry; only added while the city is on) ----------
-KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'Governor Merriden', 'The President', 'Aide', 'Commander', 'Clerk'}
+# D1439: the Governor is a civil post, not a Keeper; the cast has no civil value, so he takes 'none' (as civilians do)
+KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk'}
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
 CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
