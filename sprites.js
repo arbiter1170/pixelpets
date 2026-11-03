@@ -3562,7 +3562,7 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
 // HC_PARADE §8 (D1355, D1356; design specs/HC_PARADE.md): PLACEHOLDER draft art for the parade, PAL keys only, from the sub-agent
 // inspiration briefs in handoff/maps/HC_PARADE.md (rule 9). Pia redraws before HC_CITY_V2 ships. Installed only while the city is
 // on, and built on first draw, not at boot (each new size opens a whole pool sheet; memory_walk). No gun on any of it.
-// Sizes: rotor craft 48x32 (its shadow 40x10), the President's car 48x24, the President 16x16, crowd strips 64x16.
+// Sizes: rotor craft 48x32 (its shadow 40x10), the President's car 64x32, the President 16x16, crowd strips 64x16.
 function addHcParadeArt(T, A){
   const lazy = (key, fn) => {
     if (key in A) return;
@@ -3606,19 +3606,29 @@ function addHcParadeArt(T, A){
     g.globalAlpha = 1;
   }));
   // The President's car, facing right (mir = left). v: 0 drive, 1 wheels turned, 'hand' the still, 'door' the rear door open.
-  const car = (v, mir) => sheetPaint(48, 24, g => {
-    const d = P(g, mir, 48);
-    d('k', 4, 20, 41, 1);                                                                                // hard shadow
-    d('J', 2, 12, 44, 8); d('D', 3, 12, 42, 1); d('h', 3, 16, 42, 1); d('w', 32, 12, 12, 1);             // body, chrome strip, bonnet streak
-    d('J', 14, 5, 17, 7); d('D', 15, 5, 15, 1);                                                          // cabin roof
-    d('k', 15, 7, 7, 4); d('k', 23, 7, 7, 4); d('d', 16, 7, 2, 1); d('d', 24, 7, 2, 1);                  // tinted glass
-    d('y', 19, 13, 3, 3); d('F', 20, 14, 1, 1);                                                          // Keeper crest
-    d('F', 40, 6, 1, 6); d('J', 41, 6, 3, 2); d('y', 43, 6, 1, 2);                                       // pennant (front wing)
-    d('F', 36, 7, 1, 5); d('J', 37, 7, 3, 2); d('y', 39, 7, 1, 2);                                       // second pennant
-    d('k', 8, 18, 6, 5); d('k', 35, 18, 6, 5);                                                            // wheels
-    const hub = v === 1 ? 1 : 0; d('m', 10 + hub, 20, 2, 1); d('m', 37 + hub, 20, 2, 1);
-    if (v === 'hand') { d('d', 16, 7, 5, 2); d('C', 18, 9, 2, 3); }                                      // window down, one gloved hand
-    if (v === 'door') { d('k', 15, 12, 7, 7); d('y', 17, 18, 2, 1); d('J', 13, 14, 7, 8); d('D', 13, 14, 7, 1); d('h', 18, 17, 1, 1); }
+  // v0.2 (relayed from Vincent's preview review, Tue Nov 3): a stately armoured car, 64x32 (four tiles long; the parked
+  // runabouts are two), high armoured cabin, long bonnet, two pennants, a large rear window so the gloved hand reads.
+  const car = (v, mir) => sheetPaint(64, 32, g => {
+    const d = P(g, mir, 64);
+    d('k', 3, 29, 58, 2);                                                                                // hard shadow
+    d('J', 2, 16, 60, 11); d('E', 2, 25, 60, 2); d('D', 3, 16, 58, 1);                                   // armoured body, sill
+    d('h', 3, 21, 58, 1); for (let x = 5; x < 60; x += 5) d('m', x, 18, 1, 1);                           // chrome strip, rivets
+    d('J', 40, 13, 21, 4); d('D', 41, 13, 19, 1); d('w', 44, 14, 14, 1);                                 // long bonnet, its streak
+    d('m', 60, 17, 3, 9); d('h', 61, 18, 1, 6); d('y', 61, 15, 2, 2); d('w', 62, 15, 1, 1);              // grille, headlamp
+    d('m', 0, 18, 3, 8);                                                                                 // rear bumper
+    d('J', 12, 3, 30, 13); d('E', 12, 3, 30, 1); d('D', 13, 4, 28, 1); d('k', 11, 4, 1, 12); d('k', 42, 4, 1, 12);   // armoured cabin
+    d('k', 14, 6, 9, 8); d('k', 24, 6, 8, 8); d('k', 33, 6, 8, 8);                                       // tinted glass, three panes
+    d('d', 15, 6, 3, 1); d('d', 25, 6, 3, 1); d('n', 34, 6, 5, 1); d('m', 39, 7, 1, 2);                  // glass glints
+    d('y', 25, 17, 5, 5); d('F', 26, 18, 3, 3); d('y', 27, 19, 1, 1);                                    // Keeper crest on the rear door
+    d('F', 49, 3, 1, 11); d('J', 50, 3, 5, 3); d('y', 54, 3, 1, 3);                                      // pennants on the front wings
+    d('F', 56, 5, 1, 9); d('J', 57, 5, 4, 3); d('y', 60, 5, 1, 3);
+    d('k', 7, 23, 10, 8); d('k', 44, 23, 10, 8); d('d', 8, 24, 8, 6); d('d', 45, 24, 8, 6);             // wheels under the wings
+    const hub = v === 1 ? 1 : 0; d('m', 10 + hub, 26, 3, 2); d('m', 47 + hub, 26, 3, 2);
+    if (v === 'hand') {                                                                                  // 1.6: the window down, one gloved hand
+      d('J', 14, 6, 9, 3); d('d', 14, 9, 9, 1); d('k', 14, 10, 9, 4);
+      d('C', 16, 9, 5, 4); for (const fx of [16, 18, 20]) d('C', fx, 6, 1, 3); d('w', 17, 9, 2, 1); d('C', 21, 10, 2, 2); d('J', 16, 13, 5, 1);   // a raised glove: three fingers, a thumb, the cuff
+    }
+    if (v === 'door') { d('k', 13, 6, 11, 20); d('y', 15, 24, 6, 1); d('J', 8, 9, 6, 20); d('D', 8, 9, 6, 1); d('h', 12, 17, 1, 2); }
   });
   for (const [sfx, mir] of [['r', false], ['l', true]]) {
     lazy('hc_pcar_' + sfx, () => car(0, mir));

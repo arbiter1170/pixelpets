@@ -2352,8 +2352,8 @@
 3415-3471  const HC_CITY_ART
 3472-3525  const HC_PLACEHOLDER_ART
 3526-3565  function addExteriorArt
-3566-3658  function addHcParadeArt
-3659-3659  const OUTDOOR_SKIN
+3566-3668  function addHcParadeArt
+3669-3669  const OUTDOOR_SKIN
 
 # stats.js
 9-10  const EVO_XP

@@ -52,7 +52,7 @@ for i in range(1, 9): CAST[f'pr_march_{i}'] = {'name': N_KEEPER, 'look': OFFICER
 for i in range(1, 5): CAST[f'pr_guard_{i}'] = {'name': N_GUARD, 'look': OFFICER}   # the car's close guards (Parts 1 and 2)
 for i in range(1, 5): CAST[f'pr_line_{i}'] = {'name': N_GUARD, 'look': OFFICER}    # the guard line at the foot of the steps
 for i in range(1, 9): CAST[f'pr_cordon_{i}'] = {'sprite': 'lantern_cordon'}
-for i, v in enumerate('abcabcabcabcabcabc', 1): CAST[f'pr_strip_{i}'] = {'sprite': 'hc_crowd_' + v}
+for i, v in enumerate('abc' * 12, 1): CAST[f'pr_strip_{i}'] = {'sprite': 'hc_crowd_' + v}
 
 # ---------- Part 1: Lantern Square (map highcharity) ----------
 GATE = (32, 36)
@@ -92,22 +92,23 @@ def part1_tail(sd):
                        ['pr_tank_b', X1 - 5, 21, {'ms': TANK_MS, 'line': True, 'drop': True}]]]]
     S += wave_march()                                                                                           # wave 4
     car_stop = sx                                                                                               # wave 5: the car stops in front of the holder
-    S += [cast('pr_car', X0, 20, 'right'), ['camera', 'pr_car'],                                               # owner: follow the car cast('pr_guard_1', X0 + 1, 21, 'right'), cast('pr_guard_2', X0 - 1, 21, 'right'),
-          cast('pr_guard_3', X0 + 1, 19, 'right'), cast('pr_guard_4', X0 - 1, 19, 'right'),
+    S += [cast('pr_car', X0, 20, 'right'), ['camera', 'pr_car'],                                               # owner: follow the car
+          cast('pr_guard_1', X0 + 3, 21, 'right'), cast('pr_guard_2', X0 - 2, 21, 'right'),                   # the 64 px car spans x-1.5..x+2.5
+          cast('pr_guard_3', X0 + 3, 19, 'right'), cast('pr_guard_4', X0 - 2, 19, 'right'),
           ['walkAll', [['pr_car', car_stop, 20, {'ms': CAR_MS, 'line': True}],
-                       ['pr_guard_1', car_stop + 1, 21, {'ms': CAR_MS, 'line': True}], ['pr_guard_2', car_stop - 1, 21, {'ms': CAR_MS, 'line': True}],
-                       ['pr_guard_3', car_stop + 1, 19, {'ms': CAR_MS, 'line': True}], ['pr_guard_4', car_stop - 1, 19, {'ms': CAR_MS, 'line': True}]]],
+                       ['pr_guard_1', car_stop + 3, 21, {'ms': CAR_MS, 'line': True}], ['pr_guard_2', car_stop - 2, 21, {'ms': CAR_MS, 'line': True}],
+                       ['pr_guard_3', car_stop + 3, 19, {'ms': CAR_MS, 'line': True}], ['pr_guard_4', car_stop - 2, 19, {'ms': CAR_MS, 'line': True}]]],
           ['prop', 'pr_car', 'hc_pcar_hand_r'], ['wait', 1200],                                                  # 1.6 one gloved hand at the window
           ['emote', 'pr_off_a', 'emote_hand', 900], ['wait', 300],
           ['emoteAll', P1_CIV, 'emote_clap', 1100], ['wait', 1100],                                              # E8: all at once, stops at once
           ['camera', None],
           ['prop', 'pr_car', 'hc_pcar_r'],
-          ['walkAll', [['pr_car', 53, 20, {'ms': CAR_MS, 'line': True}], ['pr_guard_1', 54, 21, {'ms': CAR_MS, 'line': True}],
-                       ['pr_guard_2', 52, 21, {'ms': CAR_MS, 'line': True}], ['pr_guard_3', 54, 19, {'ms': CAR_MS, 'line': True}],
-                       ['pr_guard_4', 52, 19, {'ms': CAR_MS, 'line': True}]]],
+          ['walkAll', [['pr_car', 53, 20, {'ms': CAR_MS, 'line': True}], ['pr_guard_1', 56, 21, {'ms': CAR_MS, 'line': True}],
+                       ['pr_guard_2', 51, 21, {'ms': CAR_MS, 'line': True}], ['pr_guard_3', 56, 19, {'ms': CAR_MS, 'line': True}],
+                       ['pr_guard_4', 51, 19, {'ms': CAR_MS, 'line': True}]]],
           ['walkAll', [['pr_car', 53, 8, {'ms': CAR_MS, 'line': True, 'drop': True}],                            # 1.7 north up Charter Avenue
-                       ['pr_guard_1', 54, 8, {'ms': CAR_MS, 'line': True, 'drop': True}], ['pr_guard_2', 52, 8, {'ms': CAR_MS, 'line': True, 'drop': True}],
-                       ['pr_guard_3', 54, 7, {'ms': CAR_MS, 'line': True, 'drop': True}], ['pr_guard_4', 52, 7, {'ms': CAR_MS, 'line': True, 'drop': True}]]]]
+                       ['pr_guard_1', 56, 8, {'ms': CAR_MS, 'line': True, 'drop': True}], ['pr_guard_2', 51, 8, {'ms': CAR_MS, 'line': True, 'drop': True}],
+                       ['pr_guard_3', 56, 7, {'ms': CAR_MS, 'line': True, 'drop': True}], ['pr_guard_4', 51, 7, {'ms': CAR_MS, 'line': True, 'drop': True}]]]]
     S += [cast('pr_tank_a', X0, 21, 'right'),                                                                   # wave 6: an escort tank, a last column
           ['walkAll', [['pr_tank_a', X1, 21, {'ms': TANK_MS, 'line': True, 'drop': True}]]]]
     S += wave_march(X0 - 2)
@@ -130,11 +131,15 @@ P2_VEST = [P2_CIV[i] for i in sorted(VEST2)]
 LINE2 = [(29, 28), (30, 28), (34, 28), (35, 28)]                     # 2.2 the guard line, behind the cordon
 CORDON2 = [(26, 29), (27, 29), (28, 29), (29, 29), (30, 29), (34, 29), (35, 29), (36, 29)]
 STRIPS2 = [(21, 30), (21, 31), (21, 33), (21, 34), (24, 34), (37, 33), (41, 33), (37, 34), (41, 34),
-           (25, 36), (29, 36), (33, 36), (37, 36), (45, 33)]       # crowd strips: back rows on the road and both sidewalks
+           (25, 36), (29, 36), (33, 36), (37, 36), (45, 33),
+           # denser at the Court (relayed from Vincent's preview review): both sidewalks, the far road ends, the back rows
+           (21, 28), (17, 28), (41, 28), (45, 28), (17, 30), (17, 31), (17, 33), (17, 34), (21, 36), (41, 36), (45, 36), (45, 34)]
+# Once the car has stopped, the crowd closes in on the road behind it (east of the aisle), so the way stays open while it drives.
+STRIPS2_LATE = [(38, 30), (42, 30), (46, 30), (38, 31), (42, 31), (46, 31)]
 COURT_DOOR, PRES_TOP = (32, 26), (32, 26)   # HIGH_CHARITY_LAYOUT v0.3 (D1354): door 32,26, steps rows 26-27
 CLOSE2 = [(30, 26), (31, 26), (33, 26), (34, 26)]                    # 2.4 four close guards around him on the steps
 OFF2 = {'pr_off_a': (26, 28), 'pr_off_b': (37, 28)}
-CAR_STOP = (33, 31)
+CAR_STOP = (32, 31)   # the 64 px car spans 30.5-34.5; its rear door (left-facing) sits at about 33, on the crosswalk
 
 def part2_stage():
     S = [['hide', 'people'], ['hide', ['hc2_sign_court']], ['curtain', 'on'],   # the Court's sign (33,26) steps aside for the close guards
@@ -154,12 +159,13 @@ def part2_speech():
     S += [cast(f'pr_march_{k + 1}', 40 + k, 31, 'left') for k in range(4)]
     S += [['walkAll', [[f'pr_march_{k + 1}', *COURT_DOOR, {'ms': 150, 'drop': True}] for k in range(4)]]]
     # 2.4 the car up the aisle, four close guards beside it; a small figure gets out
-    S += [cast('pr_car2', 54, 31, 'left'), cast('pr_guard_1', 55, 30, 'left'), cast('pr_guard_2', 53, 30, 'left'),
-          cast('pr_guard_3', 55, 32, 'left'), cast('pr_guard_4', 53, 32, 'left'), ['camera', 'pr_car2'],   # owner: the view rides with the car
+    S += [cast('pr_car2', 54, 31, 'left'), cast('pr_guard_1', 57, 30, 'left'), cast('pr_guard_2', 52, 30, 'left'),
+          cast('pr_guard_3', 57, 32, 'left'), cast('pr_guard_4', 52, 32, 'left'), ['camera', 'pr_car2'],   # owner: the view rides with the car
           ['walkAll', [['pr_car2', *CAR_STOP, {'ms': CAR_MS, 'line': True}],
-                       ['pr_guard_1', CAR_STOP[0] + 1, 30, {'ms': CAR_MS, 'line': True}], ['pr_guard_2', CAR_STOP[0] - 2, 30, {'ms': CAR_MS, 'line': True}],
-                       ['pr_guard_3', CAR_STOP[0] + 1, 32, {'ms': CAR_MS, 'line': True}], ['pr_guard_4', CAR_STOP[0] - 2, 32, {'ms': CAR_MS, 'line': True}]]],
-          ['prop', 'pr_car2', 'hc_pcar_door_l'], cast('pr_pres', 32, 30, 'up'), ['camera', 'pr_pres'], ['wait', 400],   # ...until he is in view
+                       ['pr_guard_1', CAR_STOP[0] + 3, 30, {'ms': CAR_MS, 'line': True}], ['pr_guard_2', CAR_STOP[0] - 2, 30, {'ms': CAR_MS, 'line': True}],
+                       ['pr_guard_3', CAR_STOP[0] + 3, 32, {'ms': CAR_MS, 'line': True}], ['pr_guard_4', CAR_STOP[0] - 2, 32, {'ms': CAR_MS, 'line': True}]]],
+          *[['castAt', f'pr_strip_{len(STRIPS2) + k + 1}', x, y, 'up'] for k, (x, y) in enumerate(STRIPS2_LATE)],
+          ['prop', 'pr_car2', 'hc_pcar_door_l'], cast('pr_pres', 33, 30, 'up'), ['camera', 'pr_pres'], ['wait', 400],   # ...until he is in view
           ['walkAll', [['pr_pres', *PRES_TOP, {'ms': 260}]] + [[f'pr_guard_{k + 1}', x, y, {'ms': 260}] for k, (x, y) in enumerate(CLOSE2)]],
           ['prop', 'pr_car2', 'hc_pcar_l']]
     # 2.5 nobody gets close
@@ -241,7 +247,9 @@ def build(CHUNKS, keep, fail):
           cast('pr_off_a', 31, 35, 'down'), cast('pr_off_b', 33, 35, 'down'), ['wait', 300],
           ['if', 'story.side=glimmer', side['glimmer']['p1_stop'] + part1_tail('glimmer'), side['keepers']['p1_stop'] + part1_tail('keepers')]]
     hill = part2_stage()
-    restage = [cast(f'pr_guard_{k + 1}', x, y, 'down') for k, (x, y) in enumerate(CLOSE2)] + [['curtain', 'off'], ['say', '', RESTAGE]]
+    restage = [cast(f'pr_guard_{k + 1}', x, y, 'down') for k, (x, y) in enumerate(CLOSE2)]
+    restage += [['castAt', f'pr_strip_{len(STRIPS2) + k + 1}', x, y, 'up'] for k, (x, y) in enumerate(STRIPS2_LATE)]
+    restage += [['curtain', 'off'], ['say', '', RESTAGE]]
     hill.append(['if', 'story.hc_sf_1', restage, part2_speech()])
     hill += part3()
     scenes = {'hc_parade': p1, 'hc_parade_hill': hill}

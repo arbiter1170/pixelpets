@@ -57,7 +57,7 @@ art holds frame 0; emotes still show. SKIP still stops at each battle.
 | 1.5 w6 | | Escort tank, last column | | auto |
 | 1.7 | | "The President speaks at the Court. Citizens will attend." The crowd walks east | `walkAll {line, drop}` | tap, auto |
 | 1.8 | | Curtain; `story.hc_parade_square`; warp to hc_civic | `curtain on`, `setFlag`, `warp` (commits the flag) | auto |
-| 2.1-2.2 | hc_civic | Muster Road packed: 12 civilians (six in vests), 14 crowd strips on the back rows and sidewalks, tanks at both road ends (4,31 / 60,31), the rotor craft hovering over the Court facing the crowd (altitude 36 over 32,25, its down-beam on the cell behind the President's step; ROTOR_CRAFT §6.2), four guards behind the cordon (row 28 / row 29), Officers A and B | `castAt` behind the curtain | auto |
+| 2.1-2.2 | hc_civic | Muster Road packed: 12 civilians (six in vests), 26 crowd strips on both sidewalks, the far road ends and the back rows (six more close in on the road behind the car once it stops, so the aisle stays open while it drives), tanks at both road ends (4,31 / 60,31), the rotor craft hovering over the Court facing the crowd (altitude 36 over 32,25, its down-beam on the cell behind the President's step; ROTOR_CRAFT §6.2), four guards behind the cordon (row 28 / row 29), Officers A and B | `castAt` behind the curtain | auto |
 | 2.3 | | Four Officers march in along the road and file into the Court door (dropped) | BFS walks to 32,26 | auto |
 | 2.4 | | **The view rides with the car** from Charter Avenue (54,31; `camera pr_car2`) up the road to 33,31, four close guards beside it; door open; the President (16x16 back-lit prop) walks with them to the top of the steps (32,26; guards 30/31/33/34,26); the view follows him (`camera pr_pres`) and holds him in view through the speech | | auto |
 | 2.5 | | A civilian steps toward the cordon; a guard steps across: "Citizen. Back."; `anthem_dark` (PLACEHOLDER, silent) | | auto, tap |
@@ -95,7 +95,7 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
 
 - **Mood:** silent, glossy and slow. Everything else on the boulevard moves out of its way.
 - **References:** a 1930s state limousine with a long bonnet and sweeping front wings; a closed, lacquered mail coach; a grand piano's black-green gloss with one clean reflection.
-- **Silhouette and size:** about 48x24. Bonnet about 18 px, cabin about 16 px, boot about 10 px. Two pennant staffs rise from the front wings. A 3x3 crest on the rear door. The roofline stays below a standing Keeper's head.
+- **Silhouette and size:** about 48x24 in the brief; **built at 64x32** after Vincent's preview review (relayed Tue Nov 3): four tiles long, an armoured cabin and a large rear window so the gloved hand reads. Bonnet about 18 px, cabin about 16 px, boot about 10 px. Two pennant staffs rise from the front wings. A 3x3 crest on the rear door. The roofline stays below a standing Keeper's head.
 - **Ramps:** body `J` = `k` / `J` / `D`, one `w` streak down the bonnet. Tinted glass opaque `k` / `d`. Chrome = `m` / `h` / `w`. Crest and pennant tips `y` over `F`.
 - **Frames/motion notes:** drive left / right mirror, a 2-frame wheel hint. Hand still: the rear window drops and one cream `C` glove shows, the only pale thing on the glass. Door open: a `k` interior and one `y` step light.
 - **Reads at a glance:** the longest, darkest and shiniest shape on the street, with a flash of gold on its nose.
@@ -139,7 +139,7 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
 | What | Where | Note |
 |---|---|---|
 | Rotor craft ("Lantern Rotor", D1386): hover, fly, front view, shadows, down-beam | Design's ROTOR_CRAFT v0.1.1 draft frames (`specs/rotor_craft_preview/rotor_craft_frames.json`), carried by the build tool into `data/hc_city_v2.json` `art` and painted on first draw (`keeper_rotor_*`, `rotor_shadow*`, `rotor_beam_down`) | Pia redraws (D1394: Vincent sees her frame sheet and these stills before the build merges). The engineer draft `hc_rotor_*` stays only as the fallback when the frames file is absent. The dark `_off` keys and the optional lantern-out at the speech's end (§6.2 H4, Story's call) are not used |
-| The President's car (r/l, wheel frames, hand, door open) | `hc_pcar_r/_l`, `_move`, `hc_pcar_hand_r`, `hc_pcar_door_l` | |
+| The President's armoured car, 64x32 (r/l, wheel frames, the raised glove at the rear window, door open) | `hc_pcar_r/_l`, `_move`, `hc_pcar_hand_r`, `hc_pcar_door_l` | enlarged after the preview review (relayed); Pia redraws |
 | The President, 16x16 back-lit, walk 2 | `hc_president`, `hc_president_move` | his full look waits (D1356) |
 | Crowd strips ×3, 2 frames, clap frame | `hc_crowd_a/b/c` | |
 | Court steps | `hc_court_step` decal | layout A14 (P0); the facade itself uses the roof kit (`roof_slab_h`, `wall_columns`) |
