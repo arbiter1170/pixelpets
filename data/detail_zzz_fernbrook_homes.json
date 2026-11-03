@@ -1,6 +1,6 @@
 {
-  "spec": "handoff/maps/FERNBROOK_HOMES.md (D1215-D1219). Vincent asked for more NPC homes at the bottom of Fernbrook and chose enterable homes with interiors. Needs Vincent's yes on previews (rule 9) before it deploys.",
-  "note": "Sorts after every other detail_* overlay. Grows Fernbrook south (h 20 -> 32): rows 19-31 are new; the only change above is row 18 x18 (tree -> grass). No zones are set (the Fernbrook plaza branch owns zones). Roofs via addRoofs only. Resident labels and lines are placeholders for Design (D1218).",
+  "spec": "handoff/maps/FERNBROOK_HOMES.md (D1248-D1252). Vincent asked for more NPC homes at the bottom of Fernbrook and chose enterable homes with interiors. Needs Vincent's yes on previews (rule 9) before it deploys.",
+  "note": "Sorts after every other detail_* overlay. Grows Fernbrook south (h 20 -> 32): rows 19-31 are new; the only change above is row 18 x18 (tree -> grass). No zones are set (the Fernbrook plaza branch owns zones). Roofs via addRoofs only. Resident labels and lines are placeholders for Design (D1251).",
   "looks": {
     "fbh_presser": {
       "skin": "4",

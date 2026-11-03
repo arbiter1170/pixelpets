@@ -23,7 +23,7 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // Hearthmoor Plaza (#196), Route 3 with its three side rooms and the Answerers (ARBITER_UNITS), and Brinewick
     // with Trial Hall #3 and its rooms (BRINEWICK v0.1) bring door 45, warp 93, sign 89, talk 669, scene 40,
     // trigger 34, board 7, trainer 25, shop 14 and wild 9.
-    // FERNBROOK_HOMES (D1215): three home doors and their three mats, the lane sign, and 62 talk taps (six residents plus
+    // FERNBROOK_HOMES (D1248): three home doors and their three mats, the lane sign, and 62 talk taps (six residents plus
     // the props inside the three homes and on the south lane) bring door 48, warp 96, sign 90 and talk 723.
     door: 48, warp: 96, sign: 90, talk: 723, scene: 40, trigger: 34, board: 7,
     trainer: 25, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,

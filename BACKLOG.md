@@ -5,7 +5,7 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
-FERNBROOK_HOMES (D1215-D1219) is on branch `claude/fernbrook-homes`, not merged: Fernbrook grows south to 32x32 with three enterable homes and two lane neighbours. **Needs Vincent's yes on the previews (rule 9, D1215)** in `handoff/shots/fernbrook_homes/` before it deploys; packet `handoff/maps/FERNBROOK_HOMES.md`.
+FERNBROOK_HOMES (D1248-D1252) is on branch `claude/fernbrook-homes`, not merged: Fernbrook grows south to 32x32 with three enterable homes and two lane neighbours. **Needs Vincent's yes on the previews (rule 9, D1248)** in `handoff/shots/fernbrook_homes/` before it deploys; packet `handoff/maps/FERNBROOK_HOMES.md`.
 
 BATTLE_BACKDROPS (D1009, red, settled by Vincent Oct 31, 2026; supersedes D167) is in the game on this branch: every battle draws its own scene from the map's own tiles and props (`battle_bg.js`, `BATTLE_BG_ON` on in `game.js`). The Pet tab, music and the maps' `backdrop` fields are unchanged. Save stays `pixelpets.save.v2` with `v` 2; no new fields.
 

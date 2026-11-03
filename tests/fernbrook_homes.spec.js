@@ -1,4 +1,4 @@
-/* FERNBROOK_HOMES (D1215-D1219, handoff/maps/FERNBROOK_HOMES.md). Fernbrook grows south from 32x20 to 32x32: a gate in the old
+/* FERNBROOK_HOMES (D1248-D1252, handoff/maps/FERNBROOK_HOMES.md). Fernbrook grows south from 32x20 to 32x32: a gate in the old
    south tree line (row 19, x17-18) opens onto a lane with three enterable homes (Press House, Picker's Cottage, Stitcher's Loft)
    and two lane neighbours. The only change above the old edge is row 18 x18 (tree -> grass). Each room has its own skin and wall
    row, meets D85 and the detail standard. Runs at 320, 375 and 390; reduced motion; save stays pixelpets.save.v2 with v 2. */

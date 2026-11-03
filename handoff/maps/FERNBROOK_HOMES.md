@@ -1,6 +1,6 @@
 # FERNBROOK_HOMES: three enterable NPC homes on a new south lane
 
-**Status: needs Vincent's yes on previews (rule 9).** Built on branch `claude/fernbrook-homes`; nothing deploys until Vincent has seen the previews in `handoff/shots/fernbrook_homes/` and said yes. Decision ids D1215-D1219.
+**Status: needs Vincent's yes on previews (rule 9).** Built on branch `claude/fernbrook-homes`; nothing deploys until Vincent has seen the previews in `handoff/shots/fernbrook_homes/` and said yes. Decision ids D1248-D1252.
 
 Vincent's ask: "We also need a branch opened to add more NPC homes at the bottom of Fernbrook." Asked how, he chose **enterable homes with interiors**. That makes each home a room design under AGENTS.md rule 9.
 
@@ -251,7 +251,7 @@ Mat `fbh_stitch_mat` at 5,14 returns to Fernbrook 24,24 facing down. Arrival til
 | `fbh_stitch_yarn` | 8,12 | `basket` | A basket of yarn balls. |
 | `fbh_stitch_laundry` | 9,12 | `laundry_basket` | Quilts waiting to be aired. |
 
-## 5. Residents (placeholders, D1218)
+## 5. Residents (placeholders, D1251)
 
 Role labels only, no given names; none collides with an existing NPC name (checked with `rg` over `data/`, `game.js`, `quests.js`, `keeper.js`, `news.js`). Each has a `data/reputation.json` cast entry (faction none, base 50) because contacts and rep are keyed by name. Looks are civilian (no Keeper green coat, no Glimmerwell wine or soot; AGENTS rule 11). Lines are neutral town life: no faction pick, no Trial, no story fact.
 
@@ -276,11 +276,11 @@ Role labels only, no given names; none collides with an existing NPC name (check
 
 | Id | Colour | Call |
 |---|---|---|
-| D1215 | red, open | Vincent's yes on the previews before deploy (rule 9) |
-| D1216 | red, settled | Vincent's ask and choice: enterable NPC homes at the bottom of Fernbrook (archive) |
-| D1217 | red, open | Fernbrook grows south to 32x32: exception to D81, precedent D170; settles with D1215 |
-| D1218 | green, Design sign-off | Placeholder resident labels, looks, lines, room names and the lane sign |
-| D1219 | green, engineer | Three homes not four, the gate at x17-18 with back gardens on row 19 x2-16, on-wall doors, the flower patch, trees and pond |
+| D1248 | red, open | Vincent's yes on the previews before deploy (rule 9) |
+| D1249 | red, settled | Vincent's ask and choice: enterable NPC homes at the bottom of Fernbrook (archive) |
+| D1250 | red, open | Fernbrook grows south to 32x32: exception to D81, precedent D170; settles with D1248 |
+| D1251 | green, Design sign-off | Placeholder resident labels, looks, lines, room names and the lane sign |
+| D1252 | green, engineer | Three homes not four, the gate at x17-18 with back gardens on row 19 x2-16, on-wall doors, the flower patch, trees and pond |
 
 ## 8. Open questions
 
@@ -288,7 +288,7 @@ Role labels only, no given names; none collides with an existing NPC name (check
 - **Q2:** three homes or four? Default three (a fourth only fits with 4-wide houses, which would look cramped next to the 6-wide Lantern House).
 - **Q3:** should the lane show the "contested Fernbrook" signs that #255 slice 7 plans? Default: no; slice 7 owns that dressing and can add to the lane by id.
 - **Q4:** the lane has no zone, so no wild Walklings. Default: keep it a quiet street; the plaza branch owns Fernbrook's `zones`.
-- **Q5:** real names and lines for the six residents (D1218); room names and the lane sign text are placeholders too.
+- **Q5:** real names and lines for the six residents (D1251); room names and the lane sign text are placeholders too.
 
 ## 9. Conflict note: open work that touches Fernbrook (checked Mon Nov 2, 2026)
 
@@ -300,6 +300,6 @@ Per the NEW DIRECTION (Vincent, 3:55 PM ET; open PRs reviewed for Day 1 and Tria
 | #255 slice 8, `fb_hall_in` roster (three Keeper holders) | `data/fernbrook_rooms.json` `trainers` entries and `fb_hall_in` objs | None in data. Both move the `tap_interact` counts (the `trainer` and `talk` keys) | Low: count pins |
 | #255 slice 8b, the hold flip at the pick | `REGION_MAP.nodes.fernbrook.hold`, `matchHold` (`game.js` ~11880-11960) | This branch edits one nearby line, `REGION_MAP.interiors` (`fbh_*_in: 'fernbrook'`). The new rooms resolve to the `fernbrook` node, so they follow the flip | Low: separate lines; no logic shared |
 | #255 Fernbrook room edits in `data/fernbrook_rooms.json` | its `slicePatch` runs after every detail overlay | If it ever `set`s Fernbrook `w`/`h` or `gridRows` 18+, it would override this overlay | Low today: #255 plans only `replaceObjs` there |
-| Fernbrook stream-field plaza (other branch, D1210-D1214) | rows 9-18, x17-30, and `zones` | Row 18: this branch replaces the whole row to open x18. If the plaza also edits row 18, the later-sorting overlay wins the whole row (this one sorts last) | Medium: whoever merges second restates row 18 with both edits |
+| Fernbrook stream-field plaza (other branch, D1243-D1247) | rows 9-18, x17-30, and `zones` | Row 18: this branch replaces the whole row to open x18. If the plaza also edits row 18, the later-sorting overlay wins the whole row (this one sorts last) | Medium: whoever merges second restates row 18 with both edits |
 
 Residents' lines are neutral town life: none mentions the faction pick, a side, the Trial, or Fen, so the re-sequenced Day 1 flow does not touch them. Saves: no new field; the save stays `pixelpets.save.v2` with `v` 2.

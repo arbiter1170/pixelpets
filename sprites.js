@@ -877,7 +877,7 @@ const BRINEWICK_TILES = {
   floor_sealed_c: ["wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwhw", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwhwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww"],
   rug_navy_runner: ["nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnbbnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnbbnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn"],
 };
-// FERNBROOK_HOMES (D1215-D1219): the three south-lane homes. Recolours of existing grids only (coach_plank, hall_flag, floor_loft,
+// FERNBROOK_HOMES (D1248-D1252): the three south-lane homes. Recolours of existing grids only (coach_plank, hall_flag, floor_loft,
 // rug_fern, rug_kitchen) plus the house_wardrobe herringbone in y and A. PAL keys only, no new key. Rule 9 brief: handoff/maps/FERNBROOK_HOMES.md.
 const FERNBROOK_HOMES_TILES = {
   floor_press: ["GGGGGBGGGGGGGGGG","GGBBBBGGGGGGGGGG","GGGGGBGGGGGGGGGG","FFFFFFFFFFFFFFFF","GGGGGGGGGGGGGBGG","GGGGGGGGGGGGGBGG","GGGGGGGGGGGGGBGG","FFFFFFFFFFFFFFFF","GGGGGGGGGBGGGGGG","GGGGGGGGGBBBGGGG","GGGGGGGGGBGGGGGG","FFFFFFFFFFFFFFFF","GBGGGGGGGGGGGGGG","GBGGGGGGGGGGGGGG","GBGGGGGGGGGGGGGG","FFFFFFFFFFFFFFFF"],
@@ -2133,7 +2133,7 @@ const HOUSE_SKINS = {
     variants: { coach_plank: [['coach_plank_b', 0.3], ['coach_plank_c', 0.2]] },
     wall: wallRow('FyornwCFryyo'),
   },
-  // FERNBROOK_HOMES (D1215-D1219). One skin per south-lane home: own floor, rug, mat and wall row. Remap '#'/W keep the orchard
+  // FERNBROOK_HOMES (D1248-D1252). One skin per south-lane home: own floor, rug, mat and wall row. Remap '#'/W keep the orchard
   // wall names for anything that reads them; the wall kit draws the walls. Press: honey boards + flagstone. Picker: sunny parquet.
   // Stitch: painted blue-grey boards + patchwork rug.
   fbh_press: {
