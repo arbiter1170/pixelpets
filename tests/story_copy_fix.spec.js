@@ -472,7 +472,7 @@ test('dead copy and the Heights lines stay where the sign-off put them', async (
   expect(mom.lines['!story.dream_study']).toBe('Tell Warden Ilse what you dreamed. She gave you your Walkling.');
   const heights = fs.readFileSync(path.join(__dirname, '..', 'data/heights.json'), 'utf8');
   expect(heights).toContain('Glimmerwell calls it ancient, and will not say why it was built. RegenX never knew.');
-  expect(heights).toContain('The Arbiter is an ancient Glimmerwell cradle in the top bay.');
+  expect(heights).toContain('The Arbiter sits in a cradle in the top bay: an alien device of unknown origin.'); // D1158 v0.64: _lore.arbiter (author note, not player text)
   await boot(page);
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
