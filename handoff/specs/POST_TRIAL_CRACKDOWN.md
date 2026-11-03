@@ -6,7 +6,7 @@ Target path: `handoff/specs/POST_TRIAL_CRACKDOWN.md` (PUBLIC repo; not `docs/`).
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.2, Tue Nov 3, 2026, ~12:15 AM ET. v0.2 makes the Keeper tanks a showpiece (§10a): an inspiration brief, a detailed 64x40 design with every frame, two variants, the arrival prototyped in the engine and recorded at 390 and 320, five small engine changes, and tests. v0.1 was Mon Nov 2, ~11:45 PM ET |
+| Status | Draft v0.3: Beat 7 rewritten for Vincent's change (the President on the wire set, then the `story.fen_lean` choice) and the Lantern House tiles moved to LANTERN_HOUSE_FERNBROOK (container clock Mon Nov 2, 2026, ~11:30 PM ET). v0.2 (Tue Nov 3, 2026, ~12:15 AM ET) makes the Keeper tanks a showpiece (§10a): an inspiration brief, a detailed 64x40 design with every frame, two variants, the arrival prototyped in the engine and recorded at 390 and 320, five small engine changes, and tests. v0.1 was Mon Nov 2, ~11:45 PM ET |
 | Ask | Vincent's eight-beat outline (via Morgan), plus his clarification: the Seal-gain ban never blocks the player. The holder already has the Fernbrook Seal. The ban is world news and NPC reactions only, foreshadowing that the Keepers do bad things too |
 | Builds on | Draft PR #261 (`claude/day1-trial1-build-gtkcop`, bc38b01): the `post_trial` and `pick` rows, `sceneTails.seal1`, the `fb_side_pick` trigger, Fen's whereabouts, and the D1171 flip. Main has #249 (Rook's Lantern House walk). `#261 file:N` cites that branch |
 | Canon read | design repo `STORY.md` v0.7.8: §2 Seals and levels, §2a Solvane, §3 Keepers, §3a Government and power, §9 Trial Halls; `specs/KEEPER_RANKS.md`; FACTION_PICK_TIMING Parts C-D and June's drafts (`story/drafts/*2026-10-31.md`). None of them has a crackdown, curfew or police action in Fernbrook: this is new canon |
@@ -14,6 +14,7 @@ Target path: `handoff/specs/POST_TRIAL_CRACKDOWN.md` (PUBLIC repo; not `docs/`).
 | Skills | walklings-story-craft, walklings-dialog-camera, walklings-dialog-npc-walk, walklings-cutscene, gamedev-level-design, walklings-decision-ids, walklings-wording-check |
 | Storyboard | `handoff/shots/post_trial_crackdown/` (§9, §10a): three beats rendered in #261's build at 390 and 320; the tank arrival recorded as GIFs; a tank frame sheet. All draft art, injected at runtime (not committed) |
 | Decision ids | D1197-D1209, reserved in this PR (§13) |
+| Lantern House | The room for Beats 4-8 is redesigned as Fernbrook's wire station in `handoff/specs/LANTERN_HOUSE_FERNBROOK.md` (D1220-D1224; Mon Nov 2, 2026, ~11:30 PM ET). Beat 7 is rewritten there and here for Vincent's change (the President on the wire set, then a choice; Mon Nov 2, ~10:55 PM ET). The Lantern House tiles, props and townsfolk below follow that spec |
 
 ## 2. The quest on one page (walklings-story-craft §1)
 
@@ -37,7 +38,9 @@ Canon fit (STORY §3a, CANON): "the President and every Keeper commander know po
 | Keeper Amos | `amos` (exists, `fb_lantern_in` 6,3) | as built | wants the Lantern House to stay a safe place; fears it becoming a cell | quiet, practical, ledger talk | that the Commander is right | gentle, apologetic |
 | Constable Rue | `fb_constable` (exists, fernbrook 4,9) | as built | keep Fernbrook calm; fears losing the town's trust | "Citizen." | defiance out loud | one quiet kind word |
 | Associate Juniper | `juniper` (exists, 14,6) | as built | keep her targets; fears being blamed | Glimmer words: "relocating", "partnership", "Brighter by nature!" | sorry | bright sales voice, even while running |
-| Block News (wire set) | prop `fb_wire_set` | new prop (§10) | | anchor voice, flat and calm | | |
+| Block News (wire set) | props `fb_wire_set` / `fb_wire_set_live` at 5,2 (LANTERN_HOUSE_FERNBROOK §7) | new 48x48 prop | | anchor voice, flat and calm; one opening line | | |
+| The President (on the wire set) | speaker label "The President" (settled name in `archive/DECISIONS_SETTLED.md`, "Names"; on-screen naming is Story's call) | bust on `wire_wall_pres` (draft, D1221) | wants the town quiet and calm | calm, reasonable, fatherly; "for your safety" | **why**. Canon (STORY §3a): he plays both sides; never reveal it | addresses "Fernbrook", never the holder |
+| Townsfolk at the set | `lh_odile`, `lh_wynne`, `lh_tobin`, `lh_res_kid`, `lh_res_b`, `lh_res_c` (new bodies, LANTERN_HOUSE_FERNBROOK §7.2) | as built / kit looks | stay safe; hear the news | one short line each | | |
 | Townsfolk | `odile`, `fb_wynne`, `fb_tobin` (exist) | as built | go home safe | one short line each, or none | | |
 
 ## 4. Beat-by-beat script
@@ -128,7 +131,8 @@ Re-cast after the warp (casts don't cross maps; #249 pattern, main `game.js:4532
 | 4a | holder | `walkTo player 5,10` (onto the rug) | ROOM_ZOOM interior: scale 2; 390 shows the whole room width, 320 shows 10 x 12.9 tiles |
 | 4b | Fen | `castAt cd_fen 5,14 up`, then `walkTo cd_fen 6,10` | |
 | 4c | officers | `castAt cd_off_a 5,14`, `walkTo 4,13`; `castAt cd_off_b 5,14`, `walkTo 6,13`. Both stand across the door | |
-| 4d | Amos | stays at 6,3 behind his counter | |
+| 4d | Amos | stays at 6,3, beside the wire set (LANTERN_HOUSE_FERNBROOK §5) | |
+| 4e | townsfolk, set | already in place: six `lh_*` bodies facing the set (curfew `when`, not casts); `prop fb_wire_set_live wire_wall` (the set is dark until Beat 7) | |
 
 | Speaker | Line (PLACEHOLDER) |
 |---|---|
@@ -164,26 +168,36 @@ Fen's challenge is a line, not a battle: no forced battle in a cutscene (walklin
 
 Words only: no `rep` or Standing step fires here.
 
-### Beat 7. The wire set (Lantern House)
+### Beat 7. The wire set: the President speaks (Lantern House)
+
+Vincent's change (Mon Nov 2, 2026, ~10:55 PM ET): Block News cuts to the President, who gives the curfew broadcast; then the holder answers. Room, tiles and art: `handoff/specs/LANTERN_HOUSE_FERNBROOK.md` (the set is a 48x48 wire wall at **5,2**, on the door axis, beside Amos).
 
 | Step | Who | Move | Camera |
 |---|---|---|---|
-| 7a | Amos | `walkTo amos 7,3` | |
-| 7b | holder, Fen | `walkTo player 8,4`, then `walkTo cd_fen 7,5`, so the wire set at **8,2** is on screen. From the rug (5,10) at 320 the camera shows rows 3.5-16, so a set at row 2 would be off screen (seen in the storyboard) | follows the holder up |
-| 7c | wire set | `prop fb_wire_set wire_set_on` | |
-| 7d | | lines | |
-| 7e | wire set | `prop fb_wire_set wire_set` (off) | |
+| 7a | holder, Fen | `walkTo player 5,6 up` (into the aisle, among the townsfolk), then `walkTo cd_fen 6,7 up` | follows the holder up. At 320, from row 6 the camera shows rows 0-12.9, so the whole set is on screen (`lantern_house_fernbrook/after-pres-beat7-320.png`); from the rug (5,10) it would not be |
+| 7b | Amos | faces up; `prop fb_wire_set_live wire_wall_news` (he turns it on) | |
+| 7c | | Block News anchor line; then narration; `prop fb_wire_set_live wire_wall_pres` (the picture cuts to the President) | |
+| 7d | townsfolk | after the ban line: `emote lh_odile emote_bang`, `emote lh_res_kid emote_ask`, `emote lh_res_b emote_dots`, `emote lh_tobin emote_dots` (a reaction is enough; no walks) | |
+| 7e | holder | `choice` (two labels, each 30 characters or fewer) | |
+| 7f | set | `prop fb_wire_set_live wire_wall_news` (back to the Block News card; it stays on all night, the scene's swap ends with the scene) | |
 
 | Speaker | Line (PLACEHOLDER) |
 |---|---|
 | Keeper Amos | Hush, all of you. The wire's on. |
-| Block News | A curfew is in force in Fernbrook after a disruption at the plaza this evening. |
-| Block News | Anyone who doesn't live in Fernbrook must leave by morning or be detained. |
-| Block News | The Commander is working with High Charity on a rule: no more Seals won in Fernbrook. |
-| Keeper Amos | No more Seals here? Then the Hall is just a garden. |
+| Block News | Block News, evening edition. We go now to the capital. |
+| (narration) | The picture flickers and cuts to the President. |
+| The President | Good evening, Fernbrook. For your safety, a curfew is in force tonight. |
+| The President | Anyone who doesn't live in Fernbrook will leave by morning, or be detained. It's for everyone's good. |
+| The President | And High Charity will hear a proposal: no more Seals won in Fernbrook for now. Calm first. Good night. |
+| (choice) | **"He means well"** / **"He's hiding something"** |
+| Keeper Amos (means well) | Maybe. He's always sounded kind. Kind isn't the same as right. |
+| Keeper Amos (hiding) | Careful who hears you say that. ...But I heard it too. |
 | Master Fen | They can't take the one you've earned, {name}. Hold onto that. |
 
-The ban is world news only (Vincent's clarification): the holder's progress is untouched (D1201). Other holders feel it later, through Block News stories and NPC lines (§7.4). "Plaza" assumes `claude/fernbrook-plaza` merges first; if not, Story says "the square" (§12, row 9).
+- **The choice writes only `story.fen_lean`** (Seals lore v3.1, pending its design commit): "He means well" and "He's hiding something" move it in opposite directions with `inc` (exact encoding, sign and step: PLACEHOLDER until v3.1 lands). No other new flag; the save stays `pixelpets.save.v2`, `v` 2. Nothing in this quest reads `story.fen_lean`; Fen turns on her first Act 2 return either way.
+- **His voice:** calm, reasonable, never says why. Canon (STORY §3a): he plays both sides; the scene never reveals it. The speaker label is "The President"; whether his name appears on screen is Story's call.
+- The ban is world news only (Vincent's clarification): the holder's progress is untouched (D1201). Other holders feel it later, through Block News stories and NPC lines (§7.4). "Fernbrook" stands in for "the plaza" so the line doesn't depend on `claude/fernbrook-plaza` (§12, row 9).
+- Amos's and Fen's reactions can key on the choice with `if story.fen_lean...` reads (PLACEHOLDER: the condition follows v3.1's encoding).
 
 ### Beat 8. The night (Lantern House)
 
@@ -206,7 +220,7 @@ The curfew is **a read, not a flag**: `story.crackdown & !story.side_pick_done`.
 
 | Object | Tile | `when` | Line / role |
 |---|---|---|---|
-| Townsfolk (`odile`, `fb_wynne`, `fb_tobin`, `juniper` at 14,6, `fb_lantern_stand`, and the plaza cast if merged) | as built | add `"!story.crackdown \| story.side_pick_done"` | home; `whereNow` says "home (curfew)" |
+| Townsfolk (`odile`, `fb_wynne`, `fb_tobin`, `juniper` at 14,6, `fb_lantern_stand`, and the plaza cast if merged) | as built | add `"!story.crackdown \| story.side_pick_done"` | hidden outside. Odile, Wynne and Tobin shelter in the Lantern House as new bodies (`lh_*`, LANTERN_HOUSE_FERNBROOK §7.2); `whereNow` says "Lantern House (curfew)" for them, "home (curfew)" for the rest |
 | `cd_post_lantern` officer (new) | fernbrook 6,6 | `["story.crackdown", "!story.side_pick_done"]` | PLACEHOLDER: "First light means now, holder. West road or east road." |
 | `cd_post_hall` officer (new) | fernbrook 21,7 | same | PLACEHOLDER: "The Trial Hall is closed by order." |
 | `cd_cordon_hall` prop (new, `lantern_cordon`) | fernbrook 23,7 | same | |
@@ -263,7 +277,7 @@ Options considered:
 - **`whereNow` rows (curfew only).**
   - Fen: "Lantern House" from `story.crackdown` until `post_trial_done`, then "the orchard gate".
   - Juniper: "east road".
-  - Wynne, Odile, Tobin: "home (curfew)".
+  - Wynne, Odile, Tobin: "Lantern House (curfew)" (their `lh_*` bodies; LANTERN_HOUSE_FERNBROOK §7.2).
   - Amos: unchanged.
 - **Quest marker targets.** #261's `npcSpot`/`liveStep` already point a step at a live body, so the `post_trial` and `pick` markers land on Amos indoors and on `fen_dawn` at the gate.
 - **Schedules.** No Fernbrook NPC has schedule rows (#261 `game.js:4848`), so the curfew only adds `when`s.
@@ -275,6 +289,7 @@ Options considered:
 |---|---|---|---|
 | `story.crackdown` | **new**, `done` flag of `crackdown_street` | end of `crackdown_street` | the curfew read, objects, deny, whereabouts |
 | `story.post_trial_done` | #261 (D1175) | end of `crackdown_lantern` (moved from #261's `sceneTails.seal1`) | `pick`, `fb_side_pick` |
+| `story.fen_lean` | Seals lore v3.1 (pending design commit); hidden | the Beat 7 choice (`inc`, encoding PLACEHOLDER) | nothing in this quest; Fen's first Act 2 return |
 | `story.pitch_k`, `story.pitch_g` | FPT Part C names (not built) | Amos's and Juniper's pitch scenes | `pitches`, STANDING (D1144) |
 
 - **Save.** Save stays `pixelpets.save.v2`, `v` 2. No migrator; nothing written at load; no new top-level field. The Seal is never removed: no `delete S.seals`, `story.seal1` untouched.
@@ -344,7 +359,7 @@ Findings from the storyboard (already folded in above):
 | Keeper tanks (`keeper_tank*`, `tank_beam_*`, `tank_dust`) | **new** | 64x40, plus a 96x40 beam | see §10a | the showpiece of the quest |
 | Commander look | **new** (look entry) | keeper look | coat `J`, accent `y`, hair `h` (draft) | needs a silhouette: long coat, peaked cap (the look kit has `cap`; a peaked one may be new), gold shoulder. Inside the Keeper set (rule 11) |
 | Officer look | existing `officer` | | | optional: a cap, to read as on duty |
-| `wire_set`, `wire_set_on` | **new** | 16x16 | an oak cabinet with a brass grille; teal screen `t`/`s`, `w` text lines when on | a Keeper object: the wires are Keeper-owned (STORY §3) |
+| `wire_wall`, `wire_wall_news`, `wire_wall_pres` | **new** | 48x48 on 5,2 | was a 16x16 `wire_set` at 8,2. Now the Lantern House wire wall: off, a Block News card (2 frames) and the President's bust (2 frames), with relay racks, a switchboard, a wire desk and a call box | LANTERN_HOUSE_FERNBROOK §8 and its `draft_art_sheet.png` |
 | `curfew_notice` | **new** | 16x16 sign | a green board with a gold frame, hand-lettered | |
 | `lantern_cordon` | **new** | 16x16 | two oak posts, a green and gold bar, a hanging lantern | the Keeper answer to Glimmerwell's velvet rope |
 | empty Glimmerwell stand | **new** swap for `fb_lantern_stand` | 16x16 | | the stand left behind |
@@ -507,7 +522,8 @@ About 9-11 working days in all, with the tanks as the largest art item. It can s
 | T7 | The Seal is never removed: `S.seals.seal_fernbrook` and `story.seal1` are unchanged through the whole quest |
 | T8 | Guards: a1, c and Glimmer saves never trigger the crackdown; a save with #261's `post_trial_done` and no `crackdown` skips it |
 | T9 | Tap x2, a second tap ends the beat, SKIP snaps walks, and reduced motion has no fractional tiles; `cutsceneMiss` empty |
-| T10 | At 320, the wire set is on screen in Beat 7 and every speaker is clear of the text box |
+| T10 | At 320, with the holder at 5,6, the wire set (5,2) is fully on screen for every Block News and President line and every speaker is clear of the text box (LANTERN_HOUSE_FERNBROOK T7) |
+| T12 | The Beat 7 choice changes only `story.fen_lean`; both labels are 30 characters or fewer |
 | T11 | Markers: at every hour of a weekday during the curfew, no step points at a hidden body |
 
 ## 12. Conflicts
@@ -526,6 +542,8 @@ About 9-11 working days in all, with the tanks as the largest art item. It can s
 | 10 | Vincent's beat 5, "leave immediately" | | "at first light" (D1203); "now" is option B in §6 |
 | 11 | Audience: STORY.md says 16-28; the skill says all-ages | | written to pass both (§8); flagged for Morgan to settle with Design |
 | 12 | Keeper ranks (D1161 on `ranks`, #262) | the Commander's title | "Commander" is a canon ladder rank (KEEPER_RANKS); the name is PLACEHOLDER (D1198) |
+| 13 | Seals lore v3.1 (pending design commit) | v0.2's Beat 7 had Block News read the curfew, with no President and no `story.fen_lean` | **resolved** by Vincent (Mon Nov 2, 2026, ~10:55 PM ET): the President gives the broadcast on the wire set and the holder's answer moves `story.fen_lean` (Beat 7) |
+| 14 | The Lantern House redesign (LANTERN_HOUSE_FERNBROOK, D1220) | the set moves from 8,2 to 5,2; the room gains townsfolk | Beats 4-8 updated here; every actor tile checked free in the new layout |
 
 ## 13. Decisions (D1197-D1209)
 
