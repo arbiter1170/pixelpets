@@ -212,7 +212,7 @@ test.describe('ACT1_KEEPER_JOIN: Vincent Chi in the weir hut (K4)', () => {
     let f = await flags(page);
     expect(f['story.chi_met']).toBe(true);
     expect(f['story.chi_jars']).toBe(1);
-    expect((await quest(page)).id).not.toBe('chi_meet');
+    expect((await quest(page)).id).toBe('chi_shifts');
     // Once is enough: the trigger is gone, and his talk repeats the shifts.
     await goto(page, HUT.map, HUT.x, HUT.y, 'up'); await step(page, HUT.first);
     expect(await sceneId(page)).toBeNull();
@@ -254,3 +254,90 @@ test.describe('ACT1_KEEPER_JOIN: Vincent Chi in the weir hut (K4)', () => {
   });
 });
 
+const CHI = Object.assign({ 'story.chi_met': true, 'story.chi_jars': 1, 'story.reached_route2': true, 'story.met_census': true, 'story.reached_glen': true }, MET);
+async function talk(page, id, picks) {
+  expect(await page.evaluate(i => PixelPets.talkTo(i), id), id).toBe(true);
+  return drive(page, picks || []);
+}
+async function dayShift(page, ask) {
+  await goto(page, 'route2_glen', 12, 6, 'up');
+  let lines = await talk(page, 'glen_imogen');
+  expect(lines[0]).toEqual(['Field Lead Imogen', 'New hands? Lovely. Lenses, sweetie. Three lamps. Quarterly review is Friday.']);
+  const all = lines.slice();
+  for (const [id, x, y] of [['glen_lamp_w', 8, 5], ['glen_lamp_n', 12, 3], ['glen_lamp_e', 16, 5]]) {
+    await goto(page, 'route2_glen', x, y, 'up');
+    lines = await talk(page, id);
+    expect(lines[0][1]).toBe('You wipe the glass. The lamp hums under your hand, slow as a heartbeat.');
+    all.push(...lines);
+    // A wiped lamp is not wiped twice.
+    expect(await page.evaluate(i => PixelPets.talkTo(i), id)).toBe(true);
+    expect(await sceneId(page)).toBeNull();
+    await drive(page);
+  }
+  expect((await flags(page))['story.shift_g']).toBeUndefined();   // the ledger is still to read
+  await goto(page, 'route2_glen', 17, 8, 'up');
+  lines = await talk(page, 'glen_crate_a', [ask ? 'Ask about the stock' : 'Keep wiping']);
+  all.push(...lines);
+  expect(lines[0][1]).toBe('A ledger on the lid. LAMP STOCK. FERNBROOK ALLOTMENT: 6 SEALS. HELD BY PERMIT.');
+  expect(lines[lines.length - 1]).toEqual(['Field Lead Imogen', "Good shift! Have a bright day. Come back once you've got a team worth showing me."]);
+  return all;
+}
+async function nightWatch(page, ask) {
+  await goto(page, 'route2_glen', 12, 15, 'right');
+  expect(await ids(page)).toContain('glen_scout');
+  let curtain = false;
+  const lines = await talk(page, 'glen_scout', [ask ? 'Ask about the list' : 'Say nothing']);
+  return lines;
+}
+
+test.describe('ACT1_KEEPER_JOIN: the two shifts in Wickerglen (K5)', () => {
+  test('T3, T4, T5: day shift then dusk watch; the report needs both; lean counters move', async ({ page }) => {
+    test.setTimeout(150000);
+    await boot(page, joinSave(CHI));
+    const f0 = await flags(page);
+    expect((await quest(page)).id).toBe('chi_shifts');
+    const day = await dayShift(page, true);
+    expect(said(day, /^Stock is stock\./)).toBe(true);
+    let f = await flags(page);
+    expect(f['story.shift_g']).toBe(true);
+    expect(f['story.met_lead']).toBe(true);
+    expect(f['story.lean_fix'] | 0).toBe((f0['story.lean_fix'] | 0) + 1);
+    expect(f['story.chi_jars']).toBe(2);
+    expect((await quest(page)).id).toBe('chi_shifts');   // one shift is half the job
+    expect(await ids(page)).not.toContain('r2_lead');     // T3: the battle waits for the enrolment
+    // T4: the dusk watch is a curtain and narration; its scene never reads the hour.
+    const script = JSON.stringify(await page.evaluate(() => PixelPets.sceneScript('night_watch')));
+    expect(script).toContain('["curtain","on"]');
+    expect(script).not.toMatch(/waitUntil|clock|hour|time\./);
+    const night = await nightWatch(page, true);
+    expect(night[0]).toEqual(['Keeper Scout', "Captain's orders: watch the glen, touch nothing. It's their ground, by permit."]);
+    expect(said(night, /^Dusk\. The lamps come up/)).toBe(true);
+    expect(said(night, /^Morning\. The crates are gone\./)).toBe(true);
+    expect(said(night, /^Above me\. Above my Captain too/)).toBe(true);
+    for (const l of day.concat(night)) expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110);
+    f = await flags(page);
+    expect(f['story.shift_k']).toBe(true);
+    expect(f['story.lean_keep'] | 0).toBe((f0['story.lean_keep'] | 0) + 1);
+    expect(f['story.chi_jars']).toBe(3);
+    expect(await ids(page)).not.toContain('glen_scout');
+    expect((await quest(page)).id).toBe('chi_report');
+    const s = await stored(page);
+    expect(s.v).toBe(2);
+    for (const k of Object.keys(f0)) expect(s.flags, k).toHaveProperty([k]);
+  });
+
+  test('T5: the dusk watch first, then the day shift (reduced motion)', async ({ page }) => {
+    test.setTimeout(150000);
+    await boot(page, joinSave(CHI), { reduce: true });
+    await nightWatch(page, false);
+    let f = await flags(page);
+    expect(f['story.shift_k']).toBe(true);
+    expect(f['story.shift_g']).toBeUndefined();
+    expect((await quest(page)).id).toBe('chi_shifts');
+    await dayShift(page, false);
+    f = await flags(page);
+    expect(f['story.shift_g']).toBe(true);
+    expect(f['story.chi_jars']).toBe(3);
+    expect((await quest(page)).id).toBe('chi_report');
+  });
+});

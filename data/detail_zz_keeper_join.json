@@ -16,7 +16,13 @@
   "story.chi_told_ledger": "5c: the ledger told to Vincent Chi (hub option seen)",
   "story.chi_told_lamps": "5d: the lamps told",
   "story.chi_told_list": "5e: the list told",
-  "story.chi_done": "5g: the report to Vincent Chi done; the orchard lean opens"
+  "story.chi_done": "5g: the report to Vincent Chi done; the orchard lean opens",
+  "story.shift_lamp_w": "3b: the west lamp's lens wiped on the day shift",
+  "story.shift_lamp_n": "3b: the north lamp's lens wiped",
+  "story.shift_lamp_e": "3b: the east lamp's lens wiped",
+  "story.shift_ledger": "3c-3h: the ledger on the crate read",
+  "story.shift_g": "3i: Imogen's day shift done",
+  "story.shift_k": "4l: the Keeper Scout's dusk watch done"
  },
  "slicePatch": {
   "maps": {
@@ -36,6 +42,8 @@
        "!story.glen_cleared"
       ],
       "lines": {
+       "!story.met_lead": "@shift_day",
+       "!story.shift_g": "Lenses, sweetie. Three lamps. Quarterly review is Friday.",
        "else": "Come back once you've got a team worth showing me."
       },
       "_note": "ACT1_KEEPER_JOIN §4.3: Imogen's body on the battle tile while her battle waits for the enrolment (D1551)."
@@ -57,6 +65,24 @@
        "else": "Orders came down. A review. Don't ask me how long."
       },
       "_note": "ACT1_KEEPER_JOIN §7 (D1555): Wickerglen's slip is data only. PLACEHOLDER name; the built officer look."
+     },
+     {
+      "kind": "npc",
+      "id": "glen_scout",
+      "name": "Keeper Scout",
+      "look": "keeper_scout",
+      "x": 13,
+      "y": 15,
+      "facing": "left",
+      "friendSlot": "KEEPER_SCOUT",
+      "when": [
+       "story.chi_met",
+       "!story.shift_k"
+      ],
+      "lines": {
+       "else": "@night_watch"
+      },
+      "_note": "ACT1_KEEPER_JOIN §4.4 (D1552): the built Keeper Scout, earlier in time, by the glen's mouth (13,15 beside the path, so 12,15 stays open). Time passes by curtain and narration, never the real clock (D1406)."
      }
     ]
    }
@@ -94,18 +120,21 @@
   },
   "glen_lamp_w": {
    "linesFirst": {
+    "story.met_lead & !story.shift_g & !story.shift_lamp_w & story.chi_met": "@shift_lamp_w",
     "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
     "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
    }
   },
   "glen_lamp_n": {
    "linesFirst": {
+    "story.met_lead & !story.shift_g & !story.shift_lamp_n & story.chi_met": "@shift_lamp_n",
     "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
     "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
    }
   },
   "glen_lamp_e": {
    "linesFirst": {
+    "story.met_lead & !story.shift_g & !story.shift_lamp_e & story.chi_met": "@shift_lamp_e",
     "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
     "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
    }
@@ -116,6 +145,11 @@
     "story.chi_done": "Go home by the orchard. Fen's crates are still at the gate.",
     "story.shift_g & story.shift_k": "@chi_report",
     "story.chi_met": "Imogen's crew needs hands by day. A Keeper Scout keeps watch at dusk. I'll be here."
+   }
+  },
+  "glen_crate_a": {
+   "linesFirst": {
+    "story.met_lead & story.chi_met & !story.shift_g & !story.shift_ledger": "@shift_ledger"
    }
   }
  },
@@ -309,6 +343,247 @@
      ]
     ],
     "Vincent Chi"
+   ]
+  ],
+  "shift_day": [
+   [
+    "say",
+    "Field Lead Imogen",
+    "New hands? Lovely. Lenses, sweetie. Three lamps. Quarterly review is Friday."
+   ],
+   [
+    "setFlag",
+    "story.met_lead",
+    true
+   ]
+  ],
+  "shift_lamp_w": [
+   [
+    "say",
+    "",
+    "You wipe the glass. The lamp hums under your hand, slow as a heartbeat."
+   ],
+   [
+    "setFlag",
+    "story.shift_lamp_w",
+    true
+   ],
+   [
+    "run",
+    "shift_end"
+   ]
+  ],
+  "shift_lamp_n": [
+   [
+    "say",
+    "",
+    "You wipe the glass. The lamp hums under your hand, slow as a heartbeat."
+   ],
+   [
+    "setFlag",
+    "story.shift_lamp_n",
+    true
+   ],
+   [
+    "run",
+    "shift_end"
+   ]
+  ],
+  "shift_lamp_e": [
+   [
+    "say",
+    "",
+    "You wipe the glass. The lamp hums under your hand, slow as a heartbeat."
+   ],
+   [
+    "setFlag",
+    "story.shift_lamp_e",
+    true
+   ],
+   [
+    "run",
+    "shift_end"
+   ]
+  ],
+  "shift_ledger": [
+   [
+    "say",
+    "",
+    "A ledger on the lid. LAMP STOCK. FERNBROOK ALLOTMENT: 6 SEALS. HELD BY PERMIT."
+   ],
+   [
+    "say",
+    "",
+    "The permit number is there. The name under it is smudged past reading."
+   ],
+   [
+    "say",
+    "",
+    "Six Seals. Fernbrook hasn't given out one since the tanks came."
+   ],
+   [
+    "say",
+    "Field Lead Imogen",
+    "That's the boring paperwork, sweetie. Partners only. Lenses!"
+   ],
+   [
+    "choice",
+    "What do you do?",
+    [
+     [
+      "Ask about the stock",
+      [
+       [
+        "inc",
+        "story.lean_fix"
+       ],
+       [
+        "say",
+        "Field Lead Imogen",
+        "Stock is stock. It keeps the lamps happy. Don't make me write you up."
+       ]
+      ]
+     ],
+     [
+      "Keep wiping",
+      [
+       [
+        "inc",
+        "story.lean_keep"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.shift_ledger",
+    true
+   ],
+   [
+    "run",
+    "shift_end"
+   ]
+  ],
+  "shift_end": [
+   [
+    "if",
+    "story.shift_lamp_w & story.shift_lamp_n & story.shift_lamp_e & story.shift_ledger & !story.shift_g",
+    [
+     [
+      "say",
+      "Field Lead Imogen",
+      "Good shift! Have a bright day. Come back once you've got a team worth showing me."
+     ],
+     [
+      "inc",
+      "story.chi_jars"
+     ],
+     [
+      "setFlag",
+      "story.shift_g",
+      true
+     ]
+    ]
+   ]
+  ],
+  "night_watch": [
+   [
+    "say",
+    "Keeper Scout",
+    "Captain's orders: watch the glen, touch nothing. It's their ground, by permit."
+   ],
+   [
+    "curtain",
+    "on"
+   ],
+   [
+    "say",
+    "",
+    "Dusk. The lamps come up, one by one. The glen goes very quiet."
+   ],
+   [
+    "say",
+    "",
+    "The lamps pulse, slow and even. In the roots, small heads lift."
+   ],
+   [
+    "say",
+    "",
+    "A Fuzzwick walks out of the dark toward the nearest lamp. Then another. Then three."
+   ],
+   [
+    "say",
+    "",
+    "{pet} leans toward the hum. You put a hand on it, and it stays with you."
+   ],
+   [
+    "say",
+    "",
+    "Under the lamp, a crate stands open. They climb in on their own. Nobody has to push."
+   ],
+   [
+    "say",
+    "Keeper Scout",
+    "Third night this week. I write it down. It goes up the line. Nothing comes back."
+   ],
+   [
+    "say",
+    "Keeper Scout",
+    "Commander's papers came with my orders. Fernbrook. Holders with Seals."
+   ],
+   [
+    "say",
+    "",
+    "A list of names, no heading. Yours is the newest line."
+   ],
+   [
+    "choice",
+    "What do you do?",
+    [
+     [
+      "Ask about the list",
+      [
+       [
+        "inc",
+        "story.lean_keep"
+       ],
+       [
+        "say",
+        "Keeper Scout",
+        "Above me. Above my Captain too, I think. I just carry it."
+       ]
+      ]
+     ],
+     [
+      "Say nothing",
+      [
+       [
+        "inc",
+        "story.lean_fix"
+       ]
+      ]
+     ]
+    ],
+    "Keeper Scout"
+   ],
+   [
+    "say",
+    "",
+    "Morning. The crates are gone. The lamps hum on, as if nothing walked to them at all."
+   ],
+   [
+    "curtain",
+    "off"
+   ],
+   [
+    "inc",
+    "story.chi_jars"
+   ],
+   [
+    "setFlag",
+    "story.shift_k",
+    true
    ]
   ]
  }

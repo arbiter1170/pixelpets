@@ -35,7 +35,7 @@
     'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
     'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
-    'story.chi_jars', 'story.chi_told_ledger', 'story.chi_told_lamps', 'story.chi_told_list',   // ACT1_KEEPER_JOIN: Vincent Chi's jars (WEIR_HUT §3.3) and his report hub, not steps
+    'story.chi_jars', 'story.shift_lamp_w', 'story.shift_lamp_n', 'story.shift_lamp_e', 'story.shift_ledger', 'story.chi_told_ledger', 'story.chi_told_lamps', 'story.chi_told_list',   // ACT1_KEEPER_JOIN: Vincent Chi's jars (WEIR_HUT §3.3) and his report hub, not steps
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -175,6 +175,9 @@
     { id: 'chi_meet', when: ['story.warden_met', '!story.side_pick_done'], done: ['story.chi_met'], noImply: true,
       text: "Find Vincent Chi, past the fallen trunk at Wickerglen's east edge.", place: "Wickerglen, east edge",
       target: { map: 'route2_glen', x: 22, y: 4 } },
+    { id: 'chi_shifts', when: ['story.chi_met', '!story.side_pick_done'], done: ['story.shift_g', 'story.shift_k'], noImply: true,
+      text: 'Work a day with Imogen\'s lamp crew and a dusk watch with the Keeper Scout.', place: 'Wickerglen',
+      target: { map: 'route2_glen', x: 12, y: 5 } },
     // The hut itself is WEIR_HUT's room (hw_weir_hut_in, through Hushwater); the cue points at the trunk, the way in.
     { id: 'chi_report', when: ['story.shift_g', 'story.shift_k', '!story.side_pick_done'], done: ['story.chi_done'], noImply: true,
       npc: 'Vincent Chi', npcIds: ['chi_hut'],
