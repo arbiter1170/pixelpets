@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 04:30 ET: Lizzy walks back and faces the holder when her reunion starts (FACE_ME, Vincent, Nov 3)
+- What changed and why: Vincent's bug: Lizzy's reunion (`lizzy_intro`) can start from Buddy, and Lizzy, who wanders (NPC_LIFE), could be a few tiles off and facing away for the whole talk. A new scene step `faceMe` (no "!" and no hidden box, unlike the trainer `approach`) walks the first present of the named bodies back beside the holder and turns both to face each other. It opens `lizzy_intro` (plaza, morning plaza and school bodies); the design JSON stays verbatim. Reduced motion and SKIP snap the walk.
+- Files touched: `game.js` (`faceMeWalk`, the `faceMe` step, the `lizzy_intro` head), `tests/face_me.spec.js` (new), `handoff/shots/face_me/`.
+- Commit(s) + build id: on claude/day1-trial1-build-gtkcop (PR #261).
+- Tests run and result (widths, checks): `face_me` and `lizzy` at 320, 375 and 390, pass.
+- Decisions made (colour + reasoning): Vincent's direction; green staging only, no copy or save change.
+- Anything left unfinished: none.
+
 ## 2026-11-03 04:00 ET: Lantern House rests tuck the partner into a bed (BED_TUCK, Vincent, Nov 3)
 - What changed and why: Vincent's ask: when the holder rests at a Lantern House (the first time, on Rook's walk, and every time after), the holder walks the Walkling over to a bed, puts it in, it sleeps, then recovers. Both rest paths (talk to a bed and pick Rest; a scene's `rest` step, as on Rook's first-loss walk from #249) now run `bedTuck`: the holder walks beside the nearest free bed and faces it, the partner lies in the bed with its eyes shut under the bed's own blanket and a "z" (about 1.4 s), wakes with a heart and a 2 px hop, and hops back out; then the heal and the rest line. Reduced motion keeps the nap (a still "z", no hop); SKIP snaps it. A rest outside a Lantern House is unchanged.
 - Files touched: `game.js` (`bedTuck`, `bedSpots`, `drawBedRest`, the `bedTuck` step, the `rest` step, `lanternRestOption`, `endScene`, debug `bedRest`), `tests/bed_tuck.spec.js` (new), `tests/helpers.js` (`playScene` waits for a box with buttons: the mode reads 'choice' while the walk plays), `tests/playtest_fixes_3.spec.js` (its save comparison now ignores the 5 s autosave stamp, which the longer rest moved into its window), `handoff/shots/bed_tuck/`.

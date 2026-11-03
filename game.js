@@ -3920,6 +3920,9 @@ if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
 if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
 SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
 for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
+// FACE_ME (Vincent, Nov 3, 2026): Lizzy's reunion can start from Buddy, with Lizzy wandered off or facing away. She walks
+// back beside the holder and faces them first (whichever of her bodies is here: the morning plaza, the plaza, the school).
+if (SCENES.lizzy_intro) SCENES.lizzy_intro = [['faceMe', ['hm_lizzy_pre', 'hm_lizzy', 'school_lizzy']]].concat(SCENES.lizzy_intro);
 // DAY1_TRIAL1_FLOW: a detail file may append steps to a built scene (`sceneTails`, e.g. Mom's ask after mom_wake) or wrap one
 // built line so a condition swaps it (`lineSwaps`: { scene, text, when, to }). The design JSON stays verbatim.
 for (const k of DETAIL_KEYS) {
@@ -6575,6 +6578,38 @@ async function approachWalk(id){
   S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y);
   spot.id = null;
   if (scene) { $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', ''); }
+}
+// FACE_ME (Vincent, Nov 3, 2026): a scene's first speaker comes back beside the holder and both face each other, without the
+// trainer "!" (approachWalk). For a person who wandered off or faces away when a scene starts from someone else (Lizzy's
+// reunion starts from Buddy too). The first present id of the list on this map walks; none present does nothing. Reduced
+// motion and SKIP snap the walk. Runtime only (mapRT); never saved.
+async function faceMeWalk(ids){
+  if (!CUR || !S) return;
+  const o = [].concat(ids || []).map(id => CUR.objs.find(x => x.id === id && present(x))).find(Boolean); if (!o) return;
+  const id = o.id, fast = !!(scene && scene.skip) || prefersReduced();
+  let q = { x: objPos(o).x, y: objPos(o).y };
+  const path = pathBeside(q, id);
+  if (fast && path.length) { q = path[path.length - 1]; mapRT.pos[id] = { x: q.x, y: q.y, fx: q.x, fy: q.y, moving: false, facing: 'down' }; }
+  else for (const step of path) {
+    if (!scene) break;
+    const face = dirName(step.x - q.x, step.y - q.y);
+    const P = mapRT.pos[id] = { x: step.x, y: step.y, fx: q.x, fy: q.y, moving: true, facing: face };
+    mapRT.face[id] = face;
+    await new Promise(res => {
+      const t0 = now(), from = { x: q.x, y: q.y };
+      (function tick(){
+        const k = Math.min(1, (now() - t0) / SPOT_STEP_MS);
+        P.fx = from.x + (step.x - from.x) * k; P.fy = from.y + (step.y - from.y) * k;
+        if (k < 1 && scene) requestAnimationFrame(tick); else res();
+      })();
+    });
+    q = { x: step.x, y: step.y };
+    mapRT.pos[id] = { x: q.x, y: q.y, fx: q.x, fy: q.y, moving: false, facing: face };
+  }
+  const face = dirName(S.world.x - q.x, S.world.y - q.y);
+  mapRT.face[id] = face;
+  if (mapRT.pos[id]) mapRT.pos[id].facing = face;
+  S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y);
 }
 let patrolClock = 0;
 function tickPatrol(dt){
@@ -9642,6 +9677,7 @@ async function execStep(st){
     }
     case 'spot': await spotWalk(a); return;
     case 'approach': await approachWalk(a); return;
+    case 'faceMe': await faceMeWalk(a); return;   // FACE_ME: walk back beside the holder and face them
     // INTRO_CUTSCENE (D801): staging for any scene. None takes a tap; SKIP and reduced motion snap them (D809).
     case 'walkTo': await cutWalkTo(sc, a, b, c, d); return;
     case 'wait': { if (!cutFast(sc)) await cutWait(a | 0); return; }
