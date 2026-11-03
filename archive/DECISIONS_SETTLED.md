@@ -2,9 +2,19 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Mon Nov 2, 2026, 10:19 PM ET: Vincent's rulings on TRIAL_HALL_FERNBROOK_MAP (recorded by Claude Code)
+
+Recorded from Vincent's rulings on `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (merged in #263), relayed in the Claude Code session that wrote the spec.
+
+- **D1189 (Mon Nov 2, 2026, red, SETTLED by Vincent, 10:19 PM ET: yes).** SPEC: redesign `fb_hall_in` as a contested building: the west half stays the old Keeper hall, the east half is resurfaced and branded by Glimmerwell, with a seam down the middle and a "brought to you by" plaque beside the Keeper crest (TRIAL_HALL_FERNBROOK_MAP §5-§8). Rule 9 still applies to the build: Pia's art and the previews go to Vincent before it deploys.
+- **D1190 (Mon Nov 2, 2026, red, SETTLED by Vincent, 10:19 PM ET: yes).** SPEC: after the pick the Hall's props flip with Fernbrook's hold (D1171) and Fen stays. **Added by Vincent:** Fen's allegiance can change after the curfew event (POST_TRIAL_CRACKDOWN): she converts the way the holder does, and the crackdown gives her an obvious motive to be angry at the Keepers. It is tied to `story.fen_lean` (per Seals lore v3.1, pending design commit) is a **hidden** flag that tracks Fen's lean. The player's choices move it, including "He means well" / "He's hiding something" after the President's curfew broadcast. Fen turns on her first Act 2 return, either way. The turn changes her Hall, her lines and one rematch, not the town. The flag lives in `S.flags` (additive; save stays `pixelpets.save.v2`, `v` 2).
+- **D1192 (Mon Nov 2, 2026, red, SETTLED by Vincent, 10:19 PM ET).** SPEC: the name is **"Fernbrook Trial Hall" everywhere**: the map `name`, the `fb_hall_note` sign and the REGION_MAP blurb are renamed in the build; the outside sign stays "FERNBROOK TRIAL HALL · Master Fen".
+
 ## Mon Nov 2, 2026: Vincent's rulings (recorded by the Chief of Staff)
 
 All times ET. Recorded from Vincent's messages to the Chief of Staff, Mon Nov 2, 2026. Newest call first inside each time.
+
+- **D1175 (Mon Nov 2, 2026, red, SETTLED by Vincent; relayed by the Chief of Staff to the Day 1 to Trial 1 build).** There is another quest after Seal 1 and before the faction pick. Its content is not written yet, so only the gate is built: a main-chain step `post_trial` after `hall1`, done on the new flag `story.post_trial_done`, and the pick trigger `fb_side_pick` needs `story.seal1`, `story.lizzy_class` and `story.post_trial_done`. For now a PLACEHOLDER Fen line at the end of the Seal scene sets the flag (D1186), so the game plays end to end. Built in claude/day1-trial1-build-gtkcop.
 
 - **D1170 amended (Mon Nov 2, 2026, red, Vincent, 5:41 PM ET).** The three Trial Hall holders before Fen are mixed, not all Keepers, because Fernbrook is contested: one Keeper cadet, one Glimmerwell-leaning local challenging the Hall, one neutral Fernbrook holder. Fen stays a Keeper. The Hall sign reads "FERNBROOK TRIAL HALL · Master Fen" (was "FERNBROOK TRIAL HALL · A Keepers' Hall. Master Fen."). The rest of D1170 stands (holders before Fen; D1128 still decides Fen's team; §7.5 re-run). Spec `handoff/specs/DAY1_TRIAL1_FLOW.md` R3, §8, Q8 and Slice 8 to be updated by Claude.
 - **D1172 (Mon Nov 2, 2026, yellow, SETTLED NO by Vincent, 5:03 PM ET: "Picking a side should be after the class, same with hall door.").** SPEC: kind a1 (picked, orchard not cleared): `story.side_pick_done` does not open the Hall door; the door and the faction pick both come after Lizzy's class. D1153 is HELD, superseded by D1169 (DAY1_TRIAL1_FLOW §5, §7; #255).

@@ -6,7 +6,7 @@ Target path: `handoff/specs/POST_TRIAL_CRACKDOWN.md` (PUBLIC repo; not `docs/`).
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.1, Mon Nov 2, 2026, ~11:45 PM ET |
+| Status | Draft v0.1, Mon Nov 2, 2026, ~10:31 PM ET |
 | Ask | Vincent's eight-beat outline (via Morgan), plus his clarification: the Seal-gain ban never blocks the player. The holder already has the Fernbrook Seal. The ban is world news and NPC reactions only, foreshadowing that the Keepers do bad things too |
 | Builds on | Draft PR #261 (`claude/day1-trial1-build-gtkcop`, bc38b01): the `post_trial` and `pick` rows, `sceneTails.seal1`, the `fb_side_pick` trigger, Fen's whereabouts, and the D1171 flip. Main has #249 (Rook's Lantern House walk). `#261 file:N` cites that branch |
 | Canon read | design repo `STORY.md` v0.7.8: §2 Seals and levels, §2a Solvane, §3 Keepers, §3a Government and power, §9 Trial Halls; `specs/KEEPER_RANKS.md`; FACTION_PICK_TIMING Parts C-D and June's drafts (`story/drafts/*2026-10-31.md`). None of them has a crackdown, curfew or police action in Fernbrook: this is new canon |
@@ -294,7 +294,7 @@ Two NPC lines in other towns after the pick (PLACEHOLDER, Story): a holder in Co
 
 | Risk | Check | What the spec does |
 |---|---|---|
-| Fen defies Keeper police but must stay a Keeper (D1170) | STORY §3a: Wardens outrank Commanders and aren't in the cover-up | Fen appeals **up** the ladder ("I'm writing to the Warden"), never against the Keepers as a whole. Her line: "A Commander doesn't outrank the lantern's law." |
+| Fen defies Keeper police but must stay a Keeper (D1170) | STORY §3a: Wardens outrank Commanders and aren't in the cover-up | Fen appeals **up** the ladder ("I'm writing to the Warden"), never against the Keepers as a whole. Her line: "A Commander doesn't outrank the lantern's law.". **After the curfew event her allegiance can change** (D1190, Vincent, Mon Nov 2, 2026, 10:19 PM ET): she converts the way the holder does, with an obvious motive to be angry at the Keepers, tied to the hidden flag `story.fen_lean` (per Seals lore v3.1, pending design commit): the player's choices move it, including "He means well" / "He's hiding something" after the President's curfew broadcast; Fen turns on her first Act 2 return, either way, which changes her Hall, her lines and one rematch, not the town. **Ruled (Vincent, Mon Nov 2, 2026, ~10:53 PM ET):** Block News cuts to the President, who gives the curfew broadcast on the TV; the "He means well" / "He's hiding something" choice follows it. Beat 7's script is rewritten on the Lantern House branch |
 | The Keepers look heavy-handed right before the pick (balance) | the pick needs two fair options | Ledger below. Default: Amos owns it, the officers are uneasy, Rue is kind, Fen defies from inside. Glimmerwell runs and leaves locals, and Juniper spins it. Telemetry later: the pick ratio before and after (no new code; QA notes it) |
 | "Tanks" in a cozy pet game | STORY transport: Lantern Coach, lantern airships, Glimmerwell carts. No guns anywhere in canon | **Watch Coaches** (D1202): armoured Keeper coaches in green lacquer and iron, with a lantern searchlight turret. No barrel, no gun. Optional sky beat: a patrol skiff from Sky-Dock Command (not in this spec's art) |
 | Curfew and ban vs town steering (D1173, red, open) | steering is "which side a Trial steered a town toward" | The curfew is scene-scoped (crackdown to pick) and the ban is world news; neither writes town state. D1173 stays untouched. If Vincent picks Seal option A (D1199), Seals become the steering key, and this beat is the first sign of it |
@@ -403,7 +403,7 @@ About 7-9 working days in all. It can ship after #261 merges. It doesn't depend 
 
 ## 13. Decisions (D1197-D1209)
 
-Checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:45 PM ET:
+Checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:31 PM ET:
 - This PR already holds D1189-D1196 (TRIAL_HALL_FERNBROOK_MAP), and #261 holds through D1189.
 - No other branch or the design repo uses D1197 or higher.
 - **Reserved: D1197-D1209.** Next free when #263 merged: D1210. After Vincent's renumbering (Mon Nov 2, 2026, ~11:15 PM ET: Design D1210-D1242, plaza and homes D1243-D1252; design STORY_DECISIONS v0.65 reserves D1253-D1254, unused), **next free: D1255**.

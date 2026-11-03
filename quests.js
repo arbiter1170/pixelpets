@@ -31,8 +31,9 @@
     Object.freeze({ id: 'brine_drizzlet', map: 'bw_depot_in', obj: 'brine_drizzlet', done: 'story.brine_drizzlet' }),   // BRINEWICK
   ]);
   const sideTaskLine = n => (n === 1 ? '1 side task nearby' : n + ' side tasks nearby');
-  const NOT_STEPS = ['story.starter_line', 'story.lizzy_wake', 'story.home_dressed', 'story.home_walk',   // PARTNER_DAY: house-morning beats inside the wake step
+  const NOT_STEPS = ['story.starter_line', 'story.lizzy_wake', 'story.home_walk',   // PARTNER_DAY: house-morning beats (story.home_dressed is the dress step)
     'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
+    'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -71,9 +72,15 @@
     'story.ans_tallybat_rest', 'story.ans_dimlamp_rest', 'story.ans_filecrow_rest', 'story.ans_cordhound_rest', 'story.ans_humwisp_rest'];
 
   const CHAIN = [
+    // PARTNER_DAY: you wake in your room upstairs. Two pointers, so the arrow moves on once you are dressed (Vincent's bug,
+    // Nov 2, 2026: it stayed on the mirror). `dress` only shows on the partner-day morning (story.lizzy_wake); a save past it
+    // (story.intro_seen) counts it done through `wake`. Then Mom's good-luck trigger at the foot of the stairs.
+    { id: 'dress', when: ['story.lizzy_wake'], done: ['story.home_dressed'],
+      text: "It's partner day! Get dressed at your mirror.", place: 'Hearthmoor, home',
+      target: { map: 'hm_home_room', x: 4, y: 3 } },
     { id: 'wake', done: ['story.intro_seen'],
-      text: "It's partner day! Get dressed at your mirror, then see Mom downstairs.", place: 'Hearthmoor, home',
-      target: { map: 'hm_home_room', x: 4, y: 3 } },   // PARTNER_DAY: you wake in your room upstairs
+      text: "You're dressed. Mom is waiting downstairs to see you off.", place: 'Hearthmoor, home',
+      target: { map: 'hm_home_in', x: 2, y: 6 } },
     { id: 'lodge', done: ['story.starter_received'],
       text: "Someone small is waiting at the Warden's Lodge. Ilse has a Walkling for you.", place: "Warden's Lodge",
       target: { map: 'hm_lodge_in', x: 5, y: 3 } },
@@ -100,14 +107,66 @@
       text: 'Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', place: 'Fernbrook Heights',
       glimmer: { text: 'Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.', place: 'Fernbrook Heights' },
       target: { map: 'fb_heights', x: 12, y: 10 } },
-    { id: 'orchard', done: ['story.orchard_cleared'],
+    // DAY1_TRIAL1_FLOW v0.4 (Vincent, Nov 2, 2026; D1166-D1170, D1175): Day 1 at the crates (FPT Part A), Fen's go-home talk,
+    // Mom's Mahopac trip, Mom's ask, Lizzy's class, then the Hall. Every row carries the old-order guard as two entries, so a save
+    // that picked or cleared the orchard under the old order never sees them; doneMask marks them done once Hall 1 is.
+    // `npc` (+ `npcIds`) points the cue at that person's body wherever it stands now; `target` stays the fallback.
+    // `mirror` shows the active step of the named side chain (Mom's trip) under this row's id. Copy is PLACEHOLDER (Story).
+    // A later row's done flags imply every row before it (doneMask), so no done here may be reachable out of order:
+    // home_trip also needs story.fen_sent_home, or a save that did Mahopac first would skip all of Day 1.
+    { id: 'crates', when: ['!story.side_pick_done', '!story.orchard_cleared'], done: ['story.tally_done'],
+      text: 'Tobin is tallying crates at the orchard gate. Lend a hand with three of them.', place: 'Orchard gate',
+      target: { map: 'fernbrook', x: 9, y: 14 } },
+    { id: 'tl_amos', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.tally_done'], done: ['story.tl_amos'],
+      text: 'Evening in Fernbrook. The Lantern House window is dark. See Keeper Amos.', place: 'Fernbrook Lantern House',
+      target: { map: 'fb_lantern_in', x: 6, y: 4 } },
+    { id: 'tl_light', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.tl_amos'], done: ['story.tl_done'],
+      text: "Amos needs a light for Burrsnout's cot. Wynne's stall sells wicks. Juniper has her own idea.", place: 'Fernbrook Lantern House',
+      target: { map: 'fb_lantern_in', x: 6, y: 4 } },
+    { id: 'fen_dusk', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.tl_done'], done: ['story.crates_seen'],
+      text: 'Master Fen is waiting in the orchard. She wants a word before night.', place: 'Fernbrook orchard',
+      npc: 'Master Fen', npcIds: ['fen_orchard'], target: { map: 'fernbrook', x: 10, y: 9 } },
+    { id: 'fen_home', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.crates_seen'], done: ['story.fen_sent_home'],
+      text: 'Morning. Master Fen wants a word in the orchard before you go.', place: 'Fernbrook orchard',
+      npc: 'Master Fen', npcIds: ['fen_orchard'], target: { map: 'fernbrook', x: 10, y: 9 } },
+    { id: 'home_trip', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.fen_sent_home'], done: ['story.fen_sent_home', 'story.dream_woke | story.dream_study'], mirror: 'mom',
+      text: 'Head home to Hearthmoor. Mom has plans for you and your Walkling.', place: 'Hearthmoor, home',
+      npc: 'Mom', target: { map: 'hm_home_in', x: 5, y: 4 } },
+    { id: 'mom_class', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.fen_sent_home'], done: ['story.class_sent'],
+      text: 'Mom wants a word before you head out again.', place: 'Hearthmoor, home',
+      npc: 'Mom', target: { map: 'hm_home_in', x: 5, y: 4 } },
+    { id: 'lizzy_class', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.class_sent'], done: ['story.lizzy_class'],
+      text: "Lizzy's class is on at the Hearthmoor Schoolhouse. Sit in and listen.", place: 'Hearthmoor Schoolhouse',
+      npc: 'Lizzy', target: { map: 'hm_school_in', x: 10, y: 3 } },
+    { id: 'orchard', when: ['story.side_pick_done'], done: ['story.orchard_cleared'],
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
       glimmer: { text: 'Tobin needs a hand packing crates at the orchard gate.', place: 'Orchard gate' },
       target: { map: 'fernbrook', x: 9, y: 14 } },
+    { id: 'hall1_holders', when: ['!story.side=glimmer'], done: ['trainer.h1_cadet', 'trainer.h1_challenger', 'trainer.h1_local'],
+      text: 'Three holders stand between you and Master Fen. Win all three matches in the Trial Hall.', place: 'Fernbrook Trial Hall',
+      target: { map: 'fernbrook', x: 22, y: 6 } },
     { id: 'hall1', done: ['story.seal1'],
+      npc: 'Master Fen', npcIds: ['fen_hall'],
       text: 'The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', place: 'Fernbrook Trial Hall',
       glimmer: { text: "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", place: 'Fernbrook Trial Hall' },
       target: { map: 'fernbrook', x: 22, y: 6 } },
+    // D1175 (Vincent, Nov 2, 2026): a quest slot after Seal 1 and before the pick. Content is not written yet; for now Fen's
+    // PLACEHOLDER line at the end of the Seal scene sets the flag. The pick trigger waits on it (fb_side_pick).
+    { id: 'post_trial', when: ['story.seal1', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done'],
+      text: 'Master Fen has one more thing for you in the Trial Hall.', place: 'Fernbrook Trial Hall',
+      npc: 'Master Fen', npcIds: ['fen_hall'], target: { map: 'fb_hall_in', x: 7, y: 4 } },
+    // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
+    // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.
+    { id: 'pick', when: ['story.post_trial_done', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],
+      text: 'Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', place: 'Orchard gate',
+      target: { map: 'fernbrook', x: 9, y: 10 } },
+    // D1187: after a Keepers pick on the new flow, Tobin's built battle still clears the orchard (FPT Part D is not built).
+    // Its own row here, so Seal 1 never implies it; `story.crates_seen` keeps every old save off it.
+    // Its done also needs story.crates_seen: a later row's done implies every earlier row, so an old save that cleared the
+    // orchard before Hall 1 (kind b') must not count this row done and skip the Hall.
+    { id: 'tobin_crates', when: ['story.crates_seen', 'story.side_pick_done', '!story.side=glimmer'], done: ['story.crates_seen', 'story.orchard_cleared'],
+      text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
+      target: { map: 'fernbrook', x: 9, y: 14 } },
     { id: 'teaser', done: ['story.slice_end'],
       text: 'Rook has news, waiting outside the Trial Hall.', place: 'Trial Hall doorstep',
       glimmer: { text: 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', place: 'Trial Hall doorstep' },
@@ -208,13 +267,13 @@
     [
       { id: 'mom', label: "Mom's trip", when: ['story.starter_received'], givers: ['mom'], done: ['story.mom_met'],
         text: 'Mom is home. She wants to meet your Walkling.', place: 'Your home',
-        target: { map: 'hm_home_in', x: 5, y: 4 } },   // PARTNER_DAY: Mom and Maze live downstairs
+        npc: 'Mom', target: { map: 'hm_home_in', x: 5, y: 4 } },   // PARTNER_DAY: Mom and Maze live downstairs
       { id: 'mom_chore', when: ['story.mom_met'], done: ['story.mom_chore'],
         text: 'Clear the crumbs off the table so your Walkling has a place to sit.', place: 'Your home',
         target: { map: 'hm_home_in', x: 7, y: 5 } },
       { id: 'mom_sent', when: ['story.mom_chore'], done: ['story.mom_sent'],
         text: 'Tell Mom the table is clear. She has a trip in mind.', place: 'Your home',
-        target: { map: 'hm_home_in', x: 5, y: 4 } },
+        npc: 'Mom', target: { map: 'hm_home_in', x: 5, y: 4 } },
       { id: 'mahopac', when: ['story.mom_sent'], done: ['story.reached_mahopac'],
         text: 'Take your Walkling up the north trail to Mahopac.', place: 'Hearthmoor, north trail',
         target: { map: 'hearthmoor', x: 9, y: 2 } },
@@ -406,7 +465,9 @@
   const LABEL_MAX = 30;
   function sideActive(st, chains){
     const out = [];
+    const mir = mirroredChain(st);   // DAY1_TRIAL1_FLOW: a chain the main card is showing is left out, so its card never shows twice
     for (const chain of (chains || SIDE_CHAINS)) {
+      if (mir && chain[0].id === mir) continue;
       const m = chain.map(e => ownDone(e, st));
       for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
       for (let i = 0; i < chain.length; i++) if (!m[i] && eligible(chain[i], st)) { out.push({ chain: chain[0].id, label: chain[0].label || chain[0].id, step: resolve(chain[i], st) }); break; }
@@ -426,10 +487,26 @@
   }
 
   // The current objective, or null when nothing applies (never happens with the chain above: `end` has no done).
-  function current(st){
+  function currentRow(st){
     const m = doneMask(st);
-    for (let i = 0; i < CHAIN.length; i++) if (!m[i] && eligible(CHAIN[i], st)) return resolve(CHAIN[i], st);
+    for (let i = 0; i < CHAIN.length; i++) if (!m[i] && eligible(CHAIN[i], st)) return CHAIN[i];
     return null;
+  }
+  // The active step of a side chain (by its first id), ignoring any mirror, or null when the chain is locked or finished.
+  function chainStep(first, st){
+    const chain = SIDE_CHAINS.find(c => c[0].id === first); if (!chain) return null;
+    const m = chain.map(e => ownDone(e, st));
+    for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
+    for (let i = 0; i < chain.length; i++) if (!m[i] && eligible(chain[i], st)) return chain[i];
+    return null;
+  }
+  function mirroredChain(st){ const e = currentRow(st); return e && e.mirror && chainStep(e.mirror, st) ? e.mirror : null; }
+  // DAY1_TRIAL1_FLOW: a `mirror` row shows its side chain's live step (text, place, target, npc) under the row's own id.
+  function current(st){
+    const e = currentRow(st); if (!e) return null;
+    const step = e.mirror ? chainStep(e.mirror, st) : null;
+    if (step) return Object.assign({}, resolve(step, st), { id: e.id, mirrorOf: step.id });
+    return resolve(e, st);
   }
   // Completed steps before the current one, most recent first (for the panel's dimmed list). Steps that were skipped
   // (not eligible) or only implied by later progress still count: the player is past them.
