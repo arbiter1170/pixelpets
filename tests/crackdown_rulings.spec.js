@@ -14,7 +14,7 @@ trackErrors(test, expect);
 const PERMIT = "Permit's in order. Your stand can stay. The square still closes.";
 const BY_CHOICE = "A curfew's no good for business. We'll set up out on the east road tonight.";
 const LED_AWAY = 'A Keeper leads the Junior Bright away down the west road. Their Walkling trots close behind.';
-const ORDER = 'The order stands until the pick.';
+const ORDER = 'The order stands until the Warden sends for you.';   // ACT1_KEEPER_JOIN K9 (D1443's line, re-pointed)
 const FEN_DAWN = "I asked them for help with the Amberwild. They sent boots. I won't forget it.";
 const AFTER_NIGHT = "Go on, then. You won my Seal fairly. After last night, I can't say you're wrong.";
 

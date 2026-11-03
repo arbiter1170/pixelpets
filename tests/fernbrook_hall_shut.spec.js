@@ -137,7 +137,10 @@ test('flagged dressing: split before Fen\'s turn on both paths, not rebranded; h
     await boot(page, hallSave(side, { 'story.slice_end': true }), '?debug=1&hall2=1');
     expect(await page.evaluate(() => PixelPets.hall2())).toBe(true);
     expectLook(await look(page), 'split', side);
-    await page.evaluate(() => PixelPets.setFlag('story.fen_turned', true));
+    // D1727 (REPORT_FLAGS default, pending Vincent): Fen's own turn picks the look (story.fen_turned=<side>), not the holder's side.
+    await page.evaluate(s => PixelPets.setFlag('story.fen_turned', s === 'glimmer' ? 'keepers' : 'glimmer'), side);
+    expectLook(await look(page), side === 'glimmer' ? 'keepers' : 'glimmer', side + ' holder, Fen turned the other way');
+    await page.evaluate(s => PixelPets.setFlag('story.fen_turned', s), side);
     expectLook(await look(page), side, side + ' turned');
     await page.evaluate(() => localStorage.clear());
   }

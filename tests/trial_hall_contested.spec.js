@@ -17,8 +17,9 @@ const PICK = {
   split: {},
   keepers: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'keepers' },
   glimmer: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'glimmer' },
-  keepers_turned: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'keepers', 'story.fen_turned': true },
-  glimmer_turned: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'glimmer', 'story.fen_turned': true },
+  // D1727 (REPORT_FLAGS default, pending Vincent): Fen's turn names the look (story.fen_turned=<side>).
+  keepers_turned: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'keepers', 'story.fen_turned': 'keepers' },
+  glimmer_turned: { 'story.seal1': true, 'story.side_pick_done': true, 'story.side': 'glimmer', 'story.fen_turned': 'glimmer' },
 };
 // state -> Fernbrook's hold (D1171, unchanged) and the Hall's look (D1432: split until Fen's turn).
 const HOLD = { split: 'split', keepers: 'keepers', glimmer: 'glimmer', keepers_turned: 'keepers', glimmer_turned: 'glimmer' };

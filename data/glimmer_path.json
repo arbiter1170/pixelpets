@@ -261,7 +261,8 @@
               ]
             ]
           ]
-        ]
+        ],
+        ""
       ]
     ],
     "orchard@glimmer": [
@@ -1448,7 +1449,7 @@
   },
   "flags": {
     "story.side": "\"keepers\" (default, absent on old saves) or \"glimmer\". Pledge, not permanent.",
-    "story.side_pick_done": "The Fernbrook gate choice was made once.",
+    "story.side_pick_done": "The Act 1 face is set (ACT1_KEEPER_JOIN: the enrolment, or Juniper's lanyard step; on an old save, the gate pick). Written once, never cleared.",
     "story.beat.<scene>": "Set by the engine when a story beat finishes: which side played it.",
     "story.switches": "How many times the pledge changed at a Pledge desk.",
     "story.switch_chapter": "The chapter (Seals earned) of the last switch.",

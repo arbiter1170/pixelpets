@@ -7,7 +7,7 @@
   "story.hall1_shut": "D1224 (SEALS-O): the Fernbrook Trial Hall is shut by order of High Charity until Fen's Act 2 turn",
   "story.fen_lean": "Seals lore v3.1: Fen's hidden lean, moved by the Beat 1 and Beat 7 choices (inc; encoding PLACEHOLDER)",
   "story.warden_called": "D1395/D1404: Warden Ilse's call answered (or Amos passes the message on when there is no phone); RENDEZVOUS_VINCENT's story.ilse_called",
-  "story.warden_met": "D1395: the Lodge debrief done; the pick waits on it until the rendezvous build; RENDEZVOUS_VINCENT's story.ilse_debrief"
+  "story.warden_met": "D1395: the Lodge debrief done; Ilse sends the holder to Vincent Chi (ACT1_KEEPER_JOIN 4.1, chain row chi_meet)"
  },
  "looks": {
   "_note": "PLACEHOLDER (D1198). The Commander keeps the Keeper set (rule 11): a long green cloak and a cap set him apart from the officers' coats. The three Lantern House residents (LANTERN_HOUSE_FERNBROOK §7.2) are kit looks, PLACEHOLDER. The President (D1414, Vincent Nov 3: built from his wire-set bust, wire_wall_pres): grey hair, Keeper-green J coat, a gold front for the bust's gold lapels.",
@@ -1018,9 +1018,9 @@
        "!story.side_pick_done"
       ],
       "lines": {
-       "else": "The order stands until the pick."
+       "else": "The order stands until the Warden sends for you."
       },
-      "_note": "POST_TRIAL_CRACKDOWN §5 (PLACEHOLDER); D1443: the curfew lifts at dawn, the order stands until the pick"
+      "_note": "POST_TRIAL_CRACKDOWN §5 (PLACEHOLDER); D1443: the curfew lifts at dawn; the order stands until the face is set (ACT1_KEEPER_JOIN K9: 'until the Warden sends for you')"
      },
      {
       "kind": "npc",
