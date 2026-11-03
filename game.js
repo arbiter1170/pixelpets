@@ -4626,13 +4626,13 @@ function repCond(c, o){
 }
 // FACTION_PICK_TIMING §7 step 1: every condition reader splits `|` first, then `&`, then `!`, with no brackets, so
 // `a | b & c` reads as a, or (b and c). cond(), evalCond (quests.js), condKeyOk and plainStoryFlag all keep this order.
-/* FERNBROOK_PLAZA (D1175-D1179): the plaza standoff's phase, the one place its flag reads live. Data says `fbplaza:<phase>`
+/* FERNBROOK_PLAZA (D1210-D1214): the plaza standoff's phase, the one place its flag reads live. Data says `fbplaza:<phase>`
    in `when`, `lines`, `chatter`, `faceWhen` and `bangWhen` keys (with `!`, `&` and `|` as usual). First match wins:
      held_glimmer / held_keepers  Fernbrook flipped to the picked side at the faction pick result after Trial 1 (Vincent's D1171:
                                   story.side_pick_done & story.seal1, then story.side; absent counts as the Keepers, as side() does).
      after                        story.seal1, no pick yet: the argument is back on.
      watch                        the first trial is next. Today that is story.heights_done & !story.seal1 (trialReady's read).
-                                  DAY1_TRIAL1_FLOW moves the Hall-door gate after Lizzy's class: retarget this one line then (D1176).
+                                  DAY1_TRIAL1_FLOW moves the Hall-door gate after Lizzy's class: retarget this one line then (D1211).
      argue                        everything before.
    `held` matches either held_ phase and `contested` any other. Reads only; never writes a flag or the save. */
 function fbPlazaPhase(live){
@@ -6450,7 +6450,7 @@ const PATROL_GLIDE_MS = 420, WANDER_STEP_MS = 360, WANDER_REACH = 2, WANDER_GAP_
 const WANDER_FIRST_MS = [3500, 7000], WANDER_DWELL_MS = [2200, 5200], GLANCE_MS = [4500, 9000], GLANCE_HOLD_MS = 1100;
 // Ids that must hold their spot even though the rules above would let them walk (story blockers in wide spaces, set pieces).
 const NPC_STILL = {};
-/* FERNBROOK_PLAZA (D1179): a data-driven stance for set-piece npcs (the plaza standoff). Inert on every npc without these fields.
+/* FERNBROOK_PLAZA (D1214): a data-driven stance for set-piece npcs (the plaza standoff). Inert on every npc without these fields.
    `hold: true`   the npc keeps its tile: no walk route, no idle glance, and it does not turn to watch the holder walk past
                   (a talk still turns it to the holder for the talk, and it turns back when the talk ends).
    `faceWhen`     { cond: facing, ..., else: facing }: the first passing condition picks its facing (a rival, then the Hall).
@@ -19119,7 +19119,7 @@ function boot(){
       if ((k === 'story.seal1' || k === 'story.seal2' || k === 'story.seal3') && v && !was) noteSealsUp(prevSeals);
       save(); syncSide(); return S.flags[k];
     },
-    fbPlazaPhase: () => S ? fbPlazaPhase() : null,   // FERNBROOK_PLAZA debug read (D1176); the cheat wrapper keeps it inert without ?debug=1
+    fbPlazaPhase: () => S ? fbPlazaPhase() : null,   // FERNBROOK_PLAZA debug read (D1211); the cheat wrapper keeps it inert without ?debug=1
     setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); save(); syncSide(); return side(); },   // WP-B0
     runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.

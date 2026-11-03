@@ -23,7 +23,7 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // Hearthmoor Plaza (#196), Route 3 with its three side rooms and the Answerers (ARBITER_UNITS), and Brinewick
     // with Trial Hall #3 and its rooms (BRINEWICK v0.1) bring door 45, warp 93, sign 89, talk 669, scene 40,
     // trigger 34, board 7, trainer 25, shop 14 and wild 9.
-    // FERNBROOK_PLAZA (D1175-D1179) adds talk 16: three Keepers, three Glimmerwell holders, their six Walklings and four townsfolk.
+    // FERNBROOK_PLAZA (D1210-D1214) adds talk 16: three Keepers, three Glimmerwell holders, their six Walklings and four townsfolk.
     door: 45, warp: 93, sign: 89, talk: 677, scene: 40, trigger: 34, board: 7,
     trainer: 25, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });

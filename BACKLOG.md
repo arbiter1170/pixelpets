@@ -5,7 +5,7 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
-FERNBROOK_PLAZA (D1175-D1179) is on `claude/fernbrook-plaza`, waiting for Vincent's preview: the stream field east of the orchard crates is a plaza where three Keepers and three Glimmerwell holders, with their Walklings, face off over Fernbrook while townsfolk look on; they watch the Hall before the first trial, and the side the holder picks keeps the plaza after Trial 1 (D1171). Copy and labels wait for Design (D1177). Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
+FERNBROOK_PLAZA (D1210-D1214) is on `claude/fernbrook-plaza`, waiting for Vincent's preview: the stream field east of the orchard crates is a plaza where three Keepers and three Glimmerwell holders, with their Walklings, face off over Fernbrook while townsfolk look on; they watch the Hall before the first trial, and the side the holder picks keeps the plaza after Trial 1 (D1171). Copy and labels wait for Design (D1212). Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
 
 BATTLE_BACKDROPS (D1009, red, settled by Vincent Oct 31, 2026; supersedes D167) is in the game on this branch: every battle draws its own scene from the map's own tiles and props (`battle_bg.js`, `BATTLE_BG_ON` on in `game.js`). The Pet tab, music and the maps' `backdrop` fields are unchanged. Save stays `pixelpets.save.v2` with `v` 2; no new fields.
 
