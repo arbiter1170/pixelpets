@@ -20165,7 +20165,7 @@ function boot(){
     const c = $('#mapCanvas'), vx0 = walk.cam.x / TS, vy0 = walk.cam.y / TS, vx1 = vx0 + c.width / TS, vy1 = vy0 + c.height / TS;
     const live = CUR.objs.filter(o => present(o));
     const inView = o => { const q = objPos(o), x = q.fx != null ? q.fx : q.x, y = q.fy != null ? q.fy : q.y; return x + 2 >= vx0 && x - 2 <= vx1 && y + 1 >= vy0 && y <= vy1 + 1; };
-    return { map: CUR.id, scene: scene ? scene.id : null, battle: !!battle.on, people: live.filter(o => o.kind === 'npc' || o.kind === 'trainer').length,
+    return { map: CUR.id, scene: scene ? scene.id : null, battle: !!battle.on, battleId: battle.id, people: live.filter(o => o.kind === 'npc' || o.kind === 'trainer').length,
       tanksInView: live.filter(o => o.kind === 'prop' && /tank_(cmd_)?[rl]$|^hc_tank/.test(o.sprite || '') && inView(o)).length,
       hidden: CUR.objs.filter(o => o._cutHide).length, cast: live.filter(o => o.cast).map(o => { const q = objPos(o); return { id: o.id, x: q.fx != null ? q.fx : q.x, y: q.fy != null ? q.fy : q.y, sprite: o.sprite || null, fly: !!o.fly }; }),
       last: scene && scene.hcLast ? JSON.parse(JSON.stringify(scene.hcLast)) : null, used: scene && scene.hcUsed ? [...scene.hcUsed] : [] };

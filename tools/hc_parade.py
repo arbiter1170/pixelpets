@@ -35,9 +35,13 @@ CAST = {
     '_note': 'HC_PARADE casts (city only). People use a look; props a sprite. Officers, guards and marchers wear the built '
              'Keeper officer look (rule 11). Names are generic labels or FRIEND SLOT placeholders (D1361).',
     'pr_off_a': {'name': N_OFF_A, 'look': OFFICER}, 'pr_off_b': {'name': N_OFF_B, 'look': OFFICER},
-    'pr_rotor_a': {'sprite': 'hc_rotor_r', 'fly': True, 'shadow': 'hc_rotor_shadow', 'alt': 30},
-    'pr_rotor_b': {'sprite': 'hc_rotor_r', 'fly': True, 'shadow': 'hc_rotor_shadow', 'alt': 30},
-    'pr_rotor_h': {'sprite': 'hc_rotor_r', 'fly': True, 'shadow': 'hc_rotor_shadow', 'alt': 22},
+    # ROTOR_CRAFT §6 (D1392): altitude 24 for the fly-by, 36 for the hover; the lead's beam (tank_beam_r) one tile ahead of it;
+    # the Court hover faces the crowd, its down-beam on its cell, both in the air pass (D1391: the shadow after the people).
+    'pr_rotor_a': {'sprite': 'keeper_rotor_r', 'fly': True, 'shadow': 'rotor_shadow', 'alt': 24},
+    'pr_rotor_b': {'sprite': 'keeper_rotor_r', 'fly': True, 'shadow': 'rotor_shadow', 'alt': 24},
+    'pr_beam_a': {'sprite': 'tank_beam_r', 'fly': True, 'alt': 0},
+    'pr_rotor_h': {'sprite': 'keeper_rotor_front', 'fly': True, 'shadow': 'rotor_shadow_front', 'alt': 36},
+    'pr_court_beam': {'sprite': 'rotor_beam_down', 'fly': True, 'alt': 0},
     'pr_tank_a': {'sprite': 'keeper_tank_r'}, 'pr_tank_b': {'sprite': 'keeper_tank_cmd_r'},
     'pr_tank_w': {'sprite': 'keeper_tank_r'}, 'pr_tank_e': {'sprite': 'keeper_tank_l'},
     'pr_car': {'sprite': 'hc_pcar_r'}, 'pr_car2': {'sprite': 'hc_pcar_l'},
@@ -60,7 +64,7 @@ P1_CIV = [f'pr_c1_{i}' for i in range(1, 8)]
 for i, cid in enumerate(P1_CIV): CAST[cid] = {'name': N_CIV, 'look': f'hc_pr_civ_{i % 6 + 1}'}
 P1_CORDON = [(17, 22), (19, 22), (21, 22), (23, 22), (25, 22)]       # lantern cordon in the kerb bays in front of the crowd
 X0, X1 = 6, 36                                                      # a wave enters off the view's west edge and drops past its east edge
-MARCH_MS, TANK_MS, CAR_MS, FLY_MS = 160, 280, 240, 70
+MARCH_MS, TANK_MS, CAR_MS, FLY_MS = 160, 280, 240, 100
 
 def cast(i, x, y, f='down'): return ['castAt', i, x, y, f]
 def walk(i, x, y, **o): return ['walkTo', i, x, y, o] if o else ['walkTo', i, x, y]
@@ -77,9 +81,10 @@ def part1_tail(sd):
     S += [['castAt', f'pr_cordon_{k + 1}', x, y, 'down'] for k, (x, y) in enumerate(P1_CORDON)]
     S += [['walkAll', [['player', sx, sy, {'with': 'pr_off_a'}], ['pr_off_b', sx + 2, 24 if sd == 'keepers' else 25]]]]   # 1.3
     # 1.5 the waves
-    S += [cast('pr_rotor_a', X0 - 2, 23, 'right'), cast('pr_rotor_b', X0 - 6, 21, 'right'),                    # wave 1: shadows over the crowd
-          ['walkAll', [['pr_rotor_a', X1 + 6, 23, {'ms': FLY_MS, 'line': True, 'drop': True}],
-                       ['pr_rotor_b', X1 + 2, 21, {'ms': FLY_MS, 'line': True, 'drop': True}]]]]
+    S += [cast('pr_beam_a', X0 - 1, 23, 'right'), cast('pr_rotor_a', X0 - 2, 23, 'right'),                    # wave 1 (ROTOR_CRAFT §6.1):
+          cast('pr_rotor_b', X0 - 5, 22, 'right'),                                                              # A over the crowd row with
+          ['walkAll', [['pr_beam_a', X1 + 7, 23, {'ms': FLY_MS, 'line': True, 'drop': True, 'with': 'pr_rotor_a'}],   # its beam, B three behind
+                       ['pr_rotor_b', X1 + 3, 22, {'ms': FLY_MS, 'line': True, 'drop': True}]]]]                       # and a row north
     S += wave_march()                                                                                           # wave 2
     S += [cast('pr_tank_a', X0, 21, 'right'), cast('pr_tank_b', X0 - 5, 21, 'right'),                           # wave 3 (2 tanks max)
           ['walkAll', [['pr_tank_a', X1, 21, {'ms': TANK_MS, 'line': True, 'drop': True}],
@@ -132,7 +137,8 @@ CAR_STOP = (33, 31)
 def part2_stage():
     S = [['hide', 'people'], ['curtain', 'on'],
          ['if', 'story.side=glimmer', [walk('player', *HILL_SPOT['glimmer'])], [walk('player', *HILL_SPOT['keepers'])]]]   # a resume lands here first
-    S += [cast('pr_tank_w', 4, 31, 'right'), cast('pr_tank_e', 60, 31, 'left'), cast('pr_rotor_h', 32, 26, 'right')]
+    S += [cast('pr_tank_w', 4, 31, 'right'), cast('pr_tank_e', 60, 31, 'left'),
+          cast('pr_rotor_h', 32, 26, 'down'), cast('pr_court_beam', 32, 26, 'down')]                  # ROTOR_CRAFT §6.2: one row behind his step
     S += [['castAt', f'pr_strip_{k + 1}', x, y, 'up'] for k, (x, y) in enumerate(STRIPS2)]
     S += [['castAt', f'pr_cordon_{k + 1}', x, y, 'down'] for k, (x, y) in enumerate(CORDON2)]
     S += [cast(c, x, y, 'up') for c, (x, y) in zip(P2_CIV, CIV2)]
@@ -207,6 +213,13 @@ def part3():
     S.append(['if', 'story.side=glimmer', glimmer_end, keepers_end])
     S += [['setFlag', 'story.hc_parade_seen', True], ['setFlag', 'story.hc_greeted', True]]
     return S
+
+def use_rotor_frames(on):
+    """Without Design's ROTOR_CRAFT frames, fall back to the engineer draft in sprites.js (hc_rotor_*)."""
+    if on: return
+    for k in ('pr_rotor_a', 'pr_rotor_b'): CAST[k].update(sprite='hc_rotor_r', shadow='hc_rotor_shadow')
+    CAST['pr_rotor_h'].update(sprite='hc_rotor_r', shadow='hc_rotor_shadow')
+    CAST['pr_court_beam'].update(sprite='hc_rotor_shadow')
 
 QUAY_NORTH = None   # set from the built mouth (the Quay end of Charter Hill's west mouth), in build()
 

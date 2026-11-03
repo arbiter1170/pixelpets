@@ -46,7 +46,8 @@ async function playThrough(page, o = {}) {
     if (o.reduced) for (const c of st.h.cast) if (!Number.isInteger(c.x) || !Number.isInteger(c.y)) seen.frac.push(c.id + '@' + c.x + ',' + c.y);
     if (st.h.last) { const k = JSON.stringify(st.h.last); if (!seen.picks.includes(k)) seen.picks.push(k); }
     if (st.h.battle) {
-      seen.battles.push({ money: st.money, flags: FLAGS.filter(f => st.flags[f]) });
+      if (seen.battles.some(b => b.id === st.h.battleId)) { await page.click('#btOk', { timeout: 150 }).catch(() => {}); await page.keyboard.press('Space'); await page.waitForTimeout(80); continue; }
+      seen.battles.push({ id: st.h.battleId, money: st.money, flags: FLAGS.filter(f => st.flags[f]) });
       await page.waitForTimeout(300);
       if (o.lose && !lost) { lost = true; await page.evaluate(() => PixelPets.loseBattle()); }
       else await page.evaluate(() => PixelPets.winBattle());

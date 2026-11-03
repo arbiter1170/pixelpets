@@ -10,7 +10,8 @@ save. Plain `?debug=1` and normal play keep `hc_gate` (Keeper Moss's welcome) ex
 - **Source:** `tools/hc_parade.py` holds the beat sheet (tiles, casts, waves, lines, pools) and compiles it. `tools/build_hc_city.py`
   imports it after the chunks are dressed, so its output (scenes `hc_parade` and `hc_parade_hill`, `castAt`, looks, the two
   `load` triggers, the reputation rows, the not-step flags) lands in `data/hc_city_v2.json` with the rest of the city. Run:
-  `python3 tools/build_hc_city.py --layout <design>/specs/high_charity_layout.json && python3 tools/gen_mapdata.py`.
+  `python3 tools/build_hc_city.py --layout <design>/specs/high_charity_layout.json && python3 tools/gen_mapdata.py` (the ROTOR_CRAFT
+  frames are read from `<design>/specs/rotor_craft_preview/rotor_craft_frames.json` next to the layout, or `--rotor`).
   The build fails on a beat tile that is not walkable or a line over 110.
 - **The Court move (§3.1, D1354)** is in the build tool (`court_move`): the Keeper High Court (`hc_court`, ids kept) leaves
   `hc_civic` 8,45 for the Parade's south half, box 26,21-38,26, door 32,27, its steps (row 27, PLACEHOLDER `hc_court_step` decals)
@@ -47,7 +48,7 @@ art holds frame 0; emotes still show. SKIP still stops at each battle.
 | 1.1 | highcharity | Coach lands (load trigger on arrival, or the gate 32,36) | `hide people`; `music anthem_march` (PLACEHOLDER, silent); walk to 32,36; narration | tap |
 | 1.2 | | Officers A and B step in at 31,35 / 33,35 | `castAt`; the side's Officer A line | tap |
 | 1.3-1.4 | | Seven civilians on row 23, five cordon posts in the kerb bays (row 22); the holder walked to the spot with Officer A | `castAt`, `walkAll {with}` | auto |
-| 1.5 w1 | | Two rotor craft, shadows over the crowd (rows 23 and 21) | fly props, `walkAll {line, ms 70, drop}` | auto |
+| 1.5 w1 | | Two rotor craft (ROTOR_CRAFT §6.1, D1392): A over the crowd row (23) with its beam one tile ahead, B three tiles behind and a row north (22), altitude 24, 100 ms a tile, leaving east | fly props, `walkAll {line, with, drop}` | auto |
 | 1.5 w2 | | Officer column, two abreast, eight | `walkAll {line, ms 160, drop}` | auto |
 | 1.5 w3 | | Escort tank, then command tank (2 in view max) | `keeper_tank_r`, `keeper_tank_cmd_r`, ms 280 | auto |
 | 1.5 w4 | | Second column | as w2 | auto |
@@ -56,7 +57,7 @@ art holds frame 0; emotes still show. SKIP still stops at each battle.
 | 1.5 w6 | | Escort tank, last column | | auto |
 | 1.7 | | "The President speaks at the Court. Citizens will attend." The crowd walks east | `walkAll {line, drop}` | tap, auto |
 | 1.8 | | Curtain; `story.hc_parade_square`; warp to hc_civic | `curtain on`, `setFlag`, `warp` (commits the flag) | auto |
-| 2.1-2.2 | hc_civic | Muster Road packed: 12 civilians (six in vests), 14 crowd strips on the back rows and sidewalks, tanks at both road ends (4,31 / 60,31), the rotor craft over the Court, four guards behind the cordon (row 28 / row 29), Officers A and B | `castAt` behind the curtain | auto |
+| 2.1-2.2 | hc_civic | Muster Road packed: 12 civilians (six in vests), 14 crowd strips on the back rows and sidewalks, tanks at both road ends (4,31 / 60,31), the rotor craft hovering over the Court facing the crowd (altitude 36, its down-beam on the cell behind the President's step; ROTOR_CRAFT §6.2), four guards behind the cordon (row 28 / row 29), Officers A and B | `castAt` behind the curtain | auto |
 | 2.3 | | Four Officers march in along the road and file into the Court door (dropped) | BFS walks to 32,27 | auto |
 | 2.4 | | The car up the aisle to 33,31, four close guards beside it; door open; the President (16x16 back-lit prop) walks with them to the top of the steps (32,27; guards 30/31/33/34,27) | | auto |
 | 2.5 | | A civilian steps toward the cordon; a guard steps across: "Citizen. Back."; `anthem_dark` (PLACEHOLDER, silent) | | auto, tap |
@@ -78,6 +79,9 @@ are hidden for the scene, so at most 2 tanks are in view. Charter Hill: 2 + 12 +
 Inspiration only: the PLACEHOLDER pixels in `sprites.js` `addHcParadeArt` use `PAL` keys only. Pia redraws them.
 
 #### Keeper rotor craft
+
+(Superseded for the pixels by Design's own ROTOR_CRAFT v0.1.1 draft frames, D1385-D1394, which the build carries in; the brief
+is kept because the engineer fallback in `sprites.js` was drawn from it.)
 
 - **Mood:** a civic lantern that flies. It is slow, polite and always overhead. It never chases; it simply stays.
 - **References:** a heavy single-rotor utility helicopter seen from above; a 1930s fire-brigade engine in deep lacquer with brass rails; the caged lamp room at the top of a lighthouse.
@@ -130,7 +134,7 @@ Inspiration only: the PLACEHOLDER pixels in `sprites.js` `addHcParadeArt` use `P
 
 | What | Where | Note |
 |---|---|---|
-| Rotor craft (fly r/l, rotor 4 frames, shadow) | `sprites.js` `hc_rotor_r/_l`, `hc_rotor_shadow` | ROTOR_CRAFT (D1385-D1394) art is not built; draft from the brief |
+| Rotor craft ("Lantern Rotor", D1386): hover, fly, front view, shadows, down-beam | Design's ROTOR_CRAFT v0.1.1 draft frames (`specs/rotor_craft_preview/rotor_craft_frames.json`), carried by the build tool into `data/hc_city_v2.json` `art` and painted on first draw (`keeper_rotor_*`, `rotor_shadow*`, `rotor_beam_down`) | Pia redraws (D1394: Vincent sees her frame sheet and these stills before the build merges). The engineer draft `hc_rotor_*` stays only as the fallback when the frames file is absent. The dark `_off` keys and the optional lantern-out at the speech's end (§6.2 H4, Story's call) are not used |
 | The President's car (r/l, wheel frames, hand, door open) | `hc_pcar_r/_l`, `_move`, `hc_pcar_hand_r`, `hc_pcar_door_l` | |
 | The President, 16x16 back-lit, walk 2 | `hc_president`, `hc_president_move` | his full look waits (D1356) |
 | Crowd strips ×3, 2 frames, clap frame | `hc_crowd_a/b/c` | |

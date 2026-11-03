@@ -2344,8 +2344,8 @@
 3249-3415  const CRACKDOWN_ART
 3416-3481  function addCrackdownArt
 3482-3521  function addExteriorArt
-3522-3610  function addHcParadeArt
-3611-3611  const OUTDOOR_SKIN
+3522-3620  function addHcParadeArt
+3621-3621  const OUTDOOR_SKIN
 
 # stats.js
 9-10  const EVO_XP

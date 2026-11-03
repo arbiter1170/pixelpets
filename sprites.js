@@ -3546,6 +3546,16 @@ function addHcParadeArt(T, A){
     else { for (let i = 0; i < 18; i++) d(i % 2 ? 'h' : 'm', 10 + i * 2, 9 - Math.floor(i / 6), 2, 1); }
   });
   for (const [k, mir] of [['hc_rotor_r', false], ['hc_rotor_l', true]]) lazy(k, () => anim([0, 1, 2, 3].map(f => rotor(f, mir)), 70));
+  // ROTOR_CRAFT v0.1.1 (D1385-D1394): Design's draft frames, carried in the city data (PP_HC_V2.art: deduplicated rows of PAL
+  // keys; a legend char is [PAL key, alpha] for the translucent shadow and beam). They win over the engineer draft above.
+  const R = typeof window !== 'undefined' && window.PP_HC_V2 && window.PP_HC_V2.art;
+  if (R && R.rows && R.sprites) for (const [k, sp] of Object.entries(R.sprites)) lazy(k, () => {
+    const fr = sp.frames.map(f => sheetPaint(sp.w, sp.h, g => f.forEach((ri, y) => { const row = R.rows[ri] || '';
+      for (let x = 0; x < row.length; x++) { const ch = row[x]; if (ch === '.') continue;
+        const lg = sp.legend && sp.legend[ch], key = lg ? lg[0] : ch; if (!PAL[key]) continue;
+        g.globalAlpha = lg ? lg[1] : 1; g.fillStyle = PAL[key]; g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; })));
+    return fr.length === 1 && !sp.ms ? fr[0] : anim(fr, sp.ms || 400);
+  });
   lazy('hc_rotor_shadow', () => sheetPaint(40, 10, g => {
     g.globalAlpha = 0.32; g.fillStyle = PAL.k;
     for (let y = 0; y < 10; y++) { const r = Math.round(20 * Math.sqrt(1 - ((y - 4.5) / 5) ** 2)); g.fillRect(20 - r, y, 2 * r, 1); }
