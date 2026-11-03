@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 07:44 ET: Decisions: Vincent approves #268's red defaults (D1333-D1338, D1341), docs only
+- What changed and why: Vincent approved every red default on GLIMMERWELL_VEHICLES_BUILDINGS: the names Courtesy Cruiser (D1333), Sky Concierge (D1334) and Glow Care, Bright Swap, Glimmerwell Relay and Fleet Bay (D1335); the hovering fleet (D1336); Glow Care as the implied chip clinic (D1337); no heart or acorn on Glimmerwell buildings, the badge plate shared (D1338); and the story placement in §10, each its own build (D1341). The seven rows leave Open for the archive; the spec's §14 rows say SETTLED.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/glimmerwell-vehicles-buildings-6pgkqr; docs only, no build stamp (the PR's build stays 20261103-0114).
+- Tests run and result (widths, checks): `node tools/scans/run.js` (see the commit).
+- Decisions made (colour + reasoning): D1333-D1338 and D1341 (red) settled by Vincent on their defaults. No new ids. Yellows D1339, D1340, D1343, D1344, D1347 unchanged.
+- Anything left unfinished: the yellows' clock; Pia's art and June's lines before any story placement (D1345, D1346); each D1341 placement is its own build.
+
 ## 2026-11-03 01:14 ET: Glimmerwell fleet ids move to D1333-D1347; main merged in (build 20261103-0114)
 - What changed and why: the fleet's D1295-D1309 collided with Design's HCT (D1295-D1305) and High Charity Trial Hall (D1306-D1311) blocks. Renumbered in order to the first free block after Design's SEALS_BOTH_PATHS (D1323-D1332): D1295 is now D1333, through D1309, now D1347. Changed in `OPEN_DECISIONS.md` (header and the fifteen rows), the spec (§1, §14 and its renumber note), `glimmer_fleet.js`, `game.js` (two comments), `BACKLOG.md`, `tests/README.md`, `tests/glimmer_fleet.spec.js` and this file's fleet entries. Main a726e94 (#270, #271, #272, #273) merged in.
 - Files touched: the files above, `index.html` (the fleet script kept after `debug_ui.js`), `version.json`, `tests/tap_interact.spec.js` (main's comment), `data/mapdata.js` and `tools/GAMEJS_MAP.txt` (generated).

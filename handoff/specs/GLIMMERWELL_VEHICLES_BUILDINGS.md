@@ -235,15 +235,15 @@ First reserved as D1220-D1234 (Mon Nov 2, 2026, ~11:00 PM ET). Those ids clash w
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
-| D1333 | **red** (naming) | The ground vehicle's name. Alternatives: "Escort Glider", "Brightline" | **Courtesy Cruiser** |
-| D1334 | **red** (naming) | The air unit's name. Alternatives: "Hover Lamp", "Glow Scout" | **Sky Concierge** |
-| D1335 | **red** (naming) | The building names: Glow Care, Bright Swap, Glimmerwell Relay, Fleet Bay | As named |
-| D1336 | **red** (canon) | Glimmerwell runs a fleet: vehicles that hover on the hum (no wheels, no rotors, no weapons), sent to reassure a town. A Keepers hold holds them at a Keeper yard | Yes; the hover is drawn, never explained |
-| D1337 | **red** (canon, CHIP_SECRECY) | Glow Care is where the chip is fitted, implied only: a member clinic for Walklings with a shut door. Its inside is Glimmer-side only and later | Yes, as §6-§7 |
-| D1338 | **red** (rule 10) | Glimmerwell buildings never carry the Lantern House heart or the store acorn; a "clinic" for Walklings never heals; the badge plate is the one piece every Glimmerwell building shares | Yes |
+| D1333 | **red** (naming) | The ground vehicle's name. Alternatives: "Escort Glider", "Brightline" | **SETTLED: yes** (**Courtesy Cruiser**; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
+| D1334 | **red** (naming) | The air unit's name. Alternatives: "Hover Lamp", "Glow Scout" | **SETTLED: yes** (**Sky Concierge**; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
+| D1335 | **red** (naming) | The building names: Glow Care, Bright Swap, Glimmerwell Relay, Fleet Bay | **SETTLED: yes** (As named; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
+| D1336 | **red** (canon) | Glimmerwell runs a fleet: vehicles that hover on the hum (no wheels, no rotors, no weapons), sent to reassure a town. A Keepers hold holds them at a Keeper yard | **SETTLED: yes** (Yes; the hover is drawn, never explained; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
+| D1337 | **red** (canon, CHIP_SECRECY) | Glow Care is where the chip is fitted, implied only: a member clinic for Walklings with a shut door. Its inside is Glimmer-side only and later | **SETTLED: yes** (Yes, as §6-§7; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
+| D1338 | **red** (rule 10) | Glimmerwell buildings never carry the Lantern House heart or the store acorn; a "clinic" for Walklings never heals; the badge plate is the one piece every Glimmerwell building shares | **SETTLED: yes** (Yes; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
 | D1339 | yellow | The four civilians: no rank, Glimmerwell-lock colours (tops w/V/h, trims N/w/s), no lanyard, and not on the WS-PALETTE locked list (they are not uniformed staff) | As built |
 | D1340 | yellow | What changes on a Keepers or Glimmerwell hold (§6) | As §6 |
-| D1341 | **red** (story placement) | First appearances: the crackdown (a Cruiser getaway for Juniper, a Concierge fly-by), the pick (a Concierge over Juniper's camp; Glimmer-pick props on the east road), Act 2 (Cobblecrest mast and bay; Glow Care in Story's Act 2 Glimmerwell town) | As §10; each is its own build |
+| D1341 | **red** (story placement) | First appearances: the crackdown (a Cruiser getaway for Juniper, a Concierge fly-by), the pick (a Concierge over Juniper's camp; Glimmer-pick props on the east road), Act 2 (Cobblecrest mast and bay; Glow Care in Story's Act 2 Glimmerwell town) | **SETTLED: yes** (As §10; each is its own build; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
 | D1342 | green | Build behind a flag: a `?debug=1` preview lot in memory, no save writes, nothing in normal play | Built |
 | D1343 | yellow | Vehicles move on fixed scripted paths in `glimmer_fleet.js`, not a new system; a scene step that moves them waits for D1204 | Built |
 | D1344 | yellow | The air unit draws above everyone, never blocks, casts a shadow, and is grounded on a Keepers hold | Built |

@@ -2,6 +2,18 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026, 7:44 AM ET: Vincent's rulings on GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
+
+Vincent approved every red default in `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md` §14, in his own words in the Claude Code session: "Approve all the #268 red defaults". The yellows (D1339, D1340, D1343, D1344, D1347) stay on their own clock; the greens (D1342, D1345, D1346) were already decided.
+
+- **D1333 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Naming: Glimmerwell's ground vehicle (the Watch Coach's answer) is the Courtesy Cruiser. Alternatives: Escort Glider, Brightline.
+- **D1334 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Naming: the air unit is the Sky Concierge. Alternatives: Hover Lamp, Glow Scout.
+- **D1335 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Naming: the buildings Glow Care (clinic), Bright Swap (buy-back stall), Glimmerwell Relay (mast), Fleet Bay (vehicle depot).
+- **D1336 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Canon: Glimmerwell runs a fleet that hovers on the hum (no wheels, no rotors, no weapons), sent to reassure a town; a Keepers hold holds it at a Keeper yard.
+- **D1337 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Canon and CHIP_SECRECY: Glow Care is where the chip is fitted, implied only; a member clinic for Walklings with a shut door; its inside is Glimmer-side only and later.
+- **D1338 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Glimmerwell buildings never carry the Lantern House heart or the store acorn; a Walkling clinic never heals; the badge plate is the one exterior piece every Glimmerwell building shares.
+- **D1341 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:44 AM ET: yes, the default).** SPEC: Story placement: a Cruiser getaway and a Concierge fly-by in the crackdown; a Concierge over Juniper's camp at the pick, Glimmer-pick props on the east road; Act 2 mast, bay and Glow Care.
+
 ## Mon Nov 2, 2026, 10:19 PM ET: Vincent's rulings on TRIAL_HALL_FERNBROOK_MAP (recorded by Claude Code)
 
 Recorded from Vincent's rulings on `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (merged in #263), relayed in the Claude Code session that wrote the spec.
