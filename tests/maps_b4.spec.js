@@ -8,7 +8,8 @@ const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./hel
 
 trackErrors(test, expect);
 
-const TOWNS = { hearthmoor: 10, fernbrook: 2, cobblecrest: 4, highcharity: 15, mahopac: 1, fb_heights: 2 };
+// fernbrook 5: the Lantern House, the Bloom Hall and the three south-lane homes (FERNBROOK_HOMES, D1248).
+const TOWNS = { hearthmoor: 10, fernbrook: 5, cobblecrest: 4, highcharity: 15, mahopac: 1, fb_heights: 2 };
 const OUTDOOR = Object.keys(TOWNS).concat(['route1', 'route2', 'route2_glen', 'proto', 'cobble_quarry']);
 
 async function boot(page, world) {

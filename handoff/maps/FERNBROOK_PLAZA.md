@@ -24,7 +24,7 @@ Row 9 (grass verge on the road), rows 18-19, `h` and the map size (32 x 20) are 
 
 Standoff: Keepers on x25 (rows 11, 13, 15) with their Walklings on x26; Glimmerwell on x29 with theirs on x28; the gap is x27. Townsfolk: Orchard Hand (27,10) north, Basket Weaver (27,17) south, Stall Hand (30,14) east, Fernbrook Elder (24,12) on the fountain ring west. Odile (27,9), fb_snack (28,16) and every B4 prop keep their tiles. Five B4 decals on new stone move to grass (`replaceObjs`, same ids): puddles (20,10) to (17,13), (28,10) to (29,9), (24,17) to (30,11), (29,15) to (30,16); leaf litter (18,16) to (17,16).
 
-New props: lamp_post (18,10), (18,17); stone_urn (18,12), (18,15); bench_long (21,10), (21,17); banner_keeper (24,10), (24,17) while not `fbplaza:held_glimmer`; comfort_lamp (29,10), (28,17) while not `fbplaza:held_keepers`. Wild zone 2 (`{19,11,10x6}`) is dropped with `set.zones`; zone 1, the orchard `{3,11,13x7}`, is unchanged.
+New props: lamp_post (18,10), (19,17) (moved from (18,17) so x18 stays the walk-in to FERNBROOK_HOMES' south gate, #267); stone_urn (18,12), (18,15); bench_long (21,10), (21,17); banner_keeper (24,10), (24,17) while not `fbplaza:held_glimmer`; comfort_lamp (29,10), (28,17) while not `fbplaza:held_keepers`. Wild zone 2 (`{19,11,10x6}`) is dropped with `set.zones`; zone 1, the orchard `{3,11,13x7}`, is unchanged.
 
 ## Phases (`fbPlazaPhase()` in game.js; data reads `fbplaza:<phase>`)
 

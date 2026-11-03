@@ -90,7 +90,7 @@ test('the plaza joins the road, every person talks from a reachable tile, and no
   expect(r.bad).toEqual([]);
   expect(r.plaza).toBeGreaterThan(50);
   expect(r.pond).toBe(true);
-  expect({ w: r.w, h: r.h }).toEqual({ w: 32, h: 20 });
+  expect({ w: r.w, h: r.h }).toEqual({ w: 32, h: 32 }); // FERNBROOK_HOMES (#267) grew Fernbrook south
   expect(r.zones).toEqual([{ x: 3, y: 11, w: 13, h: 7 }]);
   expect(r.snack).toBe(true);
   expect(r.odile, 'Odile keeps her tile').toEqual([27, 9]);
