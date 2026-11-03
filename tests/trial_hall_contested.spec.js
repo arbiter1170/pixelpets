@@ -182,7 +182,7 @@ for (const hold of ['split', 'keepers', 'glimmer']) {
   });
 }
 
-test('T6: the props follow mapHold(fernbrook) on every save kind', async ({ page }) => {
+test('T6 + D1191: the props follow mapHold(fernbrook) on every save kind, through the hold: term', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390');
   test.setTimeout(120000);
   const kinds = ['a1', 'a2', 'b', "b'", 'c', 'c_glimmer', 'p', 'n', 'a1_glimmer'];
@@ -196,6 +196,9 @@ test('T6: the props follow mapHold(fernbrook) on every save kind', async ({ page
     const got = await page.evaluate(ids => ({ hold: PixelPets.mapHold('fernbrook'), on: ids.filter(id => (PixelPets.gateRead('fb_hall_in', id) || {}).whenOk) }), Object.keys(SHOWS));
     const want = Object.keys(SHOWS).filter(id => shows(SHOWS[id], got.hold) && !['fen_hall'].includes(id));
     expect(got.on.filter(id => id !== 'fen_hall').sort(), kind).toEqual(want.sort());
+    // D1191: the props' `hold:` term is mapHold itself, negation included.
+    const terms = await page.evaluate(() => ['split', 'keepers', 'glimmer'].map(h => [h, PixelPets.condRead('hold:fernbrook=' + h).cond, PixelPets.condRead('!hold:fernbrook=' + h).cond]));
+    for (const [h, yes, no] of terms) { expect(yes, kind + ' ' + h).toBe(got.hold === h); expect(no, kind + ' !' + h).toBe(got.hold !== h); }
     await page.context().clearCookies();
     await page.evaluate(() => localStorage.clear());
   }
