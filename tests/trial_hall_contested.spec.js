@@ -261,8 +261,11 @@ test('T11 T12: every new art key exists, no crimson in it, and the east floor re
   }, { tiles: NEW_TILES, art: NEW_ART });
   expect(r.missing).toEqual([]);
   expect(r.crimson).toBe(0);
-  // Mean luma on a 0-255 scale (first build: east about 27 above west). The Glimmerwell half must read lighter.
+  // Mean luma on a 0-255 scale. The Glimmerwell half must read lighter (§6.3), but not glare. D1195 (Sprites, Nov 3, 2026): the
+  // polished floor is an h field on a 1 px K grout grid, so east minus west measures about +21 (P 162 against hall_flag 140); the
+  // brief's +28 needs w in the field, which is the glare the brief rules out. Kept above +20 (where the halves merge), capped at +40.
   expect(r.east - r.west).toBeGreaterThan(20);
+  expect(r.east - r.west).toBeLessThan(40);
   expect(r.seam.filter(t => t === 'glim_seam').length).toBeGreaterThanOrEqual(10);
 });
 
