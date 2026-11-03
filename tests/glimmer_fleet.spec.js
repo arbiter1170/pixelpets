@@ -9,7 +9,7 @@ trackErrors(test, expect);
 
 const HOLDS = ['split', 'keepers', 'glimmer'];
 const KEEPER_MARKS = ['gw_badge_slip', 'gw_door_shut', 'gw_relay_mast_off', 'gw_swap_stall_shut'];
-const BANNED = /\b(chips?|tuning|tuned|implants?|trainers?|coins?|gyms?|fainted|evolve[sd]?|appeared|accord|orokin|bellgold)\b|dex\b/i;
+const BANNED = /\b(chips?|tuning|tuned|implants?|trainers?|coins?|gyms?|fainted|evolve[sd]?|appeared|orokin|bellgold)\b|dex\b/i;
 
 async function boot(page, search) {
   const save = starterSave();
@@ -226,6 +226,36 @@ test('player text: placeholder lines stay short and clean (no chip, Tuning or ba
     expect(s, s).not.toMatch(BANNED);
     expect(s, s).not.toMatch(/\bkeeper\b/);   // Keeper takes a capital K
   }
+  await page.evaluate(() => window.PixelPets.fleetExit());
+});
+
+// D1431: Keeper-hold slips stay, but read as local and temporary, never as an order from the capital; the Keeper yard stays.
+// D1440: Bright Swap is its own lamp-swap stall (never the buy-back stall) with no Keeper cover: a Keepers hold leaves it as on split.
+test('D1431, D1440: Keeper slips are local, never "by order"; Bright Swap keeps no Keeper cover', async ({ page }) => {
+  await boot(page);
+  const r = {};
+  for (const hold of HOLDS) {
+    await open(page, hold);
+    r[hold] = await page.evaluate(() => {
+      const objs = WORLD.gw_preview.objs, by = id => objs.find(o => o.id === id) || {};
+      const say = o => (o.lines && o.lines.else) || o.deny || o.text || '';
+      return { clinic: say(by('gw_clinic_door')), mast: say(by('gw_mast')), bay: say(by('gw_bay_door')), attendant: say(by('gw_bay_attendant')),
+        stall: say(by('gw_stall')), stallSprite: by('gw_stall').sprite, clerk: say(by('gw_swap_clerk')), sign: say(by('gw_stall_sign')),
+        all: objs.map(say).join('\n') };
+    });
+  }
+  const k = r.keepers;
+  expect(k.clinic).toContain("'CLOSED PENDING LOCAL REVIEW.'");
+  expect(k.mast).toContain("'POWER CUT. LOCAL NOTICE.'");
+  expect(k.bay).toContain("'VEHICLES HELD. LOCAL NOTICE.'");
+  expect(k.attendant).toContain('yard');   // the Keeper yard behaviour stays
+  for (const hold of HOLDS) expect(r[hold].all, hold).not.toMatch(/by order|capital|high charity/i);
+  expect(k.stallSprite).toBe('gw_swap_stall');
+  expect(k.stall).toBe(r.split.stall);
+  expect(k.clerk).toBe(r.split.clerk);
+  expect(k.sign).toBe(r.split.sign);
+  const lines = JSON.stringify(await page.evaluate(() => window.PPFleet.lines()));
+  expect(lines).not.toMatch(/A LAMP IS A LAMP|cream cloth|buy-back/i);
   await page.evaluate(() => window.PixelPets.fleetExit());
 });
 

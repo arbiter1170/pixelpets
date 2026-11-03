@@ -109,14 +109,14 @@ y  0   TTTTTTTTTTTTTTTTTTTTTTTTTT
 
 Four pieces, all in one exterior language: white panel walls with a soot plinth and a wine trace line, soot panel roofs with a trace, frosted strips for windows, the badge plate beside every door, and the town's faction band (soot ridge and wine band on a Glimmerwell hold; gold and green when the Keepers hold, through the existing `drawFactionBand`).
 
-| | Glow Care (the chip clinic) | Bright Swap (the buy-back stall) | Glimmerwell Relay (the relay mast) | Fleet Bay (the vehicle depot) |
+| | Glow Care (the chip clinic) | Bright Swap (its own lamp-swap stall; D1440) | Glimmerwell Relay (the relay mast) | Fleet Bay (the vehicle depot) |
 |---|---|---|---|---|
 | Footprint | 6 x 3 (roof 2 rows, wall 1), flat roof | a 2 x 2 stall prop (32 x 32 art), blocks 2 cells | a 1 x 3 prop (16 x 48 art), blocks 1 cell | 7 x 4 (roof 2, wall 2), arched roof |
 | Door | a deep, recessed glass door (16 x 16). Shut: "By appointment. We'll call you." (natural blocker, CHIP_SECRECY) | open counter, no door | none (a staff mast) | a 48 x 32 roll door with a honey header, slats, a crimson stop light and mint guide strips. Shut: "Fleet staff only." |
 | Sign (June's pass, drafted by Claude in June's role, approved by the owner, Tue Nov 3, 2026) | GLOW CARE · A Glimmerwell clinic for Walklings. Members by appointment. Brighter by nature! | BRIGHT SWAP · Old oil lamps in, Glimmer lanterns out. Free! It's a partnership! | GLIMMERWELL RELAY · Keeps the lamps talking to each other. The hum is normal. Have a bright day! | FLEET BAY · Courtesy Cruisers. Arriving where you need us. Have a bright day! |
 | Civilian (no rank) | Receptionist: white jacket, soot trim | Swap Clerk: wine apron, white trim | Mast Tech: grey overalls, soot trim, goggles | Bay Attendant: white vest, ice trim |
 | Chip and Tuning | the badge plate; frosted glass; nothing inside is ever drawn | free lanterns swapped for oil lamps (canon: the lamps "count Walklings") | the relay ring and the hum ("a chipped Walkling is a relay") | the vehicles hover on the same hum |
-| Keepers hold | door shuttered with a Keeper slip "CLOSED PENDING REVIEW. By order."; badge covered by a slip; the Receptionist "just answers the phone" | a cream cloth over the rack, a slip "A LAMP IS A LAMP"; the Clerk is idle | dark cap, grey studs, no blink, a slip "POWER CUT BY ORDER"; the Mast Tech enjoys "the first quiet night since it went up" | the parked Cruiser is gone ("towed to the Keeper yard"), a slip on the roll door "VEHICLES HELD BY ORDER"; no vehicles in the sky or on the road |
+| Keepers hold (D1431: local Keeper slips, temporary, never an order from the capital; slip text PLACEHOLDER) | door shuttered with a Keeper slip "CLOSED PENDING LOCAL REVIEW."; badge covered by a slip; the Receptionist "just answers the phone" | unchanged from the base state: no Keeper cover (D1440; PLACEHOLDER) | dark cap, grey studs, no blink, a slip "POWER CUT. LOCAL NOTICE."; the Mast Tech enjoys "the first quiet night since it went up" | the parked Cruiser is gone ("towed to the Keeper yard"), a slip on the roll door "VEHICLES HELD. LOCAL NOTICE."; no vehicles in the sky or on the road |
 | Glimmerwell hold | "Booked through next season"; a Waiting Local queues at the door | half the rack gone; "Half the town swapped already" | ring lit; "Signal's never been stronger" | two Cruisers out, a Sky Concierge with its light pool; two wine banners and two Comfort Lamps line the road |
 
 **Contested (no hold yet):** the base state above. The faction band shows Glimmerwell, the Cruiser patrols, the Concierge hovers without its light pool.
@@ -163,7 +163,7 @@ Keeper green `g` and deep green `J` appear on no Glimmerwell piece (tested), exc
 | `gw_swap_stall` | prop | 32 x 32 | 1 | V p w N m d l y h | the pick (Glimmer) |
 | `gw_relay_mast` | prop | 16 x 48 | 2, 900 ms | N d V y h m l w Q | Act 2 |
 | `gw_banner` | prop | 16 x 32 | 1 | h w m N V p y l | the pick (Glimmer) |
-| `gw_badge_slip`, `gw_door_shut`, `gw_swap_stall_shut`, `gw_relay_mast_off` | Keepers-hold props | as their base | 1 | adds C F G J A | Act 2 (Keepers) |
+| `gw_badge_slip`, `gw_door_shut`, `gw_swap_stall_shut` (kept, unused since D1440), `gw_relay_mast_off` | Keepers-hold props | as their base | 1 | adds C F G J A | Act 2 (Keepers) |
 | looks `gw_receptionist`, `gw_swap_clerk`, `gw_mast_tech`, `gw_bay_attendant` | NPC looks | 16 x 16 | the look kit | tops w/V/h, trims N/w/s, no lanyard (D1339) | Act 2 |
 
 All of it is engineer draft art (D1345). Pia redraws before anything goes into the story. The 5x sheet is `draft_art_sheet.png`.
