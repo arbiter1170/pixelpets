@@ -319,7 +319,7 @@ const PPSave = (() => {
     };
     // NPC_RANKS (Nov 2, 2026): the same copy for every name rep.js REP_CANON folds. Keep this list in step with it.
     const FOLD_KEYS = { Marisol: 'Master Marisol', Fen: 'Master Fen', Hale: 'Master Hale', Tobin: 'Associate Tobin',
-      Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen' };
+      Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen', Ash: 'Sefton' };
     for (const [from, to] of Object.entries(FOLD_KEYS)) { copyIfAbsent(s.phoneBook.met, from, to); copyIfAbsent(s.phoneBook.fav, from, to); }
     // LIZZY_REP LR5 (D174, D175): sparse S.rep, additive, v stays 2. Non-strings and keys over 40 characters are
     // dropped, values clamp to 0..100, and fixed NPCs (Mom, Dad, Warden Ilse, Clerk Wynn) are not stored.

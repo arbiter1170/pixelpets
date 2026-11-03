@@ -2,13 +2,21 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-03 10:11 ET: Glimmerwell fleet lines: June's pass (drafted by Claude in June's role, Vincent to approve) (build 20261103-1011)
+## 2026-11-03 10:11 ET: Glimmerwell fleet lines: June's pass (drafted by Claude in June's role, Vincent to approve) (build 20261103-1015)
 - What changed and why: D1346 left every line on the `?debug=1` fleet lot as PLACEHOLDER for June. June is out, so Claude drafted her pass in her role: all 31 player lines in `glimmer_fleet.js` `LINES` (4 signs; doors, the four civilians, the mast and the stall per hold; the Cruiser; the Waiting Local; the debug `exit` sign unchanged). New spec §10b "Lines for the placements (D1341)": text only for the crackdown (Cruiser getaway, Concierge fly-by), the pick at dawn (Concierge over Juniper's camp, the Glimmer-pick east road, the Keepers-pick fly-by) and Act 2 (the quarry mast and bay, Glow Care), with five open questions (Q-G1 to Q-G5, unnumbered for the Chief of Staff). Spec PLACEHOLDER notes now read "June's pass (drafted by Claude in June's role, Vincent to approve)". A sub-agent no-new-facts review found no CHIP_SECRECY or wording breach; its 2 must-fix and 6 should-fix notes are applied.
 - Files touched: `glimmer_fleet.js` (`LINES` and its header comment only), `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md`, `handoff/shots/glimmer_fleet_lines/`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: claude/glimmer-fleet-lines-june, build 20261103-1011.
+- Commit(s) + build id: claude/glimmer-fleet-lines-june, build 20261103-1015.
 - Tests run and result (widths, checks): `tests/glimmer_fleet.spec.js` at 390 and 320: `PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0` each, `RTDB_RULES RESULT: PASS`; `node tools/scans/run.js`: all PASS (wording, decisions, symlinks, gamejs_map, test_mistakes).
 - Decisions made (colour + reasoning): none settled. Q-G1 to Q-G5 raised with defaults in spec §10b. Copy waits for Vincent's approval.
 - Anything left unfinished: the design repo (STORY.md, CHIP_SECRECY.md, June's drafts) could not be attached in this session, so canon was read from the in-repo specs and shipped in-game Glimmerwell lines; Iris's sign-off on voice. Each D1341 placement is still its own build.
+
+## 2026-11-03 10:05 ET: NPC_RANKS_LADDER (#277) catch-up: main 5e5dbc2 merged in (#280, #281, #268) before merge (build 20261103-1005)
+- What changed and why: Vincent approved #277 for merge (Tue Nov 3, 2026). Main had moved (#280 SEALS_BOTH_PATHS, #281 HIGH_CHARITY phase 1, then #268 the Glimmerwell fleet), so main is merged in (twice) with a merge commit. Conflicts were only in docs and generated files: `OPEN_DECISIONS.md` keeps main's id lines and adds #277's D1348-D1350 line (next free D1395); `archive/DECISIONS_SETTLED.md` and `CHANGELOG.md` keep both sides; `data/mapdata.js`, `tools/GAMEJS_MAP.txt` and the build stamp are regenerated. No game change beyond #277's.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`, `data/mapdata.js`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`.
+- Commit(s) + build id: claude/npc-ranks-style-guide-f3fde8, build 20261103-1005.
+- Tests run and result (widths, checks): `npc_ranks`, `day1_flow`, `seals_both_paths`, `hc_city_v2`, `faction_or_gate`, `glimmer_cobble`, `arbiter_test` and `side_badge` at 320, 375 and 390: 235 passed after #280 and #281; after #268, `npc_ranks`, `day1_flow`, `glimmer_fleet`, `seals_both_paths`, `hc_city_v2` and `side_badge` at 320, 375 and 390: 153 passed. `node tools/scans/run.js` PASS; `bump_build.py --check` and `gen_gamejs_map.py --check` clean; `gen_mapdata.py` regenerates byte for byte.
+- Decisions made (colour + reasoning): none new.
+- Anything left unfinished: none for #277.
 
 ## 2026-11-03 09:58 ET: Glimmerwell fleet: rest of the defaults settled, main merged in (build 20261103-0958)
 - What changed and why: Vincent: "Defaults are fine, merge is approved if no conflicts". The fleet's remaining yellow and green rows (D1339, D1340, D1342-D1347) are settled on their defaults and moved to `archive/DECISIONS_SETTLED.md`; the reds were settled at 7:44 AM. Merged origin/main (09928a5, #281 High Charity phase 1) with a merge commit: `save()` keeps both preview guards (main's HC_PREVIEW, then the fleet's); BACKLOG, CHANGELOG and the archive keep both sides; OPEN_DECISIONS takes main's header (next free D1395); `index.html` keeps the `glimmer_fleet.js` tag. Restamped; `data/mapdata.js` and `tools/GAMEJS_MAP.txt` regenerated.
@@ -17,6 +25,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `glimmer_fleet`, `hc_city_v2`, `debug_mode`, `data_integrity`, `smoke`, `tap_interact` at 390 and 320: `PP_TEST RESULT: PASS exit=0 passed=76 failed=0 flaky=0`, `RTDB_RULES RESULT: PASS`; scans PASS.
 - Decisions made (colour + reasoning): D1339, D1340, D1343, D1344, D1347 (yellow) and D1342, D1345, D1346 (green) settled by Vincent on their defaults. No new ids.
 - Anything left unfinished: Pia's redraw and June's lines before any story placement; each D1341 placement is its own build.
+
 
 ## 2026-11-03 09:44 ET: HIGH_CHARITY phase 1, "the capital, day one", behind HC_CITY_V2 (build 20261103-0944)
 - What changed and why: Vincent asked for a massive High Charity; Design's HIGH_CHARITY_LAYOUT v0.2.1 (design master 7a73461) splits it into five chunks (D1268, settled). This builds phase 1 only: Lantern Square (rebuilt in place, kept ids and anchors), Charter Hill, Exchange Quarter, Lantern Quay and College Green, joined by six five-wide mouths; nine-tile boulevards with walkable carriageways, solid kerb bays and medians, crosswalks; 48 parked cars, 9 parked Keeper tanks (no guns), the 10 foot patrol beats, fixed anchors, parks; the grand Lantern House (16x22, 12 beds, the lantern wall), Block News House (both floors, a Keeper pre-reads every page), the Governor's House floors 1 and 3 with the President's rooms (Keepers path, Act 5 only); the Muster Hall's chained exterior; HB1-HB13 and HB15 as PLACEHOLDER hooks. HC_PARADE (design, settled) builds on this city; its Court move (D1354) comes after this merge. Everything sits behind `HC_CITY_V2 = false` and the `?debug=1&hccity=2` preview, which never writes the save; normal play (and plain `?debug=1`) is unchanged. New art is engineer PLACEHOLDER in `PAL` (`HC_PLACEHOLDER_ART`). Notes and the spec-match table: `handoff/maps/HC_CITY_V2.md`.
@@ -37,6 +46,22 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): D1323-D1331 settled per the packet §10 paste; D1311 superseded; D1308 and D1332 open. No new ids (next free D1348).
 - Anything left unfinished: Pia's cord art; QA pass before the PR leaves draft.
 
+## 2026-11-03 08:05 ET: Decisions: Vincent confirms D1159 (the rank ladder and naming in this PR), docs only
+- What changed and why: the PR asked whether D1159 carried Vincent's OK. Vincent: "Yes, that change had my okay on the naming components and rank ladder and all that. That's all good to go." The archive entry records the confirmation; the merge hold in the PR's open questions is lifted.
+- Files touched: `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/npc-ranks-style-guide-f3fde8; docs only (build stays 20261103-0132).
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1159 confirmed by Vincent. Id note: the unmerged `claude/high-charity-phase1-k7q2hc` also uses D1350 (with D1351-D1352); reported, not renumbered.
+- Anything left unfinished: none for this PR's decisions.
+
+## 2026-11-03 07:52 ET: Decisions: Vincent leaves the names as they are for now (D1348-D1350), docs only
+- What changed and why: Vincent: "Everything that's names are OK to leave for now, we can fill in placeholders later". D1348 (civilians named Keeper or Watch), D1349 (Warden Teodor) and D1350 (Rowan) settle on their defaults and leave Open for the archive.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/npc-ranks-style-guide-f3fde8; docs only, no build stamp (the PR's build stays 20261103-0132).
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1348-D1350 (red) settled by Vincent. No new ids.
+- Anything left unfinished: the placeholder names, listed in `handoff/backlog/REVISIT_LATER.md` (claude/vincent-rulings-nov3).
+
 ## 2026-11-03 07:44 ET: Decisions: Vincent approves #268's red defaults (D1333-D1338, D1341), docs only
 - What changed and why: Vincent approved every red default on GLIMMERWELL_VEHICLES_BUILDINGS: the names Courtesy Cruiser (D1333), Sky Concierge (D1334) and Glow Care, Bright Swap, Glimmerwell Relay and Fleet Bay (D1335); the hovering fleet (D1336); Glow Care as the implied chip clinic (D1337); no heart or acorn on Glimmerwell buildings, the badge plate shared (D1338); and the story placement in §10, each its own build (D1341). The seven rows leave Open for the archive; the spec's §14 rows say SETTLED.
 - Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md`, `CHANGELOG.md`.
@@ -44,6 +69,19 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `node tools/scans/run.js` (see the commit).
 - Decisions made (colour + reasoning): D1333-D1338 and D1341 (red) settled by Vincent on their defaults. No new ids. Yellows D1339, D1340, D1343, D1344, D1347 unchanged.
 - Anything left unfinished: the yellows' clock; Pia's art and June's lines before any story placement (D1345, D1346); each D1341 placement is its own build.
+
+## 2026-11-03 01:32 ET: NPC ranks checked against the Keeper ladder; hosts and shopkeepers stay unranked; the Trial Hall cadet is Cadet Sefton (build 20261103-0132)
+
+- What changed and why: the cleared task asked for #262's merged ranks to be checked against the lore rank ladder and each faction's guide in the design repo (KEEPER_RANKS v0.2 and STORY.md §3, §3a, §6, §12), for the leftover rank placeholders to be replaced, and for the Ash name clash to be fixed. Hosts and shopkeepers are civilians aligned to a faction and get no rank.
+  - Ladder ranks (D1159, settled): Officer Mo, Officer Wynn, Officer Vesper, Officer Rue, Sergeant Rowan, Constable Moss, Constable Ivo, Constable Linnea, Constable Tamm and Cadet Pryce now show rank first. The duty (Archivist, Clerk, Operator, Watch, Scout, Signaller) moves to a line on the contact card. `ranks.pending` is now empty.
+  - Civilians: Keeper Amos (a Lantern House host), Keeper Marigold, Keeper Quill, Keeper Teague, Keeper Halvard and Watch Saffie (shopkeepers) keep their names and get no rank. Every host and shop NPC in the cast is marked `civilian` ("host" or "shop"). `rankCheck()` lists them under `civilians` and fails any civilian that has a rank.
+  - The Ash clash: the Trial Hall Keeper cadet (`h1_cadet`) is now Sefton ("Cadet Sefton"). "Ash" clashed with Grete Ash (the Plaza sweeper), with STORY's planned Hall 5 master Tobias Ash, and with a name on Design's franchise list. `REP_CANON` and `save.js` fold an old "Ash" trust or contact mark into "Sefton" (copy only; the old key stays; `v` 2). The name stays PLACEHOLDER copy under D1186.
+  - Every merged rank checked: all Keeper ranks are on the ladder, or are a Hall Master's "Master" (settled F). Glimmerwell's Associate, Field Lead, Head of Acquisitions and Junior Bright match STORY §3 and §6. No `[Rank]` is left in data or player text. The Day 1 spec's two `[Rank] PLACEHOLDER` notes now name Cadet Sefton.
+- Files touched: `data/reputation.json`, `data/detail_zz_day1.json`, `data/mapdata.js` (regenerated), `rep.js`, `save.js`, `game.js` (rankCheck), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `tests/npc_ranks.spec.js`, `tests/day1_flow.spec.js`, `tests/README.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `handoff/shots/npc_ranks_ladder/` (new), `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/npc-ranks-style-guide-f3fde8`, build 20261103-0132.
+- Tests run and result (widths, checks): `tests/npc_ranks.spec.js` and `tests/day1_flow.spec.js` at 320, 375 and 390 (45 passed); full suite at 390 (see the PR). Playwright ran with the box's Chromium; `npm run test:agent` stops at its RTDB rules precheck here (the local emulator cannot load its rules through the sandbox proxy, the same as #262). `node tools/scans/run.js` passes.
+- Decisions made (colour + reasoning): D1159 settled (red; the cleared task). The hosts part of D1160 is settled. New open rows: D1348 (red: civilians whose names still carry "Keeper" or "Watch"), D1349 (red: Warden Teodor runs a shop), D1350 (red: "Rowan" is on Design's franchise list). Green: "Sefton" was checked against every game and design file and a web search.
+- Anything left unfinished: D1348-D1350, the rest of D1160, and Story's final name for the cadet (D1186).
 
 ## 2026-11-03 01:14 ET: Glimmerwell fleet ids move to D1333-D1347; main merged in (build 20261103-0114)
 - What changed and why: the fleet's D1295-D1309 collided with Design's HCT (D1295-D1305) and High Charity Trial Hall (D1306-D1311) blocks. Renumbered in order to the first free block after Design's SEALS_BOTH_PATHS (D1323-D1332): D1295 is now D1333, through D1309, now D1347. Changed in `OPEN_DECISIONS.md` (header and the fifteen rows), the spec (§1, §14 and its renumber note), `glimmer_fleet.js`, `game.js` (two comments), `BACKLOG.md`, `tests/README.md`, `tests/glimmer_fleet.spec.js` and this file's fleet entries. Main a726e94 (#270, #271, #272, #273) merged in.
@@ -59,6 +97,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: this merge commit, build 20261103-0017.
 - Tests run and result (widths, checks): `glimmer_fleet`, `data_integrity`, `debug_mode` and `tap_interact` at 320, 375 and 390 pass. `node tools/scans/run.js`: exit 0.
 - Decisions made (colour + reasoning): green, an id renumber; no call changed.
+
 
 ## 2026-11-03 01:25 ET: FERNBROOK_PLAZA catch-up (Supervisor): main a726e94 merged, phase shots for Vincent (build 20261103-0112)
 - What changed and why: main a726e94 (#271) merged in with a merge commit (`CHANGELOG.md` kept both sides), restamped, `mapdata` and `GAMEJS_MAP` regenerated. Checked `fbPlazaPhase`: `story.seal1` is read first, so "watch" turns on with `story.lizzy_class & !story.seal1` (or `story.heights_done & !story.seal1` on an older save); the spec case is `watch on the Day 1 flow` (`tests/fernbrook_plaza.spec.js:271`, the class with no Seal reads watch, then the Seal reads after). New shots of the argue, watch and after phases at 390 and 320, each with the plaza Cadet's line (`handoff/shots/fernbrook_plaza/phase-*.png`).
