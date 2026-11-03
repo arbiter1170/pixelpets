@@ -204,6 +204,8 @@ test('a glimmer pledge at the Fernbrook hall step shows the glimmer hall line @w
   await gotoDebug(page);
   const keepers = await page.evaluate(() => {
     PixelPets.setFlag('story.orchard_cleared', true);
+    // DAY1_TRIAL1_FLOW §8: the three Trial Hall holders come first (their own step); beaten, the hall step shows.
+    for (const id of ['h1_cadet', 'h1_challenger', 'h1_local']) PixelPets.setFlag('trainer.' + id, true);
     const q = PixelPets.quest;
     return { id: q.id, text: q.text, place: q.place };
   });

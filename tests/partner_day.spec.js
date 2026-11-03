@@ -78,6 +78,8 @@ test('P-1 a new game wakes in your room; Lizzy and Buddy burst in for partner da
 test('P-2 the door waits for the mirror; the mirror is the first look, then Lizzy and Buddy run ahead', async ({ page }) => {
   await wake(page, { pick: () => 0 });                                       // MODERN
   expect(await page.evaluate(() => PixelPets.state.settings.controls)).toBe('modern');
+  // Before the mirror the quest arrow points at the mirror.
+  expect(await page.evaluate(() => { const q = PixelPets.quest; return [q.id, q.target]; })).toEqual(['dress', { map: 'hm_home_room', x: 4, y: 3 }]);
   // Leaving undressed: Lizzy stops you and you step back.
   await stepTo(page, 'hm_home_room', 4, 4, 'down', 'down');
   await page.waitForFunction(() => PixelPets.scene && /pyjamas/.test(PixelPets.scene.text || ''), null, { timeout: 5000 });
@@ -96,6 +98,12 @@ test('P-2 the door waits for the mirror; the mirror is the first look, then Lizz
   const f = await flags(page);
   expect(f['story.home_dressed']).toBe(true);
   expect(await page.evaluate(() => !!PixelPets.state.player.look)).toBe(true);
+  // Once dressed, the quest arrow leaves the mirror and points downstairs: the step targets Mom's spot at the foot of the
+  // stairs, and on this map the cue points at the bedroom door (Vincent's bug, Nov 2, 2026).
+  const q = await page.evaluate(() => { const q = PixelPets.quest; return { id: q.id, target: q.target, point: q.point }; });
+  expect(q.id).toBe('wake');
+  expect(q.target).toEqual({ map: 'hm_home_in', x: 2, y: 6 });
+  expect(q.point).toEqual({ x: 4, y: 6, here: false });
   const ids = await objIds(page);
   expect(ids).not.toContain('room_lizzy');
   expect(ids).not.toContain('room_buddy');
