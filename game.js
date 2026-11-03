@@ -4526,9 +4526,34 @@ for (const k of Object.keys(MD).filter(k => k.startsWith('cutscene_')).sort()) {
   if (C.portraits) PORTRAIT_FOR[C.scene] = C.portraits;
   applyStarterInserts(SCENES[C.scene], C.inserts || [], cutsceneMiss);
 }
-if (SCENES.rival1) SCENES.rival1.push(
-  ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
-  ['say', '', 'A wild Walkling waits in the grass, just off the path.']);
+// ROOK_LANTERN_WALK (Vincent, Nov 2, 2026): after losing Rook's first match, Rook walks the holder to the Lantern House so
+// healing makes sense, instead of a teleport. Host Della's guide plays, Rook covers the rest, then he heads for Fernbrook.
+// rival1 is one-shot, so this only ever plays on that first loss. The won branch and its tail are unchanged.
+const ROOK_LANTERN_LOST = [
+  ['castAt', 'rook_walk', 22, 8, 'left'],
+  ['say', 'Rook', "Ha! Hey, don't look like that. Mine just had a head start."],
+  ['say', 'Rook', "{pet}'s worn out. Come on, I'll walk you to the Lantern House. It's right by the plaza."],
+  ['keepPlace'],
+  ['walkTo', 'player', 16, 13, { with: 'rook_walk' }],
+  ['warp', 'hm_lantern_in', 4, 5, 'up'],
+  ['castAt', 'rook_walk_in', 5, 5, 'up'],
+  ['lanternGuide'],
+  ['say', 'Rook', "I've got this one. Pick a bed, any bed."],
+  ['walkTo', 'player', 2, 3],
+  ['rest'], ['respawnHere'],
+  ['say', '', 'You all doze in the lantern glow.'],   // the rest step's toast says "Your team is rested."
+  ['say', 'Rook', "See? Good as new. Lose, rest, go again. That's what these places are for."],
+  ['say', 'Rook', "Race you to Fernbrook! I'm meeting someone. Last one there feeds the other's Walkling!"],
+  ['walkTo', 'rook_walk_in', 4, 6, { drop: true }],
+  ['say', '', 'A wild Walkling waits in the grass, just off the east path.'],
+];
+if (SCENES.rival1) {
+  const fork = SCENES.rival1.find(st => st[0] === 'if' && st[1] === 'story.rival1_result=won');
+  if (fork) fork[3] = ROOK_LANTERN_LOST;
+  SCENES.rival1.push(['if', 'story.rival1_result=won', [
+    ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
+    ['say', '', 'A wild Walkling waits in the grass, just off the path.']]]);
+}
 // BS Standing grants on the Keepers path (spec engineAsks.standingGrants): the orchard win and Seal #1. Amounts come from
 // STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
@@ -9011,6 +9036,8 @@ const pend = f => scene.pending.push(f);
 // the first line that names him or that he speaks, just inside the door mat, facing the keeper, and leaves when the scene ends.
 // A plain npc pushed into CUR.objs for the scene only: drawn, blocking and listed like any other; never saved.
 const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', map: 'hm_lodge_in' }] };
+// Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the holder).
+const CAST_AT_LOOK = { rook_walk: { name: 'Rook', look: 'rook' }, rook_walk_in: { name: 'Rook', look: 'rook' } };
 function castOnSay(who, text){
   const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
   for (const c of cast) {
@@ -9128,7 +9155,7 @@ function drawCurtain(g, cx, cy, VW, VH){   // the room is centred on a PAL k voi
 }
 function cutCastAt(sc, id, x, y, facing){
   if (!CUR || CUR.objs.some(o => o.id === id)) return;
-  const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || { id, name: '', look: 'villager' };
+  const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || CAST_AT_LOOK[id] || { id, name: '', look: 'villager' };
   pushCast({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true });
   mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' };
 }
@@ -9170,7 +9197,8 @@ async function cutWalkTo(sc, who, x, y, opts){
   for (const p of path) {
     if (!scene) break;
     const ms = fast || cutRT.end ? 0 : (isP ? STEP_MS : 120) / cutRT.speed;
-    if (isP) await cutStepPlayer(p, ms);
+    if (isP && mate) await Promise.all([cutStepPlayer(p, ms), glideCast([{ id: mate.id, x: prev.x, y: prev.y }], ms)]).then(() => { const P = mapRT.pos[mate.id]; if (P) P.moving = false; });
+    else if (isP) await cutStepPlayer(p, ms);
     else { const mv = [{ id: who, x: p.x, y: p.y }]; if (mate) mv.push({ id: mate.id, x: prev.x, y: prev.y });
       await glideCast(mv, ms); for (const m of mv) { const P = mapRT.pos[m.id]; if (P) P.moving = false; } }
     prev = p;
@@ -9446,6 +9474,9 @@ async function execStep(st){
     }
     case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
+    case 'keepPlace': sc.deferRespawn = false; return;   // this scene walks the holder to the Lantern House itself (ROOK_LANTERN_WALK)
+    // The guide teaches the Lantern House once: its "Lanterns" unlock card would repeat the same lesson right after the rest.
+    case 'lanternGuide': { const g = lanternGuideHere(); if (g) await execSteps(lanternGuideSteps(g, true)); if (S) S.flags['story.unlock_lantern'] = true; return; }
     case 'if': await execSteps(cond(a, true) ? b : c); return;
     case 'push': {
       const nx = S.world.x + a, ny = S.world.y + b;
