@@ -19,7 +19,9 @@ const STEPS = [
   { id: 'lizzy_class', note: 'not met before', who: 'Lizzy', pin: { map: 'hm_school_in', x: 10, y: 3 }, flags: { 'story.crates_seen': true, 'story.fen_sent_home': true, 'story.dream_woke': true, 'story.class_sent': true } },
   { id: 'lizzy_class', note: 'met', who: 'Lizzy', pin: { map: 'hm_school_in', x: 10, y: 3 }, flags: { 'story.crates_seen': true, 'story.fen_sent_home': true, 'story.dream_woke': true, 'story.class_sent': true, 'story.lizzy_met': true } },
   { id: 'hall1', who: 'Master Fen', flags: { 'story.crates_seen': true, 'story.fen_sent_home': true, 'story.dream_woke': true, 'story.class_sent': true, 'story.lizzy_class': true, 'story.lizzy_met': true, 'trainer.h1_cadet': true, 'trainer.h1_challenger': true, 'trainer.h1_local': true } },
-  { id: 'post_trial', who: 'Master Fen', flags: { 'story.crates_seen': true, 'story.fen_sent_home': true, 'story.dream_woke': true, 'story.class_sent': true, 'story.lizzy_class': true, 'story.lizzy_met': true, 'story.seal1': true }, seal: true },
+  // POST_TRIAL_CRACKDOWN: post_trial is the Lantern House night (Amos); D1333: then Warden Ilse at the Lodge.
+  { id: 'post_trial', who: 'Keeper Amos', flags: { 'story.crackdown': true, 'story.crates_seen': true, 'story.fen_sent_home': true, 'story.dream_woke': true, 'story.class_sent': true, 'story.lizzy_class': true, 'story.lizzy_met': true, 'story.seal1': true }, seal: true },
+  { id: 'warden_summons', who: 'Warden Ilse', flags: { 'story.crackdown': true, 'story.post_trial_done': true, 'story.warden_called': true, 'story.crates_seen': true, 'story.fen_sent_home': true, 'story.dream_woke': true, 'story.class_sent': true, 'story.lizzy_class': true, 'story.lizzy_met': true, 'story.seal1': true }, seal: true },
 ];
 const DAYS = ['mon', 'sat', 'sun'];
 

@@ -3302,11 +3302,17 @@ function addCrackdownArt(T, A, paint){
   };
   const flip = rows => rows.map(r => [...r].reverse().join(''));
   const make = (grids, ms) => { if (grids.length === 1 && !ms) return paint(grids[0]); const a = grids.map(paint); a.ms = ms; return a; };
+  // Built on first draw, not at boot: each new cell size (64x40, 96x40, 48x48, 16x32, 32x16) opens a whole shared sheet
+  // (sheetTake), about 6.5 MB of canvas for art only the crackdown and the Fernbrook Lantern House show (memory_walk budget).
+  const lazy = (key, fn) => {
+    if (key in A) return;
+    const set = v => { Object.defineProperty(A, key, { value: v, writable: true, configurable: true, enumerable: true }); return v; };
+    Object.defineProperty(A, key, { configurable: true, enumerable: true, get(){ return set(fn()); }, set });
+  };
   for (const [k, s] of Object.entries(C.art)) {
-    const base = typeof s.base === 'string' ? C.bases[s.base] : s.base;
-    const grids = (s.f || [[]]).map(p => build(base, p));
-    if (!A[k]) A[k] = make(grids, s.ms);
-    if (s.mirror && !A[s.mirror]) A[s.mirror] = make(grids.map(flip), s.ms);
+    const grids = () => { const base = typeof s.base === 'string' ? C.bases[s.base] : s.base; return (s.f || [[]]).map(p => build(base, p)); };
+    lazy(k, () => make(grids(), s.ms));
+    if (s.mirror) lazy(s.mirror, () => make(grids().map(flip), s.ms));
   }
   // DRAFT (POST_TRIAL_CRACKDOWN §10a.2): the searchlight, 96x40. A cream cone from the lens (about 45,8) widening forward and
   // down to a warm pool on the ground (centre 80,31). The only translucent art. tank_beam_l is the same cone mirrored.
@@ -3325,11 +3331,11 @@ function addCrackdownArt(T, A, paint){
       if (d <= 1) dot(x, y, rgba(d < 0.4 ? 'w' : 'y', d < 0.4 ? 0.34 : 0.3));
     }
   });
-  if (!A.tank_beam_r) A.tank_beam_r = beam(false);
-  if (!A.tank_beam_l) A.tank_beam_l = beam(true);
+  lazy('tank_beam_r', () => beam(false));
+  lazy('tank_beam_l', () => beam(true));
   // DRAFT (§10a.2): dust behind the treads, 32x16, 3 frames at 160 ms. Dithered sand puffs at 55%, growing and lifting.
-  if (!A.tank_dust) {
-    A.tank_dust = [0, 1, 2].map(f => sheetPaint(32, 16, g => {
+  lazy('tank_dust', () => {
+    const dust = [0, 1, 2].map(f => sheetPaint(32, 16, g => {
       g.globalAlpha = 0.55;
       [[7, 12], [15, 11], [24, 12]].forEach(([cx, cy], i) => {
         const r = 2 + f + (i === 1 ? 1 : 0), yy = cy - f;
@@ -3340,8 +3346,9 @@ function addCrackdownArt(T, A, paint){
       });
       g.globalAlpha = 1;
     }));
-    A.tank_dust.ms = 160;
-  }
+    dust.ms = 160;
+    return dust;
+  });
   // DRAFT (POST_TRIAL_CRACKDOWN §10): the Glimmerwell stand left behind. A.glimmer_stand with the bottles gone and its wine
   // trim stripped to bare board; a torn price card hangs off the edge. No V, N or Q.
   if (!A.glimmer_stand_empty) A.glimmer_stand_empty = mkTile(g => {

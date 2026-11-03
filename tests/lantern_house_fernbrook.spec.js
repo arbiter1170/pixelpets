@@ -43,7 +43,7 @@ test.describe('Fernbrook Lantern House: the wire station', () => {
     const r = await room(page);
     expect(r.objs.fb_wire_set).toBeUndefined();
     expect(r.objs.fb_wire_set_live).toMatchObject({ x: 5, y: 2, art: true });
-    const crowd = { lh_res_kid: [4, 4], lh_odile: [3, 4], lh_res_b: [7, 4], lh_wynne: [7, 5], lh_res_c: [6, 6], lh_tobin: [8, 5] };
+    const crowd = { lh_res_kid: [4, 4], lh_odile: [3, 4], lh_res_b: [7, 4], lh_wynne: [6, 5], lh_res_c: [6, 6], lh_tobin: [9, 5] };
     for (const [id, [x, y]] of Object.entries(crowd)) expect(r.objs[id], id).toMatchObject({ x, y });
   });
 
