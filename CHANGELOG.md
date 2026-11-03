@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 01:25 ET: FERNBROOK_PLAZA catch-up (Supervisor): main a726e94 merged, phase shots for Vincent (build 20261103-0112)
+- What changed and why: main a726e94 (#271) merged in with a merge commit (`CHANGELOG.md` kept both sides), restamped, `mapdata` and `GAMEJS_MAP` regenerated. Checked `fbPlazaPhase`: `story.seal1` is read first, so "watch" turns on with `story.lizzy_class & !story.seal1` (or `story.heights_done & !story.seal1` on an older save); the spec case is `watch on the Day 1 flow` (`tests/fernbrook_plaza.spec.js:271`, the class with no Seal reads watch, then the Seal reads after). New shots of the argue, watch and after phases at 390 and 320, each with the plaza Cadet's line (`handoff/shots/fernbrook_plaza/phase-*.png`).
+- After vs the crackdown curfew: "after" is `story.seal1` with no crackdown and no pick; the crackdown (POST_TRIAL_CRACKDOWN) is not built, so `story.crackdown` is never set in play and "after" runs from the Seal to the pick. The curfew read (`seal1 & crackdown`, no pick) hides all 16 plaza people and Walklings (`!fbplaza:curfew`, spec `curfew:` case), so the plaza Cadet (`fbp_cadet`) is off the street exactly when §5's curfew officers stand. Ash (`h1_cadet`) stands inside the Trial Hall (`fb_hall_in`), never in the plaza, and POST_TRIAL_CRACKDOWN §5 shuts the Hall by order after the crackdown (`story.hall1_shut`, not built yet), so the two cadets never share a scene. Two Keeper cadets still exist (plaza "Cadet", the Hall's "Keeper Cadet" Ash); the plaza names wait on Design (D1245).
+- Files touched: `CHANGELOG.md`, `OPEN_DECISIONS.md` and `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` (from main), `handoff/shots/fernbrook_plaza/phase-*.png` (new), build stamp and generated files.
+- Commit(s) + build id: claude/fernbrook-plaza, build 20261103-0112.
+- Tests run and result (widths, checks): see the PR comment.
+- Decisions made (colour + reasoning): none new; green catch-up.
+- Anything left unfinished: Vincent's look at the shots (D1246) before merge; Design's names (D1245).
+
 ## 2026-11-03 00:38 ET: FERNBROOK_PLAZA: the six rank-only placeholders join rank-first naming as pending (D1245, Vincent's option A; build 20261103-0035)
 - What changed and why: #262's rankCheck requires every Keeper and Glimmerwell cast NPC to carry rank and given name or a `ranks.pending` row; the plaza's six placeholders (Constable, Sergeant, Cadet, Associate, Bright Lead, Junior Bright) had neither, so `npc_ranks.spec.js:90` failed. Vincent chose option A (Nov 3): list them in `data/reputation.json` `ranks.pending` with decision D1245 (waiting for Design's names, not for a rank). Nothing changes on screen; the save is untouched.
 - Files touched: `data/reputation.json` (six pending rows, pendingNote), `data/mapdata.js` (generated), `tests/npc_ranks.spec.js` (placeholders may be D1159 or, for the six plaza names, D1245), `OPEN_DECISIONS.md` (D1245 row), `CHANGELOG.md`, build stamp files.
