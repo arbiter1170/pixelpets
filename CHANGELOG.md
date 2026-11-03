@@ -2,6 +2,31 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 11:21 ET: Build: the Keeper High Court moves to Charter Hill's Parade, facing Muster Road (D1354, HIGH_CHARITY_LAYOUT v0.3)
+- What changed and why:
+  - D1354 (red, SETTLED by Vincent, Tue Nov 3, 2026; design `specs/HC_PARADE.md` §3.1): the Court moves from `hc_civic` 8,45 to the south half of the Parade, so the HC_PARADE speech can play on its steps.
+    - Box 26,21-38,25 (13 wide: roof rows 21-23, columned facade rows 24-25), door 32,26, on the axis from the Governor's House door to the Muster Road crosswalk.
+    - Its front and wide steps (rows 26-27) face south onto Muster Road, because the engine draws every building from the south.
+    - The old corner 2,38-14,44 is plain grass; the build tool places nothing there.
+    - Muster Road keeps its nine-tile cross-section (rows 28-36); both Governor's House tank posts stay; the flag row moves from row 21 to row 20; the Parade pair beat loops round the Court and past its steps.
+  - Every id is kept: the door `hc_court`, its line "The Court is not sitting.", its sign "KEEPER HIGH COURT." and its roof style. No warp, NPC or flag is added.
+  - The steps are PLACEHOLDER art (A14, now P0): three 16x32 decals in `PAL`, listed in `HC_PLACEHOLDER_ART`, until Pia's pass.
+  - Preview only, as before: `HC_CITY_V2` stays false; `?debug=1&hccity=2` shows it. Normal play is unchanged.
+- Files touched:
+  - code and data: `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `sprites.js`, `tools/GAMEJS_MAP.txt`;
+  - tests: `tests/hc_court_move.spec.js` (new);
+  - shots: `handoff/shots/hc_court_move/` (new; before and after at 390 and 320);
+  - docs: `handoff/maps/HC_CITY_V2.md`, `BACKLOG.md`, `tests/README.md`, `CHANGELOG.md`, plus the build stamp.
+- Commit(s) + build id: claude/hc-court-move, build 20261103-1121. Built from design `master` 91ef326 (HIGH_CHARITY_LAYOUT v0.3).
+- Tests run and result (widths, checks): `tests/hc_court_move.spec.js`, `tests/hc_city_v2.spec.js` and `tests/highcharity.spec.js` at 320, 375 and 390: 66 passed, 0 failed. Zero console errors. Save `v` 2 and unchanged. `build_hc_city.py` PASS (no one-wide choke); design `high_charity_layout_check.py` PASS.
+- Decisions made (colour + reasoning):
+  - D1354 (red) is built as settled. No new decision id.
+  - Green (engineer): the steps are three decal kinds (west end, middle, east end) rather than one 208 px sprite, so they reuse the 16x32 sheet pool.
+- Anything left unfinished:
+  - Rule 9: Vincent sees the previews before this deploys. The PR stays DRAFT.
+  - The HC_PARADE scene itself (the speech staging, Muster Road closed between two tanks) is not built.
+  - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (see the PR).
+
 ## 2026-11-03 07:05 ET: Build: the contested Fernbrook Trial Hall behind a flag (TRIAL_HALL_FERNBROOK_MAP, D1189-D1196), and "Fernbrook Trial Hall" everywhere (D1192)
 - What changed and why:
   - The contested Hall from #263, with Vincent's rulings of Nov 2, 10:19 PM ET (#264):
