@@ -154,7 +154,8 @@ test('T-ORDER: cond() and evalCond agree on every §7.1 gate string, for every s
   expect(strings).toEqual(expect.arrayContaining([
     'story.side_pick_done | story.orchard_cleared',
     '!story.seal1 | !story.side_pick_done & !story.orchard_cleared',
-    'story.lizzy_class | story.orchard_cleared | story.seal1',   // DAY1_TRIAL1_FLOW D1169 (was story.crates_seen | story.orchard_cleared)
+    // DAY1_TRIAL1_FLOW D1169 (was story.crates_seen | story.orchard_cleared), and D1432: shut once Seal 1 and the pick are in.
+    'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done',
     'story.reached_cobblecrest | story.seal1 & !story.crates_seen',
     'story.side_pick_done | story.pitch_k & story.pitch_g',
   ]));
@@ -196,6 +197,8 @@ const DAY1_DELTA = {
   p: Object.assign({ 'quest:current': 'crates' }, NEW_FLOW), n: NEW_FLOW, p_fen_only: Object.assign({ 'quest:current': 'crates' }, NEW_FLOW),
   p_glimmer_only: NEW_FLOW, p_fernbrook_only: NEW_FLOW, "b'": { 'quest:current': 'hall1_holders' },
 };
+// D1432 (Vincent, Nov 3, 2026): a save with Seal 1 and the pick finds the Hall shut on both paths until Fen's Act 2 turn.
+for (const k of ['c', 'c_glimmer', 'c_cobble', 'c_escort']) DAY1_DELTA[k] = Object.assign({}, DAY1_DELTA[k], { 'fernbrook:fb_hall': false });
 for (const kind of Object.keys(K.KINDS)) {
   test(`gate matrix: kind ${kind} reads every §7.1 gate as before the OR change`, async ({ page, context }) => {
     await bootKind(page, context, kind, '?debug=1');
@@ -216,7 +219,7 @@ test('gate matrix: the §7.4 asserts hold on the seven kinds', () => {
     expect(B[k]['fernbrook:fb_rubble'], k).toBe(!B[k]['fernbrook:fb_east']);
     expect(B[k]['fernbrook:fb_sign_route2'], k).toBe(!B[k]['fernbrook:fb_sign_route2_open']);
   }
-  // Hall door: shut for a1, p, n; open for a2, b, b', c.
+  // Hall door: shut for a1, p, n; open for a2, b, b', c (the recorded before-matrix; D1432 then shuts it for c, DAY1_DELTA).
   expect(K.SEVEN.map(k => B[k]['fernbrook:fb_hall'])).toEqual([false, true, true, true, true, false, false]);
   // The heights skipIf: skipped once Seal 1 is in (b, c), live for a1, a2, b', p, n.
   expect(K.SEVEN.map(k => B[k]['quest:heights.skipIf'])).toEqual([false, false, true, false, true, false, false]);
@@ -289,9 +292,10 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
   expect(diffs).toEqual({
     fb_east: true, fb_sign_route2_open: true, fb_rubble: true, fb_sign_route2: true, rook_fb: true, fb_teaser: true, fb_hall: true,
     fen_orchard: true, fern_associate: true, fb_crate_a: true, fb_crate_b: true, fb_sign_hall: true,
-    hallNeed: 'story.lizzy_class | story.orchard_cleared | story.seal1',   // D1169
+    // D1169, and D1432: shut once Seal 1 and the pick are both in.
+    hallNeed: 'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done',
     // June's line while Day 1 is not done (FPT §2.1); Fen's note while she is away (DAY1_TRIAL1_FLOW §7, PLACEHOLDER).
-    hallDeny: { '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
+    hallDeny: { 'story.seal1 & story.side_pick_done': "Shut by Keeper order. Master Fen's Hall stays closed for now.", '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
     count: 7,
     slips: ['The Trial Hall is latched. Tobin is by the orchard gate, counting crates.', 'The Trial Hall is shut. Master Fen is away on Keeper business.', 'The Trial Hall is open. The steps were swept this morning.'],
   });

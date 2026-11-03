@@ -6,7 +6,7 @@ Target path: `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (PUBLIC repo; not `docs
 
 | Item | Value |
 |---|---|
-| Status | v0.3 (rulings only), Mon Nov 2, 2026: records Vincent's rulings of 10:19 PM ET (D1189 and D1190 yes, D1192 "Fernbrook Trial Hall"; §14). v0.2 was committed at ~10:31 PM ET (tone bible, redrawn draft art, Keeper wall dressing); v0.1 at ~10:12 PM ET. Still waits on Vincent for the open rows (D1191, D1193-D1196) and on Pia's art |
+| Status | v0.4, Tue Nov 3, 2026: D1432 (the Hall is shut after the Trial and the pick, on both paths, and keeps the split look until Fen's own Act 2 turn; §5.1, §7.1) and D1434 (banners name no colour; §7.3), built on `claude/b5-fernbrook-hall-shut`. v0.3 (rulings only), Mon Nov 2, 2026: records Vincent's rulings of 10:19 PM ET (D1189 and D1190 yes, D1192 "Fernbrook Trial Hall"; §14). v0.2 was committed at ~10:31 PM ET (tone bible, redrawn draft art, Keeper wall dressing); v0.1 at ~10:12 PM ET. Still waits on Vincent for the open rows (D1191, D1193-D1196) and on Pia's art |
 | Ask | Vincent: the Hall must read as a contested building, and its design language must show the power struggle between the Keepers and Glimmerwell. |
 | Builds on | Draft PR #261 (`claude/day1-trial1-build-gtkcop`, bc38b01): the three mixed holders `h1_cadet`, `h1_challenger`, `h1_local`, the sign "FERNBROOK TRIAL HALL · Master Fen", and the Fernbrook hold flip (D1171). Positions and line numbers marked "#261" are on that branch. |
 | Read first | `handoff/specs/DAY1_TRIAL1_FLOW.md` (§8 roster as amended by D1170, §9 flip; #261 carries v0.4), `data/fernbrook_rooms.json` (`fb_hall_in`), `REGION_MAP.nodes.fernbrook` (main `game.js:11880`; #261 `game.js:12069-12073`), `.cursor/skills/gamedev-level-design`, `.cursor/skills/walklings-room-packet`, `.cursor/skills/walklings-decision-ids` |
@@ -64,10 +64,10 @@ Run with a sub-agent on Mon Nov 2, 2026, before v0.1 was committed (~10:12 PM ET
 | Thing | Value | Changes? |
 |---|---|---|
 | Map id | `fb_hall_in` | no |
-| Outside door | `fb_hall` at fernbrook 22,6 (`need` and `deny` as #261) | no |
+| Outside door | `fb_hall` at fernbrook 22,6 (`need` and `deny` as #261) | **v0.4 (D1432):** shut once `story.seal1` and `story.side_pick_done` are both in, on both paths, until Fen's own Act 2 turn; its first `deny` key is a PLACEHOLDER line. Before the pick it opens as #261 |
 | Mat warp | `fb_hall_mat` at 7,23 to fernbrook 22,6 facing down | no |
 | Arrival / `safe` | 7,22 | no |
-| Fen | `fen_hall` at 7,4, `look: fen`, `panel: hall1`, #261's `when`. Fen stays a Keeper (D1170) and stands on the Keeper half of the dais, under the crest | no |
+| Fen | `fen_hall` at 7,4, `look: fen`, `panel: hall1`, #261's `when`. Fen stays a Keeper (D1170) and stands on the Keeper half of the dais, under the crest | **v0.4 (D1432):** not inside once Seal 1 and the pick are in; she waits in the orchard (`fen_after`, fernbrook 10,9) |
 | Skin | `fb_hall` (walls, wall colour row `DCECDpgEEcsJ`, windows 4, 7, 11, hop `V`) | adds six glyphs (§8.1) |
 | Walk mask | every cell keeps its walk / solid / hop value | no (checked cell by cell, §12) |
 | Grid | west half (x 0-7) and rows 0-2, 23 byte-identical; east half (x 8-14, rows 3-22) re-glyphed | yes |
@@ -225,19 +225,21 @@ The same language carries outside the Hall. POST_TRIAL_CRACKDOWN (`handoff/specs
 
 Every prop that changes reads **the same hold as D1171**: the `REGION_MAP.nodes.fernbrook.hold` rules on #261 (`game.js:12071-12073`):
 
-| State | Hold id | `when` (copied from the hold rules) |
+**v0.4 (D1432, Vincent, Tue Nov 3, 2026): the Hall's look no longer follows the town hold at the pick.** After the Trial and the pick the Hall is shut on both paths and keeps the **split** look until Fen's own Act 2 turn; her turn picks the Keeper or Glimmerwell look. The town hold (D1171) still flips at the pick; only the Hall waits. The build reads a new additive flag `story.fen_turned` (nothing sets it yet; Fen's Act 2 turn will). Until that turn writes its own pick, `story.side` stands in for which look shows. The rows below are the strings the build uses (the v0.3 strings, plus the `story.fen_turned` term):
+
+| State | Hold id | `when` (the build, v0.4) |
 |---|---|---|
-| contested | `split` | `["!story.side_pick_done \| !story.seal1"]` |
-| Glimmerwell holds | `glimmer` | `["story.side_pick_done", "story.seal1", "story.side=glimmer"]` |
-| Keepers hold | `keepers` | `["story.side_pick_done", "story.seal1", "!story.side=glimmer"]` |
-| contested + Glimmerwell holds | not `keepers` | `["!story.side_pick_done \| !story.seal1 \| story.side=glimmer"]` |
-| contested + Keepers hold | not `glimmer` | `["!story.side_pick_done \| !story.seal1 \| !story.side=glimmer"]` |
+| contested, or picked but Fen has not turned | `split` | `["!story.side_pick_done \| !story.seal1 \| !story.fen_turned"]` |
+| Glimmerwell look (after Fen's turn) | `glimmer` | `["story.side_pick_done", "story.seal1", "story.fen_turned", "story.side=glimmer"]` |
+| Keeper look (after Fen's turn) | `keepers` | `["story.side_pick_done", "story.seal1", "story.fen_turned", "!story.side=glimmer"]` |
+| split + Glimmerwell look | not `keepers` | `["!story.side_pick_done \| !story.seal1 \| !story.fen_turned \| story.side=glimmer"]` |
+| split + Keeper look | not `glimmer` | `["!story.side_pick_done \| !story.seal1 \| !story.fen_turned \| !story.side=glimmer"]` |
 
 `cond()` already reads `|`, `!` and `k=v` (#261 `game.js:4738`), so these strings need no engine change. D1191 (yellow) proposes a one-line `hold:<node>=<id>` term so the props read `mapHold()` itself and can never drift from the rules; the strings above are the fallback.
 
-On a new save the hold flips only at the pick result, after Seal 1 and the post-Trial slot (D1142, D1175). **So every holder fights Trial 1 in the contested Hall**; the flipped Hall is what they see when they come back. Saves are untouched: no new flag, nothing written, `v` stays 2.
+On a new save the hold flips only at the pick result, after Seal 1 and the post-Trial slot (D1142, D1175). **So every holder fights Trial 1 in the contested Hall.** v0.4 (D1432): the flipped Hall is what they see after Fen's Act 2 turn, not at the pick; until then the door is shut. Saves are untouched: no new flag, nothing written, `v` stays 2.
 
-**Fen after the curfew (D1190, Vincent, 10:19 PM ET).** Fen stays in her Hall when the props flip. Her allegiance can change after the curfew event (POST_TRIAL_CRACKDOWN): she converts the way the holder does, and the crackdown gives her an obvious motive to be angry at the Keepers. `story.fen_lean` (per Seals lore v3.1, pending design commit) is a **hidden** flag that tracks Fen's lean. The player's choices move it, including "He means well" / "He's hiding something" after the President's curfew broadcast. Fen turns on her first Act 2 return, either way. The turn changes her Hall, her lines and one rematch, not the town. The flag lives in `S.flags` (additive; save stays v2). Nothing in this spec reads it: the turn and its Hall changes belong to Act 2.
+**Fen after the curfew (D1190, Vincent, 10:19 PM ET).** Fen stays in her Hall when the props flip. (v0.4, D1432: from the pick until her Act 2 turn the Hall is shut and she waits in the orchard; the flip waits for her turn.) Her allegiance can change after the curfew event (POST_TRIAL_CRACKDOWN): she converts the way the holder does, and the crackdown gives her an obvious motive to be angry at the Keepers. `story.fen_lean` (per Seals lore v3.1, pending design commit) is a **hidden** flag that tracks Fen's lean. The player's choices move it, including "He means well" / "He's hiding something" after the President's curfew broadcast. Fen turns on her first Act 2 return, either way. The turn changes her Hall, her lines and one rematch, not the town. The flag lives in `S.flags` (additive; save stays v2). Nothing in this spec reads it: the turn and its Hall changes belong to Act 2.
 
 ### 7.2 What changes, at a glance
 
@@ -258,7 +260,7 @@ Generated from the checked layout. "Shows when" names a row of §7.1. Holder and
 
 | id | x,y | sprite | shows when | status | line (PLACEHOLDER, Story) |
 |---|---|---|---|---|---|
-| `fen_hall` | 7,4 | `fen` | own when (unchanged) | kept | (#261 / Story) |
+| `fen_hall` | 7,4 | `fen` | own when, plus `!story.side_pick_done \| !story.seal1` (D1432) | kept | (#261 / Story) |
 | `fb_hall_lamp_w` | 4,3 | `dais_lamp` | contested + Keepers hold | kept (when added) | (unchanged) |
 | `fb_hall_lamp_e` | 11,3 | `dais_lamp` | Keepers hold | kept (when added) | (unchanged) |
 | `fb_hall_ribbon_w` | 2,6 | `ribbon_stand` | always | kept | (unchanged) |
@@ -289,7 +291,7 @@ Generated from the checked layout. "Shows when" names a row of §7.1. Holder and
 | `h1_cadet` | 3,5 | `h1_cadet` | always | kept (moved from 12,8) | (#261 / Story) |
 | `fb_hall_banner_k1` | 2,2 | `banner_keeper_old` | contested + Keepers hold | NEW | An old Keeper banner. The gold lantern is faded. Someone mended the hem by hand. |
 | `fb_hall_banner_k2` | 5,2 | `banner_keeper_old` | contested + Keepers hold | NEW | Another old Keeper banner. The fringe is half gone. |
-| `fb_hall_banner_k1_g` | 2,2 | `banner_glim` | Glimmerwell holds | NEW | A Glimmerwell banner, black and red. It hangs where the Keeper banner was. |
+| `fb_hall_banner_k1_g` | 2,2 | `banner_glim` | Glimmerwell holds | NEW | A Glimmerwell banner. It hangs where the Keeper banner was. (v0.4, D1434: banners name no colour) |
 | `fb_hall_banner_k2_g` | 5,2 | `banner_glim` | Glimmerwell holds | NEW | Another Glimmerwell banner. The hooks are new. |
 | `fb_hall_sconce_w1` | 1,2 | `keep_lamp_wall` | contested + Keepers hold | NEW | An oil lamp in an old iron bracket. The wall above it is dark with soot. |
 | `fb_hall_honour` | 3,2 | `keep_honour_board` | contested + Keepers hold | NEW | An oak board with names in gold leaf. Most have faded. The last one is still bright. |
@@ -301,7 +303,7 @@ Generated from the checked layout. "Shows when" names a row of §7.1. Holder and
 | `fb_hall_banner_half` | 9,2 | `banner_glim_half` | contested only | NEW | A Glimmerwell banner, pinned up at one corner. Under it, an old Keeper banner still shows. |
 | `fb_hall_banner_half_g` | 9,2 | `banner_glim` | Glimmerwell holds | NEW | A Glimmerwell banner, pinned up straight now. |
 | `fb_hall_banner_half_k` | 9,2 | `banner_keeper_old` | Keepers hold | NEW | The old Keeper banner, hanging straight again. |
-| `fb_hall_banner_g1` | 12,2 | `banner_glim` | contested + Glimmerwell holds | NEW | A Glimmerwell banner. Black, red and very clean. |
+| `fb_hall_banner_g1` | 12,2 | `banner_glim` | contested + Glimmerwell holds | NEW | A Glimmerwell banner. Very clean. (v0.4, D1434) |
 | `fb_hall_clamp_w` | 4,3 | `comfort_lamp` | Glimmerwell holds | NEW | A Comfort Lamp where the old dais lamp stood. It hums a little. |
 | `fb_hall_clamp_e` | 11,3 | `comfort_lamp` | contested + Glimmerwell holds | NEW | A Comfort Lamp by the dais. Its glass is spotless. |
 | `fb_hall_banner_g2` | 13,6 | `banner_glim_stand` | contested + Glimmerwell holds | NEW | A Glimmerwell banner on a stand, where the ribbons were. |
@@ -545,7 +547,7 @@ Next free id checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:12 PM E
 | Id | Colour | Call | Default |
 |---|---|---|---|
 | D1189 | **red** | Redesign `fb_hall_in` as a contested building: west half the old Keeper hall, east half resurfaced and branded by Glimmerwell, a seam down the middle, a "brought to you by" plaque beside the Keeper crest. Adds canon (Glimmerwell has physically renovated half of a Keeper Trial Hall) and is a rule 9 room redesign | **SETTLED: yes** (Vincent, Mon Nov 2, 2026, 10:19 PM ET). Archived in `archive/DECISIONS_SETTLED.md` |
-| D1190 | **red** | The Hall's look follows Fernbrook's hold after the pick (§7). If Glimmerwell holds the town, the Keeper crest is covered while Fen, a Keeper, still runs the Hall | **SETTLED: yes**, the props flip and Fen stays (Vincent, Mon Nov 2, 2026, 10:19 PM ET). **Added by Vincent:** Fen's allegiance can change after the curfew event; she converts the way the holder does, with an obvious motive to be angry at the Keepers. `story.fen_lean` (per Seals lore v3.1, pending design commit) is a **hidden** flag that tracks Fen's lean. The player's choices move it, including "He means well" / "He's hiding something" after the President's curfew broadcast. Fen turns on her first Act 2 return, either way. The turn changes her Hall, her lines and one rematch, not the town. Archived |
+| D1190 | **red** | The Hall's look follows Fernbrook's hold after the pick (§7). **Amended by D1432 (v0.4): the look waits for Fen's Act 2 turn; the Hall is shut and split until then.** If Glimmerwell holds the town, the Keeper crest is covered while Fen, a Keeper, still runs the Hall | **SETTLED: yes**, the props flip and Fen stays (Vincent, Mon Nov 2, 2026, 10:19 PM ET). **Added by Vincent:** Fen's allegiance can change after the curfew event; she converts the way the holder does, with an obvious motive to be angry at the Keepers. `story.fen_lean` (per Seals lore v3.1, pending design commit) is a **hidden** flag that tracks Fen's lean. The player's choices move it, including "He means well" / "He's hiding something" after the President's curfew broadcast. Fen turns on her first Act 2 return, either way. The turn changes her Hall, her lines and one rematch, not the town. Archived |
 | D1191 | yellow | Add a `hold:<node>=<id>` condition term that reads `mapHold()`, or copy the hold rules into each prop's `when` | Add the term (one branch in `cond()`); the copied strings are the fallback and are what the previews used |
 | D1192 | **red** (naming) | The room's name inside (place chip, `fb_hall_note`, map blurb) vs "FERNBROOK TRIAL HALL" on the outside sign | **SETTLED: "Fernbrook Trial Hall" everywhere** (Vincent, Mon Nov 2, 2026, 10:19 PM ET). The build renames the three inside spots (§13 row 2). Archived |
 | D1193 | yellow | Holder spots: neutral `h1_local` on the seam (8,20), challenger stays (12,12), Keeper cadet on the Keeper dais half (3,5) facing right | As §5.3 |

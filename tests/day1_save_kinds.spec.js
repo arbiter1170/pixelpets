@@ -27,8 +27,9 @@ const WANT = {
   a2: { quest: 'heights', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
   b: { quest: 'teaser', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
   "b'": { quest: 'hall1_holders', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
-  c: { quest: 'teaser', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'keepers', contest: false },
-  c_glimmer: { quest: 'teaser', door: true, pick: false, tally: false, battle: false, fenOrchard: false, hold: 'glimmer', contest: false },
+  // D1432: Seal 1 and the pick are both in, so the Hall is shut (both paths) and Fen is not inside.
+  c: { quest: 'teaser', door: false, deny: 'shut', pick: false, tally: false, battle: true, fenOrchard: false, fenHall: false, hold: 'keepers', contest: false },
+  c_glimmer: { quest: 'teaser', door: false, deny: 'shut', pick: false, tally: false, battle: false, fenOrchard: false, fenHall: false, hold: 'glimmer', contest: false },
   p: { quest: 'crates', door: false, deny: 'latched', pick: false, tally: true, battle: false, fenOrchard: true, hold: 'split', contest: true },
   n: { quest: 'rival1', door: false, deny: 'latched', pick: false, tally: true, battle: false, fenOrchard: true, hold: 'split', contest: true },
   mahopac_done: { quest: 'crates', door: false, deny: 'latched', pick: false, tally: true, battle: false, fenOrchard: true, hold: 'split', contest: true },
@@ -38,7 +39,7 @@ const WANT = {
   class_done: { quest: 'hall1_holders', door: true, pick: false, tally: true, battle: false, fenOrchard: false, fenHall: true, hold: 'split', contest: true },
   seal_new: { quest: 'pick', door: true, pick: true, tally: true, battle: false, fenOrchard: false, fenHall: true, hold: 'split', contest: true },
 };
-const LINES = { latched: 'The Hall is shut for now. Tobin could use a hand with his crates first.', away: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" };
+const LINES = { shut: "Shut by Keeper order. Master Fen's Hall stays closed for now.", latched: 'The Hall is shut for now. Tobin could use a hand with his crates first.', away: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" };
 
 function kindSave(kind) {
   const fx = KINDS[kind], s = starterSave();
