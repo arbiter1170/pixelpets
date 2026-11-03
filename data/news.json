@@ -553,7 +553,7 @@
    "lead": 40,
    "headline": "Tier 1 Lanyard: smile for the wall!",
    "body": [
-    "The Bright Pavilion Tour ends with a Tier 1 Lanyard, the Bright stand-in for a Seal. Congratulations!",
+    "The Bright Pavilion Tour ends with a Tier 1 Lanyard, clipped to your Fernbrook Seal. Congratulations!",
     "Your photo now hangs beside the Sanctuary crate list. Brighter by nature!"
    ],
    "lore": [
@@ -1911,7 +1911,7 @@
    "headline": "Quay review: one Tier 3 Lanyard, signed off",
    "body": [
     "Dorian Pell reviewed a holder on the quay, and the Tier 3 Lanyard changed hands.",
-    "Master Marisol's match was optional. Output was not. Have a bright day!"
+    "Master Marisol keeps her own Seal. Output was ours. Have a bright day!"
    ],
    "lore": [
     "event.tier3_lanyard",

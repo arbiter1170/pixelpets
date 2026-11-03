@@ -65,7 +65,9 @@ D1312-D1322 reserved: CORE_LOOP_HOOK_AUDIT (`handoff/specs/CORE_LOOP_HOOK_AUDIT.
 
 D1323-D1332 reserved: SEALS_BOTH_PATHS (design specs/SEALS_BOTH_PATHS.md and STORY_DECISIONS v0.69; checked with walklings-decision-ids on Tue Nov 3, 2026, about 1:00 AM EST). D1323-D1331 are SBP-A to SBP-H and the caps note, settled by Vincent at 12:51 AM EST Tue Nov 3; D1332 is open (the Apple Picker look, fbh_picker_res).
 
-Next free id is D1333.
+D1333-D1347 reserved: game PR #268 (Claude, GLIMMERWELL_VEHICLES_BUILDINGS), renumbered from D1295-D1309 to avoid the design HCT ids; settled by the Chief of Staff, Tue Nov 3, 2026, 1:08 AM EST. Design keeps D1295-D1311.
+
+Next free id is D1348.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -213,6 +215,8 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 | D1320 | yellow, CORE_LOOP_HOOK_AUDIT §8 R8 | One solo Event Hall game as a booth on an existing walkable tile in Hearthmoor Plaza, before the pledge | Not built. All booths are in High Charity after the pledge and Ilse's letter. Default: yes; Design picks the tile, shots before merge | `minigames.js`; a detail overlay |
 | D1321 | yellow, CORE_LOOP_HOOK_AUDIT §8 R9 | One counter-type hint (≤ 110 characters) at the Lantern House after the first loss to a holder whose team counters the lead, naming a counter type that lives on this map | Not built. Default: yes | Lantern House wake-up in `game.js`; `SPAWNS` |
 | D1322 | red, CORE_LOOP_HOOK_AUDIT §8 R10 | Status effects or other battle-system additions before Episode 1 ships | Not built (stat stages and heals only). Default: no | `moves.js`, `stats.js` |
+| D1332 | SEALS_BOTH_PATHS, the #267 Apple Picker look, YELLOW, OPEN (owner: the Chief of Staff; due Thu Nov 5, 2026, 12:22 AM EST) | The #267 Apple Picker look (fbh_picker_res, trim reads mixed). Default: a civilian exception row in WARDROBE_SHOP, no game change. Alternative: recolour the trim in game data | Unchanged: `fbh_picker_res` as #267 built it | design WARDROBE_SHOP §4a; or the look row in game data |
+| D1308 | High Charity Muster Hall roll, YELLOW, OPEN (due Wed Nov 4, 2026, 11:47 PM EST) | Default: the Muster Hall roll opens at seven Seals held (`seals>=7`); tags do not count (amended by SEALS_BOTH_PATHS, D1329) | Not built. The `seals>=N` term ships with SEALS_BOTH_PATHS (`hasSeal` / `sealsHeld`) | design HIGH_CHARITY_LAYOUT §5.2 gate table |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.
