@@ -16,6 +16,20 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): D915, D977 built as settled. Green (engineer): Seals held start Acts 3 and 4 (the docs' boundaries); a stored act counts only under `?debug=1`.
 - Anything left unfinished: the flags for Acts 3-7 are written by the acts that build them; #291's D1373 row and CHANGELOG say "nothing writes `story.act` yet", which now reads "derived".
 
+## 2026-11-03 14:18 ET: Build: Governor Merriden opens in Act 2 in the city preview (D1426, D1439, HIGH_CHARITY_LAYOUT v0.4 §5.3)
+- What changed and why:
+  - D1426 and D1439 (red, SETTLED by Vincent, Tue Nov 3, 2026): the holder meets the Governor in Act 2, before the President. In `tools/build_hc_city.py` the Governor's House door (`hc_gov`) now needs `!story.side=glimmer & story.act>=2` (was `>=5`), still "By appointment." otherwise; Governor Merriden stands at his desk from `story.act>=2`; his PLACEHOLDER line says "Act 2 lines are Story's". The ORDERS DOWN chute (HB12) is on floor 1, so it opens with the door.
+  - The Governor is a civil post, not a Keeper: his cast faction is `none` (the cast only knows `keepers`, `glimmer` and `none`; `none` is what civilians use), so he no longer needs a D1374 rank flag.
+  - The President's rooms (`hc_gov_3`) keep their gate: Keepers path, Act 5, after meeting the Governor. The Cabinet Room (`hc_gov_2`, floor 2) is not built yet (phase 2); the tool notes it follows the Act 2 gate when it lands.
+  - `story.act`: `cond()` reads it through `flagOf`. When this was built nothing wrote it; since #297 (merged first) it is derived from flags (`PPStanding.actOf`), so the Keepers path reaches Act 2 in play after the Episode 1 card. Debug places seed it (honoured under `?debug=1`).
+  - Debug place "HC Governor's House (Act 2)" now seeds `story.act=2` (no `hc_gov_met`); the President's rooms place still seeds Act 5.
+  - Preview only: `HC_CITY_V2` stays false; `?debug=1&hccity=2` shows it.
+- Files touched: `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `game.js` (debug places), `tests/hc_city_v2.spec.js`, `tests/README.md`, `handoff/maps/HC_CITY_V2.md`, `OPEN_DECISIONS.md` (D1373 row), `handoff/shots/hc_governor_act2/` (new), `CHANGELOG.md`, build stamp.
+- Commit(s) + build id: claude/b4-governor-act2, build 20261103-1418 (restamped 20261103-1605 when main, with #290 and #297, was merged in). Built from design `claude/bible-v0714-vincent-nov3` (HIGH_CHARITY_LAYOUT v0.4).
+- Tests run and result (widths, checks): `tests/hc_city_v2.spec.js`, `tests/hc_court_move.spec.js`, `tests/npc_ranks.spec.js` at 320, 375 and 390: 75 passed, 0 failed. Zero console errors; save unchanged, `v` 2. `build_hc_city.py` PASS.
+- Decisions made (colour + reasoning): D1426, D1439 built as settled. Green (engineer): cast faction `none` for the Governor, since no civil value exists.
+- Anything left unfinished: Governor Merriden's Act 2 lines (Story, PLACEHOLDER); the Cabinet Room (phase 2). The act writer note is resolved by #297 (derived act).
+
 ## 2026-11-03 13:43 ET: Public-repo lore scrub, three live text fixes, and the 16-28 audience rule
 - What changed and why:
   - Vincent: "Yes, scrub the public repo." Story-bible-only lore from the private design `STORY.md` had been copied into this public repo's docs, tests, a role file and two author notes in `data/heights.json`. Each leak is now a neutral pointer ("story detail: private design STORY.md §N") or a vaguer wording; no settled decision changes meaning. Git history still holds the old text (history is never rewritten, AGENTS rule 4).
