@@ -1,7 +1,10 @@
-/* HC_PARADE v0.2 (design specs/HC_PARADE.md, D1353-D1369; handoff/maps/HC_PARADE.md): the first arrival in High Charity. Part 1
-   the parade on Lantern Square, Part 2 the President's speech on Charter Hill, Part 3 three street battles with an ally and two
-   foes picked at random. City only (HC_CITY_V2 is false; the preview is ?debug=1&hccity=2 and never writes the save); normal play
-   and plain ?debug=1 keep hc_gate. Runs at 320, 375 and 390; reduced motion; zero console errors (trackErrors). §11 T1-T11. */
+/* HC_PARADE v0.3.1 (design specs/HC_PARADE.md, D1353-D1369, D1424, D1428, D1430, D1438, D1442; handoff/maps/HC_PARADE.md).
+   The first arrival in High Charity keeps hc_gate (Keeper Moss); the parade plays on a later Lantern Coach arrival once the
+   Governor-met flag (story.hc_gov_met, D1370, in place of HC_PARADE §0's PLACEHOLDER story.gov_met; nothing in normal play
+   sets it yet) is set and story.hc_parade_seen is not. Part 1 the parade on Lantern Square, Part 2 the President's speech on Charter Hill, Part 3 three street battles with an ally and two foes picked at
+   random (Keepers path: a guard leads each first beaten supporter away, D1442). City only (HC_CITY_V2 is false; the preview is
+   ?debug=1&hccity=2 and never writes the save); normal play and plain ?debug=1 keep hc_gate. Runs at 320, 375 and 390; reduced
+   motion; zero console errors (trackErrors). §11 T1-T11. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
@@ -12,13 +15,25 @@ test.setTimeout(150000);
 
 const DATA = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'hc_city_v2.json'), 'utf8'));
 const FLAGS = ['story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen', 'story.hc_greeted'];
+// HC_PARADE v0.3.1 §4 S1-S7 (D1424, D1428, D1438), PLACEHOLDER until Story signs them; S3 waits on D1429.
+const SPEECH = [
+  'Citizens. You asked for order. Today you will see it.',
+  'From today, a Keeper stands on every road and at every Hall. Look up, and you will see us.',
+  'Picking Day is closed to civilians. No civilian may pick a Walkling.',
+  'Our schools will teach again from the first page. Every lesson will serve the lantern.',
+  'Anyone who stands with Glimmerwell in the street will be fined or jailed.',
+  'And to those who stand with them today: we see you.',
+  'Keepers. Into the crowd.',
+];
 
 function save(opts = {}) {
   const s = starterSave();
   s.settings.follower = false; s.settings.controls = 'modern'; s.settings.textSpeed = 'fast'; s.settings.tips = false;
   s.party[0].xp = 4000;                     // a lead around Lv 15, so the level match is visible
   s.money = 120;
-  Object.assign(s.flags, { 'story.side_pick_done': true, 'story.hc_invite': true, 'story.hc_arrived': true }, opts.flags || {});
+  Object.assign(s.flags, { 'story.side_pick_done': true, 'story.hc_invite': true, 'story.hc_arrived': true, 'story.hc_greeted': true },
+    opts.gov === false ? {} : { 'story.hc_gov_met': true }, opts.flags || {});
+  for (const k of opts.unset || []) delete s.flags[k];
   if (opts.side === 'glimmer') s.flags['story.side'] = 'glimmer';
   s.world = Object.assign({ map: 'highcharity', x: 32, y: 37, facing: 'up', respawn: 'hearthmoor' }, opts.world || {});
   return s;
@@ -35,8 +50,9 @@ async function waitScene(page, id) { await expect.poll(async () => { const s = a
 
 // Plays the scene to its end: taps through lines (SKIP when asked), wins every battle (or loses battle `lose` once first).
 // Samples the budgets on every beat and records each line and each battle it saw.
+// A parade save by default: greeted on an earlier arrival, the Governor met (D1430); `gov: false` leaves the Governor flag off.
 async function playThrough(page, o = {}) {
-  const seen = { lines: [], battles: [], peak: { people: 0, tanks: 0 }, frac: [], picks: [], skipped: false, cams: [] };
+  const seen = { lines: [], battles: [], peak: { people: 0, tanks: 0 }, frac: [], picks: [], skipped: false, cams: [], led: [] };
   let lost = false, quiet = 0;
   for (let i = 0; i < 3000; i++) {
     const st = await page.evaluate(() => { const h = PixelPets.hcParade(), sc = PixelPets.scene, box = document.querySelector('#sbox');
@@ -47,6 +63,7 @@ async function playThrough(page, o = {}) {
     seen.peak.people = Math.max(seen.peak.people, st.h.people); seen.peak.tanks = Math.max(seen.peak.tanks, st.h.tanksInView);
     if (o.reduced) for (const c of st.h.cast) if (!Number.isInteger(c.x) || !Number.isInteger(c.y)) seen.frac.push(c.id + '@' + c.x + ',' + c.y);
     if (st.h.last) { const k = JSON.stringify(st.h.last); if (!seen.picks.includes(k)) seen.picks.push(k); }
+    if (st.h.led && st.h.led.length > seen.led.length) seen.led = st.h.led;
     if (st.h.battle) {
       if (seen.battles.some(b => b.id === st.h.battleId)) { await page.click('#btOk', { timeout: 150 }).catch(() => {}); await page.keyboard.press('Space'); await page.waitForTimeout(80); continue; }
       seen.battles.push({ id: st.h.battleId, money: st.money, flags: FLAGS.filter(f => st.flags[f]) });
@@ -69,18 +86,54 @@ async function playThrough(page, o = {}) {
 }
 const lineOf = (seen, re) => seen.lines.find(l => re.test(l));
 
-test('T1: a first arrival plays hc_parade, not hc_gate; a greeted save plays nothing', async ({ page }) => {
-  await boot(page, save());
+// T1 (v0.3.1, D1430): the first arrival keeps hc_gate; a later coach arrival with the Governor met plays the parade.
+async function stepUp(page) {
+  await page.evaluate(() => { PixelPets.state.settings.controls = 'arcade'; });
+  await page.keyboard.down('ArrowUp'); await page.waitForTimeout(260); await page.keyboard.up('ArrowUp');
+}
+for (const gov of [false, true]) {
+  test(`T1: a first arrival (${gov ? 'even with' : 'no'} Governor-met flag) plays hc_gate, not hc_parade`, async ({ page }) => {
+    await boot(page, save({ gov, unset: ['story.hc_greeted'] }));
+    await page.waitForTimeout(900);
+    expect(await sceneNow(page)).toBeNull();                       // landing on the coach stop plays nothing by itself
+    await stepUp(page);                                            // the gate tile (32,36), as on main
+    await waitScene(page, 'hc_gate');
+    await expect.poll(async () => (await sceneNow(page)).text).toMatch(/roofs are hung with lanterns/);
+    const trig = await page.evaluate(() => WORLD.highcharity.objs.filter(o => o.kind === 'trigger' && /hc_gate|hc_parade/.test(o.id))
+      .map(o => [o.id, o.scene, o.x, o.y, o.r || 0, !!o.load]));
+    expect(trig).toContainEqual(['hc_gate', 'hc_gate', 32, 36, 0, false]);
+    expect(trig).toContainEqual(['hc_parade_start', 'hc_parade', 32, 37, 0, true]);
+  });
+}
+test('T1: a coach arrival with story.hc_gov_met and no story.hc_parade_seen plays hc_parade', async ({ page }) => {
+  // From Hearthmoor, the coach's own arrival (arriveAt on the Square's coach landing, 32,37, as the hm_to_hc warp runs it)
+  await boot(page, save({ world: { map: 'hearthmoor', x: 12, y: 8, facing: 'down' } }));
+  await page.waitForTimeout(600);
+  expect(await sceneNow(page)).toBeNull();
+  const coach = await page.evaluate(() => WORLD.hearthmoor.objs.find(o => o.id === 'hm_to_hc'));
+  expect([coach.to, coach.tx, coach.ty]).toEqual(['highcharity', 32, 37]);
+  await page.evaluate(c => PixelPets.goto(c.to, c.tx, c.ty, c.facing), coach);
   await waitScene(page, 'hc_parade');
   await expect.poll(async () => (await sceneNow(page)).text).toMatch(/Bells ring across the roofs/);
   const p = await probe(page);
   expect(p.hidden).toBeGreaterThan(0);                  // the Square's own people (Moss, the patrols, the townsfolk) are off
+});
+test('T1: with the Governor met, a boot or walk-in off the coach stop plays nothing', async ({ page }) => {
+  await boot(page, save({ world: { x: 32, y: 20 } }));
+  await page.waitForTimeout(1500);
+  expect(await sceneNow(page)).toBeNull();               // walking in from a district or a door is not a coach arrival
   await page.close();
 });
-test('T1b: a save with story.hc_greeted sees no parade', async ({ page }) => {
-  await boot(page, save({ flags: { 'story.hc_greeted': true } }));
+test('T1: a save with story.hc_parade_seen plays nothing', async ({ page }) => {
+  await boot(page, save({ flags: { 'story.hc_parade_seen': true } }));
   await page.waitForTimeout(1500);
   expect(await sceneNow(page)).toBeNull();
+});
+test('T1: an old greeted save without the Governor-met flag is never put into the parade on load', async ({ page }) => {
+  await boot(page, save({ gov: false }));
+  await page.waitForTimeout(1500);
+  expect(await sceneNow(page)).toBeNull();
+  expect(await page.evaluate(() => PixelPets.state.flags['story.hc_gov_met'])).toBeUndefined();
 });
 
 for (const side of ['keepers', 'glimmer']) {
@@ -90,7 +143,8 @@ for (const side of ['keepers', 'glimmer']) {
     const seen = await playThrough(page, { reduced: true });
     // T2: each side's own Officer line and spot
     expect(lineOf(seen, side === 'glimmer' ? /Guest\. The street is closed\. Stand at the back\./ : /Citizen\. The street is closed\. Step back\./)).toBeTruthy();
-    expect(seen.lines.filter(l => /^The President: /.test(l))).toHaveLength(7);
+    expect(seen.lines.filter(l => /^The President: /.test(l))).toEqual(SPEECH.map(l => 'The President: ' + l));   // v0.3.1 §4 S1-S7
+    expect(seen.lines.some(l => /\bdraft\b/i.test(l))).toBe(false);                                              // D1428: no draft line
     expect(lineOf(seen, side === 'glimmer' ? /You're with us\? Then stand with me\./ : /Holder\. With me\./)).toBeTruthy();
     // T3: all five flags and story.hc_greeted; the exit per path; control back
     for (const f of FLAGS) expect(seen.end.flags[f], f).toBe(true);
@@ -115,6 +169,12 @@ for (const side of ['keepers', 'glimmer']) {
     const picks = seen.picks.map(k => JSON.parse(k)), ids = picks.flatMap(p => [p.ally, ...p.foes]);
     expect(picks.length).toBe(3);
     expect(new Set(ids).size).toBe(ids.length);
+    // D1442 (v0.3.1): on the Keepers path a fresh guard leads each battle's first beaten supporter away; never on the Glimmer path
+    const led = seen.led, vests = Object.keys(DATA.castAt).filter(k => /^pr_c2_/.test(k) && /^hc_pr_mv_/.test(DATA.castAt[k].look));
+    if (side === 'keepers') {
+      expect(led.length).toBe(3);
+      for (const [g, f] of led) { expect(g).toMatch(/^pr_(line|guard)_\d$/); expect(vests).toContain(f); expect(ids).not.toContain(g); }
+    } else expect(led).toEqual([]);
     // §10: save v2, no new field (the preview holds the save: nothing written)
     expect(seen.end.v).toBe(2);
   });
@@ -142,8 +202,8 @@ test('T8: a loss in a street battle restarts the same battle, loses no Acorns an
 });
 
 test('T5: reloads: Part 1 replays from the gate; after the warp Part 2 replays; between battles the next battle resumes', async ({ page }) => {
-  // Part 1: the app closed with the holder in the crowd on the Square
-  await boot(page, save({ world: { x: 21, y: 23 } }));
+  // Part 1: the app closed with the holder at the coach stop (the arrival's save; Part 1 writes no flag before the warp)
+  await boot(page, save());
   await waitScene(page, 'hc_parade');
   await expect.poll(async () => (await sceneNow(page)).text).toMatch(/Bells ring/);
   expect(await page.evaluate(() => [PixelPets.state.world.x, PixelPets.state.world.y])).toEqual([32, 36]);
@@ -200,7 +260,7 @@ test('T10: debug hooks do nothing without ?debug=1', async ({ page }) => {
   expect(off.p).toBeNull(); expect(off.rng).toBeUndefined(); expect(off.city || null).toBeNull();
 });
 test('T10b: the city check is clean and the scenes and casts are in place', async ({ page }) => {
-  await boot(page, save({ flags: { 'story.hc_greeted': true } }));
+  await boot(page, save({ gov: false }));
   const on = await page.evaluate(() => ({ check: PixelPets.charityCheck(), cast: Object.keys(window.PP_HC_V2.castAt).length }));
   expect(on.check).toEqual([]);
   expect(on.cast).toBeGreaterThan(40);
@@ -216,6 +276,12 @@ test('T11: every parade line passes the wording rules and fits 110', async () =>
   for (const l of lines) { expect(l.length, l).toBeLessThanOrEqual(110); expect(BANNED.test(l), l).toBe(false); expect(/  /.test(l), l).toBe(false); }
   expect(BANNED.test(pools)).toBe(false);
   expect(lines.filter(l => /President/.test(l)).every(l => !/\b(Vance|Merriden)\b/.test(l))).toBe(true);   // "The President", never a name
+  // v0.3.1 §4 (D1424, D1428, D1438): the speech is S1-S7 verbatim, in order; no draft line; no line bans Glimmerwell's business
+  const said = []; const walk2 = n => { if (!Array.isArray(n)) return; if (n[0] === 'say' && n[1] === 'The President') said.push(n[2]); n.forEach(walk2); };
+  walk2(DATA.scenes.hc_parade_hill);
+  expect(said).toEqual(SPEECH);
+  expect(JSON.stringify(DATA.scenes)).not.toMatch(/\bdraft\b|answer the roll|crossed every line/i);
+  expect(said.join(' ')).not.toMatch(/\b(permit|stall|ban|shut|close[sd]? (?:its|their) )/i);
   expect(JSON.stringify(DATA)).not.toMatch(/\bgun|rifle|cannon|turret\b/i);
 });
 
