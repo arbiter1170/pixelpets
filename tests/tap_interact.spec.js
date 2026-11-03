@@ -33,8 +33,9 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // PARTNER_DAY (#258): the new hall and bedroom (hm_home_hall, hm_home_room), Mom (moved down from hm_home_up) and Maze,
     // the home pegs, the up_cushion, and hm_buddy_pre / hm_lizzy_pre in Hearthmoor add talk 12, warp 4 (hall_mom,
     // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
-    // POST_TRIAL_CRACKDOWN (claude/post-trial-crackdown, measured at 620b729): sign 97, talk 778, trigger 43 (its own pin was
-    // still main's). RENDEZVOUS_VINCENT adds talk 1 (Vincent at the stream bank); its shifts reuse Juniper and Amos.
+    // POST_TRIAL_CRACKDOWN: +1 sign (the curfew notice), +21 talk (curfew posts, Fen at the gate, Juniper's camp, the six Lantern House
+    // townsfolk and the wire station's props), +3 triggers (cd_start, cd_resume, ilse_call).
+    // RENDEZVOUS_VINCENT adds talk 1 (Vincent at the stream bank); its shifts reuse Juniper and Amos.
     door: 48, warp: 100, sign: 97, talk: 779, scene: 40, trigger: 43, board: 7,
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });

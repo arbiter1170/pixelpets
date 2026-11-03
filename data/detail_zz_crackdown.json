@@ -1017,14 +1017,15 @@
      {
       "kind": "sign",
       "id": "cd_notice",
-      "x": 7,
+      "x": 4,
       "y": 6,
       "sprite": "curfew_notice",
       "when": [
        "story.crackdown",
        "!story.side_pick_done"
       ],
-      "text": "CURFEW. Dusk to dawn. Residents indoors. By order of High Charity."
+      "text": "CURFEW. Dusk to dawn. Residents indoors. By order of High Charity.",
+      "_note": "POST_TRIAL_CRACKDOWN §5 put it at 7,6, where the town board, a crate and the Keepers' sign close every side (no free neighbour, rule 6). 4,6 sits beside the Lantern House door with free sides (D1416)."
      },
      {
       "kind": "npc",
