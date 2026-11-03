@@ -233,7 +233,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
   the spec has no numbers yet.
   **Switching** is only through Rook, after The last crates (`story.rc_climax`), and it works both ways. Fernbrook Pledge desks stay removed. The Lantern
-  panel is Rest and Leave, and Juniper talks without a desk option. A later end-game switch is not built (D161). The gate scene offers the switch and then writes
+  panel is Rest and Leave, and Juniper talks without a desk option. The switch opens in Act 3, one way to Glimmerwell (D1536, D1513; was D161), through Rook (D1558). The gate scene offers the switch and then writes
   `story.rc_climax`. Rook's letter reads first, then "Really? Glimmerwell Standing 30 → 15" with Yes / Not yet. Yes halves
   the side you leave (floor), keeps the side you join, rewrites `story.side`, counts `story.switches`, records
   `story.switch_chapter`, `story.switch_at` and `story.switch_via` `"rook"`, then plays the review and the welcome. A second
