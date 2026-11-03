@@ -65,7 +65,9 @@ D1312-D1322 reserved: CORE_LOOP_HOOK_AUDIT (`handoff/specs/CORE_LOOP_HOOK_AUDIT.
 
 D1323-D1332 reserved: SEALS_BOTH_PATHS (design specs/SEALS_BOTH_PATHS.md and STORY_DECISIONS v0.69; checked with walklings-decision-ids on Tue Nov 3, 2026, about 1:00 AM EST). D1323-D1331 are SBP-A to SBP-H and the caps note, settled by Vincent at 12:51 AM EST Tue Nov 3; D1332 is open (the Apple Picker look, fbh_picker_res).
 
-Next free id is D1333.
+D1353-D1354 reserved: Vincent's post-crackdown direction (Ilse's call and the Vincent rendezvous; recorded by Claude Code on claude/vincent-rulings-nov3, Tue Nov 3, 2026, 8:05 AM ET). Checked with walklings-decision-ids against main, every origin branch and design master 7a73461: #268 holds D1333-D1347, #277 holds D1348-D1350, and the unmerged `claude/high-charity-phase1-k7q2hc` uses D1350-D1352 (**collision on D1350 with #277, reported, not renumbered**).
+
+Next free id is D1355.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -172,7 +174,6 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 | D1195 | yellow, TRIAL_HALL_FERNBROOK_MAP §6 | Glimmerwell's Hall floor is a light polished grey with a soot/wine grid, not a soot field; red is accent only | Not built. Default: yes (contrast at 320) | `sprites.js` |
 | D1196 | green, TRIAL_HALL_FERNBROOK_MAP §7.3 | New Hall prop lines are PLACEHOLDER for Story; none asks the holder to join a side (D1145) | Not built. Default: ship the drafts until Story's pass | `data/fernbrook_rooms.json` |
 | D1197 | red, POST_TRIAL_CRACKDOWN §13 | The crackdown after Trial 1: a Keeper Commander with two Keeper tanks (no guns) and officers closes Fernbrook, stops its Trials, sends Glimmerwell away, threatens the holder's Seal (words only) and orders the holder and Fen out; Fen defies him and appeals to the Warden. Fills D1175 | Not built. Spec and storyboard in `handoff/shots/post_trial_crackdown/` | `data/detail_zz_crackdown.json` (new) |
-| D1200 | red, POST_TRIAL_CRACKDOWN §5 | Fernbrook curfew: scene-scoped from the crackdown to the pick result; residents indoors, visitors out by first light; a read (`story.crackdown & !story.side_pick_done`), not a flag | Not built | `when`s in the new overlay |
 | D1204 | yellow, POST_TRIAL_CRACKDOWN §10a.5 | Engine E1-E5: prop casts, per-tile `ms`, `_move` frames for moving props, width-aware cull, `walkAll` step (all prototyped); E6 footprint only if needed | Not built. Default: add E1-E5 | `game.js` |
 | D1205 | yellow, POST_TRIAL_CRACKDOWN §13 | A Keeper wire set prop plays Block News as `say` lines; three Block News stories in NEWS | Not built. Default yes, Fernbrook only | the new overlay, `data/news.json` |
 | D1206 | yellow, POST_TRIAL_CRACKDOWN §12 | The Trial Hall is closed by `deny` during the curfew only; open as a place after the pick | Not built. Default yes | `data/fernbrook_rooms.json` |
@@ -193,6 +194,7 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 | D1319 | red, CORE_LOOP_HOOK_AUDIT §8 R7 | Three rotating daily town-board slips (meet, win, walk), paid through the wild-win seam  **PARKED by Vincent (Tue Nov 3, 2026, 7:52 AM ET): "Daily town board backlog". Listed in `handoff/backlog/REVISIT_LATER.md`.** | Not built: bounties are `[]` (`game.js:13413`) and Q19 town boards are on hold (Vincent). Default: hold until Vincent reopens Q19 | `BOARD` in `quests.js`; `wildWinRewards` in `game.js` |
 | D1320 | yellow, CORE_LOOP_HOOK_AUDIT §8 R8 | One solo Event Hall game as a booth on an existing walkable tile in Hearthmoor Plaza, before the pledge | Not built. All booths are in High Charity after the pledge and Ilse's letter. Default: yes; Design picks the tile, shots before merge | `minigames.js`; a detail overlay |
 | D1321 | yellow, CORE_LOOP_HOOK_AUDIT §8 R9 | One counter-type hint (≤ 110 characters) at the Lantern House after the first loss to a holder whose team counters the lead, naming a counter type that lives on this map | Not built. Default: yes | Lantern House wake-up in `game.js`; `SPAWNS` |
+| D1354 | red, Vincent's direction (Tue Nov 3, 2026) | **Scope the rendezvous quest that starts the pick.** After the crackdown and Ilse's debrief (D1353), Warden Ilse sends the holder to meet **Vincent**, an unaligned NPC: a Glimmerwell agent who disagrees with some of what Glimmerwell does (he hints at the chip, within CHIP_SECRECY) and with the Keepers' move to martial order. The quest should feel like going undercover to see the secrets both factions hold, and it leads into the pick. Open: what Vincent and the holder do, where he stands, where they meet, and how it hands off to the pick | Not built. Default: a spec first (inspiration step, Story and Design), then Vincent's yes; nothing built before it. The NPC's name "Vincent" stands (names can be filled in later) but still needs the name-registry and wording check | spec to come |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

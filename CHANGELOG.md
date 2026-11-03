@@ -2,6 +2,21 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 08:05 ET: Decisions: the curfew runs through dawn; after the crackdown, Ilse's call and the Vincent rendezvous lead to the pick (D1200, D1203, D1353, D1354), docs only
+- What changed and why:
+  - D1200 settled: the Fernbrook curfew runs through dawn.
+  - D1203 amended and D1353 settled: the pick no longer happens at dawn. When the crackdown ends, Warden Ilse phones the holder home to debrief, distraught at the President's actions.
+  - D1354, new and open: Ilse sends the holder to rendezvous with Vincent, an unaligned Glimmerwell agent who hints at the chip and opposes the Keepers' martial order. The quest should feel like going undercover to see both factions' secrets, and it starts the pick. It needs a spec first.
+  - D1159 confirmed by Vincent (recorded on #277).
+- Files touched: `OPEN_DECISIONS.md` (D1353-D1354 reserved; next free D1355), `archive/DECISIONS_SETTLED.md`, `handoff/specs/POST_TRIAL_CRACKDOWN.md`, `BACKLOG.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning):
+  - D1200 and D1353 (red) settled by Vincent; D1203 amended.
+  - D1354 (red) open; spec first.
+  - Id check: `claude/high-charity-phase1-k7q2hc` (unmerged) uses D1350-D1352, which collides on D1350 with #277. Reported, not renumbered.
+- Anything left unfinished: the D1354 quest spec; D1128 (research done, awaiting Vincent).
+
 ## 2026-11-03 07:52 ET: Decisions: Vincent's rulings on the open red rows (docs only)
 - What changed and why: Vincent answered the open red list. Settled:
   - D1248 and D1250: the Fernbrook homes (already merged in #267 and #273) are approved.
