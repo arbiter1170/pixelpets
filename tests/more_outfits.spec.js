@@ -3,7 +3,7 @@
    pixelpets.save.v2 with v 2, and player.look.outfit is an existing field (a new id is just a new value).
    Phone widths come from the Playwright projects (320, 375, 390). */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, newPlayerPicker } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -73,22 +73,11 @@ test('new and redrawn outfits are 16x16 in every facing, use only recolour keys,
   expect(r.owned).toEqual(NEW.map(() => true));        // free: no wardrobe flag, no Acorns
 });
 
-// A new player (no save): the intro reaches the mirror, the first picker (WHO ARE YOU?).
+// A new player (no save) reaches the first picker, WHO ARE YOU? (the bedroom mirror since PARTNER_DAY).
 async function introMirror(page) {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await gotoGame(page, '?debug=1');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'intro');
-  for (let i = 0; i < 40; i++) {
-    const st = await page.evaluate(() => ({
-      look: !document.querySelector('#ovLook').hidden,
-      waiting: !!(PixelPets.scene && PixelPets.scene.waiting),
-    }));
-    if (st.look) break;
-    if (st.waiting) await page.keyboard.press('Space');
-    await page.waitForTimeout(50);
-  }
-  await expect(page.locator('#ovLook')).toBeVisible();
-  await page.waitForFunction(() => PixelPets.optionsReady === true);
+  await newPlayerPicker(page);
 }
 
 test('the first picker offers every outfit as a 44px+ button with no sideways scroll', async ({ page }) => {

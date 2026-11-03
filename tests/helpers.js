@@ -150,4 +150,31 @@ async function playScene(page, choices = [], onChoice = null, onSeal = null) {
   throw new Error('scene did not end');
 }
 
-module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, withOverlay, boxesOverlap, shot, artifactsDir, playScene };
+// A new game (no save) up to the first look picker, WHO ARE YOU?. Call after gotoGame with no save. If the intro opens the
+// picker, stop there. PARTNER_DAY moved the first pick to the bedroom mirror (home_dress): play the intro to its end (the
+// controls prompt takes ARCADE, so TALK works), stand at the mirror and TALK. Leaves #ovLook open with options armed.
+async function newPlayerPicker(page) {
+  await page.waitForFunction(() => window.PixelPets && PixelPets.scene && PixelPets.scene.id === 'intro', null, { timeout: 10000 });
+  const lookOpen = () => page.evaluate(() => !document.querySelector('#ovLook').hidden);
+  const step = async () => {
+    const s = await page.evaluate(() => { const c = PixelPets.scene; return c && { mode: c.mode, full: !!c.full, waiting: !!c.waiting, text: c.text || '' }; });
+    if (!s) return false;
+    if (s.mode === 'choice' && s.full && await page.evaluate(() => PixelPets.optionsReady === true)) {
+      const n = /walk/i.test(s.text) ? 1 : 0;
+      await page.locator('#sbChoices button').nth(n).click();
+    } else if (s.waiting) await page.keyboard.press('Space');
+    await page.waitForTimeout(40);
+    return true;
+  };
+  for (let i = 0; i < 300 && !(await lookOpen()); i++) if (!(await step())) break;
+  if (!(await lookOpen())) {
+    await page.evaluate(() => PixelPets.goto('hm_home_room', 4, 3, 'up'));
+    await page.waitForFunction(() => document.querySelector('#talkBtn').classList.contains('ready'), null, { timeout: 8000 });
+    await page.locator('#talkBtn').click();
+    await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'home_dress', null, { timeout: 8000 });
+    for (let i = 0; i < 100 && !(await lookOpen()); i++) if (!(await step())) break;
+  }
+  await page.waitForFunction(() => !document.querySelector('#ovLook').hidden && PixelPets.optionsReady === true, null, { timeout: 8000 });
+}
+
+module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, withOverlay, boxesOverlap, shot, artifactsDir, playScene, newPlayerPicker };
