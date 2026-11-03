@@ -77,7 +77,9 @@ D1375-D1384 reserved: Design, KEEPER_ANTHEM (design repo).
 
 D1385-D1394 reserved: Design, ROTOR_CRAFT (design repo).
 
-Next free id is D1395.
+D1419-D1423 reserved: Design, KEEPER_ANTHEM v0.2 (the anthem's name and the Keeper HQ rooms; design specs/KEEPER_ANTHEM.md §12.1). D1395-D1418 are held by #278 and `claude/post-trial-crackdown` (not on main yet). D1375-D1384 and D1419-D1423 are settled by Vincent and recorded in the archive (KEEPER_ANTHEM build, `claude/keeper-anthem-build`).
+
+Next free id is D1424.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)

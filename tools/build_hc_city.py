@@ -778,6 +778,20 @@ for k, v in room_keep.items(): keep[k] = v
 lines_patch = {}
 for rid, r in ROOMS.items():
     for oid, ln in r.pop('_lines', {}).items(): lines_patch[oid] = ln
+# KEEPER_ANTHEM v0.2.1 §8a.3 M11 (D1420, D1423): the anthem's two rooms. game.js applyHcCity() reads `roomPatch` (M10): the room
+# loop becomes anthem_hall and one framed-sheet sign names the anthem (D1419). City only: data/highcharity.json keeps `charity`.
+ANTHEM_SHEET = '[PLACEHOLDER] A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem.'
+room_patch = {
+    'hc_command_in': {'music': 'anthem_hall', 'add': [{'kind': 'sign', 'id': 'hc_anthem_sheet_c', 'x': 4, 'y': 2, 'text': ANTHEM_SHEET}]},
+    'hc_barracks_in': {'music': 'anthem_hall', 'add': [{'kind': 'sign', 'id': 'hc_anthem_sheet_b', 'x': 4, 'y': 2, 'text': ANTHEM_SHEET}]},
+}
+for rid, p in room_patch.items():
+    r = OLD['rooms'].get(rid)
+    if not r: fail(f'roomPatch: no room {rid} in data/highcharity.json'); continue
+    for o in p['add']:
+        if not (0 < o['x'] < r['w'] - 1 and 0 < o['y'] < r['h'] - 1): fail(f'roomPatch: {o["id"]} off the room floor')
+        if any(q['x'] == o['x'] and q['y'] == o['y'] and q['kind'] != 'trigger' for q in r['objs']): fail(f'roomPatch: {o["id"]} tile taken in {rid}')
+        if len(o['text']) > 110: fail(f'roomPatch: {o["id"]} text over 110 characters')
 MAPS = {}
 for cid, c in CHUNKS.items():
     MAPS[cid] = {'name': 'High Charity', 'district': DISTRICT[cid], 'backdrop': 'town', 'music': 'charity', 'w': c.w, 'h': c.h,
@@ -794,6 +808,7 @@ out = {
     'maps': MAPS,
     'rooms': ROOMS,
     'keep': keep,
+    'roomPatch': room_patch,
     'matMoves': mat_moves,
     'linesPatch': lines_patch,
     'scenes': SC,

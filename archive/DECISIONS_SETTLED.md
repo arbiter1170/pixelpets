@@ -2,6 +2,26 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026: Vincent settles KEEPER_ANTHEM v0.2.1 (design specs/KEEPER_ANTHEM.md §12, master 52f62a2; recorded by Claude Code with the build, `claude/keeper-anthem-build`)
+
+Every row was settled by Vincent on its default (v0.1.1 for D1375-D1384, v0.2.1 for D1419-D1423), as the design spec records them. Built as written.
+
+- **D1375 (Tue Nov 3, 2026, red, SETTLED by Vincent; the direction recorded as HC_PARADE D1357).** The Keeper anthem: one original melody, two arrangements as scene cues, `anthem_march` (the parade) and `anthem_dark` (the speech); synthesised at runtime, no audio file; previews before build.
+- **D1376 (Tue Nov 3, 2026, red, SETTLED by Vincent: the default; SUPERSEDED in part by D1419).** No name and no lyrics in player text in v0.1. The anthem now has a name (D1419); the "no lyrics" half stands.
+- **D1377 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** Keys, tempos and length: B-flat major 120 bpm (32 s loop) and B-flat minor 64 bpm (60 s loop), 16 bars each.
+- **D1378 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** The march's swell: from -14 dB and a 700 Hz lowpass to full over 48 s, then hold; retimed to the beat sheet so it is full by wave 5 (the car).
+- **D1379 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** The 2.5 hand-off: the march dies over 0.9 s, about 0.7 s of quiet under "Citizen. Back.", the dark cue fades in over 2.4 s.
+- **D1380 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** Between the street battles the map loop returns as after any battle; `anthem_dark` does not come back; Part 3 adds no cue.
+- **D1381 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** Engine changes M1-M8: voice `double`, voice `gate`, per-track `swell`, check/spec/getter, data, `music` step options, warp hold, the pre-scan skip.
+- **D1382 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default; SUPERSEDED by D1420-D1422).** The anthem plays only in `hc_parade` in v0.1. Now also in two Keeper HQ rooms; the Muster Hall, Trials and outdoor maps still do not use it.
+- **D1383 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** Both paths hear the same two cues; no Glimmer counter-arrangement.
+- **D1384 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** SKIP: no warp hold under SKIP and the 2.5 step is skipped with it; reload replays use `near`.
+- **D1419 (Tue Nov 3, 2026, red, SETTLED by Vincent: the default).** The anthem's name in player text is **Every Roof a Lantern** (runner-up The Lanterns Watch); still no lyrics; Story (June) signs the wording around it.
+- **D1420 (Tue Nov 3, 2026, red, SETTLED by Vincent: the default, two rooms only for now).** The anthem plays indoors as the room loop of Sky-Dock Command (`hc_command_in`) and the Keeper Barracks (`hc_barracks_in`) and nowhere else, behind `HC_CITY_V2` with the parade.
+- **D1421 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** The indoor arrangement is a third cue, `anthem_hall` (B-flat major, 80 bpm, 16 bars, 48 s; one soft triangle lead, the march's bass as a slow tread, soft kick; the same melody), on today's engine.
+- **D1422 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** In the rooms: the same cue day and night; Glimmer saves hear it too; leaving plays the outdoor loop; stingers duck it; Sound OFF, Music OFF and the volume row as for any loop; no save field.
+- **D1423 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** One framed-sheet `sign` in each anthem room names the anthem, PLACEHOLDER until Story signs; the optional Keeper line is Story's to place; engine M10-M11 (`roomPatch`).
+
 ## Tue Nov 3, 2026, 9:57 AM ET: Vincent settles the rest of GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
 
 Vincent, in his own words in the Claude Code session that wrote #268: "Defaults are fine, merge is approved if no conflicts". This settles the fleet's remaining yellow and green rows on their defaults (the reds were settled at 7:44 AM ET, below).
