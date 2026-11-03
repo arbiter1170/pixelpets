@@ -279,7 +279,7 @@
    "lead": 20,
    "headline": "Orchard village says hello (so do the Pomlets)",
    "body": [
-    "Fernbrook: orchard village, home of the Bloom Trial Hall. Pomlets live in the orchard and act like it.",
+    "Fernbrook: orchard village, home of the Fernbrook Trial Hall. Pomlets live in the orchard and act like it.",
     "Keepers keep the town. Glimmerwell keeps a stand. The square has opinions about both.",
     "Keeper Amos hosts the Lantern House: beds, a rest, and a proper explanation."
    ],
@@ -364,7 +364,7 @@
    ],
    "headline": "Hall Master skips the Hall for the trees",
    "body": [
-    "Master Fen of the Bloom Trial Hall is out in the orchard, worried about her orchard friends.",
+    "Master Fen of the Fernbrook Trial Hall is out in the orchard, worried about her orchard friends.",
     "Associate Tobin has crates stacked at the orchard gate. Asked why, he points to the memo."
    ],
    "lore": [
@@ -522,7 +522,7 @@
    "lead": 40,
    "headline": "'Wear it kindly': Fernbrook Seal awarded",
    "body": [
-    "Master Fen awarded the Fernbrook Seal at the Bloom Trial Hall, with three words: 'Wear it kindly.'",
+    "Master Fen awarded the Fernbrook Seal at the Fernbrook Trial Hall, with three words: 'Wear it kindly.'",
     "One Seal lifts the level cap from 15 to 22. Kindness, it turns out, has levels."
    ],
    "lore": [
@@ -2026,7 +2026,7 @@
    "headline": "Dawn in the orchard: Pomlets first up",
    "body": [
     "First light in Fernbrook. The Pomlets are already up and bothering the blossoms.",
-    "The Bloom Trial Hall is quiet. The orchard is not."
+    "The Fernbrook Trial Hall is quiet. The orchard is not."
    ],
    "art": "beetle",
    "lore": [
@@ -2887,7 +2887,7 @@
    ],
    "headline": "Trial Halls, explained for the nervous",
    "body": [
-    "How-to: a Trial Hall is where a Master tests you for a Seal. Fernbrook's is the Bloom Trial Hall.",
+    "How-to: a Trial Hall is where a Master tests you for a Seal. Fernbrook's is the Fernbrook Trial Hall.",
     "Without a Seal your Walkling caps at Lv 15. One Seal lifts it to 22. That is most of the motivation.",
     "BLOOM is the type on the door and Master Fen is the test. Bring a plan, and a snack for afterwards."
    ],
@@ -2935,7 +2935,7 @@
    "headline": "Rain in the orchard: Pomlets under the leaves",
    "body": [
     "Rain over Fernbrook. The Pomlets have taken cover under the widest leaves and look very pleased about it.",
-    "The Bloom Trial Hall stays dry. The orchard hands do not. Nobody has told the Pomlets to share."
+    "The Fernbrook Trial Hall stays dry. The orchard hands do not. Nobody has told the Pomlets to share."
    ],
    "lore": [
     "creature.line_beetle",
@@ -6757,7 +6757,7 @@
   {
    "id": "no-fernbrook-hall",
    "kind": "notice",
-   "title": "BLOOM TRIAL HALL",
+   "title": "FERNBROOK TRIAL HALL",
    "region": "fernbrook",
    "when": [
     "story.reached_fernbrook",

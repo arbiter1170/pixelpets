@@ -2,6 +2,50 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 07:05 ET: Build: the contested Fernbrook Trial Hall behind a flag (TRIAL_HALL_FERNBROOK_MAP, D1189-D1196), and "Fernbrook Trial Hall" everywhere (D1192)
+- What changed and why:
+  - The contested Hall from #263, with Vincent's rulings of Nov 2, 10:19 PM ET (#264):
+    - D1189: a Keeper west half, a Glimmerwell east half and a seam between them.
+    - D1190: the props flip with Fernbrook's hold after the pick, and Fen stays.
+  - It is built but **held behind a flag** until Vincent says yes to the previews (rule 9).
+    - `game.js` adds `HALL2_RELEASED = false` and `HALL2_ON`.
+    - Preview: `?debug=1&hall2=1`. It is held in sessionStorage for that tab only, is inert without debug, and is never saved.
+    - Flag off, `fb_hall_in` is exactly today's room.
+  - Flag on, `data/detail_zz_hall_contested.json` `hallPatch` is laid over the room after `fernbrook_rooms.json`. It holds:
+    - the §5.2 rows 3-22 (the west half is byte-identical);
+    - the 36 new objects and the 13 new `when`s from §7.3;
+    - the three moved props;
+    - `h1_local` at 8,20 and `h1_cadet` at 3,5 facing right (D1193 default).
+  - Every changing prop reads the D1171 hold with the rule strings copied into its `when`. This is the D1191 fallback, so `cond()` is unchanged.
+  - Draft art in `sprites.js`, PAL only, no new keys, redrawn from the spec's v2 sheet until Pia's pass:
+    - 6 tiles plus the `glim_tile_b`, `hall_ledge_glim_b` and `hall_flag_worn` variants;
+    - 15 props;
+    - the `fb_hall` skin gains P Z U M I C, which today's grid never uses.
+  - `story.fen_lean` (D1190's addition) is not read or written: the spec puts Fen's turn in Act 2, and Seals lore v3.1 is pending.
+  - D1192 ships live: "Bloom Trial Hall" becomes "Fernbrook Trial Hall" in:
+    - the map name and the `fb_hall_note` sign;
+    - the REGION_MAP blurb;
+    - six NEWS lines and one NEWS title;
+    - two Ribbit posts, and the tag `#BloomHall`, which becomes `#FernbrookHall`;
+    - the town sign `fb_sign_town`, overridden from the new detail file because `maps_slice.json` is verbatim.
+- Files touched:
+  - code and data: `game.js`, `sprites.js`, `data/detail_zz_hall_contested.json` (new), `data/fernbrook_rooms.json`, `data/news.json`, `data/ribbit_posts.json`, `data/mapdata.js`, `tools/GAMEJS_MAP.txt`;
+  - tests: `tests/trial_hall_contested.spec.js` (new), `tests/match_marker.spec.js` (the raw count of holder objects is 32: the overlay restates two holders), `tests/news_glimmer_dark.spec.js` (the base paper is read with D1192's rename), comment renames in `tests/maps_b8.spec.js` and `tests/tap_interact.spec.js`;
+  - shots: `handoff/shots/trial_hall_fernbrook_build/` (new);
+  - docs: `BACKLOG.md`, `OPEN_DECISIONS.md`, `README.md`, `NEXT_PLAN.md`, `tests/README.md`, `CHANGELOG.md`, plus the build stamp.
+- Commit(s) + build id: claude/fernbrook-trial-hall-contested, build 20261103-0705 (restamped at the catch-up).
+- Tests run and result (widths, checks): `tests/trial_hall_contested.spec.js` at 320, 375 and 390, plus every suite that touches the Hall, the names or the news (see the PR). Zero console errors. Save `v` 2.
+- Decisions made (colour + reasoning):
+  - D1189, D1190 and D1192 (red) are built as ruled; D1189's room stays flagged for rule 9.
+  - D1191, D1193 and D1195 are open yellows, built behind the flag on their defaults (D1191 on its fallback). They change before the flip if the votes go the other way.
+  - D1194 and D1196 (green): defaults.
+  - The flag itself is green (an implementation choice inside the approved spec). No new ids.
+- Anything left unfinished:
+  - Vincent's yes on the shots, then `HALL2_RELEASED = true`.
+  - Pia's art pass, and Story's lines (D1196).
+  - The yellow votes, about Wed Nov 4, 10:12 PM ET.
+  - Fen's Act 2 turn (`story.fen_lean`).
+
 ## 2026-11-03 01:25 ET: FERNBROOK_PLAZA catch-up (Supervisor): main a726e94 merged, phase shots for Vincent (build 20261103-0112)
 - What changed and why: main a726e94 (#271) merged in with a merge commit (`CHANGELOG.md` kept both sides), restamped, `mapdata` and `GAMEJS_MAP` regenerated. Checked `fbPlazaPhase`: `story.seal1` is read first, so "watch" turns on with `story.lizzy_class & !story.seal1` (or `story.heights_done & !story.seal1` on an older save); the spec case is `watch on the Day 1 flow` (`tests/fernbrook_plaza.spec.js:271`, the class with no Seal reads watch, then the Seal reads after). New shots of the argue, watch and after phases at 390 and 320, each with the plaza Cadet's line (`handoff/shots/fernbrook_plaza/phase-*.png`).
 - After vs the crackdown curfew: "after" is `story.seal1` with no crackdown and no pick; the crackdown (POST_TRIAL_CRACKDOWN) is not built, so `story.crackdown` is never set in play and "after" runs from the Seal to the pick. The curfew read (`seal1 & crackdown`, no pick) hides all 16 plaza people and Walklings (`!fbplaza:curfew`, spec `curfew:` case), so the plaza Cadet (`fbp_cadet`) is off the street exactly when §5's curfew officers stand. Ash (`h1_cadet`) stands inside the Trial Hall (`fb_hall_in`), never in the plaza, and POST_TRIAL_CRACKDOWN §5 shuts the Hall by order after the crackdown (`story.hall1_shut`, not built yet), so the two cadets never share a scene. Two Keeper cadets still exist (plaza "Cadet", the Hall's "Keeper Cadet" Ash); the plaza names wait on Design (D1245).
