@@ -8,9 +8,6 @@ Vincent, in the Claude Code session that built the crackdown: "Approved, preside
 
 - **D1413 (Tue Nov 3, 2026, red, SETTLED by Vincent):** yes: the rebuilt Fernbrook Lantern House (the wire station, LANTERN_HOUSE_FERNBROOK) deploys; rule 9 previews approved (`handoff/shots/lantern_house_fernbrook/build/`).
 - **D1414 (Tue Nov 3, 2026, red, SETTLED by Vincent):** the President's look is the bust on the wire set (`wire_wall_pres`), and his character is built from it: NPC look `president` (skin 3, short grey hair, Keeper green `J` cardigan with a gold front for the bust's gold lapels) and cast `cd_president`, both in `data/detail_zz_crackdown.json`; sheet in `handoff/shots/post_trial_crackdown/build/president_sheet.png`. On-screen naming was not ruled on, so the speaker label stays "The President" (D1241 cleared the name for later use).
-- **Moved word for word from Open:**
-| D1413 | red, rule 9 (LANTERN_HOUSE_FERNBROOK LH-1) | The Fernbrook Lantern House is rebuilt as the wire station, as specced (12x16 kept, LH-4 option A) | Built on the branch; **must not merge until Vincent says yes to the previews** in `handoff/shots/lantern_house_fernbrook/build/` | `data/fernbrook_rooms.json` `fb_lantern_in`, `sprites.js` `SKINS.fb_lantern` |
-| D1414 | red, LANTERN_HOUSE_FERNBROOK LH-2 | The President's look on the wire set (draft bust in Keeper colours) and whether he is named on screen | Draft `wire_wall_pres`; speaker label "The President"; no name on screen | `sprites.js` `wire_wall_pres`; speaker label in `crackdown_lantern` |
 
 ## Tue Nov 3, 2026: Vincent's rulings on POST_TRIAL_CRACKDOWN (recorded by Claude Code)
 

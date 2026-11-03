@@ -2340,10 +2340,10 @@
 3169-3178  const MAZE_ART
 3179-3345  const CRACKDOWN_ART
 3346-3414  function addCrackdownArt
-3415-3468  const HC_CITY_ART
-3469-3519  const HC_PLACEHOLDER_ART
-3520-3556  function addExteriorArt
-3557-3557  const OUTDOOR_SKIN
+3415-3471  const HC_CITY_ART
+3472-3525  const HC_PLACEHOLDER_ART
+3526-3562  function addExteriorArt
+3563-3563  const OUTDOOR_SKIN
 
 # stats.js
 9-10  const EVO_XP
