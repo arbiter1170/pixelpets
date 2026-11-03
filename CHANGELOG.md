@@ -2,7 +2,7 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-03 08:20 ET: Decisions: Vincent settles D1128 (Fen's pacing) as the research recommends, docs only
+## 2026-11-03 08:07 ET: Decisions: Vincent settles D1128 (Fen's pacing) as the research recommends, docs only
 - What changed and why: D1128 settled.
   - Keep the bench XP share at 50%.
   - Keep Fen at 12/13/14 and test, cutting one level only if the test fails.

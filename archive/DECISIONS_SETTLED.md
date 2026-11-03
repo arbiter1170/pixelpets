@@ -2,9 +2,9 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
-## Tue Nov 3, 2026, 8:20 AM ET: Vincent's ruling on Fen's pacing (recorded by Claude Code)
+## Tue Nov 3, 2026, 8:07 AM ET: Vincent's ruling on Fen's pacing (recorded by Claude Code)
 
-- **D1128 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:20 AM ET):** yes, as the research recommends (`D1128_fen_pacing_research`, three Hall holders now stand before Fen): (1) **keep** the bench XP share, 50%; (2) **keep Fen at 12/13/14** and run the Fen test after the share is built (one clean run of the new flow, 12 tries, pass at 6 or more wins); only if it fails, drop one level (11/12/13); (3) the hint moves from the Hall door to **Fen's challenge**, shown when the lead is **below Lv 12**, and suggests a second Walkling; it never blocks; (4) **drop** the payout change: Fen still pays 420 Acorns. Vincent: "Yes, the research I agree, go ahead and build it"
+- **D1128 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:07 AM ET):** yes, as the research recommends (`D1128_fen_pacing_research`, three Hall holders now stand before Fen): (1) **keep** the bench XP share, 50%; (2) **keep Fen at 12/13/14** and run the Fen test after the share is built (one clean run of the new flow, 12 tries, pass at 6 or more wins); only if it fails, drop one level (11/12/13); (3) the hint moves from the Hall door to **Fen's challenge**, shown when the lead is **below Lv 12**, and suggests a second Walkling; it never blocks; (4) **drop** the payout change: Fen still pays 420 Acorns. Vincent: "Yes, the research I agree, go ahead and build it"
 
 ## Tue Nov 3, 2026, 8:05 AM ET: Vincent's rulings on the curfew and what follows the crackdown (recorded by Claude Code)
 
