@@ -219,7 +219,8 @@ const ROOMS = [
   { id: 'dream_drive', skin: 'dream_drive', windows: [3, 6], doors: [], jambs: [] },
   { id: 'dream_party', skin: 'dream_party', windows: [4, 7], doors: [], jambs: [] },
   { id: 'fb_hall_in', skin: 'fb_hall', windows: [4, 7, 11], doors: [], jambs: [[6, 23, 'jamb_l'], [8, 23, 'jamb_r']] },
-  { id: 'fb_lantern_in', skin: 'fb_lantern', windows: [4, 7], doors: [], jambs: [[4, 15, 'jamb_l'], [6, 15, 'jamb_r']] },
+  { id: 'fb_lantern_in', skin: 'fb_lantern', windows: [1, 9],   // LANTERN_HOUSE_FERNBROOK §5.1
+    doors: [], jambs: [[4, 15, 'jamb_l'], [6, 15, 'jamb_r']] },
   { id: 'hc_airport_in', skin: 'hc_airport', windows: [3, 6], doors: [], jambs: [[3, 6, 'jamb_l'], [5, 6, 'jamb_r']] },
   { id: 'hc_apt_in', skin: 'hc_apt', windows: [3], doors: [], jambs: [[2, 5, 'jamb_l'], [4, 5, 'jamb_r']] },
   { id: 'hc_arena_in', skin: 'hc_arena', windows: [4, 7], doors: [], jambs: [[4, 8, 'jamb_l'], [6, 8, 'jamb_r']] },

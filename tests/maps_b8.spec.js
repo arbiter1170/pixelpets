@@ -78,6 +78,8 @@ test('each room has its own skin, the floor cap, and a clear path @w1', async ({
       const floors = {}, walls = {}, faces = {};
       let shadow = 0, badShadow = 0, decals = 0;
       const painted = [];
+      // LANTERN_HOUSE_FERNBROOK: the wire plinth (K) and props standing against the wall (the switchboard) cover the shadow row.
+      const covered = new Set(PixelPets.mapObjs.filter(o => o.kind === 'prop' || o.kind === 'decal').map(o => o.x + ',' + o.y));
       for (let y = 0; y < info.h; y++) {
         const row = [];
         for (let x = 0; x < info.w; x++) {
@@ -89,7 +91,7 @@ test('each room has its own skin, the floor cap, and a clear path @w1', async ({
           if (t.decal) decals++;
           if (t.ch === 'W') {
             const south = PixelPets.tileInfo(x, y + 1);
-            if (south.ch === '#' || south.ch === 'X') continue;
+            if (south.ch === '#' || south.ch === 'X' || south.ch === 'K' || covered.has(x + ',' + (y + 1))) continue;
             shadow++;
             if (x % 2 === 1 && south.ch !== 'u') badShadow++;
             if (x % 2 === 0 && south.ch !== 'v') badShadow++;
@@ -199,12 +201,12 @@ test('each room has its own skin, the floor cap, and a clear path @w1', async ({
   });
   expect(report.pal).toEqual(PAL_KEEP);
   expect(report.doors.lantern).toMatchObject({ id: 'fb_lantern', x: 5, y: 5 });
-  expect(report.hearth).toBeGreaterThan(0);
-  expect(report.hearth).toBeLessThanOrEqual(4);
-  expect(report.runner).toBeGreaterThan(0);
-  expect(report.runner).toBeLessThanOrEqual(6);
-  expect(report.lip).toBe('hearth_orchard');
-  expect(report.quilt).toBe('runner_orchard');
+  // LANTERN_HOUSE_FERNBROOK (rule 9, D1336) supersedes B8's orchard rest house: no hearth glyph, a Keeper runner from the
+  // door to the wire set (col 5, rows 3-8 and 11-14), oak parquet. tests/lantern_house_fernbrook.spec.js checks the rest.
+  expect(report.hearth).toBe(0);
+  expect(report.runner).toBe(10);
+  expect(report.lip).toMatch(/^floor_parquet_oak/);
+  expect(report.quilt).toMatch(/^floor_parquet_oak/);
   expect(report.doors.hall).toMatchObject({ id: 'fb_hall', x: 22, y: 6 });
   for (const row of report.out) {
     const room = ROOMS.find(r => r.id === row.id);
@@ -220,7 +222,7 @@ test('each room has its own skin, the floor cap, and a clear path @w1', async ({
     expect(row.runs, row.id).toEqual([]);
     expect(row.wall.startsWith(room.wall), row.id + ' ' + row.wall).toBe(true);
     expect(row.face, row.id).toBe(room.face);
-    expect(row.floor.startsWith(room.id === 'fb_hall_in' ? 'hall_moss' : 'floor_orchard'), row.id + ' ' + row.floor).toBe(true);
+    expect(row.floor.startsWith(room.id === 'fb_hall_in' ? 'hall_moss' : 'floor_parquet_oak'), row.id + ' ' + row.floor).toBe(true);   // the Lantern House floor is oak parquet now (LANTERN_HOUSE_FERNBROOK)
   }
   expect(report.out[0].pair).not.toBe(report.out[1].pair);
   for (const [id, pair] of Object.entries(report.pairs)) {

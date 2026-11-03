@@ -2022,6 +2022,9 @@ function buildTiles(){
     rug_coach: ["BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBGBBGBBBBBB","BBBBBGBBBBGBBBBB","BBBBGBBBBBBGBBBB","BBBBGBBBBBBGBBBB","BBBBBGBBBBGBBBBB","BBBBBBGBBGBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB"],
   };
   for (const [k, rows] of Object.entries(ART_PASS_TILES)) T[k] = mkTile(g => paintGrid(g, rows));
+  // LANTERN_HOUSE_FERNBROOK draft tiles (oak parquet, wire plinth, cable run) live with the other room tiles, so the skin
+  // check (maps_b8) finds them here; addCrackdownArt only fills a name that is still missing.
+  for (const [k, rows] of Object.entries(CRACKDOWN_ART.tiles)) if (!T[k]) T[k] = mkTile(g => paintGrid(g, rows));
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.

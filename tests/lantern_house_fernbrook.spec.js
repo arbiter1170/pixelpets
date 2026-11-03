@@ -31,9 +31,12 @@ test.describe('Fernbrook Lantern House: the wire station', () => {
     expect(r.objs.fb_lantern_mat).toMatchObject({ x: 5, y: 15 });
     for (const id of ['fb_bed_a', 'fb_bed_b', 'fb_bed_c', 'fb_heal_counter', 'fb_herb_rack', 'fb_apple_a', 'fb_apple_b', 'fb_table', 'fb_jug', 'fb_stool', 'fb_basket', 'fb_lantern_note']) expect(r.objs[id], id).toBeTruthy();
     expect(r.objs.fb_lamp).toMatchObject({ x: 10, y: 9 });
-    const props = { fb_wire_set: [5, 2], fb_relay_w: [3, 2], fb_relay_e: [7, 2], fb_lamp_w: [2, 2], fb_lamp_e: [8, 2], fb_switchboard: [10, 2], fb_wire_desk: [7, 3],
+    const props = { fb_wire_set: [5, 2], fb_lamp_w: [2, 2], fb_lamp_e: [8, 2], fb_switchboard: [10, 2], fb_wire_desk: [7, 3],
       fb_bench_a: [2, 8], fb_bench_b: [3, 8], fb_bench_c: [7, 8], fb_bench_d: [8, 8], fb_callbox: [9, 13] };
     for (const [id, [x, y]] of Object.entries(props)) expect(r.objs[id], id).toMatchObject({ x, y, art: true });
+    // The relay racks are silent wall decals on the plinth row (drawn, never block or talk; D1339).
+    expect(r.objs.fb_relay_w).toMatchObject({ x: 3, y: 1, kind: 'decal', art: true });
+    expect(r.objs.fb_relay_e).toMatchObject({ x: 7, y: 1, kind: 'decal', art: true });
     expect(r.objs.fb_wire_set_live).toBeUndefined();
     for (const id of ['lh_res_kid', 'lh_odile', 'lh_res_b', 'lh_wynne', 'lh_res_c', 'lh_tobin']) expect(r.objs[id], id).toBeUndefined();
   });
