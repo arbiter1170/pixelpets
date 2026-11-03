@@ -59,7 +59,7 @@ D1282-D1286 reserved: LANTERN_HOUSE_FERNBROOK (`handoff/specs/LANTERN_HOUSE_FERN
 
 D1287-D1294 reserved: WARDROBE_SHOP v0.3 (design repo, Mon Nov 2, 2026, 11:47 PM EST; STORY_DECISIONS v0.67). D1287-D1290 are the six free outfits; D1291-D1294 are unused.
 
-D1295-D1305 reserved: Design, HCT (design repo). D1306-D1311 reserved: Design, the High Charity Trial Hall (design repo). Design is also reserving a new block for the both-paths Seals, starting at the next free id below (not final). Recorded by the Chief of Staff, Tue Nov 3, 2026, 12:55 AM ET. GLIMMERWELL_VEHICLES_BUILDINGS (#268, not merged) still uses D1295-D1309, which collides with Design's HCT and Trial Hall blocks; it gets a new block once Design's is final.
+D1295-D1305 reserved: Design, HCT (design repo). D1306-D1311 reserved: Design, the High Charity Trial Hall (design repo). Design is also reserving a new block for the both-paths Seals, starting at the next free id below (not final). Recorded by the Chief of Staff, Tue Nov 3, 2026, 12:55 AM ET. GLIMMERWELL_VEHICLES_BUILDINGS (#268) used D1295-D1309, which collided with Design's HCT and Trial Hall blocks; it now holds D1333-D1347 (below).
 
 D1312-D1322 reserved: CORE_LOOP_HOOK_AUDIT (`handoff/specs/CORE_LOOP_HOOK_AUDIT.md`, audit only, for Morgan; checked with walklings-decision-ids on Tue Nov 3, 2026, ~12:30 AM ET against main, every origin branch and design master).
 

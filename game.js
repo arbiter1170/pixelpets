@@ -380,6 +380,7 @@ function save(){
     if (!hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
     return;
   }
+  if (window.PPFleet && PPFleet.holdSave()) return;   // GLIMMERWELL_VEHICLES_BUILDINGS: no write while the ?debug=1 preview lot is open
   S.last = Date.now(); if (DEBUG) S.debugSave = true;
   if (PPSave.writeV2(S) !== false || saveFailTold) return;
   saveFailTold = true;
@@ -7196,6 +7197,7 @@ function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }).then((
 // Keeper towns wear gold and green. Glimmerwell ground wears wine and soot. The stripe sits on the roof edge and the wall foot.
 function factionOfMap(id){
   if (!id) return null;
+  if (id === 'gw_preview') return window.PPFleet ? PPFleet.previewFaction() : null;   // the preview lot follows its chosen hold
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
   if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
   if (id === 'bw_depot_in') return 'glimmer';                               // BRINEWICK (B6): a Keepers harbour with a Glimmerwell depot
@@ -7693,8 +7695,12 @@ function drawMap(t){
   if (window.PPNet && PPNet.mapEnts) PPNet.mapEnts(g, cx, cy).forEach(e => ents.push(e));
   needHeartSkipped = false;
   drawCurtain(g, cx, cy, VW, VH);             // INTRO_CUTSCENE D803: under the actors, so a walker crosses in front of it
+  // GLIMMERWELL_VEHICLES_BUILDINGS (D1342): only on the ?debug=1 preview lot. Shadows first, Cruisers y-sorted, the air unit above everyone.
+  const fleetOn = !!(window.PPFleet && PPFleet.live(CUR.id));
+  if (fleetOn) { PPFleet.drawGround(g, cx, cy, VW, VH, t); PPFleet.mapEnts(g, cx, cy, VW, VH, t).forEach(e => ents.push(e)); }
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
+  if (fleetOn) PPFleet.drawAir(g, cx, cy, VW, VH, t);
   drawHqGlow(g, cx, cy);
   drawLampLights(g, cx, cy, VW, VH);
   drawShotFx(g, cx, cy);
@@ -19874,6 +19880,12 @@ function boot(){
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map
   api.exteriorCell = (x, y) => DEBUG ? exteriorCell(x, y) : null;  // map pass B4: how cell (x, y) of this map is painted
+  // GLIMMERWELL_VEHICLES_BUILDINGS (D1342): the preview lot, ?debug=1 only. glimmer_fleet.js owns it; this is its window into the game.
+  const fleetHost = { debug: () => DEBUG, busy: () => !S || !!scene || !!(battle && battle.on) || fade.busy, get S(){ return S; }, WORLD, TILES, WART, NPC_LOOKS,
+    arrive: at => arriveAt(at), save: () => save(), showWalk: () => { dismissForDebug(); showTab('walk'); } };
+  api.fleetPreview = hold => DEBUG && window.PPFleet ? PPFleet.open(fleetHost, hold) : false;   // hold: 'split' | 'keepers' | 'glimmer'
+  api.fleetExit = () => DEBUG && window.PPFleet ? PPFleet.close(fleetHost) : false;
+  api.fleetState = () => DEBUG && window.PPFleet ? PPFleet.state() : null;
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
   api.mapNodeCenter = id => { const n = REGION_MAP.nodes[id]; return n ? [n.col * 16 + 8, n.row * 16 + 8] : null; };   // region-map logical px
