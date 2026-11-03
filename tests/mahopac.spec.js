@@ -48,7 +48,7 @@ test('look picker offers more hair, clothes, and accessories @w1', async ({ page
     outfit: document.querySelectorAll('#lookOutfit button').length,
     accessory: document.querySelectorAll('#lookAccessory button').length,
   }));
-  expect(buttons).toEqual({ hair: 8, hairCol: 14, outfit: 6, accessory: 5 });
+  expect(buttons).toEqual({ hair: 8, hairCol: 14, outfit: 12, accessory: 5 });   // more_outfits: six more outfits
   await page.locator('#lookAccessory button[data-opt="glasses"]').click();
   await page.locator('#lookHair button[data-opt="pony"]').click();
   await page.locator('#lookOutfit button[data-opt="dress"]').click();
