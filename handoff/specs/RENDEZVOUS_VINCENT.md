@@ -15,6 +15,8 @@
 > - The crackdown session ships the crackdown plus Ilse's call and the debrief (beats 1-2).
 > - The Trial Hall session builds the rendezvous, the two shifts and the report (beats 3-5) on top of that branch (`claude/rendezvous-vincent`). It then moves the pick gate to `story.rdv_done | !story.crackdown`.
 
+> **D1428 (Vincent, Tue Nov 3, 2026, settled, default A).** The draft line is dropped. The Keeper shift's sheet is an unlabelled list (no "roll" heading, no "call-up", no "muster"); NPC Vincent no longer says "That's mustering."; this spec no longer seeds a later speech line. Ids unchanged.
+
 ## 1. Status and sources
 
 | Item | Value |
@@ -22,7 +24,7 @@
 | Status | Draft v0.1, Tue Nov 3, 2026. Copy: Story (June). Design: Iris. Build: PixelPets |
 | Ask | D1395 (settled): no pick straight after the crackdown; Ilse phones, debriefs the holder at home, sends them on a quest that starts the pick. D1396 (open, umbrella): scope that quest, with Vincent, an unaligned Glimmerwell agent, and "a sense of going undercover" in both factions |
 | Builds on | POST_TRIAL_CRACKDOWN v0.3.1 (not built: dawn release, §5 curfew read, §6 hand-off); DAY1_TRIAL1_FLOW (built `side_pick` at `fb_side_pick` 9,10; D1175 gate); TRIAL_HALL_FERNBROOK_MAP §7.1 (`story.fen_lean`) |
-| Canon | design `STORY.md` @6ca4cb8: §2 "What Seals are" (the roll's call-up clause, the buy-back stall), §3a (Wardens are not in the cover-up), §6, §7, §12; `CHIP_SECRECY` §1, §3, §4; FPT D1146; `HC_PARADE` S2 ("the draft returns") |
+| Canon | design `STORY.md` @6ca4cb8: §2 "What Seals are" (the roll's call-up clause, the buy-back stall), §3a (Wardens are not in the cover-up), §6, §7, §12; `CHIP_SECRECY` §1, §3, §4; FPT D1146 |
 | Ids | D1395 (settled) and D1396 (umbrella, open) moved from D1353-D1354 off Design's HC_PARADE block. This spec reserves **D1397-D1410**; next free **D1411** (checked against game main, every origin branch and design master b11348f, Tue Nov 3, 2026, about 8:30 AM ET) |
 | Rooms | **None new.** Built maps only: `fb_lantern_in`, `fernbrook`, `route1`, `hm_lodge_in`. Rule 9 does not apply. Tiles marked UNVERIFIED need a path check |
 
@@ -46,20 +48,20 @@ Want: understand what happened in Fernbrook. Pressure: both sides want an answer
 | 2 | **The debrief** | `hm_lodge_in`, Ilse 5,3 | Ilse is distraught at the President's order, never at the Keepers as a whole: tanks in Fen's town, a Hall shut, not one Warden asked. She can't search her own Commanders' tents. Vincent can see both sides; he has told her true things before (implied: her opening "Ask what it costs" came from him). She gives the holder a **runner's note** for the Commander's desk | `story.ilse_debrief` |
 | 3 | **The rendezvous** | `route1` stream bank under the bridge (sand about 28-29,11-14, UNVERIFIED; STREAM BANK sign 29,9) | "No poles down here. The wire can't hear the water." His plan: take a shift with each side. He gives a **Guest pass** for Juniper's crew. He stays behind (he'd be recognised) | `story.rdv_met` |
 | 4a | **Glimmerwell shift** (day) | `fernbrook` east road, Juniper's camp by the rubble (Juniper 30,8; props UNVERIFIED) | Pack three lamp crates (built crate-tap pattern). The holder sees a **buy-back ledger** ("OLD SEALS: 3 bought. Fair Acorns."), a crew Walkling back from a "free check-up" who **answers a beat late**, and the cart's back door: "Partners only, sweetie." (a natural blocker). Choice: "Ask about the cart" / "Keep packing" | `story.shift_g`, `story.pitch_g` |
-| 4b | **Keeper shift** (night, by curtain) | `fernbrook` curfew posts 6,6 and 21,7; a field desk by the Hall cordon (about 20,7, UNVERIFIED) | Amos's pitch becomes "walk the lamp round with me". Curtain to evening (narration, never the real clock). The holder leaves Ilse's note on the Commander's desk and reads: "FERNBROOK ROLL. Holders with Seals, ready for call-up. By order of High Charity. Copies to Wardens: none." Their own name is the newest line. Choice: "Tell Amos" / "Keep it quiet" | `story.shift_k`, `story.pitch_k` |
+| 4b | **Keeper shift** (night, by curtain) | `fernbrook` curfew posts 6,6 and 21,7; a field desk by the Hall cordon (about 20,7, UNVERIFIED) | Amos's pitch becomes "walk the lamp round with me". Curtain to evening (narration, never the real clock). The holder leaves Ilse's note on the Commander's desk and reads an unlabelled list (D1428): names of holders with Seals, no heading, and at the foot "By order of High Charity. Copies to Wardens: none." (PLACEHOLDER). Their own name is the newest line. Choice: "Tell Amos" / "Keep it quiet" | `story.shift_k`, `story.pitch_k` |
 | 5 | **The report** | stream bank | A hub talk ("The roll" / "The ledger" / "That's all"). Vincent adds to each: the roll was a war list once; his own Walkling answers a beat late since its check-up. "I won't pick for you. Fen's at the orchard gate." He leaves | `story.rdv_done` |
 | 6 | **The pick, as built** | orchard gate, 9,10 | The built `side_pick` runs unchanged. Fernbrook's hold flips only at its result (D1171, D1173); the curfew read ends | (built) |
 
 The shifts run in either order. Budget: **about 60 text boxes** for the whole quest; the hook audit flags Act 1 reading load.
 
-**Why the secrets fit canon.** *Keepers:* the Seal roll began as a Great War muster roll and its call-up law "was never struck out" (SEALS-L, Y); Wardens are kept in the dark (§3a), so Ilse's distress is earned; it seeds HC_PARADE S2. The President's Seal trade is **not** shown, so Fen's "Then who's been buying?" stays open. *Glimmerwell:* the both-path buy-back (it "never says why") plus one CHIP_SECRECY hint (a Walkling who answers late after a visit). **No line names the chip, the Tuning, an implant or a relay**, because this save is not Glimmer-side.
+**Why the secrets fit canon.** *Keepers:* the Seal roll began as a Great War muster roll and its call-up law "was never struck out" (SEALS-L, Y); Wardens are kept in the dark (§3a), so Ilse's distress is earned. Nobody in this quest says what the list is for (D1428). The President's Seal trade is **not** shown, so Fen's "Then who's been buying?" stays open. *Glimmerwell:* the both-path buy-back (it "never says why") plus one CHIP_SECRECY hint (a Walkling who answers late after a visit). **No line names the chip, the Tuning, an implant or a relay**, because this save is not Glimmer-side.
 
 ## 4. Vincent
 
 | | |
 |---|---|
 | Role | A Glimmerwell field agent (title PLACEHOLDER; label "Vincent"). Unaligned in practice: he passes true things to people on both sides |
-| Stance | Against Glimmerwell buying Seals and what waits behind "Partners only" (he has stood at that door, never past it). Against the Keepers' martial order: tanks, curfews, the call-up roll. Never says which side is right |
+| Stance | Against Glimmerwell buying Seals and what waits behind "Partners only" (he has stood at that door, never past it). Against the Keepers' martial order: tanks, curfews, a list of every holder with a Seal. Never says which side is right |
 | Motive | His Walkling came back from a free check-up a beat late. He says no more |
 | Off the wire | No Keeper1, so he is never in CONTACTS (and his name stays out of `S.phoneBook`) |
 | Look (PAL, rule 11) | Glimmerwell set, worn down: soot `N` long coat, wine `V` scarf, lanyard pocketed, no crimson `Q` showing; hair `k`; skin from `1`-`6`; neutral bag `d` (Pia checks it against WARDROBE_SHOP's palette lock) |
@@ -72,7 +74,7 @@ Sample lines (PLACEHOLDER, each 110 characters or fewer, wording-checked):
 3. "Both sides want you. So both will open a door. Walk through each one. Look at what they don't show you."
 4. "They don't buy old Seals to hang on a wall. Ask what a free check-up costs."
 5. "My Walkling went in for a free check-up last spring. She still comes when I call. A beat late."
-6. "Tanks for a crate dispute. A roll of every holder with a Seal. That's not keeping. That's mustering."
+6. "Tanks for a crate dispute. A roll of every holder with a Seal. That's not keeping." (D1428: "That's mustering." cut)
 
 **Naming (D1399, open).** "Vincent" is the owner's own pick and also his first name. It still needs the STORY §12 registry and wording check. Default: keep it (names can be filled in later). Settle it before the build: `S.rep` is keyed by NPC name, so a later rename needs an alias in `normalizeV2`.
 
@@ -148,7 +150,7 @@ Run every test at 320, 375 and 390, with reduced motion on (the card is static a
 1. Two trial shifts as the shape? **Default: yes.**
 2. After Act 1, does Vincent stay unaligned? **Default: yes; he returns in Act 2 on both paths as an informant (Story scopes it).**
 3. Keep the name "Vincent"? **Default: keep; surname later.**
-4. Is the holder's own name on the call-up roll too strong for Act 1? **Default: keep it; the word "draft" waits for High Charity.**
+4. Is the holder's own name on the list too strong for Act 1? **Default: keep it.** (D1428: no draft line; the list stays unlabelled.)
 5. Should the rendezvous move Fen's lean? **Default: no.**
 6. Was Vincent behind Ilse's "Ask what it costs"? **Default: yes, implied only.**
 7. Rook cameo at Juniper's camp? **Default: no (scope).**

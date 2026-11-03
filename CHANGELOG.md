@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 3:20 PM ET: B-3: RENDEZVOUS_VINCENT's Act 1 list is unlabelled (D1428), docs only
+- What changed and why: Vincent settled D1428 (default A, Tue Nov 3, 2026): the speech's draft line is dropped. In `handoff/specs/RENDEZVOUS_VINCENT.md` the Keeper shift's sheet is now an unlabelled list of holders with Seals (no "roll" heading, no "call-up", no "muster"), NPC Vincent's "That's mustering." is cut (PLACEHOLDER), and the spec no longer seeds the later speech line (the two "HC_PARADE S2" links are gone). Open question 4 drops "the word draft waits". Ids D1395-D1410 unchanged.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/b3-rendezvous-roll`; docs only, no build bump.
+- Tests run and result (widths, checks): docs only; wording scan PASS.
+- Decisions made (colour + reasoning): D1428 red, settled by Vincent. No new id.
+- Anything left unfinished: Story's wording for the list and Vincent's line (PLACEHOLDER).
+
 ## 2026-11-03 9:56 AM ET: Spec note: RENDEZVOUS_VINCENT merged with WARDEN_SUMMONS, and the build split (Vincent), docs only
 - What changed and why: Vincent ruled that RENDEZVOUS_VINCENT wins over the crackdown branch's WARDEN_SUMMONS on the outcome:
   - a phone call;
