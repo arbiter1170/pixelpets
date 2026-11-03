@@ -60,22 +60,22 @@ test('look picker offers more hair, clothes, and accessories @w1', async ({ page
   expect(look.outfit).toBe('dress');
 });
 
-test('Mom is upstairs, and the side quest shows beside the main step @w1', async ({ page }) => {
+test('Mom is home, and the side quest shows beside the main step @w1', async ({ page }) => {
   const save = starterSave();
   save.flags['story.phone_got'] = true;
   await installSave(page.context(), save, { quietDay: true });
   await gotoDebug(page);
   await page.locator('#questBtn').tap();
-  await expect(page.locator('#questSide')).toHaveText(/Mom is upstairs/);
-  await expect(page.locator('#questSidePlace')).toHaveText('Your home, upstairs');
+  await expect(page.locator('#questSide')).toHaveText(/Mom is home/);
+  await expect(page.locator('#questSidePlace')).toHaveText('Your home');   // PARTNER_DAY: Mom lives downstairs
   await page.keyboard.press('Escape');
 
   const home = await page.evaluate(() => {
-    PixelPets.goto('hm_home_up', 4, 6, 'up');
+    PixelPets.goto('hm_home_in', 4, 6, 'up');
     const info = PixelPets.mapInfo;
-    return { id: info.id, mom: info.objs.find((o) => o.id === 'mom'), stairs: info.objs.some((o) => o.id === 'home_stairs_down') };
+    return { id: info.id, mom: info.objs.find((o) => o.id === 'mom'), stairs: info.objs.some((o) => o.id === 'home_stairs') };
   });
-  expect(home.id).toBe('hm_home_up');
+  expect(home.id).toBe('hm_home_in');
   expect(home.mom).toBeTruthy();
   expect(home.stairs).toBe(true);
 

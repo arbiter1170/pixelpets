@@ -453,7 +453,7 @@ test('T4 D800: narrator prompts show the holder at 4x, following the look as the
         if (st.mode === 'name') seen.name = await holderBox(p);
       },
     });
-    expect(kinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name']);
+    expect(kinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name', 'choice']);   // PARTNER_DAY: Ilse's "Ilse studies {pet}" question
     for (const k of ['hello', 'name']) {
       expect(seen[k], k + ' prompt not seen for ' + JSON.stringify(look)).toBeTruthy();
       expectHolder(seen[k], k + ' ' + look.skin + look.hair);
@@ -723,7 +723,7 @@ test('T8 D808: SKIP on Ilse\'s first line reaches the first question in under 30
   await enterLodge(page);
   const stops = await play(page, { skip: () => true });
   const { frames, skips } = await stopRec(page);
-  expect(kinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name']);
+  expect(kinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name', 'choice']);   // PARTNER_DAY: Ilse's "Ilse studies {pet}" question
   const iHello = firstIdx(frames, (f) => f.text.startsWith(LINE.hello));
   const s0 = skips[0];
   expect(frames[iHello].t).toBeLessThan(s0);
@@ -866,7 +866,7 @@ test('T11 D810: the cutscene data splices with no misses, and a scene missing an
   await enterLodge(p);
   const stops = await play(p);
   const { frames, warns } = await stopRec(p);
-  expect(kinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name']);
+  expect(kinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name', 'choice']);   // PARTNER_DAY: Ilse's "Ilse studies {pet}" question
   expect(frames.some((f) => f.text.startsWith(LINE.thatBoy))).toBe(false);
   expect(frames.some((f) => f.text.startsWith(LINE.feed))).toBe(true);
   expect(warns.filter((w) => /walkTo/.test(w))).toEqual([]);
