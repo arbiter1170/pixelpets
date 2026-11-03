@@ -259,7 +259,7 @@ const ROOMS = [
   { id: 'bw_store_in', skin: 'bw_store', windows: [2, 7], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },
   { id: 'bw_hall_in', skin: 'bw_hall', windows: [2, 8], doors: [], jambs: [[4, 12, 'jamb_l'], [6, 12, 'jamb_r']] },
   { id: 'bw_depot_in', skin: 'bw_depot', windows: [3, 8], doors: [], jambs: [[4, 9, 'jamb_l'], [6, 9, 'jamb_r']] },
-  // FERNBROOK_HOMES (D1180): three south-lane homes, each with its own skin and wall row.
+  // FERNBROOK_HOMES (D1215): three south-lane homes, each with its own skin and wall row.
   { id: 'fbh_press_in', skin: 'fbh_press', windows: [3, 8], doors: [], jambs: [[4, 13, 'jamb_l'], [6, 13, 'jamb_r']] },
   { id: 'fbh_picker_in', skin: 'fbh_picker', windows: [3, 10], doors: [], jambs: [[5, 11, 'jamb_l'], [7, 11, 'jamb_r']] },
   { id: 'fbh_stitch_in', skin: 'fbh_stitch', windows: [3, 7], doors: [], jambs: [[4, 14, 'jamb_l'], [6, 14, 'jamb_r']] },
