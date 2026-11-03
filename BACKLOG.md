@@ -5,6 +5,9 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
+FERNBROOK_HOMES (D1248-D1252) is on branch `claude/fernbrook-homes`, not merged: Fernbrook grows south to 32x32 with three enterable homes and two lane neighbours. **Needs Vincent's yes on the previews (rule 9, D1248)** in `handoff/shots/fernbrook_homes/` before it deploys; packet `handoff/maps/FERNBROOK_HOMES.md`.
+NPC_RANKS and SIDE_BADGE (Vincent, Nov 2, 2026; D1159-D1163) are on branch `claude/npc-ranks-side-badge`. Every Keeper and Glimmerwell NPC shows rank, then name, from the `data/reputation.json` cast through `shownName()`. Faction control lives inside the place chip: a pledge emblem and a hold stripe. Arriving at a new town or route lays the hold word over the place line, and TODAY has a STANDING row. The region map shows who holds every place you have walked into, before the pick too (D1164 supersedes D109's pledge gate). Open: Vincent's OK on the ranks proposed for 16 Keepers and Ash (D1159; plain names until then) and the affiliation of the flagged NPCs (D1160). Save stays `pixelpets.save.v2` with `v` 2, and no field is added.
+
 BATTLE_BACKDROPS (D1009, red, settled by Vincent Oct 31, 2026; supersedes D167) is in the game on this branch: every battle draws its own scene from the map's own tiles and props (`battle_bg.js`, `BATTLE_BG_ON` on in `game.js`). The Pet tab, music and the maps' `backdrop` fields are unchanged. Save stays `pixelpets.save.v2` with `v` 2; no new fields.
 
 GEAR_SWITCH (D768-D774) is in the game on main: care-screen GEAR opens the Walkling sheet, the stats card drops its GEAR button, and a party row beside the WALK back arrow switches the shown Walkling. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
