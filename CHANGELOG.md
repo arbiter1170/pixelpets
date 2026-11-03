@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 02:00 ET: SEALS_BOTH_PATHS, Halls 2-3: real Seals on both paths (build 20261103-0129)
+- What changed and why: Vincent's "Yes to all defaults" (12:51 AM EST) on SBP-A to SBP-H, built from design `specs/SEALS_BOTH_PATHS.md` v0.1.1 (36c8433) §2-§8, the first PR of the Halls 4-8 batch (D1330). On a Glimmer save, beating Hale or Marisol gives the Hall's real Seal (`seal_cobblecrest`, `seal_brinewick`) and the Bright Tier tag, with one card: the Seal with Glimmerwell's cord. The quota, the Tuning and Dorian's review give only the tag and the chapter flag, and the Master offers the match again until it is won; a late win gives the Seal once (no second snack, tonic, Standing or flag). Engine behind `SEALS_BOTH_PATHS` (game.js): shared helpers in `standing.js` (`hasSealIn`, `sealsHeldIn`, read-only old-save aliases), both `seal:` readers, a new `seals>=N` term, the muted tag card, the online and cloud count (Seals held only), the debug rows (now with Seal 3). Caps, growing up, chapters and the HUD stay on `story.sealN` (D1331). June's v1.0 copy lifted word for word (§7, J1-J32), with the four townsfolk rekeys and the data notes.
+- Files touched: `standing.js`, `game.js`, `quests.js`, `data/glimmer_path.json`, `data/detail_zz_brinewick.json`, `data/cobblecrest.json`, `data/news.json`, `data/ribbit_posts.json`, `data/mapdata.js` and `tools/GAMEJS_MAP.txt` (generated), `tests/seals_both_paths.spec.js` (new), `tests/glimmer_cobble.spec.js`, `tests/arbiter_test.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/shots/seals_both_paths/`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/walklings-repo-takeover-3080yo-seals, build 20261103-0129.
+- Tests run and result (widths, checks): see the PR (the new spec at 320, 375 and 390; the full suite at 390 and 320; scans).
+- Decisions made (colour + reasoning): D1323-D1331 settled by Vincent (pasted from §10 with D1311's supersede and the D3, D24, D877 appends); D1332 and D1308 open rows pasted. The cord overlay (`SEAL_CORD_1`-`_3`) is an engineer draft in the lanyard's own palette keys until Pia redraws it (§8); green, art only.
+- Anything left unfinished: Pia's cord overlay; QA's pass on both routes per Hall; Halls 4-8 (each adds one `SEAL_TAGS` row and one `SEAL_CORD_TIER` row).
+
 ## 2026-11-03 00:15 ET: Audit: what the core loop needs to hook players (CORE_LOOP_HOOK_AUDIT v0.1), docs only
 
 - What changed and why: Morgan asked for an honest audit of the core loop, with concrete things to build. New doc `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` covers:

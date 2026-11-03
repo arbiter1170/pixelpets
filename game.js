@@ -724,6 +724,12 @@ const petName = p => cleanNick(p.nick) || nameOf(spi(p), p.stage);
 // Level comes from battle XP (p.bx, stats.js levelOf) and is what lets a Walkling grow up. Growth XP (p.xp) stays a record.
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
 function sealCount(){ return window.PPStanding ? PPStanding.chapterOf(S && S.flags) : 0; }
+// SEALS_BOTH_PATHS (D1323-D1331; design specs/SEALS_BOTH_PATHS.md): a Seal is a Hall's Seal on both paths; a Bright Tier lanyard
+// is Glimmerwell's tag clipped to it, never a Seal. Engine kill switch only: false reads the raw seals map (no aliases), counts
+// tags as today, keeps the tag card and draws no cord. sealCount() above stays on the story.sealN chapter flags (D1331).
+const SEALS_BOTH_PATHS = true;
+const hasSeal = id => !!S && PPStanding.hasSealIn(S.seals, S.flags, id, SEALS_BOTH_PATHS);
+const sealsHeld = () => S ? PPStanding.sealsHeldIn(S.seals, S.flags, SEALS_BOTH_PATHS) : 0;
 function oneGrowBlocked(){ return sealCount() === 0 && !!(S && S.flags && S.flags['story.unlock_growup']); }
 const canEvolve = p => { if (isAttune(p)) return false; const si = spi(p); const gate = GROW_GATES[p.stage]; return si != null && !!(SPECIES[si].stages[p.stage + 1]) && !isFaded(p) && p.stage < 2 && !!gate && levelOf(p) >= gate.level && sealCount() >= gate.seals && !oneGrowBlocked() && care(p) >= EVO_CARE[p.stage]; };
 /* --- ARBITER_UNITS attunement (D838, D839). One name, three tiers in p.stage: Quiet, Humming, Answering. p.hum (0-100)
@@ -4777,7 +4783,8 @@ function cond(c, live, o){
   }
   let v;
   if (c === 'has:name') v = !!curName(live);
-  else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
+  else if (c.startsWith('seal:')) v = hasSeal(c.slice(5));   // SEALS_BOTH_PATHS: Seals held (old-save aliases), never a tag for a Seal
+  else if (/^seals>=\d+$/.test(c)) v = sealsHeld() >= +c.slice(7);   // D1329: the roll, niches and Summit door count Seals held
   else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
   else if (c === 'chip:partner') v = chipOn(pet());
@@ -6505,7 +6512,7 @@ function matchMarkFor(o){
   if (!S || !o || !CUR || !present(o)) return null;
   const w = o.kind === 'npc' ? MATCH_WALKUP[CUR.id + ':' + o.id] : null;
   const id = o.kind === 'trainer' ? o.id : w ? w[0] : null, t = id && TRAINERS[id];
-  if (!t || S.flags['trainer.' + id] || (t.seal && S.seals && S.seals[t.seal]) || (w && !w[1]())) return null;
+  if (!t || S.flags['trainer.' + id] || (t.seal && hasSeal(t.seal)) || (w && !w[1]())) return null;
   if (S.flags['rematch.' + rematchId(id)] && (S.world.restDue || mapRT.grace > 0)) return null;
   return id;
 }
@@ -7742,7 +7749,7 @@ function drawCobbleTrim(g, cx, cy, t){
 // target tile. Off screen, the same arrow sits at the edge in 8 directions, with the distance pill and a 44 px tap that
 // opens QUEST. A board slip keeps the rail chip. No ground ring. On another map the cue points at the exit that starts
 // the shortest route there (BFS over warps and doors). Hidden during scenes, battles and the walk-in flash.
-const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length });
+const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length, both: SEALS_BOTH_PATHS });
 const HC_CLEAR_FLAGS = ['story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs'];
 const HC_QUEST = {
   id: 'hc_games',
@@ -9735,12 +9742,14 @@ async function execStep(st){
     case 'prop': { cutProp(sc, cutVar(sc, a), b); return; }
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
-    // Build 3: ["seal", id] grants a lanyard without a battle (the Tour's skip path). A Hall win already set it and showed the card.
+    // Build 3: ["seal", id] grants a Seal or a tag without a battle (the Tour's skip path). A Hall win already set it and showed
+    // the card. SEALS_BOTH_PATHS (D1327): a tag whose Seal is held is written silently; the Seal card already showed, with the cord.
     case 'seal': {
       const id = a; if (!id || !SEAL_ART[id]) return;
       const already = !!(S.seals && S.seals[id]);
       pend(() => { if (!S.seals[id]) S.seals[id] = Date.now(); });
       if (sc.skip || already || (battle && battle.on)) return;
+      if (SEALS_BOTH_PATHS && PPStanding.isTag(id) && hasSeal(PPStanding.SEAL_TAGS[id])) return;   // the Seal card already showed, with the cord
       await presentFieldSeal(id);
       return;
     }
@@ -16072,9 +16081,32 @@ SEAL_ART.seal_brinewick = [
 const LANYARD_TIER3 = LANYARD_TIER1.map((row, y) => (y < 2 || y > 12) ? row
   : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'VN'.includes(ch)) ? 'w' : ch).join(''));
 SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL_ART.seal_glim_3 = LANYARD_TIER3;
+// SEALS_BOTH_PATHS (D1327, SBP-G icon): Glimmerwell's cord clipped across the lower Seal, drawn over the Seal art on a Glimmer save.
+// ENGINEER DRAFT in the lanyard's own keys (gold clip, wine cord, soot edge, white tier marks at x 4, 7, 10 as LANYARD_TIER);
+// transparent outside the cord so each Hall's Seal still reads. Pia redraws (design SEALS_BOTH_PATHS §8).
+const sealCord = marks => [
+  '................', '................', '................', '................', '................',
+  '................', '................', '................', '................', '................',
+  '......oooo......',
+  '......oyyo......',
+  'NVVVVVoyyoVVVVVN',
+  [...'NVVVVVVVVVVVVVVN'].map((ch, x) => marks.includes(x) ? 'w' : ch).join(''),
+  '.NNNNNNNNNNNNNN.',
+  '................',
+];
+const SEAL_CORD_1 = sealCord([7]), SEAL_CORD_2 = sealCord([4, 10]), SEAL_CORD_3 = sealCord([4, 7, 10]);
+const SEAL_CORD_TIER = Object.freeze({ seal_fernbrook: 1, seal_cobblecrest: 2, seal_brinewick: 3 });   // Halls 4-8 add rows
+const SEAL_CORD = [SEAL_CORD_1, SEAL_CORD_2, SEAL_CORD_3];
+// The card art for a Seal: the raw art, plus the cord on a Glimmer save. Reads side(), not the save's tags: the Hall-win card shows
+// before onWin writes the tag. Tag-only cards (quota, Tuning, review) keep their lanyard art.
+function drawSealCard(g, id){
+  g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
+  const tier = SEALS_BOTH_PATHS && side() === 'glimmer' ? SEAL_CORD_TIER[id] : 0;
+  if (tier) g.drawImage(keeperCanvas(SEAL_CORD[tier - 1]), 0, 0);   // Glimmerwell's tag clipped to the Seal
+}
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
-  g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
+  drawSealCard(g, id);
   $('#btSealName').textContent = sealName(id); $('#btSeal').hidden = false;
 }
 // The Tour can finish without a battle. Same Seal card, over a quiet stage, until OK / Space.
@@ -17869,9 +17901,11 @@ const DEBUG_EXTRAS = {
   hc_hall: { place: 'Event Hall', text: 'The five High Charity games.', map: 'hc_hall_in', x: 5, y: 9, facing: 'up',
     flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'] },
 };
+// SEALS_BOTH_PATHS: a debug checkpoint past a Hall means the match route (the Seal, plus the tag on the Glimmer path).
 const DEBUG_SEALS = {
-  'story.seal1': { keepers: 'seal_fernbrook', glimmer: 'seal_glim_1' },
-  'story.seal2': { keepers: 'seal_cobblecrest', glimmer: 'seal_glim_2' },
+  'story.seal1': { keepers: ['seal_fernbrook'], glimmer: ['seal_fernbrook', 'seal_glim_1'] },
+  'story.seal2': { keepers: ['seal_cobblecrest'], glimmer: ['seal_cobblecrest', 'seal_glim_2'] },
+  'story.seal3': { keepers: ['seal_brinewick'], glimmer: ['seal_brinewick', 'seal_glim_3'] },
 };
 const DEBUG_TRAINER_GATES = [
   ['story.rival1_done', 'rival1_rook'],
@@ -18026,8 +18060,8 @@ function debugRespawn(mapId){
 }
 function syncDebugSeals(){
   for (const [flag, bySide] of Object.entries(DEBUG_SEALS)) {
-    if (S.flags[flag]) { const seal = bySide[side()] || bySide.keepers; if (seal && !S.seals[seal]) S.seals[seal] = Date.now(); }
-    else for (const seal of Object.values(bySide)) delete S.seals[seal];
+    if (S.flags[flag]) { for (const seal of (bySide[side()] || bySide.keepers)) if (!S.seals[seal]) S.seals[seal] = Date.now(); }
+    else for (const seal of new Set([].concat(...Object.values(bySide)))) delete S.seals[seal];
   }
 }
 function syncDebugTrainers(){
@@ -19148,7 +19182,7 @@ function cloudSummary(raw){
   if (!o || typeof o !== 'object' || o.v !== 2) return null;
   const s = PPSave.normalizeV2(o, Date.now()), p = s.party.find(q => q.id === s.partnerId) || s.party[0];
   return { partner: p ? petName(p) : null, sp: p ? spi(p) : null, stage: p ? p.stage : 0, pets: s.party.length + s.box.length,
-    seals: Object.values(s.seals).filter(Boolean).length, last: s.last, player: s.player.name };
+    seals: PPStanding.sealsHeldIn(s.seals, s.flags, SEALS_BOTH_PATHS), last: s.last, player: s.player.name };
 }
 function startCloud(){
   PPCloud.start({
@@ -19179,7 +19213,7 @@ function startCloud(){
     bond: () => { const p = pet(); return p ? bondLevel(p) : 0; },
     seenCount: () => (S && S.dex && S.dex.seen) ? Object.keys(S.dex.seen).filter(k => S.dex.seen[k]).length : 0,
     befriended: () => allPets().length,
-    seals: () => (S && S.seals) ? Object.values(S.seals).filter(Boolean).length : 0,
+    seals: () => sealsHeld(),   // D1329: online SEALS n/8, titles and the cloud picker count Seals held, never tags
     reduced: () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } },
     stepMs: () => STEP_MS,
     keeper: (look, facing, frame) => { const pack = keeperFrames(look); return pack && pack[facing] ? pack[facing][frame] || pack[facing][0] : null; },
@@ -19774,6 +19808,16 @@ function boot(){
     return { skin: look.skin || null, hair: look.hair || null, hairCol: look.hairCol || null, outfit: look.outfit || null, outfitCol: look.outfitCol || null, accent: look.accent || null, accessory: look.accessory || 'none' };
   };
   api.sealArt = id => (SEAL_ART[id] || []).slice();
+  // SEALS_BOTH_PATHS: the Seal card's 18x18 pixels as drawn (raw: the Seal art alone), for the cord test. Read-only.
+  api.sealCardArt = (id, raw) => {
+    const c = document.createElement('canvas'); c.width = c.height = 18; const g = c.getContext('2d');
+    if (raw) g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0); else drawSealCard(g, id);
+    return Array.from(g.getImageData(0, 0, 18, 18).data);
+  };
+  api.hasSeal = id => hasSeal(id);
+  api.sealsHeld = () => sealsHeld();
+  api.sealsBothPaths = SEALS_BOTH_PATHS;
+  api.cloudSeals = raw => { const c = cloudSummary(raw); return c ? c.seals : null; };   // the cloud picker's Seal count (Seals held)
   api.sealName = id => sealName(id);
   api.lookGrid = id => {
     const o = objById(id);

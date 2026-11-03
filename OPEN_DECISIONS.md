@@ -64,7 +64,9 @@ D1312-D1322 reserved: CORE_LOOP_HOOK_AUDIT (`handoff/specs/CORE_LOOP_HOOK_AUDIT.
 
 D1323-D1332 reserved: SEALS_BOTH_PATHS (design specs/SEALS_BOTH_PATHS.md and STORY_DECISIONS v0.69; checked with walklings-decision-ids on Tue Nov 3, 2026, about 1:00 AM EST). D1323-D1331 are SBP-A to SBP-H and the caps note, settled by Vincent at 12:51 AM EST Tue Nov 3; D1332 is open (the Apple Picker look, fbh_picker_res).
 
-Next free id is D1333.
+D1333-D1347 reserved: game PR #268 (Claude, GLIMMERWELL_VEHICLES_BUILDINGS), renumbered from D1295-D1309 to avoid the design HCT ids; settled by the Chief of Staff, Tue Nov 3, 2026, 1:08 AM EST. Design keeps D1295-D1311.
+
+Next free id is D1348.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -86,6 +88,8 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
+| D1332 | yellow, SEALS_BOTH_PATHS §10 (owner the Chief of Staff; due Thu Nov 5, 2026, 12:22 AM EST) | The #267 Apple Picker look (fbh_picker_res, trim reads mixed). Default: a civilian exception row in WARDROBE_SHOP, no game change. Alternative: recolour the trim in game data. | No game change (the default) | `data/detail_zzz_fernbrook_homes.json` (the `fbh_picker_res` look), design WARDROBE_SHOP §4a |
+| D1308 | yellow, HIGH_CHARITY_LAYOUT v0.2.1 §5.2 (Design; due Wed Nov 4, 2026, 11:47 PM EST) | Default (amended by SEALS_BOTH_PATHS): the Muster Hall roll opens at seven Seals held (`seals>=7`); tags do not count. | Not built; the `seals>=N` term ships with SEALS_BOTH_PATHS | the Muster Hall build (`seals>=7`) |
 | D1248 | red, FERNBROOK_HOMES (AGENTS rule 9) | Vincent's yes on the room previews before the three south-lane homes deploy (Press House, Picker's Cottage, Stitcher's Loft, and the lane outside). Also: rule 9 asks for inspiration from sub-agents or the Gemini model; neither was available in the build session, so the build agent wrote the brief itself (FERNBROOK_HOMES.md §1). Design may re-run that step first | Built on `claude/fernbrook-homes`, not merged. Previews at 320x568 and 390x844 in `handoff/shots/fernbrook_homes/` | `data/detail_zzz_fernbrook_homes.json`; skins `fbh_press`, `fbh_picker`, `fbh_stitch` and `FERNBROOK_HOMES_TILES` in `sprites.js` |
 | D1250 | red, FERNBROOK_HOMES (exception to D81) | Fernbrook grows south from 32x20 to 32x32 so the homes fit. D81 says Act 1 towns are not reshaped; Vincent's ask is the exception, as D170 was for Hearthmoor. Settles with D1248 | Rows 19-31 are new; the only change above the old edge is row 18 x18 (tree to grass). No coordinate moves, no zone is set (no wild Walklings on the lane) | `slicePatch.maps.fernbrook` (`set` w/h, `gridRows` 18-31) in `data/detail_zzz_fernbrook_homes.json` |
 | D1251 | green, FERNBROOK_HOMES (Design sign-off) | Placeholder resident labels, looks and lines, plus the room names and the lane sign: Cider Presser, Apple Picker, Young Picker, Quilt Stitcher, Hedge Trimmer, Windfall Gatherer (role labels, no given names; none collides with an existing NPC name). Design or Story supplies real names and lines; contacts and rep are keyed by name, so a rename also edits `data/reputation.json` | Built with the placeholder labels, six new `fbh_*` looks (civilian only, no Keeper or Glimmerwell uniform) and neutral town-life lines that do not mention the faction pick or a Trial | `data/detail_zzz_fernbrook_homes.json` (`looks`, `npc` objects); `data/reputation.json` cast |

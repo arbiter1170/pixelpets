@@ -8,7 +8,8 @@
    while story.side is 'glimmer'; one when/done chain serves both sides. Text <= 110 chars, place <= 24, no tokens.
    Entries are in story order. The first entry that is not done (its own `done` flags, or any later entry's) and whose
    optional `when` holds is the current objective; `when` is only for skips (the first-wild meet when a second Walkling
-   already joined). Conditions use the scene `cond()` syntax subset: 'flag', '!flag', 'flag=value', 'seal:id', plus 'pets>=N',
+   already joined). Conditions use the scene `cond()` syntax subset: 'flag', '!flag', 'flag=value', 'seal:id' (a Seal held, read through PPStanding.hasSealIn: tags never count, old-save aliases do), plus 'pets>=N',
+   'seals>=N' (Seals held, D1329),
    joined by '|' (or) and '&' (and). As in cond(), '|' splits first, then '&', then '!', with no brackets. */
 (function (root) {
   'use strict';
@@ -440,7 +441,8 @@
     let v;
     const ge = c.match(/^pets>=(\d+)$/);
     if (ge) v = (st.pets | 0) >= +ge[1];
-    else if (c.startsWith('seal:')) v = !!(st.seals && st.seals[c.slice(5)]);
+    else if (c.startsWith('seal:')) { const PS = root.PPStanding, id = c.slice(5); v = PS ? PS.hasSealIn(st.seals, st.flags, id, st.both !== false) : !!(st.seals && st.seals[id]); }   // SEALS_BOTH_PATHS
+    else if (/^seals>=\d+$/.test(c)) { const PS = root.PPStanding, s = st.seals || {}; v = (PS ? PS.sealsHeldIn(s, st.flags, st.both !== false) : Object.keys(s).filter(k => !!s[k]).length) >= +c.slice(7); }   // D1329
     else { const k = c.indexOf('='), F = st.flags || {}; v = k >= 0 ? String(F[c.slice(0, k)]) === c.slice(k + 1) : !!F[c]; }
     return neg ? !v : v;
   }
