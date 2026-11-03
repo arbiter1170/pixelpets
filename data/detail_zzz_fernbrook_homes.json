@@ -10,7 +10,7 @@
       "outfitCol": "o",
       "accent": "y"
     },
-    "fbh_picker": {
+    "fbh_picker_res": {
       "skin": "2",
       "hair": "pony",
       "hairCol": "r",
@@ -316,9 +316,9 @@
         },
         {
           "kind": "npc",
-          "id": "fbh_picker",
+          "id": "fbh_picker_res",
           "name": "Apple Picker",
-          "look": "fbh_picker",
+          "look": "fbh_picker_res",
           "x": 9,
           "y": 4,
           "facing": "down",

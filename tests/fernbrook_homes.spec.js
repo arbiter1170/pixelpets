@@ -18,7 +18,7 @@ const ROOMS = [
 ];
 const PEOPLE = [
   { id: 'fbh_presser', map: 'fbh_press_in', name: 'Cider Presser', line: 'First pressing of the day. Mind the floor, it gets sticky by noon.' },
-  { id: 'fbh_picker', map: 'fbh_picker_in', name: 'Apple Picker', line: 'Up the ladder at dawn, home by supper. The baskets never stay empty for long.' },
+  { id: 'fbh_picker_res', map: 'fbh_picker_in', name: 'Apple Picker', line: 'Up the ladder at dawn, home by supper. The baskets never stay empty for long.' },
   { id: 'fbh_young_picker', map: 'fbh_picker_in', name: 'Young Picker', line: 'I picked up forty apples today! They were on the ground, but it still counts.' },
   { id: 'fbh_stitcher', map: 'fbh_stitch_in', name: 'Quilt Stitcher', line: 'Every square in that rug was a shirt once. Sit if you like, just not on the pins.' },
   { id: 'fbh_hedger', map: 'fernbrook', name: 'Hedge Trimmer', line: 'One snip too many and the whole hedge sulks. I go slow.' },
@@ -293,7 +293,7 @@ test('every resident is present and says their line, in reduced motion too', asy
     await settle(page);
   }
   const looks = await page.evaluate(() => {
-    const ids = ['fbh_presser', 'fbh_picker', 'fbh_young_picker', 'fbh_stitcher', 'fbh_hedger', 'fbh_gatherer'];
+    const ids = ['fbh_presser', 'fbh_picker_res', 'fbh_young_picker', 'fbh_stitcher', 'fbh_hedger', 'fbh_gatherer'];
     return ids.map(id => { const l = MAPDATA.detail_zzz_fernbrook_homes.looks[id]; return l.outfit + ':' + l.outfitCol + ':' + l.accent; });
   });
   for (const l of looks) {
