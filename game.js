@@ -3898,7 +3898,8 @@ function applyMapPatch(W, patch){
 // DAY1_TRIAL1_FLOW (Vincent, Nov 2, 2026): small edits to existing objects by id, on whatever map holds them, after every
 // overlay (so a verbatim design object and an object another overlay moves are patched alike; a missing id is skipped).
 // { id: { when: [...] (replace), whenAdd: [...], linesBefore: { anchorKey, add: { key: line } }, linesFirst: {...},
-//         scheduleFirst: [rows], shopAdd: [ids] } }. linesBefore without its anchor lands before `else`.
+//         scheduleFirst: [rows], shopAdd: [ids], linesSet: { key: line } } }. linesBefore without its anchor lands before
+// `else`. linesSet re-voices a line the object already has, in place (D1434); a key the object lacks is skipped.
 function applyObjPatch(W, patch){
   for (const [id, pt] of Object.entries(patch || {})) {
     if (id[0] === '_') continue;
@@ -3915,6 +3916,7 @@ function applyObjPatch(W, patch){
         if (!put) Object.assign(out, P.linesBefore.add);
         o.lines = out;
       }
+      if (P.linesSet && o.lines) for (const [k, v] of Object.entries(P.linesSet)) if (k in o.lines) o.lines[k] = v;
       if (P.scheduleFirst && Array.isArray(o.schedule)) o.schedule = P.scheduleFirst.concat(o.schedule);
       if (P.shopAdd && Array.isArray(o.shop)) for (const it of P.shopAdd) if (o.shop.indexOf(it) < 0) o.shop.push(it);
       // POST_TRIAL_CRACKDOWN (D1224): a door can be shut by a cond on top of its `need`, with keyed deny lines put first.

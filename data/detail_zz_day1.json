@@ -955,6 +955,12 @@
  },
  "objPatch": {
   "_note": "game.js applyObjPatch, after every overlay. A missing id is skipped (hm_lizzy_pre, room_lizzy and hm_buddy_pre arrive with #258).",
+  "mrs_calloway": {
+   "_note": "D1434: Glimmerwell supporters wear wine vests. interiors.json stays verbatim; this re-voices her 'friend in mint' line.",
+   "linesSet": {
+    "else": "If you see Rook, tell him supper keeps. And that his friend in a wine vest called again."
+   }
+  },
   "mom": {
    "linesBefore": {
     "anchorKey": "!story.dream_study",

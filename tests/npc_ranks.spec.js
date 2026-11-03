@@ -103,8 +103,8 @@ test('rankCheck: only the D1245 plaza placeholders pending, civilians unranked, 
   expect(c.civilians.sort()).toEqual(['Keeper Amos', 'Keeper Halvard', 'Keeper Marigold', 'Keeper Quill', 'Keeper Teague', 'Watch Saffie']);
   const civRanked = await page.evaluate(() => MAPDATA.reputation.cast.filter((e) => e.civilian && e.rank).map((e) => e.name));
   expect(civRanked).toEqual([]);
-  // Every rank on a Keeper is on the ladder (or is a Hall Master's "Master").
-  const ladder = ['Cadet', 'Constable', 'Officer', 'Sergeant', 'Captain', 'Commander', 'Warden', 'Master'];
+  // Every rank on a Keeper is on the ladder. "Master" is not a Keeper rank: Hall Masters are neutral (D1437).
+  const ladder = ['Cadet', 'Constable', 'Officer', 'Sergeant', 'Captain', 'Commander', 'Warden'];
   const offLadder = await page.evaluate((L) => MAPDATA.reputation.cast.filter((e) => e.faction === 'keepers' && e.rank && !L.includes(e.rank)).map((e) => e.name), ladder);
   expect(offLadder).toEqual([]);
   // A duty is only held by a Cadet, Constable or Officer (KEEPER_RANKS).
