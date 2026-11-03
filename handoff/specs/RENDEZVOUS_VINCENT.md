@@ -1,6 +1,6 @@
 # RENDEZVOUS_VINCENT v0.1: Ilse's call, the Vincent rendezvous, and the road to the pick (D1395, D1396)
 
-**Spec only; nothing is built.** Drafted Tue Nov 3, 2026 for Vincent's review (D1396). Target: `handoff/specs/RENDEZVOUS_VINCENT.md` (public game repo, not `docs/`). All player text is PLACEHOLDER for Story. Staging every player sees is red: nothing builds before Vincent rules on §7.
+**Spec only; nothing is built.** Drafted Tue Nov 3, 2026; **every §7 default approved by Vincent (Tue Nov 3, 2026, 8:38 AM ET)**. D1396 (the umbrella) stays open until the quest is built. Target: `handoff/specs/RENDEZVOUS_VINCENT.md` (public game repo, not `docs/`). All player text is PLACEHOLDER for Story. Staging every player sees is red: nothing builds before Vincent rules on §7.
 
 ## 1. Status and sources
 
@@ -103,20 +103,20 @@ The pick is the **built `side_pick` at `fb_side_pick` (9,10)**, with its result 
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
-| D1397 | red | Shape: two trial shifts (§2 A) | yes |
-| D1398 | red | Vincent's canon: Glimmerwell field agent, unaligned in Act 1, no Keeper1, Walkling "a beat late", old channel to Ilse | yes |
-| D1399 | red | NPC name "Vincent" (owner's pick, matches his first name); registry check; surname later | keep |
-| D1400 | red | Meeting place: Route 1 stream bank (built tiles) | yes |
-| D1401 | red | Keeper secret: a district call-up roll from High Charity, no copies to Wardens; never the Seal trade | yes |
-| D1402 | red | Glimmerwell secret: buy-back ledger, the "beat late" Walkling, the "Partners only" door; no chip named | yes |
-| D1403 | red | Pick stays built at 9,10; trigger adds `story.rdv_done \| !story.crackdown`; amends D1141, D1142, D1175 | yes |
-| D1404 | yellow | Ilse's call: new call card (one tap; no new sound, no vibration, so no iPhone audio red); Amos fallback | yes |
-| D1405 | yellow | Townsfolk return by day once `story.ilse_called` (D1200); posts and notice stand until the pick | yes |
-| D1406 | yellow | Shifts in either order; the night shift is curtain time, never the real clock | yes |
-| D1407 | red | Should the rendezvous move `story.fen_lean`? (amends D1228) | no |
-| D1408 | yellow | Shift choices `inc` the D1146 counters; flavour only | yes |
-| D1409 | green | Flags, rows and save guards as §5 | yes |
-| D1410 | green | About 60 text boxes; tests as §8 | yes |
+| D1397 | red | Shape: two trial shifts (§2 A) | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1398 | red | Vincent's canon: Glimmerwell field agent, unaligned in Act 1, no Keeper1, Walkling "a beat late", old channel to Ilse | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1399 | red | NPC name "Vincent" (owner's pick, matches his first name); registry check; surname later | keep **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1400 | red | Meeting place: Route 1 stream bank (built tiles) | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1401 | red | Keeper secret: a district call-up roll from High Charity, no copies to Wardens; never the Seal trade | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1402 | red | Glimmerwell secret: buy-back ledger, the "beat late" Walkling, the "Partners only" door; no chip named | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1403 | red | Pick stays built at 9,10; trigger adds `story.rdv_done \| !story.crackdown`; amends D1141, D1142, D1175 | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1404 | yellow | Ilse's call: new call card (one tap; no new sound, no vibration, so no iPhone audio red); Amos fallback | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1405 | yellow | Townsfolk return by day once `story.ilse_called` (D1200); posts and notice stand until the pick | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1406 | yellow | Shifts in either order; the night shift is curtain time, never the real clock | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1407 | red | Should the rendezvous move `story.fen_lean`? (amends D1228) | no **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1408 | yellow | Shift choices `inc` the D1146 counters; flavour only | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1409 | green | Flags, rows and save guards as §5 | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
+| D1410 | green | About 60 text boxes; tests as §8 | yes **SETTLED** (Vincent, Tue Nov 3, 2026, 8:38 AM ET) |
 
 ## 8. Acceptance tests (`tests/rendezvous_vincent.spec.js`)
 

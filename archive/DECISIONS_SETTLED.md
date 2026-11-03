@@ -2,6 +2,25 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026, 8:38 AM ET: Vincent approves RENDEZVOUS_VINCENT's defaults (recorded by Claude Code)
+
+Vincent chose "Approve all defaults" for `handoff/specs/RENDEZVOUS_VINCENT.md` §7. D1396 (the umbrella: build the quest) stays open until it is built.
+
+- **D1397 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Shape: two trial shifts (§2 A) Default taken: yes.
+- **D1398 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Vincent's canon: Glimmerwell field agent, unaligned in Act 1, no Keeper1, Walkling "a beat late", old channel to Ilse Default taken: yes.
+- **D1399 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** NPC name "Vincent" (owner's pick, matches his first name); registry check; surname later Default taken: keep.
+- **D1400 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Meeting place: Route 1 stream bank (built tiles) Default taken: yes.
+- **D1401 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Keeper secret: a district call-up roll from High Charity, no copies to Wardens; never the Seal trade Default taken: yes.
+- **D1402 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Glimmerwell secret: buy-back ledger, the "beat late" Walkling, the "Partners only" door; no chip named Default taken: yes.
+- **D1403 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Pick stays built at 9,10; trigger adds `story.rdv_done \| !story.crackdown`; amends D1141, D1142, D1175 Default taken: yes.
+- **D1404 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 8:38 AM ET):** Ilse's call: new call card (one tap; no new sound, no vibration, so no iPhone audio red); Amos fallback Default taken: yes.
+- **D1405 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 8:38 AM ET):** Townsfolk return by day once `story.ilse_called` (D1200); posts and notice stand until the pick Default taken: yes.
+- **D1406 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 8:38 AM ET):** Shifts in either order; the night shift is curtain time, never the real clock Default taken: yes.
+- **D1407 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Should the rendezvous move `story.fen_lean`? (amends D1228) Default taken: no.
+- **D1408 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 8:38 AM ET):** Shift choices `inc` the D1146 counters; flavour only Default taken: yes.
+- **D1409 (Tue Nov 3, 2026, green, SETTLED by Vincent, 8:38 AM ET):** Flags, rows and save guards as §5 Default taken: yes.
+- **D1410 (Tue Nov 3, 2026, green, SETTLED by Vincent, 8:38 AM ET):** About 60 text boxes; tests as §8 Default taken: yes.
+
 ## Tue Nov 3, 2026, 8:07 AM ET: Vincent's ruling on Fen's pacing (recorded by Claude Code)
 
 - **D1128 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:07 AM ET):** yes, as the research recommends (`D1128_fen_pacing_research`, three Hall holders now stand before Fen): (1) **keep** the bench XP share, 50%; (2) **keep Fen at 12/13/14** and run the Fen test after the share is built (one clean run of the new flow, 12 tries, pass at 6 or more wins); only if it fails, drop one level (11/12/13); (3) the hint moves from the Hall door to **Fen's challenge**, shown when the lead is **below Lv 12**, and suggests a second Walkling; it never blocks; (4) **drop** the payout change: Fen still pays 420 Acorns. Vincent: "Yes, the research I agree, go ahead and build it"
