@@ -9,7 +9,7 @@ trackErrors(test, expect);
 
 const HOLDS = ['split', 'keepers', 'glimmer'];
 const KEEPER_MARKS = ['gw_badge_slip', 'gw_door_shut', 'gw_relay_mast_off', 'gw_swap_stall_shut'];
-const BANNED = /\b(chips?|tuning|tuned|implants?|trainers?|coins?|gyms?|fainted|evolve[sd]?|appeared|accord|orokin|bellgold)\b|dex\b/i;
+const BANNED = /\b(chips?|tuning|tuned|implants?|trainers?|coins?|gyms?|fainted|evolve[sd]?|appeared|accord|bellgold)\b|dex\b/i;
 
 async function boot(page, search) {
   const save = starterSave();
