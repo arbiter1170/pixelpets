@@ -26,6 +26,7 @@ const SHELL = [
   './cloud_config.js',
   './cloud.js',
   './debug_ui.js',
+  './glimmer_fleet.js',
   './data/nav_art.js',
   './clock.js',
   './mv_fx.js',

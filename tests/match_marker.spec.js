@@ -306,13 +306,14 @@ test('T10 all: save unchanged, debug hooks inert without ?debug=1, 26 holders in
   expect(await page.evaluate(() => (window.PPQuests && PPQuests.devCheck) ? PPQuests.devCheck() : []))
     .toEqual([]);
   // 24 kind:'trainer' objects across the map data (MATCH_MARKER section 4), plus Brinewick's bw_ringer and bw_deckhand (BRINEWICK),
-  // plus DAY1_TRIAL1_FLOW's three Trial Hall holders and Tobin's restated battle in the Fernbrook overlay (the same holder).
+  // plus DAY1_TRIAL1_FLOW's three Trial Hall holders and Tobin's restated battle in the Fernbrook overlay (the same holder),
+  // plus TRIAL_HALL_FERNBROOK_MAP's flagged overlay restating h1_local and h1_cadet at their new spots (the same two holders).
   let n = 0;
   for (const f of fs.readdirSync(path.join(__dirname, '..', 'data')).filter(f => f.endsWith('.json'))) {
     const walk = v => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') { if (v.kind === 'trainer') n++; Object.values(v).forEach(walk); } };
     walk(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', f), 'utf8')));
   }
-  expect(n).toBe(30);
+  expect(n).toBe(32);
   // Without debug (?debug=0 turns this tab's debug session off) the debug reads are inert.
   await page.goto('/?debug=0');
   await page.waitForFunction(() => window.PixelPets);

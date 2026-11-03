@@ -16,12 +16,18 @@
     {
       "name": "Archivist Mo",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Officer",
+      "given": "Mo",
+      "duty": "Archivist"
     },
     {
-      "name": "Ash",
+      "name": "Sefton",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Cadet",
+      "given": "Sefton",
+      "note": "Trial Hall holder h1_cadet (#261, D1170). Was \"Ash\" (clashed with Grete Ash, STORY Hall 5 Tobias Ash, and a franchise name); rep.js REP_CANON folds Ash into Sefton. Name stays PLACEHOLDER copy (D1186)"
     },
     {
       "name": "Associate Hollis",
@@ -123,7 +129,10 @@
       "faction": "keepers",
       "base": 50,
       "fixed": 50,
-      "note": "\"The Processor\" (default, D175): fixed 50, still Keepers for flavour, never moves"
+      "note": "\"The Processor\" (default, D175): fixed 50, still Keepers for flavour, never moves",
+      "rank": "Officer",
+      "given": "Wynn",
+      "duty": "Clerk"
     },
     {
       "name": "Constable Corwin",
@@ -222,17 +231,20 @@
     {
       "name": "Host Della",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "host"
     },
     {
       "name": "Host Garnet",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "host"
     },
     {
       "name": "Host Ines",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "host"
     },
     {
       "name": "Imogen",
@@ -247,32 +259,40 @@
     {
       "name": "Keeper Amos",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "civilian": "host"
     },
     {
       "name": "Keeper Marigold",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Keeper Moss",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Constable",
+      "given": "Moss"
     },
     {
       "name": "Keeper Rowan",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Sergeant",
+      "given": "Rowan"
     },
     {
       "name": "Keeper Quill",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Keeper Teague",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Keeper Scout",
@@ -283,7 +303,9 @@
     {
       "name": "Keeper Vesper",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Officer",
+      "given": "Vesper"
     },
     {
       "name": "Bryn",
@@ -354,7 +376,8 @@
     {
       "name": "Mira",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Mom",
@@ -458,7 +481,10 @@
     {
       "name": "Operator Rue",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Officer",
+      "given": "Rue",
+      "duty": "Operator"
     },
     {
       "name": "Ossabell",
@@ -535,7 +561,10 @@
     {
       "name": "Scout Linnea",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Constable",
+      "given": "Linnea",
+      "duty": "Scout"
     },
     {
       "name": "Sera",
@@ -552,12 +581,16 @@
     {
       "name": "Shopkeeper Dottie",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Signaller Tamm",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Constable",
+      "given": "Tamm",
+      "duty": "Signaller"
     },
     {
       "name": "Tam",
@@ -601,7 +634,10 @@
     {
       "name": "Watch Ivo",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Constable",
+      "given": "Ivo",
+      "duty": "Watch"
     },
     {
       "name": "Willa",
@@ -616,7 +652,8 @@
     {
       "name": "Keeper Halvard",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Farmer Tibbet",
@@ -626,22 +663,26 @@
     {
       "name": "Wynne",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Watch Saffie",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Weaver Ilka",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Toolwright Brannoch",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Warden Teodor",
@@ -660,7 +701,9 @@
     {
       "name": "Keeper Pryce",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Cadet",
+      "given": "Pryce"
     },
     {
       "name": "Cadet Lisse",
@@ -747,7 +790,8 @@
     {
       "name": "Chandler",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "shop"
     },
     {
       "name": "Deckhand",
@@ -767,7 +811,8 @@
     {
       "name": "Lantern Host",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "civilian": "host"
     },
     {
       "name": "Master Marisol",
@@ -1058,116 +1103,23 @@
   ],
   "ranks": {
     "decision": "NPC_RANKS (Vincent, Nov 2, 2026): every Keeper and Glimmerwell NPC shows rank, then name, wherever the name is shown",
-    "fields": "rank: shown before given (\"Master\" + \"Fen\"). given: the bare name. duty: a job that is not a rank (KEEPER_RANKS D893), shown on the contact card. rankFlag: the D id asking whether this NPC is Keeper or Glimmerwell at all; shown as today. rankWhen: a named game condition (game.js RANK_WHEN) that must hold for the rank to show",
+    "fields": "rank: shown before given (\"Master\" + \"Fen\"). given: the bare name. duty: a job that is not a rank (KEEPER_RANKS D893), shown on the contact card. rankFlag: the D id asking whether this NPC is Keeper or Glimmerwell at all; shown as today. rankWhen: a named game condition (game.js RANK_WHEN) that must hold for the rank to show civilian: host or shop; a civilian never carries a rank",
     "display": "game.js shownName(): rank + ' ' + given when the entry has a rank (and rankWhen holds), else label, else the raw name. Keys (S.rep, S.phoneBook, contactKey) stay the raw speaker name",
     "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays",
     "pending": {
-      "Archivist Mo": {
-        "propose": "Officer",
-        "given": "Mo",
-        "decision": "D1159",
-        "duty": "Archivist"
-      },
-      "Clerk Wynn": {
-        "propose": "Officer",
-        "given": "Wynn",
-        "decision": "D1159",
-        "duty": "Clerk"
-      },
-      "Keeper Amos": {
-        "propose": "Officer",
-        "given": "Amos",
-        "decision": "D1159"
-      },
-      "Keeper Marigold": {
-        "propose": "Constable",
-        "given": "Marigold",
-        "decision": "D1159"
-      },
-      "Keeper Moss": {
-        "propose": "Constable",
-        "given": "Moss",
-        "decision": "D1159"
-      },
-      "Keeper Rowan": {
-        "propose": "Sergeant",
-        "given": "Rowan",
-        "decision": "D1159"
-      },
-      "Keeper Quill": {
-        "propose": "Constable",
-        "given": "Quill",
-        "decision": "D1159"
-      },
-      "Keeper Teague": {
-        "propose": "Cadet",
-        "given": "Teague",
-        "decision": "D1159"
-      },
-      "Keeper Vesper": {
-        "propose": "Officer",
-        "given": "Vesper",
-        "decision": "D1159"
-      },
-      "Operator Rue": {
-        "propose": "Officer",
-        "given": "Rue",
-        "decision": "D1159",
-        "duty": "Operator"
-      },
-      "Scout Linnea": {
-        "propose": "Constable",
-        "given": "Linnea",
-        "decision": "D1159",
-        "duty": "Scout"
-      },
-      "Signaller Tamm": {
-        "propose": "Constable",
-        "given": "Tamm",
-        "decision": "D1159",
-        "duty": "Signaller"
-      },
-      "Watch Ivo": {
-        "propose": "Constable",
-        "given": "Ivo",
-        "decision": "D1159",
-        "duty": "Watch"
-      },
-      "Keeper Halvard": {
-        "propose": "Constable",
-        "given": "Halvard",
-        "decision": "D1159"
-      },
-      "Watch Saffie": {
-        "propose": "Constable",
-        "given": "Saffie",
-        "decision": "D1159",
-        "duty": "Watch"
-      },
-      "Keeper Pryce": {
-        "propose": "Cadet",
-        "given": "Pryce",
-        "decision": "D1159"
-      },
-      "Ash": {
-        "propose": "Cadet",
-        "given": "Ash",
-        "decision": "D1159",
-        "note": "#261 Trial Hall holder (D1170: one Keeper cadet); cast row comes with #261"
-      },
       "Commander": {
-      "propose": "Commander",
-      "given": null,
-      "decision": "D1198",
-      "note": "POST_TRIAL_CRACKDOWN: the Commander stays unnamed (D1198, Vincent Nov 3: defaults accepted); rank-only label until Story names him"
-    },
-    "Officer": {
-      "propose": "Officer",
-      "given": null,
-      "decision": "D1198",
-      "note": "POST_TRIAL_CRACKDOWN: the escort officers and the Hall post; rank-only label, like the plaza's (D1245)"
-    },
-    "Constable": {
+        "propose": "Commander",
+        "given": null,
+        "decision": "D1198",
+        "note": "POST_TRIAL_CRACKDOWN: the Commander stays unnamed (D1198, settled Nov 3: names stay placeholders); rank-only label until Story names him"
+      },
+      "Officer": {
+        "propose": "Officer",
+        "given": null,
+        "decision": "D1198",
+        "note": "POST_TRIAL_CRACKDOWN: the escort officers and the curfew posts; rank-only label, like the plaza's (D1245)"
+      },
+      "Constable": {
         "propose": "Constable",
         "given": null,
         "decision": "D1245",
@@ -1204,6 +1156,7 @@
         "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
       }
     },
-    "pendingNote": "pending: Keepers with no ladder rank yet (KEEPER_RANKS D893). They show their plain name (no rank, no placeholder) until Vincent OKs the proposed rank (D1159); then the cast row gains rank/given/duty from here. rankCheck counts a name listed here as pending, not missing. Rows with decision D1245 are the FERNBROOK_PLAZA placeholders: rank-only labels that wait for Design's names, not for a rank."
+    "pendingNote": "pending: only the six FERNBROOK_PLAZA placeholders (decision D1245) are left: rank-only labels that wait for Design's names, not for a rank. Every sworn Keeper on the ladder (KEEPER_RANKS D893) has a rank (D1159); hosts and shopkeepers are civilians (below). rankCheck counts a name listed here as pending, not missing",
+    "civilians": "civilian: \"host\" (Lantern House hosts) or \"shop\" (anyone who runs a shop counter). Civilians are aligned to a faction (their faction field is unchanged) but are not sworn, so they get no rank and show their name as before (cleared task, Nov 3, 2026; settles the hosts part of D1160)"
   }
 }

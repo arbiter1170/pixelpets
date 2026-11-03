@@ -76,7 +76,9 @@ test('the Glimmer-side paper leans dark and the Keeper-side paper is unchanged @
   for (let d = 1; d <= 20; d++) for (const map of ['cobblecrest', 'route3', 'hearthmoor', 'fernbrook']) {
     const st = stateFor('keepers', d, map);
     const e = cur.PPNews.edition(st);
-    expect(JSON.stringify(e), 'keepers ' + map + ' day ' + d).toBe(JSON.stringify(old.PPNews.edition(st)));
+    // D1192 (Vincent, Nov 2, 2026): "Fernbrook Trial Hall" everywhere; the base's old name is read as renamed, nothing else.
+    const was = JSON.stringify(old.PPNews.edition(st)).replace(/Bloom Trial Hall/g, 'Fernbrook Trial Hall').replace(/BLOOM TRIAL HALL/g, 'FERNBROOK TRIAL HALL');
+    expect(JSON.stringify(e), 'keepers ' + map + ' day ' + d).toBe(was);
     expect(JSON.stringify(e)).not.toMatch(HINTS);
   }
 

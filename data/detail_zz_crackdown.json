@@ -1,15 +1,13 @@
 {
  "spec": "handoff/specs/POST_TRIAL_CRACKDOWN.md v0.3.1 + LANTERN_HOUSE_FERNBROOK.md; Vincent's Nov 3, 2026 change: no pick at dawn, the Warden's summons first (handoff/specs/WARDEN_SUMMONS.md)",
- "_about": "Ours, not a design copy. The post-Trial crackdown (scenes crackdown_street and crackdown_lantern), the shut Trial Hall, the curfew order until the pick (§5: posts, notice, cordon, townsfolk indoors, Glimmerwell on the east road), Amos's and Juniper's pitches (§6), the dawn wire from Warden Ilse and her PLACEHOLDER meeting (warden_meet). D1333 (Vincent): the only change from the spec is that the pick no longer comes right at the dawn release; it waits for story.warden_met. Casts use castAt (E1); tanks walk with ms (E2); walkAll (E5). Lantern House room objects (fb_wire_set_live, the six lh_* bodies, cd_resume) live in fernbrook_rooms.json, because its maps load after every detail patch.",
- "_placeholders": "Every line here is PLACEHOLDER for June (D1208). The Commander is unnamed (D1198). 'Keeper tank' wording and the tanks' look are drafts (D1202). The Warden's lines and the dawn wire are placeholders until WARDEN_SUMMONS is written and settled (D1340-D1346). story.fen_lean steps (+1 Keep it, +1 He's hiding something, -1 He means well, 0 Hand it over) are PLACEHOLDER until Seals lore v3.1's encoding lands (D1334).",
+ "_about": "Ours, not a design copy. The post-Trial crackdown (scenes crackdown_street and crackdown_lantern), the shut Trial Hall, the curfew order until the pick (POST_TRIAL_CRACKDOWN §5: posts, notice, cordon, Glimmerwell on the east road; townsfolk back by day once Ilse calls, D1405), Warden Ilse's call (ilse_call) and the Lodge debrief (warden_meet) from RENDEZVOUS_VINCENT beats 1-2 (D1395, D1404; merged with WARDEN_SUMMONS by Vincent). The rendezvous, the two shifts and the report are a later build on top of this one, which moves the pick gate to story.rdv_done. Lantern House room objects live in fernbrook_rooms.json, because its maps load after every detail patch.",
+ "_placeholders": "Every line here is PLACEHOLDER for June (D1208). The Commander is unnamed (D1198). 'Keeper tank' wording and the tanks' look are drafts (D1202). The Warden's lines and the dawn wire are placeholders until WARDEN_SUMMONS is written and settled (D1396-D1418). story.fen_lean steps (+1 Keep it, +1 He's hiding something, -1 He means well, 0 Hand it over) are PLACEHOLDER until Seals lore v3.1's encoding lands (D1411).",
  "flags": {
   "story.crackdown": "POST_TRIAL_CRACKDOWN: set at the end of the street scene (done flag of crackdown_street)",
   "story.hall1_shut": "D1224 (SEALS-O): the Fernbrook Trial Hall is shut by order of High Charity until Fen's Act 2 turn",
   "story.fen_lean": "Seals lore v3.1: Fen's hidden lean, moved by the Beat 1 and Beat 7 choices (inc; encoding PLACEHOLDER)",
-  "story.warden_called": "D1333: Amos hands over Warden Ilse's wire at dawn",
-  "story.warden_met": "D1333: the PLACEHOLDER meeting with Warden Ilse at the Lodge; the faction pick waits on it",
-  "story.pitch_k": "FACTION_PICK_TIMING Part C: Amos's pitch heard (POST_TRIAL_CRACKDOWN §6: inside, after the night)",
-  "story.pitch_g": "FACTION_PICK_TIMING Part C: Juniper's pitch heard (POST_TRIAL_CRACKDOWN §6: the east road)"
+  "story.warden_called": "D1395/D1404: Warden Ilse's call answered (or Amos passes the message on when there is no phone); RENDEZVOUS_VINCENT's story.ilse_called",
+  "story.warden_met": "D1395: the Lodge debrief done; the pick waits on it until the rendezvous build; RENDEZVOUS_VINCENT's story.ilse_debrief"
  },
  "looks": {
   "_note": "PLACEHOLDER (D1198). The Commander keeps the Keeper set (rule 11): a long green cloak and a cap set him apart from the officers' coats. The three Lantern House residents (LANTERN_HOUSE_FERNBROOK §7.2) are kit looks, PLACEHOLDER.",
@@ -791,24 +789,26 @@
     "I asked them for help with the crates. They sent boots. I won't forget it."
    ],
    [
-    "say",
-    "Keeper Amos",
-    "{name}. A wire came in at first light, for you. From Warden Ilse."
-   ],
-   [
-    "say",
-    "Keeper Amos",
-    "She wants you home in Hearthmoor. At the Lodge, as soon as you can walk it."
-   ],
-   [
-    "say",
-    "Master Fen",
-    "The Warden read my letter, then. Go, {name}. I have a Hall to look after, shut or not."
-   ],
-   [
-    "setFlag",
-    "story.warden_called",
-    true
+    "if",
+    "!story.phone_got",
+    [
+     [
+      "say",
+      "Keeper Amos",
+      "{name}. Warden Ilse sent word down the wire for you. She wants you home at the Lodge."
+     ],
+     [
+      "say",
+      "Master Fen",
+      "The Warden read my letter, then. Go. I'll be at the orchard gate."
+     ],
+     [
+      "setFlag",
+      "story.warden_called",
+      true
+     ]
+    ],
+    []
    ],
    [
     "setFlag",
@@ -820,22 +820,32 @@
    [
     "say",
     "Warden Ilse",
-    "{name}. Come in, come in. I had Fen's letter, and the wire from Fernbrook."
+    "{name}. Sit down. I had Fen's letter, and I heard the President's broadcast with everyone else."
    ],
    [
     "say",
     "Warden Ilse",
-    "A Commander shut a Trial Hall and kept a Hall Master indoors. That is not a small thing."
+    "Tanks in Fen's town. A Trial Hall shut. And not one Warden asked. Not one."
    ],
    [
     "say",
     "Warden Ilse",
-    "This isn't yours to carry alone. Let me ask some questions of my own first."
+    "The Keepers are not that order. But it came from the top, and he called it safety."
    ],
    [
     "say",
     "Warden Ilse",
-    "Fernbrook still has a question for you. Answer it at the orchard gate when you are ready."
+    "I can't search my own Commanders' tents. Not openly. Not yet."
+   ],
+   [
+    "say",
+    "",
+    "Ilse folds a note, seals it, and presses it into your hand. A runner's note."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Keep that close. For now, Fernbrook still wants your answer. Fen is at the orchard gate."
    ],
    [
     "setFlag",
@@ -847,51 +857,41 @@
    [
     "say",
     "Warden Ilse",
-    "I'm still asking my questions. Go on back to Fernbrook when you're ready. The gate is waiting."
+    "I'm still asking my questions. Keep that note safe. Fen is waiting at the orchard gate."
    ]
   ],
-  "amos_pitch": [
+  "ilse_call": [
    [
     "say",
-    "Keeper Amos",
-    "The order came from High Charity. I don't like it either. I still keep."
+    "",
+    "Your Keeper1 buzzes in your pocket. WARDEN ILSE."
    ],
    [
-    "say",
-    "Keeper Amos",
-    "What you saw isn't the Keepers. It's one Commander. Fen's gone over his head."
-   ],
-   [
-    "say",
-    "Keeper Amos",
-    "Walk with us and help fix it from inside. That is all I will say about it."
-   ],
-   [
-    "setFlag",
-    "story.pitch_k",
-    true
-   ]
-  ],
-  "juniper_pitch": [
-   [
-    "say",
-    "Associate Juniper",
-    "Hi hi! They locked a whole town indoors. We'd never. Have a bright day!"
-   ],
-   [
-    "say",
-    "Associate Juniper",
-    "Our insurers advised a strategic relocation. The locals? They will be fine."
-   ],
-   [
-    "say",
-    "Associate Juniper",
-    "When you're ready to choose, warm beds and a vet are one road east. Just saying!"
-   ],
-   [
-    "setFlag",
-    "story.pitch_g",
-    true
+    "choice",
+    "Warden Ilse is calling.",
+    [
+     [
+      "Answer",
+      [
+       [
+        "say",
+        "Warden Ilse",
+        "{name}? Fen's letter reached me. I know what happened in Fernbrook last night."
+       ],
+       [
+        "say",
+        "Warden Ilse",
+        "Come home to the Lodge. Not on the wire."
+       ],
+       [
+        "setFlag",
+        "story.warden_called",
+        true
+       ]
+      ]
+     ]
+    ],
+    "Warden Ilse"
    ]
   ]
  },
@@ -930,7 +930,7 @@
        "!story.orchard_cleared"
       ],
       "lines": {
-       "story.warden_called & !story.warden_met": "Go on. Ilse doesn't send wires for nothing.",
+       "story.warden_called & !story.warden_met": "The Warden rang you too? Go. I'll be at the gate.",
        "story.warden_met": "You saw Ilse? Good. Then let's settle the rest, here at the gate.",
        "else": "The roots held through the night. So did we."
       },
@@ -1007,30 +1007,45 @@
        "!story.side_pick_done"
       ],
       "lines": {
-       "!story.pitch_g": "@juniper_pitch",
-       "else": "Our crew camp's past the slide. The lamps are still warm, if you change your mind."
+       "else": "Our crew camp's past the slide. The lamps are still warm. Have a bright day!"
       },
-      "_note": "POST_TRIAL_CRACKDOWN §5/§6: Glimmerwell relocated to the east road; Juniper's pitch moves here (PLACEHOLDER)"
+      "_note": "POST_TRIAL_CRACKDOWN §5: Glimmerwell relocated to the east road. RENDEZVOUS_VINCENT's Glimmerwell shift starts here (that build); PLACEHOLDER line."
+     },
+     {
+      "kind": "trigger",
+      "id": "ilse_call",
+      "x": 5,
+      "y": 6,
+      "r": 1,
+      "when": [
+       "story.post_trial_done",
+       "story.crackdown",
+       "story.phone_got",
+       "!story.warden_called",
+       "!story.side_pick_done"
+      ],
+      "scene": "ilse_call",
+      "_note": "RENDEZVOUS_VINCENT beat 1 (D1395, D1404): the first step out of the Lantern House after the dawn release; an unanswered call rings again on the next step"
      }
     ]
    }
   }
  },
  "objPatch": {
-  "_note": "Outdoor townsfolk and Glimmerwell's stand are hidden under the curfew order (the crackdown until the pick, POST_TRIAL_CRACKDOWN §5); the plaza cast hides through fbplaza:curfew. fb_tl_juniper (Day 1's Two Lights beat by the Lantern House door) never fires after the crackdown, on a save that skipped it.",
+  "_note": "Outdoor townsfolk shelter indoors from the crackdown until Ilse's call (D1405), Glimmerwell's Juniper and stand stay off the square until the pick (§5); the plaza cast hides through fbplaza:curfew until the pick. fb_tl_juniper (Day 1's Two Lights beat by the Lantern House door) never fires after the crackdown, on a save that skipped it.",
   "odile": {
    "whenAdd": [
-    "!story.crackdown | story.side_pick_done"
+    "!story.crackdown | story.warden_called | story.side_pick_done"
    ]
   },
   "fb_wynne": {
    "whenAdd": [
-    "!story.crackdown | story.side_pick_done"
+    "!story.crackdown | story.warden_called | story.side_pick_done"
    ]
   },
   "fb_tobin": {
    "whenAdd": [
-    "!story.crackdown | story.side_pick_done"
+    "!story.crackdown | story.warden_called | story.side_pick_done"
    ]
   },
   "juniper": {
@@ -1069,19 +1084,6 @@
    "linesFirst": {
     "story.crackdown & !story.side_pick_done": "Curfew's posted, citizen. Dusk to dawn, and keep it quiet in between."
    }
-  }
- },
- "lanternAsk": {
-  "_note": "game.js lanternAsk: one extra Lantern House panel option. POST_TRIAL_CRACKDOWN §6: Amos's pitch, after the night, before the pick.",
-  "Keeper Amos": {
-   "when": [
-    "story.post_trial_done",
-    "story.crackdown",
-    "!story.pitch_k",
-    "!story.side_pick_done"
-   ],
-   "label": "About last night",
-   "scene": "amos_pitch"
   }
  }
 }

@@ -34,7 +34,7 @@
   const NOT_STEPS = ['story.starter_line', 'story.lizzy_wake', 'story.home_walk',   // PARTNER_DAY: house-morning beats (story.home_dressed is the dress step)
     'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
-    'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1333: the shut Hall, Fen's hidden lean, the dawn wire
+    'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -162,10 +162,13 @@
     { id: 'post_trial', when: ['story.seal1', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done'],
       text: 'Get to the Lantern House.', place: 'Fernbrook Lantern House',
       npc: 'Keeper Amos', npcIds: ['amos'], target: { map: 'fb_lantern_in', x: 5, y: 13 } },
-    // D1333 (Vincent, Nov 3, 2026): no pick at dawn. Warden Ilse's wire calls the holder home to the Lodge first
-    // (WARDEN_SUMMONS; the meeting is a PLACEHOLDER scene for now). The pick waits on story.warden_met.
+    // D1395 (Vincent, Nov 3, 2026): no pick at dawn. RENDEZVOUS_VINCENT beats 1-2: Warden Ilse phones on the first step out of the
+    // Lantern House (D1404), then the Lodge debrief. The pick waits on story.warden_met until the rendezvous build moves it to rdv_done.
+    { id: 'ilse_call', when: ['story.post_trial_done', 'story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_called'],
+      text: 'Morning in Fernbrook. Step outside the Lantern House.', place: 'Fernbrook Lantern House',
+      target: { map: 'fernbrook', x: 5, y: 7 } },
     { id: 'warden_summons', when: ['story.warden_called', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_met'],
-      text: 'Warden Ilse has sent for you. Go home to Hearthmoor and see her at the Lodge.', place: 'Hearthmoor, the Lodge',
+      text: "Warden Ilse wants you home. Go to the Warden's Lodge.", place: 'Hearthmoor, the Lodge',
       npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'], target: { map: 'hm_lodge_in', x: 5, y: 3 } },
     // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
     // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.

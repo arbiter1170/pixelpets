@@ -1,4 +1,4 @@
-/* B8 Fernbrook rooms: Lantern House and Bloom Trial Hall.
+/* B8 Fernbrook rooms: Lantern House and Fernbrook Trial Hall.
    Doors keep their panel ids and also warp. Amos and Fen still run those panels.
    New skins only. Palette keys A–K and P stay as they are. Save v stays 2. */
 const { test, expect } = require('@playwright/test');
@@ -201,7 +201,7 @@ test('each room has its own skin, the floor cap, and a clear path @w1', async ({
   });
   expect(report.pal).toEqual(PAL_KEEP);
   expect(report.doors.lantern).toMatchObject({ id: 'fb_lantern', x: 5, y: 5 });
-  // LANTERN_HOUSE_FERNBROOK (rule 9, D1336) supersedes B8's orchard rest house: no hearth glyph, a Keeper runner from the
+  // LANTERN_HOUSE_FERNBROOK (rule 9, D1413) supersedes B8's orchard rest house: no hearth glyph, a Keeper runner from the
   // door to the wire set (col 5, rows 3-8 and 11-14), oak parquet. tests/lantern_house_fernbrook.spec.js checks the rest.
   expect(report.hearth).toBe(0);
   expect(report.runner).toBe(10);
