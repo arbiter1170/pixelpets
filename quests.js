@@ -36,6 +36,7 @@
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
     'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
     'story.chi_jars', 'story.shift_lamp_w', 'story.shift_lamp_n', 'story.shift_lamp_e', 'story.shift_ledger', 'story.chi_told_ledger', 'story.chi_told_lamps', 'story.chi_told_list',   // ACT1_KEEPER_JOIN: Vincent Chi's jars (WEIR_HUT §3.3) and his report hub, not steps
+    'story.sway_fernbrook', 'story.cover', 'story.ilse_call2',   // ACT1_KEEPER_JOIN: Fernbrook's sway, the face, the second call
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -142,7 +143,13 @@
     { id: 'lizzy_class', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.class_sent'], done: ['story.lizzy_class'],
       text: "Lizzy's class is on at the Hearthmoor Schoolhouse. Sit in and listen.", place: 'Hearthmoor Schoolhouse',
       npc: 'Lizzy', target: { map: 'hm_school_in', x: 10, y: 3 } },
-    { id: 'orchard', when: ['story.side_pick_done'], done: ['story.orchard_cleared'],
+    // ACT1_KEEPER_JOIN §6: `orchard` is re-keyed to the Pack lean (its result runs inside the lean, so this row only shows if a
+    // lean scene was cut short). An old-order save that picked before Hall 1 and never cleared the orchard keeps its pointer
+    // on `orchard_old` (Tobin's built battle, or the packing on a Glimmer save that has not been moved).
+    { id: 'orchard', when: ['story.orchard_lean=pack', '!story.orchard_cleared', '!story.ilse_call_old'], done: ['story.orchard_cleared'], noImply: true,
+      text: 'Tobin needs a hand packing crates at the orchard gate.', place: 'Orchard gate',
+      target: { map: 'fernbrook', x: 9, y: 14 } },
+    { id: 'orchard_old', when: ['story.side_pick_done', '!story.crates_seen'], done: ['story.orchard_cleared'],
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
       glimmer: { text: 'Tobin needs a hand packing crates at the orchard gate.', place: 'Orchard gate' },
       target: { map: 'fernbrook', x: 9, y: 14 } },
@@ -185,17 +192,29 @@
       target: { map: 'route2_glen', x: 22, y: 4 } },
     // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
     // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.
-    { id: 'pick', when: ['story.post_trial_done', 'story.warden_met | !story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],
-      text: 'Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', place: 'Orchard gate',
+    // ACT1_KEEPER_JOIN §6: the gate is now the orchard lean (D1510), after Vincent Chi's report on a crackdown save.
+    { id: 'pick', when: ['story.post_trial_done', 'story.chi_done | !story.crackdown', '!story.orchard_lean', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.orchard_lean'], noImply: true,
+      text: 'Fen, Tobin and Juniper are still at the orchard gate. The crates are waiting.', place: 'Orchard gate',
       npc: 'Master Fen', npcIds: ['fen_dawn'], target: { map: 'fernbrook', x: 9, y: 10 } },
     // D1187: after a Keepers pick on the new flow, Tobin's built battle still clears the orchard (FPT Part D is not built).
     // Its own row here, so Seal 1 never implies it; `story.crates_seen` keeps every old save off it.
     // Its done also needs story.crates_seen: a later row's done implies every earlier row, so an old save that cleared the
     // orchard before Hall 1 (kind b') must not count this row done and skip the Hall.
-    { id: 'tobin_crates', when: ['story.crates_seen', 'story.side_pick_done', '!story.side=glimmer'], done: ['story.crates_seen', 'story.orchard_cleared'],
+    { id: 'tobin_crates', when: ['story.crates_seen', 'story.orchard_lean=open | story.side_pick_done & !story.side=glimmer'], done: ['story.crates_seen', 'story.orchard_cleared'], noImply: true,
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
       target: { map: 'fernbrook', x: 9, y: 14 } },
-    { id: 'teaser', done: ['story.slice_end'],
+    // ACT1_KEEPER_JOIN §4.7 (D1511, D1553): Ilse's second call, the enrolment at the Lodge, then (lanyard face) Juniper's step.
+    // A later row's done implies the rows before it, so these dones never hold on an old save the move made a Cadet.
+    { id: 'enrol', when: ['story.orchard_cleared', 'story.orchard_lean', '!story.keeper_cadet'], done: ['story.keeper_cadet', '!story.ilse_call_old'], noImply: true,
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: 'Warden Ilse wants you at the Lodge tonight.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    { id: 'enrol_lanyard', when: ['story.cover=glimmer', '!story.side_pick_done'], done: ['story.side_pick_done', 'story.cover=glimmer'], noImply: true,
+      npc: 'Associate Juniper', npcIds: ['juniper_east', 'juniper'],
+      text: "Juniper's trial lanyard offer still stands. Find her on the east road.", place: 'Fernbrook, east road',
+      target: { map: 'fernbrook', x: 30, y: 7 } },
+    // noImply: the investigation reaches Route 2 before Rook's teaser; skipIf keeps a save past Cobblecrest from waiting on it.
+    { id: 'teaser', done: ['story.slice_end'], skipIf: ['story.reached_cobblecrest'], noImply: true,
       text: 'Rook has news, waiting outside the Trial Hall.', place: 'Trial Hall doorstep',
       glimmer: { text: 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', place: 'Trial Hall doorstep' },
       target: { map: 'fernbrook', x: 22, y: 8 } },

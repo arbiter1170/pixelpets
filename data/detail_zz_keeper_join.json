@@ -22,7 +22,12 @@
   "story.shift_lamp_e": "3b: the east lamp's lens wiped",
   "story.shift_ledger": "3c-3h: the ledger on the crate read",
   "story.shift_g": "3i: Imogen's day shift done",
-  "story.shift_k": "4l: the Keeper Scout's dusk watch done"
+  "story.shift_k": "4l: the Keeper Scout's dusk watch done",
+  "story.orchard_lean": "4.6 (D1510): open / pack, the orchard lean; or the old-save move (§9)",
+  "story.sway_fernbrook": "D1504-D1506: Fernbrook's sway, an int -3..3 (lean ±2, face ±1, old-save seed, Act 3 switch -2)",
+  "story.ilse_call2": "4.7: Ilse's second call answered (or Amos passes it on without a Keeper1)",
+  "story.keeper_cadet": "7f: the holder is a Keeper Cadet (or the old-save move). Never cleared",
+  "story.cover": "7j: glimmer = the lanyard face, undercover for Ilse"
  },
  "slicePatch": {
   "maps": {
@@ -89,7 +94,7 @@
   }
  },
  "objPatch": {
-  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights. Vincent Chi's body (chi_hut) and the first-step trigger (chi_hut_first, scene chi_meet) come with the weir hut room (WEIR_HUT, detail_zz_weir_hut.json); his lines are keyed here.",
+  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights. Vincent Chi's body (chi_hut) and the first-step trigger (chi_hut_first, scene chi_meet) come with the weir hut room (WEIR_HUT, detail_zz_weir_hut.json); his lines are keyed here. 4.6-4.7 (D1510, D1511, D1553): the lean waits for Vincent Chi's report on a crackdown save; Tobin's battle stands for an Open lean; Ilse enrols at the Lodge; the lanyard face takes effect at Juniper (either body). D1561: a Glimmerwell-held Fernbrook keeps one Keeper post; Constable Rue says why.",
   "fb_east": {
    "when": [
     "story.seal1",
@@ -151,6 +156,52 @@
    "linesFirst": {
     "story.met_lead & story.chi_met & !story.shift_g & !story.shift_ledger": "@shift_ledger"
    }
+  },
+  "fb_side_pick": {
+   "when": [
+    "!story.orchard_lean",
+    "!story.side_pick_done",
+    "!story.orchard_cleared",
+    "story.seal1",
+    "story.lizzy_class",
+    "story.post_trial_done",
+    "story.chi_done | !story.crackdown"
+   ]
+  },
+  "fern_associate": {
+   "when": [
+    "!story.side=glimmer",
+    "story.side_pick_done | story.orchard_cleared | story.orchard_lean=open"
+   ]
+  },
+  "ilse_lodge_after": {
+   "linesFirst": {
+    "story.ilse_call2 & !story.keeper_cadet": "@enrol",
+    "story.cover=glimmer & !story.side_pick_done": "Juniper's offer still stands. Take it. Smile. Remember your home.",
+    "story.orchard_lean & !story.keeper_cadet & !story.ilse_call2": "Fen's crates first. I'll call when it's time.",
+    "story.chi_done & !story.side_pick_done": "Go home by the orchard first. Then come to me.",
+    "story.chi_met & !story.side_pick_done": "Vincent Chi will want both shifts. Go and look."
+   }
+  },
+  "juniper_east": {
+   "linesFirst": {
+    "story.cover=glimmer & !story.side_pick_done": "@enrol_lanyard"
+   }
+  },
+  "juniper": {
+   "linesFirst": {
+    "story.cover=glimmer & !story.side_pick_done": "@enrol_lanyard"
+   }
+  },
+  "fb_constable": {
+   "linesFirst": {
+    "story.keeper_cadet & story.side_pick_done & story.sway_fernbrook<=-2": "We pulled back to the post after the curfew. We're still here."
+   }
+  },
+  "fb_tobin": {
+   "whenAdd": [
+    "!story.orchard_lean"
+   ]
   }
  },
  "looks": {
@@ -585,6 +636,258 @@
     "story.shift_k",
     true
    ]
+  ],
+  "ilse_call2": [
+   [
+    "if",
+    "story.phone_got",
+    [
+     [
+      "say",
+      "",
+      "Your Keeper1 buzzes in your pocket. WARDEN ILSE."
+     ],
+     [
+      "choice",
+      "Warden Ilse is calling.",
+      [
+       [
+        "Answer",
+        [
+         [
+          "say",
+          "Warden Ilse",
+          "Things are changing. In the shadows. I can feel it from here."
+         ],
+         [
+          "say",
+          "Warden Ilse",
+          "Come home tonight. Before anyone else sends for you."
+         ],
+         [
+          "setFlag",
+          "story.ilse_call2",
+          true
+         ]
+        ]
+       ]
+      ],
+      "Warden Ilse"
+     ]
+    ],
+    [
+     [
+      "say",
+      "",
+      "Keeper Amos hurries up from the Lantern House, out of breath."
+     ],
+     [
+      "say",
+      "Keeper Amos",
+      "{name}. Warden Ilse sent word down the wire. Things are changing, she says. Come home tonight."
+     ],
+     [
+      "setFlag",
+      "story.ilse_call2",
+      true
+     ]
+    ]
+   ]
+  ],
+  "enrol": [
+   [
+    "say",
+    "Warden Ilse",
+    "Show me what you saw. ... Six Seals. And a list with your name at the bottom."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "There's a list in a Commander's tent with your name on it. I'd rather you were on mine."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "I pulled every string I have left. The rank and file still listen to a Warden."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "As of tonight, you're a Keeper Cadet. You answer to me, and only to me."
+   ],
+   [
+    "setFlag",
+    "story.keeper_cadet",
+    true
+   ],
+   [
+    "toast",
+    "You're a Keeper Cadet."
+   ],
+   [
+    "if",
+    "story.orchard_lean=pack",
+    [
+     [
+      "say",
+      "Warden Ilse",
+      "You've already got their ear. That's worth something to me."
+     ]
+    ],
+    [
+     [
+      "say",
+      "Warden Ilse",
+      "They'll want you more for saying no. They always do."
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "So. Wear the pin where everyone can see it. Or wear their lanyard, and tell me what they do."
+   ],
+   [
+    "choice",
+    "Which do you wear?",
+    [
+     [
+      "Wear the Cadet pin",
+      [
+       [
+        "inc",
+        "story.sway_fernbrook",
+        1
+       ],
+       [
+        "setFlag",
+        "story.side_pick_done",
+        true
+       ],
+       [
+        "standing",
+        "keepers",
+        null,
+        "sp_pick"
+       ],
+       [
+        "say",
+        "Warden Ilse",
+        "Then walk tall. And remember your home."
+       ],
+       [
+        "run",
+        "know_us"
+       ]
+      ]
+     ],
+     [
+      "Wear their lanyard for Ilse",
+      [
+       [
+        "setFlag",
+        "story.cover",
+        "glimmer"
+       ],
+       [
+        "say",
+        "Warden Ilse",
+        "Juniper's offer still stands. Take it. Smile. Remember your home."
+       ]
+      ]
+     ]
+    ],
+    "Warden Ilse"
+   ]
+  ],
+  "enrol_lanyard": [
+   [
+    "say",
+    "Associate Juniper",
+    "You came back! I knew you had sparkle. Trial lanyard, as promised!"
+   ],
+   [
+    "setFlag",
+    "story.side",
+    "glimmer"
+   ],
+   [
+    "setFlag",
+    "story.side_pick_done",
+    true
+   ],
+   [
+    "inc",
+    "story.sway_fernbrook",
+    -1
+   ],
+   [
+    "standing",
+    "glimmer",
+    null,
+    "sp_pick"
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "Yay! Welcome to the partnership, {name}! Brighter by nature."
+   ],
+   [
+    "if",
+    "story.seal1",
+    [
+     [
+      "seal",
+      "seal_glim_1"
+     ],
+     [
+      "run",
+      "pick_log"
+     ]
+    ]
+   ],
+   [
+    "say",
+    "",
+    "Juniper presses a thin handset into your hand. No crest. It still sits on their wires."
+   ],
+   [
+    "give",
+    "cracked_phone",
+    1
+   ],
+   [
+    "run",
+    "know_us"
+   ]
   ]
- }
+ },
+ "calls": [
+  {
+   "id": "ilse_call2",
+   "when": [
+    "story.orchard_cleared",
+    "story.orchard_lean",
+    "!story.ilse_call2",
+    "!story.keeper_cadet"
+   ],
+   "scene": "ilse_call2",
+   "_note": "4.7: the first outdoor step after the lean's result, with no scene running (E7)."
+  }
+ ],
+ "lineSwaps": [
+  {
+   "_note": "4.6: the Pack lean runs the built packing result; Tobin's last line no longer opens a partnership file (no side is set).",
+   "scene": "orchard@glimmer",
+   "when": "story.orchard_lean=pack & !story.side_pick_done",
+   "text": "Great work! Your partnership file is open. Have a bright day!",
+   "to": [
+    [
+     "say",
+     "Tobin",
+     "Great work! Units packed. Have a bright day!"
+    ]
+   ]
+  }
+ ]
 }

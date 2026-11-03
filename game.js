@@ -1160,7 +1160,9 @@ function drainToast(){
   };
   step();
 }
+const toastLog = [];   // ?debug=1 only: every toast shown this session (tests read PixelPets.toasts)
 function toast(msg){
+  if (DEBUG && toastLog.length < 200) toastLog.push(String(msg));
   if (careLes.holdEarly) { careLes.held.push(msg); return; }
   if (!mhcToastOn()) {
     toastGen++; toastQ = []; toastBusy = false;
@@ -6089,6 +6091,7 @@ function onLand(){
     save();
   }
   if (checkTriggers()) { if (mapRT.grace > 0) mapRT.grace--; return; }
+  if (checkCalls()) return;
   const spottedNow = checkSight();   // grace is read first, then this step spends one (D280: step 3 is the first that can re-arm)
   if (mapRT.grace > 0) mapRT.grace--;
   if (spottedNow) return;
@@ -6599,7 +6602,7 @@ function checkTriggers(){
     if (o.kind !== 'trigger') continue;
     const inside = present(o) && Math.abs(o.x - x) + Math.abs(o.y - y) <= (o.r || 0);
     if (!inside) {
-      if (o.id === 'fb_side_pick' && mapRT.trig[o.id] && !S.flags['story.side_pick_done']) {
+      if (o.id === 'fb_side_pick' && mapRT.trig[o.id] && !S.flags['story.side_pick_done'] && !S.flags['story.orchard_lean']) {   // the lean is made: no walk-away line
         const lines = (MD.glimmer_path && MD.glimmer_path.walkAway) || [];
         if (lines.length) { toast(lines[walkAwayI % lines.length]); walkAwayI++; }
       }
@@ -6608,6 +6611,21 @@ function checkTriggers(){
     }
     if (mapRT.trig[o.id]) continue;
     mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
+  }
+  return false;
+}
+// ACT1_KEEPER_JOIN E7: story calls (data/detail_*.json `calls`: { id, when, scene }). The first free outdoor step with no scene,
+// fade, sheet or battle rings the first call whose `when` holds (Ilse's second call, the recall). The scene's own answer writes
+// the flag that ends its `when`; until then it rings again on the next outdoor step, like the dawn call (D1404).
+function oldSaveMoveDue(){}   // ACT1_KEEPER_JOIN §9.1: the old-save move (K8)
+const STORY_CALLS = [].concat(...DETAIL_KEYS.map(k => MD[k].calls || [])).filter(c => c && c.scene);
+function checkCalls(){
+  if (!S || !CUR || scene || fade.busy || overlayOpen() || (battle && battle.on)) return false;
+  oldSaveMoveDue();
+  if (isRoom() || /^dream/.test(CUR.id)) return false;
+  for (const c of STORY_CALLS) {
+    if (!SCENES[c.scene] || !(c.when || []).every(w => cond(w, false))) continue;
+    clearMoves(); runScene(c.scene); return true;
   }
   return false;
 }
@@ -9955,6 +9973,7 @@ async function execStep(st){
       return;
     }
     case 'sfx': { if (a) sfx(a); return; }
+    case 'toast': { if (a) sc.toasts.push(expand(a)); return; }   // ACT1_KEEPER_JOIN 7g: a toast once the scene ends
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
     case 'music': { if (a && !sc.skip) { sc.musicCue = a; try { PPSound.music(a, { fadeOut: 180, fadeIn: 140 }); } catch (e) {} } return; }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
@@ -18283,9 +18302,16 @@ function applyCheckpoint(id){
     reconcileChain(PPQuests.CHAIN, mainI);
     // DAY1_TRIAL1_FLOW §11: the pick now comes after Hall 1 and the post-Trial slot. A checkpoint at or before the `pick`
     // row builds a new-flow save (no pick, orchard not cleared, no Heights); after it, the pick and the orchard come together.
-    const pickAt = PPQuests.CHAIN.findIndex(e => e.id === 'pick');
-    if (pickAt >= 0 && mainI > pickAt) { S.flags['story.side_pick_done'] = true; S.flags['story.orchard_cleared'] = true; }
-    else if (pickAt >= 0) { delete S.flags['story.side_pick_done']; delete S.flags['story.orchard_cleared']; delete S.flags['story.heights_done']; }
+    // ACT1_KEEPER_JOIN: `pick` is the orchard lean; tobin_crates, enrol and enrol_lanyard sit between the lean and the face.
+    // From Rook's teaser on, a checkpoint builds a save that picked before the join (and is marked past the old-save move).
+    const pickAt = PPQuests.CHAIN.findIndex(e => e.id === 'pick'), joinAt = PPQuests.CHAIN.findIndex(e => e.id === 'teaser');
+    const unjoin = () => { for (const k of ['story.keeper_cadet', 'story.cover', 'story.orchard_lean', 'story.side_pick_done']) delete S.flags[k]; };
+    if (pickAt >= 0 && mainI > pickAt && joinAt >= 0 && mainI < joinAt) {
+      unjoin(); S.flags['story.orchard_lean'] = 'open'; S.flags['story.orchard_cleared'] = true;
+      if (id === 'tobin_crates') delete S.flags['story.orchard_cleared'];
+      if (id === 'enrol_lanyard') { S.flags['story.keeper_cadet'] = true; S.flags['story.cover'] = 'glimmer'; }
+    } else if (pickAt >= 0 && mainI > pickAt) { unjoin(); S.flags['story.side_pick_done'] = true; S.flags['story.orchard_cleared'] = true; S.flags['story.ilse_call_old'] = true; }
+    else if (pickAt >= 0) { unjoin(); delete S.flags['story.orchard_cleared']; delete S.flags['story.heights_done']; }
     if (!S.flags['story.seal1']) { delete S.flags['story.tour1_s1']; delete S.flags['story.tour1_s2']; delete S.flags['story.tour1_s3']; }
     if (S.flags['story.rival1_done']) S.flags['story.early_done'] = true;
     syncDebugSeals();
@@ -18372,6 +18398,7 @@ function setFaction(sd, opts){
   const wasPick = !!S.flags['story.side_pick_done'];
   if (sd === 'keepers') delete S.flags['story.side']; else S.flags['story.side'] = 'glimmer';
   if (!opts || opts.picked !== false) S.flags['story.side_pick_done'] = true;
+  if (S.flags['story.side_pick_done'] && !S.flags['story.keeper_cadet']) S.flags['story.ilse_call_old'] = true;   // a debug pick is past the old-save move
   if (!wasPick && S.flags['story.side_pick_done']) noteRepJoin();   // D178
   syncSide(); save();
   return { ok: true, side: side(), picked: !!S.flags['story.side_pick_done'] };
@@ -19950,6 +19977,7 @@ function boot(){
   api.standingStill = () => DEBUG ? standingStill() : undefined;
   api.lanternRestFlag = () => DEBUG && scene && scene.view ? (scene.view.flags['lantern.rest'] || null) : undefined;
   api.holderDrawn = () => DEBUG ? (((shownLook() || {}).accessory) || 'none') : undefined;
+  Object.defineProperty(api, 'toasts', { enumerable: true, get(){ return DEBUG ? toastLog.slice() : null; } });
   api.talkTo = id => { if (!DEBUG) return undefined; const o = objById(id); if (!o || scene) return false; interact(o); return true; };
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));

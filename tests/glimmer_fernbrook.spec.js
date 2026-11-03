@@ -130,11 +130,17 @@ test('glimmer path: orchard, tour stops, skippable match, lanyard, teaser', asyn
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Pack crates with Tobin', 'Yes, Glimmerwell', 'Pat the crate', "They'll be comfy"], async (prompt) => {
+  // ACT1_KEEPER_JOIN: the gate is now the orchard lean (no side), and the lanyard face is Juniper's step (4.6, 4.7).
+  await playScene(page, ['Help Tobin pack', 'Pat the crate', "They'll be comfy"], async (prompt) => {
     if (page.viewportSize().width === 375) return;
-    if (prompt === 'Who do you help?') await shot(page, 'side_pick');
+    if (prompt === 'What do you do?') await shot(page, 'side_pick');
     if (prompt === 'The Pomlet blinks at you.') await shot(page, 'orchard_glimmer');
   });
+  await page.evaluate(() => PixelPets.setFlag('story.ilse_call2', true));
+  expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);
+  await playScene(page, ['Wear their lanyard for Ilse']);
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
   const packed = await page.evaluate(() => ({
     side: PixelPets.side,
     cleared: PixelPets.state.flags['story.orchard_cleared'],

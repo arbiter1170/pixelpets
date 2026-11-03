@@ -303,7 +303,9 @@ const COPY = {
   home_trip: ['Head home to Hearthmoor. Mom has plans for you and your Walkling.', 'Hearthmoor, home'],   // no live `mom` step here (no starter), so its own copy
   mom_class: ['Mom wants a word before you head out again.', 'Hearthmoor, home'],
   lizzy_class: ["Lizzy's class is on at the Hearthmoor Schoolhouse. Sit in and listen.", 'Hearthmoor Schoolhouse'],
-  orchard: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
+  // ACT1_KEEPER_JOIN §6: `orchard` is the Pack lean's row; an old-order save keeps the built copy on `orchard_old`.
+  orchard: ['Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
+  orchard_old: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
   hall1_holders: ['Three holders stand between you and Master Fen. Win all three matches in the Trial Hall.', 'Fernbrook Trial Hall'],
   hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", 'Fernbrook Trial Hall'],
   // POST_TRIAL_CRACKDOWN and D1395 (Warden Ilse's summons before the pick).
@@ -311,8 +313,14 @@ const COPY = {
   post_trial: ['Get to the Lantern House.', 'Fernbrook Lantern House'],
   ilse_call: ['Morning in Fernbrook. Step outside the Lantern House.', 'Fernbrook Lantern House'],
   warden_summons: ["Warden Ilse wants you home. Go to the Warden's Lodge.", 'Hearthmoor, the Lodge'],
-  pick: ['Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', 'Orchard gate'],
+  // ACT1_KEEPER_JOIN (PLACEHOLDER): the Wickerglen investigation, the orchard lean, the enrolment.
+  chi_meet: ["Find Vincent Chi, past the fallen trunk at Wickerglen's east edge.", 'Wickerglen, east edge'],
+  chi_shifts: ["Work a day with Imogen's lamp crew and a dusk watch with the Keeper Scout.", 'Wickerglen'],
+  chi_report: ['Tell Vincent Chi what you saw.', 'The weir hut'],
+  pick: ['Fen, Tobin and Juniper are still at the orchard gate. The crates are waiting.', 'Orchard gate'],
   tobin_crates: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate'],
+  enrol: ['Warden Ilse wants you at the Lodge tonight.', 'Hearthmoor, the Lodge'],
+  enrol_lanyard: ["Juniper's trial lanyard offer still stands. Find her on the east road.", 'Fernbrook, east road'],
   teaser: ['Rook has news, waiting outside the Trial Hall.', 'Trial Hall doorstep', 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', 'Trial Hall doorstep'],
   route2: ['The rubble east of Fernbrook is cleared. Route 2 is waiting.', 'Fernbrook, east edge'],
   census: ['Follow Route 2 east. Glimmerwell has set something up halfway along.', 'Route 2, halfway', 'The Glow Census tent is halfway along Route 2. They need volunteers.', 'Route 2, halfway'],
@@ -358,19 +366,31 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
       // BRINEWICK: story.route3_open is only ever set after the chapter end (D848), so the Keepers council is done by then.
       if (flags['story.route3_open']) flags['story.hc_council_done'] = true;
       // DAY1_TRIAL1_FLOW: Tobin's post-pick row comes after the Heights pointer, so the Heights are done by then.
-      if (e.id === 'tobin_crates' || e.id === 'orchard') flags['story.heights_done'] = true;   // both come after the Heights pointer
+      if (e.id === 'tobin_crates' || e.id === 'orchard' || e.id === 'orchard_old') flags['story.heights_done'] = true;   // all come after the Heights pointer
+      if (i > Q.CHAIN.findIndex(x => x.id === 'teaser')) flags['story.slice_end'] = true;   // ACT1_KEEPER_JOIN: the teaser is noImply now
       if (e.id === 'mom_class') flags['story.dream_woke'] = true;   // home_trip's done is an OR string, not one flag
       const st = (side) => ({ flags: Object.assign({ 'story.side': side }, flags), seals: {}, pets: 1 });
       const k = Q.current(st('keepers')), g = Q.current(st('glimmer'));
       out.rows[e.id] = { kid: k && k.id, ktext: k && k.text, kplace: k && k.place, gid: g && g.id, gtext: g && g.text, gplace: g && g.place };
+      const rk = Q.resolve(e, st('keepers')), rg = Q.resolve(e, st('glimmer'));
+      out.rows[e.id].copy = { ktext: rk.text, kplace: rk.place, gtext: rg.text, gplace: rg.place };
     });
     return out;
   });
   expect(seen.check).toEqual([]);
   expect(seen.ids).toEqual(Object.keys(COPY));
   let overrides = 0;
+  // ACT1_KEEPER_JOIN rows key on story states this one-flag walk cannot build (a lean value, a face, an old-save move);
+  // their copy is checked as written, and tests/act1_keeper_join.spec.js checks where each one shows.
+  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge']);
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
+    if (COPY_ONLY.has(id)) {
+      expect([r.copy.ktext, r.copy.kplace], id).toEqual([row[0], row[1]]);
+      expect([r.copy.gtext, r.copy.gplace], id + '@glimmer').toEqual([row[2] || row[0], row[3] || row[1]]);
+      if (row[2]) overrides++;
+      continue;
+    }
     if (id === 'hc_council') {
       expect(r.kid, id).toBe(id);
       expect(r.ktext, id).toBe(row[0]);

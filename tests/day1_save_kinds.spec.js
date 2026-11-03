@@ -23,7 +23,8 @@ const KINDS = Object.assign({}, K.KINDS, {
 const WANT = {
   a1: { quest: 'heights', door: false, deny: 'latched', pick: false, tally: false, battle: true, fenOrchard: true, hold: 'split', contest: true },
   // a1 after the Heights still points at the orchard (Tobin's battle): no new row may count as done on an old save.
-  a1_after_heights: { quest: 'orchard', door: false, deny: 'latched', pick: false, tally: false, battle: true, fenOrchard: true, hold: 'split', contest: true },
+  // ACT1_KEEPER_JOIN §6: `orchard` is re-keyed to the Pack lean, so an old-order save's pointer is `orchard_old`.
+  a1_after_heights: { quest: 'orchard_old', door: false, deny: 'latched', pick: false, tally: false, battle: true, fenOrchard: true, hold: 'split', contest: true },
   a2: { quest: 'heights', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
   b: { quest: 'teaser', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
   "b'": { quest: 'hall1_holders', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },

@@ -153,9 +153,10 @@ test('T-ORDER: cond() and evalCond agree on every §7.1 gate string, for every s
   // The OR forms are really there (one entry each, never glued to an AND in one string except where | splits first).
   expect(strings).toEqual(expect.arrayContaining([
     'story.side_pick_done | story.orchard_cleared',
-    '!story.seal1 | !story.side_pick_done & !story.orchard_cleared',
-    // DAY1_TRIAL1_FLOW D1169 (was story.crates_seen | story.orchard_cleared), and D1432: shut once Seal 1 and the pick are in.
-    'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done',
+    // ACT1_KEEPER_JOIN (D1551): the rubble also clears on story.warden_met.
+    '!story.seal1 | !story.side_pick_done & !story.orchard_cleared & !story.warden_met',
+    // DAY1_TRIAL1_FLOW D1169 (was story.crates_seen | story.orchard_cleared), and D1432: shut once Seal 1 and the enrolment are in.
+    'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done & !story.keeper_cadet',
     'story.reached_cobblecrest | story.seal1 & !story.crates_seen',
     'story.side_pick_done | story.pitch_k & story.pitch_g',
   ]));
@@ -274,7 +275,9 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
     const cmp = (id, src, skip) => {
       const a = Object.assign({}, overlay(id)), b = Object.assign({}, src);
       for (const k of skip) { delete a[k]; delete b[k]; }
-      out[id] = JSON.stringify(a) === JSON.stringify(b) && JSON.stringify(live(id).when) === JSON.stringify(overlay(id).when);
+      // ACT1_KEEPER_JOIN (D1551): objPatch re-gates a few of them last (fb_east, the Route 2 sign, the rubble, Tobin's battle).
+      const join = (MAPDATA.detail_zz_keeper_join.objPatch[id] || {}).when;
+      out[id] = JSON.stringify(a) === JSON.stringify(b) && JSON.stringify(live(id).when) === JSON.stringify(join || overlay(id).when);
     };
     for (const id of ['fb_east', 'fb_sign_route2_open', 'fb_rubble', 'fb_sign_route2']) cmp(id, route2(id), ['when']);
     for (const id of ['rook_fb', 'fb_teaser']) cmp(id, slice(id), ['when']);
@@ -294,10 +297,10 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
     fb_east: true, fb_sign_route2_open: true, fb_rubble: true, fb_sign_route2: true, rook_fb: true, fb_teaser: true, fb_hall: true,
     fen_orchard: true, fern_associate: true, fb_crate_a: true, fb_crate_b: true, fb_sign_hall: true,
     // D1169, and D1432: shut once Seal 1 and the pick are both in.
-    hallNeed: 'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done',
+    hallNeed: 'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done & !story.keeper_cadet',
     hallShut: 'story.hall1_shut',
     // June's line while Day 1 is not done (FPT §2.1); Fen's note while she is away (DAY1_TRIAL1_FLOW §7, PLACEHOLDER).
-    hallDeny: { 'story.hall1_shut': 'Shut by order of High Charity. A Keeper cordon blocks the door.', 'story.seal1 & story.side_pick_done': "Shut by Keeper order. Master Fen's Hall stays closed for now.", '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
+    hallDeny: { 'story.hall1_shut': 'Shut by order of High Charity. A Keeper cordon blocks the door.', 'story.seal1 & story.side_pick_done | story.seal1 & story.keeper_cadet': "Shut by Keeper order. Master Fen's Hall stays closed for now.", '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
     count: 7,
     slips: ['The Trial Hall is latched. Tobin is by the orchard gate, counting crates.', 'The Trial Hall is shut. Master Fen is away on Keeper business.', 'The Trial Hall is open. The steps were swept this morning.'],
   });

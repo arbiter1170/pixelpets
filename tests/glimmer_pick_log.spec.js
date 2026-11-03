@@ -16,9 +16,12 @@ const BEAT = [
   ['Associate Juniper', 'Gorgeous! Brighter by nature. Have a bright day!'],
 ];
 const WELCOME = /^Yay! Welcome to the partnership, .+! Brighter by nature\.$/;
-const TOBIN = 'Grab that crate lid, trainee. First rule: always smile at the units.';
-const GLIMMER = ['Pack crates with Tobin', 'Yes, Glimmerwell', 'Pat the crate', 'I\'m sorry, Fen'];
-const KEEPERS = ['Open the crates with Fen', 'Yes, the Keepers'];
+// ACT1_KEEPER_JOIN (D1553): the beat moved from the Glimmer pick to Juniper's lanyard step (enrol_lanyard), after Ilse's
+// enrolment on the lanyard face. The line after the beat is the handset (the old pick's Tobin line is retired).
+const TOBIN = 'Juniper presses a thin handset into your hand. No crest. It still sits on their wires.';
+const GLIMMER = [];
+const KEEPERS = ['Wear the Cadet pin'];
+const LANYARD = { 'story.orchard_lean': 'pack', 'story.orchard_cleared': true, 'story.sway_fernbrook': -2, 'story.ilse_call2': true, 'story.keeper_cadet': true, 'story.cover': 'glimmer' };
 
 // A new-flow save standing at the orchard gate: Day 1, Lizzy's class, the three holders, Fen's Seal and the post-Trial slot.
 const AT_PICK = {
@@ -93,17 +96,16 @@ for (const reduce of [false, true]) {
   test(`new save, Glimmer pick: Juniper logs the Seal, the photo goes up, unease +1${reduce ? ' (reduced motion)' : ''}`, async ({ page }) => {
     test.setTimeout(90000);
     if (reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
-    const save = pickSave();
+    const save = pickSave(LANYARD);
     await boot(page, save);
     if (reduce) expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
     const before = await flags(page);
     expect(before['story.tour1_s1']).toBeFalsy();
     expect(before['story.tour_unease']).toBeFalsy();
-    // The real trigger: step into the orchard gate.
-    expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_side_pick').whenOk)).toBe(true);
-    await page.evaluate(() => PixelPets.goto('fernbrook', 9, 9, 'down'));
-    await page.evaluate(() => PixelPets.walkStep('down'));
-    await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'side_pick');
+    // The real body: Juniper by her stand (no crackdown on this save), keyed on the lanyard face.
+    await page.evaluate(() => PixelPets.goto('fernbrook', 14, 7, 'up'));
+    expect(await page.evaluate(() => PixelPets.talkTo('juniper'))).toBe(true);
+    await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'enrol_lanyard');
     const w = page.viewportSize().width;
     const lines = await playLogged(page, GLIMMER, async (who, text) => {
       if (reduce || (w !== 390 && w !== 320)) return;
@@ -117,7 +119,7 @@ for (const reduce of [false, true]) {
     expect(lines.slice(at, at + BEAT.length)).toEqual(BEAT);
     expect(lines[at - 1][0]).toBe('Associate Juniper');
     expect(lines[at - 1][1]).toMatch(WELCOME);
-    expect(lines[at + BEAT.length]).toEqual(['Tobin', TOBIN]);
+    expect(lines[at + BEAT.length]).toEqual(['', TOBIN]);
     expect(lines.filter(l => l[1] === BEAT[2][1]).length).toBe(1);
     // Flags: the photo flag and one point of unease; the lanyard sits beside the Seal.
     const f = await flags(page);
@@ -148,14 +150,14 @@ for (const reduce of [false, true]) {
 
 test('a save that already took the Tour: no beat at the pick and no second point of unease', async ({ page }) => {
   test.setTimeout(60000);
-  await boot(page, pickSave({ 'story.tour1_s1': true, 'story.tour1_s2': true, 'story.tour1_s3': true, 'story.tour_unease': 2 }));
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
+  await boot(page, pickSave(Object.assign({ 'story.tour1_s1': true, 'story.tour1_s2': true, 'story.tour1_s3': true, 'story.tour_unease': 2 }, LANYARD)));
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
   const lines = await playLogged(page, GLIMMER);
   expect(beatAt(lines)).toBe(-1);
   expect(lines.some(l => l[1] === BEAT[2][1])).toBe(false);
   const iw = lines.findIndex(l => WELCOME.test(l[1]));
   expect(iw).toBeGreaterThanOrEqual(0);
-  expect(lines[iw + 1]).toEqual(['Tobin', TOBIN]);
+  expect(lines[iw + 1]).toEqual(['', TOBIN]);
   const f = await flags(page);
   expect(f['story.tour_unease']).toBe(2);
   expect(f['story.side']).toBe('glimmer');
@@ -178,8 +180,8 @@ test('an old Tour save (the photo already raised unease) keeps its count if the 
 
 test('Keepers pick: no Juniper beat, no photo flag, no unease', async ({ page }) => {
   test.setTimeout(60000);
-  await boot(page, pickSave());
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
+  await boot(page, pickSave({ 'story.orchard_lean': 'open', 'story.orchard_cleared': true, 'story.ilse_call2': true }));
+  expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);   // the pin face
   const lines = await playLogged(page, KEEPERS);
   expect(beatAt(lines)).toBe(-1);
   expect(lines.some(l => BEAT.some(b => b[1] === l[1]))).toBe(false);
@@ -205,7 +207,7 @@ test('copy: the beat is PLACEHOLDER, fits 110, keeps the Glimmerwell voice and n
     expect(text.length).toBeLessThanOrEqual(110);
     expect(text).not.toMatch(/\b(chips?|chipped|relays?|melt\w*|why|fainted|evolv\w*|coins?|appeared|trainer|alien)\b|dex\b|\s{2}/i);
   }
-  // The side_pick hook sits inside the Seal branch, right after the lanyard.
-  const hook = await page.evaluate(() => MAPDATA.glimmer_path.scenes.side_pick);
+  // The hook sits inside the Seal branch of Juniper's lanyard step, right after the lanyard (D1553).
+  const hook = await page.evaluate(() => MAPDATA.detail_zz_keeper_join.scenes.enrol_lanyard);
   expect(JSON.stringify(hook)).toContain('["if","story.seal1",[["seal","seal_glim_1"],["run","pick_log"]]]');
 });

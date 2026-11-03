@@ -285,9 +285,7 @@ async function dayShift(page, ask) {
 async function nightWatch(page, ask) {
   await goto(page, 'route2_glen', 12, 15, 'right');
   expect(await ids(page)).toContain('glen_scout');
-  let curtain = false;
-  const lines = await talk(page, 'glen_scout', [ask ? 'Ask about the list' : 'Say nothing']);
-  return lines;
+  return talk(page, 'glen_scout', [ask ? 'Ask about the list' : 'Say nothing']);
 }
 
 test.describe('ACT1_KEEPER_JOIN: the two shifts in Wickerglen (K5)', () => {
@@ -339,5 +337,183 @@ test.describe('ACT1_KEEPER_JOIN: the two shifts in Wickerglen (K5)', () => {
     expect(f['story.shift_g']).toBe(true);
     expect(f['story.chi_jars']).toBe(3);
     expect((await quest(page)).id).toBe('chi_report');
+  });
+});
+
+const DONE = Object.assign({}, CHI, { 'story.chi_jars': 6, 'story.shift_g': true, 'story.shift_k': true, 'story.met_lead': true, 'story.chi_done': true });
+async function fight(page, id) {
+  expect(await page.evaluate(i => PixelPets.talkTo(i), id), id).toBe(true);
+  for (let i = 0; i < 160 && !(await page.evaluate(() => !!(PixelPets.battle && PixelPets.battle.on && PixelPets.battle.state === 'CHOOSE'))); i++) {
+    const st = await page.evaluate(() => ({ s: PixelPets.scene && { mode: PixelPets.scene.mode, waiting: PixelPets.scene.waiting, full: PixelPets.scene.full }, b: !!(PixelPets.battle && PixelPets.battle.on) }));
+    if (st.s && st.s.mode === 'say' && st.s.waiting) await page.keyboard.press('Space');
+    else if (st.b) await page.locator('#btMsg').click().catch(() => {});
+    await page.waitForTimeout(60);
+  }
+  await page.evaluate(() => PixelPets.winBattle());
+  const lines = [];
+  for (let i = 0; i < 120; i++) {
+    const st = await page.evaluate(() => ({ b: !!(PixelPets.battle && PixelPets.battle.on), panel: PixelPets.battle && PixelPets.battle.panel, scene: !!PixelPets.scene }));
+    const sealUp = await page.locator('#ovBattle.seal-only').isVisible().catch(() => false);
+    if (!st.b && !st.scene && !sealUp) break;
+    if (sealUp) await page.locator('#btOk').click();
+    else if (st.b && st.panel === 'end') await page.locator('#btOk').click();
+    else if (st.b) await page.locator('#btMsg').click().catch(() => {});
+    else lines.push(...await drive(page));
+    await page.waitForTimeout(80);
+  }
+  return lines;
+}
+async function lean(page, pick) {
+  await goto(page, 'fernbrook', 9, 9, 'down');
+  await step(page, 'down');
+  expect(await sceneId(page)).toBe('side_pick');
+  return drive(page, [pick, 'Pat the crate', "I'm sorry, Fen"]);
+}
+async function secondCall(page) {
+  await goto(page, 'fernbrook', 12, 8, 'down');
+  await step(page, 'down');
+  expect(await sceneId(page)).toBe('ilse_call2');
+  return drive(page, ['Answer']);
+}
+async function enrolment(page, face) {
+  await goto(page, 'hm_lodge_in', 5, 5, 'up');
+  expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
+  expect(await sceneId(page)).toBe('enrol');
+  return drive(page, [face === 'pin' ? 'Wear the Cadet pin' : 'Wear their lanyard for Ilse']);
+}
+const len110 = lines => { for (const l of lines) if (l[0] !== '>') expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110); };
+
+test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () => {
+  test('T6, T8, T9: Open the crates, Tobin\'s battle, the second call, the Cadet pin', async ({ page }) => {
+    test.setTimeout(180000);
+    await boot(page, joinSave(DONE));
+    const before = await stored(page);
+    // The gate waits for Vincent Chi's report (the lean's when); with it, the lean plays.
+    expect((await quest(page)).id).toBe('pick');
+    const ln = await lean(page, 'Open the crates with Fen');
+    len110(ln);
+    expect(ln[1]).toEqual(['Master Fen', "You've seen where the crates go. Help me open them, or help them pack."]);
+    expect(said(ln, /This decides who you travel with|Really\?|Paths do bend|Welcome to the partnership/)).toBe(false);   // retired lines
+    let f = await flags(page);
+    expect(f['story.orchard_lean']).toBe('open');
+    expect(f['story.sway_fernbrook']).toBe(2);
+    expect(f['story.fen_lean']).toBe(3);
+    expect(f['story.side']).toBeUndefined();
+    expect(f['story.side_pick_done']).toBeUndefined();
+    expect(f['story.keeper_cadet']).toBeUndefined();
+    // No walk-away line once the lean is made.
+    const toasts0 = (await page.evaluate(() => PixelPets.toasts)).length;
+    await step(page, 'up');
+    expect((await page.evaluate(() => PixelPets.toasts)).length).toBe(toasts0);
+    // Tobin's built battle frees the Pomlets (D1187).
+    expect((await quest(page)).id).toBe('tobin_crates');
+    await goto(page, 'fernbrook', 9, 12, 'down');
+    const won = await fight(page, 'fern_associate');
+    expect(said(won, /Pomlets tumble out/)).toBe(true);
+    f = await flags(page);
+    expect(f['story.orchard_cleared']).toBe(true);
+    expect(f['story.side_pick_done']).toBeUndefined();
+    expect((await quest(page)).id).toBe('enrol');
+    // T8: the second call on the first free outdoor step.
+    const call = await secondCall(page);
+    expect(call.map(l => l[1])).toEqual(expect.arrayContaining(['Things are changing. In the shadows. I can feel it from here.', 'Come home tonight. Before anyone else sends for you.']));
+    expect((await flags(page))['story.ilse_call2']).toBe(true);
+    // T9: the enrolment, Pin.
+    const en = await enrolment(page, 'pin');
+    len110(en);
+    expect(said(en, /^As of tonight, you're a Keeper Cadet\./)).toBe(true);
+    expect(said(en, /^They'll want you more for saying no\./)).toBe(true);
+    expect(said(en, /^Then walk tall\. And remember your home\.$/)).toBe(true);
+    expect(await page.evaluate(() => PixelPets.toasts)).toContain("You're a Keeper Cadet.");
+    f = await flags(page);
+    expect(f['story.keeper_cadet']).toBe(true);
+    expect(f['story.side_pick_done']).toBe(true);
+    expect(f['story.side']).toBeUndefined();
+    expect(f['story.cover']).toBeUndefined();
+    expect(f['story.sway_fernbrook']).toBe(3);
+    expect(f['story.know_us']).toBe(true);
+    expect(f['standing.got.sp_pick']).toBe(true);
+    expect(await page.evaluate(() => PixelPets.state.standing.keepers)).toBeGreaterThan(0);
+    // The curfew read ends: posts and notice go.
+    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).not.toBe('curfew');
+    await goto(page, 'fernbrook', 12, 8, 'down');
+    for (const id of ['cd_post_lantern', 'cd_post_hall', 'cd_notice', 'juniper_east']) expect(await ids(page), id).not.toContain(id);
+    expect((await quest(page)).id).toBe('heights');
+    const after = await stored(page);
+    expect(after.v).toBe(2);
+    for (const k of Object.keys(before.flags)) expect(after.flags, k).toHaveProperty([k]);
+  });
+
+  test('T7, T10, D1561: Pack the crates, the lanyard, Juniper logs the Seal; the Keeper post line', async ({ page }) => {
+    test.setTimeout(180000);
+    await boot(page, joinSave(DONE));
+    const ln = await lean(page, 'Help Tobin pack');
+    len110(ln);
+    expect(said(ln, /^Grab that crate lid, new hire\.$/)).toBe(true);
+    expect(said(ln, /I hoped your hands would know better\./)).toBe(true);
+    expect(said(ln, /partnership file is open/)).toBe(false);
+    let f = await flags(page);
+    expect(f['story.orchard_lean']).toBe('pack');
+    expect(f['story.sway_fernbrook']).toBe(-2);
+    expect(f['story.fen_lean']).toBe(1);
+    expect(f['story.orchard_cleared']).toBe(true);
+    expect(f['story.side']).toBeUndefined();
+    expect(f['story.side_pick_done']).toBeUndefined();
+    expect((await quest(page)).id).toBe('enrol');
+    await secondCall(page);
+    const en = await enrolment(page, 'lanyard');
+    expect(said(en, /^You've already got their ear\./)).toBe(true);
+    expect(said(en, /^Juniper's offer still stands\. Take it\. Smile\. Remember your home\.$/)).toBe(true);
+    f = await flags(page);
+    expect(f['story.keeper_cadet']).toBe(true);
+    expect(f['story.cover']).toBe('glimmer');
+    expect(f['story.side_pick_done']).toBeUndefined();
+    expect(f['story.side']).toBeUndefined();
+    const q = await quest(page);
+    expect(q.id).toBe('enrol_lanyard');
+    // Juniper's step on the east road (D1553).
+    await goto(page, 'fernbrook', 30, 6, 'down');
+    expect(await page.evaluate(() => PixelPets.talkTo('juniper_east'))).toBe(true);
+    expect(await sceneId(page)).toBe('enrol_lanyard');
+    const jn = await drive(page);
+    len110(jn);
+    expect(said(jn, /^Hold still, partner! Your Tier 1 Lanyard clips right onto your Fernbrook Seal/)).toBe(true);   // pick_log (D1436)
+    f = await flags(page);
+    expect(f['story.side']).toBe('glimmer');
+    expect(f['story.side_pick_done']).toBe(true);
+    expect(f['story.sway_fernbrook']).toBe(-3);
+    expect(f['story.tour1_s1']).toBe(true);
+    expect(f['standing.got.sp_pick']).toBe(true);
+    expect(Object.keys(await page.evaluate(() => PixelPets.state.seals)).sort()).toEqual(['seal_fernbrook', 'seal_glim_1']);
+    expect(await page.evaluate(() => PixelPets.state.bag.cracked_phone | 0)).toBe(1);
+    // D1561: when Glimmerwell holds Fernbrook after the enrolment, the Keepers keep one post and say why.
+    await goto(page, 'fernbrook', 4, 8, 'down');
+    expect(await page.evaluate(() => PixelPets.talkTo('fb_constable'))).toBe(true);
+    const rue = await drive(page);
+    expect(rue[0][1]).toBe("We pulled back to the post after the curfew. We're still here.");
+    expect((await stored(page)).v).toBe(2);
+  });
+
+  test('T8: no Keeper1, so Amos passes the second call on (reduced motion) @w1', async ({ page }) => {
+    test.setTimeout(90000);
+    await boot(page, joinSave(Object.assign({}, DONE, { 'story.phone_got': null, 'story.orchard_lean': 'pack', 'story.orchard_cleared': true, 'story.sway_fernbrook': -2 })), { reduce: true });
+    await goto(page, 'fernbrook', 12, 8, 'down');
+    await step(page, 'down');
+    expect(await sceneId(page)).toBe('ilse_call2');
+    const lines = await drive(page);
+    expect(lines.some(l => l[0] === 'Keeper Amos')).toBe(true);
+    expect((await flags(page))['story.ilse_call2']).toBe(true);
+    // Indoors the call never rings.
+    await page.evaluate(() => PixelPets.setFlag('story.ilse_call2', null));
+    await goto(page, 'fb_lantern_in', 5, 12, 'up'); await step(page, 'up');
+    expect(await sceneId(page)).toBeNull();
+  });
+
+  test('O10: a #261 placeholder save (no crackdown) leans at once', async ({ page }) => {
+    test.setTimeout(90000);
+    await boot(page, joinSave({ 'story.crackdown': null, 'story.hall1_shut': null }));
+    expect((await quest(page)).id).toBe('pick');
+    await lean(page, 'Open the crates with Fen');
+    expect((await flags(page))['story.orchard_lean']).toBe('open');
   });
 });
