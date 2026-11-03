@@ -548,7 +548,8 @@
    "when": [
     "story.seal1",
     "story.side_pick_done",
-    "story.side=glimmer"
+    "story.side=glimmer",
+    "story.tour1_s3"
    ],
    "lead": 40,
    "headline": "Tier 1 Lanyard: smile for the wall!",

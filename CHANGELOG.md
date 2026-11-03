@@ -2,6 +2,19 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 14:22 ET: Build: Juniper logs the Seal at the Glimmer pick, new saves only (D1436)
+- What changed and why: D1436 (red, settled by Vincent, Tue Nov 3, 2026; STORY v0.7.15 §8 row 7). A new-flow save never takes the Bright Pavilion Tour, so until now a Glimmer pick handed over the Tier 1 lanyard with no line, the photo never went up and `story.tour_unease` stayed at 0.
+  - At the pick, right after the lanyard is handed over (`side_pick`'s `story.seal1` branch now runs `pick_log`), Associate Juniper clips the lanyard to the Fernbrook Seal, logs the Seal and takes the holder's photo for the wall beside the Sanctuary crate list: four PLACEHOLDER lines in `data/detail_zz_pick_log.json`.
+  - The beat sets `story.tour1_s1`, the flag the photo news already reads (`nw-fernbrook-wall`, `yo-pavilionwall`), and adds 1 to `story.tour_unease`. Both flags already ship; no new flag or save field.
+  - It plays only when `story.tour1_s1` is unset (a save that took the Tour never plays it) and adds the point only while the count is below 1, so a Tour save never gets a second point. A Keepers pick never reaches it. Old-flow picks (no Seal yet) are unchanged.
+  - The "Bright Pavilion Tour ends with..." news (`nw-fernbrook-seal-g`) now also needs `story.tour1_s3`, so only a save that took the Tour sees it. The photo news plays for both.
+  - Checked, not changed: Fen's swap line in `orchard@glimmer` ("The cart rolls off toward the pavilion.", `data/detail_zz_day1.json:810`) still reads on a new save (the photo wall is at the Pavilion); open PR #290 edits the line above it, so its text is left alone.
+- Files touched: `data/detail_zz_pick_log.json` (new), `data/glimmer_path.json` (the hook and two flag notes), `data/news.json`, `data/mapdata.js` (regenerated), `tests/glimmer_pick_log.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md` (D1186 row), `handoff/shots/glimmer_pick_log/` (new), `CHANGELOG.md`, build stamp.
+- Commit(s) + build id: claude/b6-juniper-logs-seal, build 20261103-1422.
+- Tests run and result (widths, checks): `tests/glimmer_pick_log.spec.js` with `day1_flow`, `glimmer_fernbrook`, `news_glimmer_dark`, `arbiter_test` and `day1_save_kinds` at 320, 375 and 390: 131 passed, 0 failed. Reduced motion covered. Zero console errors. Save `v` 2, every old key kept.
+- Decisions made (colour + reasoning): green, reuse `story.tour1_s1` as the photo flag (the news reader has no OR, and the Tour's later stops stay hidden on new saves by `!story.crates_seen`); `story.tour1_s3` marks a save that took the Tour.
+- Anything left unfinished: the four lines are PLACEHOLDER for Story (D1186 row). D26's threshold is 2, so on a new save one point alone does not yet unlock Quinn's softer Tuning line or Rook's aside; noted in the D1186 row, threshold unchanged.
+
 ## 2026-11-03 11:21 ET: Build: the Keeper High Court moves to Charter Hill's Parade, facing Muster Road (D1354, HIGH_CHARITY_LAYOUT v0.3)
 - What changed and why:
   - D1354 (red, SETTLED by Vincent, Tue Nov 3, 2026; design `specs/HC_PARADE.md` §3.1): the Court moves from `hc_civic` 8,45 to the south half of the Parade, so the HC_PARADE speech can play on its steps.
