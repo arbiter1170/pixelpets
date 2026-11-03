@@ -2206,10 +2206,6 @@
 7-9  const external
 10-59  const CLOUD_BLOCK
 
-# pw.local.config.js
-2-2  const base
-3-7  const exe
-
 # save.js
 9-593  const PPSave
 
