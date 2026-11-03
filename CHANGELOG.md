@@ -2,6 +2,28 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 08:12 ET: Build: Fen's pacing (D1128): the bench XP share and Fen's challenge hint
+- What changed and why: D1128 is built as Vincent settled it (Nov 3, 8:07 AM ET, from the research).
+  - **Bench XP share.** After each foe is beaten or befriended, every other Walkling in the holder's own party gets half of the XP it would earn at its own level: after the level-gap clamp, rounded down (`STAT_RULES.BENCH_SHARE` 0.5, `benchXpAward` in `stats.js`, `awardFoe` in `game.js`).
+    - Worn-out Walklings get it too.
+    - The Walkling just befriended gets nothing for its own capture.
+    - Caps hold any overflow in the existing `bxHeld`, and bench level-ups show on the end panel.
+    - Only the local party is paid.
+  - **Fen's challenge hint.** While the lead is below Lv 12, Fen's Trial panel adds one line before "Begin the trial?": "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first." It is PLACEHOLDER for June, and it never blocks.
+  - Fen's team (12/13/14) and her 420-Acorn purse are unchanged.
+- Files touched: `stats.js`, `game.js`, `tools/GAMEJS_MAP.txt`, `tests/fen_pacing.spec.js` (new), `tests/maps_b8.spec.js` (Fen's panel now has the hint line before the choice when the lead is below Lv 12), `tests/README.md`, `CHANGELOG.md`, plus the build stamp.
+- Commit(s) + build id: claude/fen-pacing-d1128, build 20261103-0821.
+- Tests run and result (widths, checks):
+  - `tests/fen_pacing.spec.js`: 12 of 12 passed at 320, 375 and 390.
+  - 19 battle, level and Fen suites (level_grow, battle_no_reload, day1_flow, maps_b8, glimmer_fernbrook, match_marker, rematch_party, deploy_held, battle_tips_once, fetch_line, arbiter_units, five_answer, hushwater, brinewick, crash_growup_people, cue_rail, qa_gaps, art_pass): 283 passed, 2 failed.
+    - `maps_b8` Fen panel: fixed here (the hint line), and the re-run passed.
+    - `rematch_party:316`: fails the same way on clean main 8cd1510.
+  - Scans pass.
+- Decisions made (colour + reasoning): D1128 (red), as settled. No new ids. Save stays `pixelpets.save.v2`, `v` 2, no new field.
+- Anything left unfinished:
+  - Nina's Fen test (one clean run of the new flow, 12 tries at Fen, pass at 6 or more wins). If it fails, Fen drops one level to 11/12/13, and the hint line and its threshold move with her.
+  - GROWTH_PACING's sim re-run (Design).
+
 ## 2026-11-03 01:25 ET: FERNBROOK_PLAZA catch-up (Supervisor): main a726e94 merged, phase shots for Vincent (build 20261103-0112)
 - What changed and why: main a726e94 (#271) merged in with a merge commit (`CHANGELOG.md` kept both sides), restamped, `mapdata` and `GAMEJS_MAP` regenerated. Checked `fbPlazaPhase`: `story.seal1` is read first, so "watch" turns on with `story.lizzy_class & !story.seal1` (or `story.heights_done & !story.seal1` on an older save); the spec case is `watch on the Day 1 flow` (`tests/fernbrook_plaza.spec.js:271`, the class with no Seal reads watch, then the Seal reads after). New shots of the argue, watch and after phases at 390 and 320, each with the plaza Cadet's line (`handoff/shots/fernbrook_plaza/phase-*.png`).
 - After vs the crackdown curfew: "after" is `story.seal1` with no crackdown and no pick; the crackdown (POST_TRIAL_CRACKDOWN) is not built, so `story.crackdown` is never set in play and "after" runs from the Seal to the pick. The curfew read (`seal1 & crackdown`, no pick) hides all 16 plaza people and Walklings (`!fbplaza:curfew`, spec `curfew:` case), so the plaza Cadet (`fbp_cadet`) is off the street exactly when §5's curfew officers stand. Ash (`h1_cadet`) stands inside the Trial Hall (`fb_hall_in`), never in the plaza, and POST_TRIAL_CRACKDOWN §5 shuts the Hall by order after the crackdown (`story.hall1_shut`, not built yet), so the two cadets never share a scene. Two Keeper cadets still exist (plaza "Cadet", the Hall's "Keeper Cadet" Ash); the plaza names wait on Design (D1245).
