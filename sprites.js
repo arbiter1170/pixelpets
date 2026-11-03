@@ -2081,11 +2081,6 @@ const HOUSE_SKINS = {
   bw_hall: hcSkin('floor_ferrydeck', 'wall_ferry', 'mat_ferry', { decal: { q: 'deck_lane' }, walk: { q: 1 }, wall: wallRow('ncdwhrrdnswn') }),
   bw_depot: hcSkin('floor_sealed', 'wall_depot', 'mat_depot', { decal: { q: 'depot_line' }, walk: { q: 1 }, wall: wallRow('dmdmdVVddswV') }),
   // HIGH_CHARITY_LAYOUT §7 palette ledger (rule 9 previews pending). Existing tile families only; each wall+floor pair is new.
-  hc_lantern_grand: hcSkin('floor_lantern', 'wall_cream', 'mat_lantern', { wall: wallRow('GyFCAyGFGcwF') }),
-  hc_news_1: hcSkin('floor_warden', 'wall_stone', 'mat_hall', { wall: wallRow('mwdhmmddmcwd') }),
-  hc_news_2: hcSkin('floor_keep', 'wall_stone', 'mat_hall', { wall: wallRow('dhdhmdddmcsd') }),
-  hc_gov_1: hcSkin('floor_wardstone', 'wall_sage', 'mat_warden', { wall: wallRow('JyEDEJJFJcwJ') }),
-  hc_gov_3: hcSkin('floor_clinic_warm', 'wall_cream', 'mat_lantern_warm', { remap: { '=': 'rug_coach' }, wall: wallRow('BrFCArGFGcwr') }),
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
   obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_dusk', m:'mat_dusk' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: floorFixVar('floor_dusk'), wall: wallRow('FGdGFyFFynsF') },
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mist', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: floorFixVar('floor_mist'), wall: wallRow('mhnhmcndmcwb') },
@@ -2224,6 +2219,15 @@ function buildWallKit(skinId, wall){
 // D87: # wall, W face, . floor. Floor variants are gravel (b) and damp (c). Wall variants use the same mix so a rock row is not one stamp.
 // Y is a walkable sky decal (the yard patch). ~ is a walkable drip. = is the den rug. Odd W columns stay the rock face (no house window).
 const TUNNEL_SKIN = {"remap":{"#":"tunnel_wall","W":"tunnel_wall_face","W2":"tunnel_wall_face",".":"tunnel_floor","=":"tunnel_rug","m":"tunnel_mat"},"override":{"sm_den":{".":"floor_den"},"sm_hold":{".":"floor_hold"},"sm_tunnel":{".":"floor_rock"},"sm_yard":{".":"floor_yard"}},"walk":{"Y":1,"~":1},"decal":{"Y":"tunnel_sky","~":"tunnel_puddle"},"variants":{"tunnel_floor":[["tunnel_floor_b",0.34],["tunnel_floor_c",0.33]],"floor_den":[["floor_den_b",0.22],["floor_den_c",0.18]],"floor_hold":[["floor_hold_b",0.22],["floor_hold_c",0.18]],"floor_rock":[["floor_rock_b",0.22],["floor_rock_c",0.18]],"floor_yard":[["floor_yard_b",0.22],["floor_yard_c",0.18]],"tunnel_wall":[["tunnel_wall_b",0.34],["tunnel_wall_c",0.33]],"tunnel_wall_face":[["tunnel_wall_face_b",0.34],["tunnel_wall_face_c",0.33]]},"wall":{"c":"d","C":"m","L":"n","f":"m","F":"d","T":"h","B":"n","S":"n","R":"d","G":"n","W":"h","D":"F"}};
+// HIGH_CHARITY_LAYOUT phase 1 room skins (rule 9 briefs in handoff/maps/HC_CITY_V2.md; each a new wall and floor pair).
+// Kept out of HOUSE_SKINS: game.js adds them to SKINS and HOUSE_SKINS only while the city is on (HC_CITY_V2 or the preview).
+const HC_CITY_SKINS = {
+  hc_lantern_grand: hcSkin('floor_lantern', 'wall_cream', 'mat_lantern', { wall: wallRow('GyFCAyGFGcwF') }),
+  hc_news_1: hcSkin('floor_warden', 'wall_stone', 'mat_hall', { wall: wallRow('mwdhmmddmcwd') }),
+  hc_news_2: hcSkin('floor_keep', 'wall_stone', 'mat_hall', { wall: wallRow('dhdhmdddmcsd') }),
+  hc_gov_1: hcSkin('floor_wardstone', 'wall_sage', 'mat_warden', { wall: wallRow('JyEDEJJFJcwJ') }),
+  hc_gov_3: hcSkin('floor_clinic_warm', 'wall_cream', 'mat_lantern_warm', { remap: { '=': 'rug_coach' }, wall: wallRow('BrFCArGFGcwr') }),
+};
 const SKINS = Object.assign({ lab: LAB_SKIN, tunnel: TUNNEL_SKIN }, HOUSE_SKINS);
 SKINS.school = HOUSE_SKINS.school = {"remap": {"#": "wall_wainscot_t", "W": "wall_wainscot_t_face", "W2": "wall_wainscot_t_win", ":": "floor_school_check", ",": "floor_school_tile", ".": "floor_school_lino", "=": "runner_school", "~": "rug_reading", "m": "mat_school"}, "decal": {}, "walk": {":": 1, ",": 1, "~": 1}, "wall": wallRow('tcnwhtndtcsn')};
 SKINS.flats_lobby = HOUSE_SKINS.flats_lobby = {"remap": {"#": "wall_wainscot_n", "W": "wall_wainscot_n_face", "W2": "wall_wainscot_n_win", ",": "floor_lobby_tile", ".": "floor_lobby_terrazzo", "=": "rug_lobby", "E": "lift_doors", "S": "stairs_up", "m": "mat_lobby"}, "decal": {}, "walk": {",": 1, "E": 1, "S": 0}, "wall": wallRow('nbdwhnddncsb')};

@@ -87,6 +87,10 @@ function readHcCityPref(){
 }
 const HC_V2_ON = !!window.PP_HC_V2 && (HC_CITY_V2 || readHcCityPref());
 const HC_PREVIEW = HC_V2_ON && !HC_CITY_V2;
+if (HC_V2_ON) {   // the city's room skins and battle backdrops exist only while the city does
+  if (typeof HC_CITY_SKINS !== 'undefined') { Object.assign(SKINS, HC_CITY_SKINS); Object.assign(HOUSE_SKINS, HC_CITY_SKINS); }
+  if (window.BattleBG && BattleBG.enableCity) BattleBG.enableCity();
+}
 function writeDebugPref(on){ try { if (on) sessionStorage.setItem(DEBUG_KEY, '1'); else sessionStorage.removeItem(DEBUG_KEY); } catch(e) {} }
 function syncDebugQuery(on){
   try {
