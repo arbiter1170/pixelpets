@@ -298,7 +298,7 @@
                         "Associate Juniper",
                         "Yay! Welcome to the partnership, {name}! Brighter by nature."
                       ],
-                      ["if", "story.seal1", [["seal", "seal_glim_1"]]],
+                      ["if", "story.seal1", [["seal", "seal_glim_1"], ["run", "pick_log"]]],
                       [
                         "say",
                         "Tobin",
@@ -1540,10 +1540,10 @@
     "story.switches": "How many times the pledge changed at a Pledge desk.",
     "story.switch_chapter": "The chapter (Seals earned) of the last switch.",
     "story.switch_at": "Date.now() of the last switch.",
-    "story.tour1_s1": "Bright Pavilion Tour stop 1 done (lantern stand). Not a quest step.",
+    "story.tour1_s1": "Bright Pavilion Tour stop 1 done (lantern stand). Not a quest step. On a new-flow save (no Tour) Juniper's pick beat sets it instead (D1436, detail_zz_pick_log.json), so the photo news reads the same; story.tour1_s3 marks a save that took the Tour.",
     "story.tour1_s2": "Tour stop 2 done (Comfort Check at the crates). Not a quest step.",
     "story.tour1_s3": "Tour stop 3 done (Hall slideshow). Not a quest step. Stop 4 stays open until story.seal1.",
-    "story.tour_unease": "D193. +1 on the Comfort Check question and on the stage-photo flinch. At 2 or more, Testing softens Quinn's second line and Rook speaks once. Old saves may still have tour.doubt; that key is read once and left on disk.",
+    "story.tour_unease": "D193. +1 on the Comfort Check question and on the stage-photo flinch (on a new-flow save, +1 once at Juniper's pick photo, D1436). At 2 or more, Testing softens Quinn's second line and Rook speaks once. Old saves may still have tour.doubt; that key is read once and left on disk.",
     "story.arbiter_test_seen": "Quinn offered Testing at least once.",
     "story.arbiter_test_done": "One Walkling was chipped. A second Testing offer is refused.",
     "story.arbiter_test_active": "True during the Tuning beat. Cool tint and arbiter_test music. Cleared when the chip is in.",
