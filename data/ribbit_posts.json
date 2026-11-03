@@ -622,7 +622,7 @@
    "when": [
     "story.reached_fernbrook"
    ],
-   "text": "Fernbrook brief: orchards, the Bloom Trial Hall, and a Glimmerwell stand on the square.",
+   "text": "Fernbrook brief: orchards, the Fernbrook Trial Hall, and a Glimmerwell stand on the square.",
    "lore": [
     "place.fernbrook",
     "place.bloom_trial_hall"
@@ -650,7 +650,7 @@
     "story.seal1",
     "story.side=keepers"
    ],
-   "text": "Fernbrook Seal awarded at the Bloom Trial Hall. Its holder now levels to 22.",
+   "text": "Fernbrook Seal awarded at the Fernbrook Trial Hall. Its holder now levels to 22.",
    "lore": [
     "event.seal1",
     "term.level_caps"
@@ -2003,7 +2003,7 @@
    ]
   },
   {
-   "tag": "#BloomHall",
+   "tag": "#FernbrookHall",
    "w": 2,
    "when": [
     "story.reached_fernbrook"

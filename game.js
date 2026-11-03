@@ -69,6 +69,19 @@ function readDebugPref(){
   return on;
 }
 let DEBUG = readDebugPref();     // E/G/F keys, fast mode, "Pick a place" and the cheat console hooks need this
+/* TRIAL_HALL_FERNBROOK_MAP (D1189-D1196): the contested Fernbrook Trial Hall is built but held behind this flag until Vincent
+   says yes to the previews (AGENTS rule 9). Off: fb_hall_in is exactly today's room. On: data/detail_zz_hall_contested.json's
+   hallPatch is laid over it. Preview: ?debug=1&hall2=1 (this tab only, sessionStorage; ?hall2=0 clears it). Without debug
+   the preview key does nothing. Read once at load; never saved. After Vincent's yes, HALL2_RELEASED becomes true. */
+const HALL2_RELEASED = false;
+const HALL2_KEY = 'pixelpets.hall2';
+const HALL2_ON = (() => {
+  if (HALL2_RELEASED) return true;
+  let on = false;
+  try { const q = new URLSearchParams(location.search).get('hall2'); if (q === '1') sessionStorage.setItem(HALL2_KEY, '1'); else if (q === '0') sessionStorage.removeItem(HALL2_KEY); } catch (e) {}
+  try { on = sessionStorage.getItem(HALL2_KEY) === '1'; } catch (e) {}
+  return DEBUG && on;
+})();
 /* HIGH_CHARITY_LAYOUT v0.2.1 phase 1 ("the capital, day one"; D1268, D1270-D1281). The five-chunk city lives in
    data/hc_city_v2.js (window.PP_HC_V2, built by tools/build_hc_city.py), outside MAPDATA. HC_CITY_V2 is the ship switch:
    it stays false until Vincent's yes on the 390 previews (layout §13 test 10), then flips in one line. Until then the city
@@ -3961,6 +3974,7 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
     applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
   }
+  if (HALL2_ON) for (const k of DETAIL_KEYS) applyMapPatch(W, MD[k].hallPatch);   // TRIAL_HALL_FERNBROOK_MAP: flagged, after the rooms land
   if (MD.rook_crossroads) applyMapPatch(W, MD.rook_crossroads.slicePatch);   // Rook's Crossroads: objects only, after detail so the crates stay
   for (const k of DETAIL_KEYS) if (MD[k].objPatch) applyObjPatch(W, MD[k].objPatch);   // DAY1_TRIAL1_FLOW: last, so every overlay's copy is the one patched
   if (HC_V2_ON) applyHcCity(W);                                        // HIGH_CHARITY_LAYOUT phase 1 (flag or ?debug=1&hccity=2 only)
@@ -3996,6 +4010,13 @@ for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_pat
 // HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
 for (const k of DETAIL_KEYS) if (MD[k].trainers) for (const [id, t] of Object.entries(MD[k].trainers)) { if (t && Array.isArray(t.team) && t.team.some(m => !BASE_STATS[m && m.form])) continue; TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t); }
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
+// TRIAL_HALL_FERNBROOK_MAP (flagged): the cadet faces right from the Keeper half of the dais (D1193); the worn west flagstone joins
+// the Hall's own variants. Off, both stay as they are.
+if (HALL2_ON) {
+  for (const k of DETAIL_KEYS) for (const [id, t] of Object.entries((MD[k].hallPatch && MD[k].hallPatch.trainers) || {})) if (TRAINERS[id]) Object.assign(TRAINERS[id], t);
+  const hv = SKINS.fb_hall && SKINS.fb_hall.variants;
+  if (hv && hv.hall_flag && TILES.hall_flag_worn) hv.hall_flag = hv.hall_flag.concat([['hall_flag_worn', 0.25]]);
+}
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
 // The design JSON stays verbatim: variants live in data/glimmer_path.json. Objects use `when: ["story.side=glimmer"]` as usual.
@@ -12379,7 +12400,7 @@ const REGION_MAP = {
       hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
     proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]],
       hold: [{ id: 'wild' }] },
-    fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Bloom Trial Hall.',
+    fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Fernbrook Trial Hall.',
       // D1171: Fernbrook is contested until the pick after Trial 1, then flips to the side the holder picked.
       hold: [{ id: 'glimmer', when: ['story.side_pick_done', 'story.seal1', 'story.side=glimmer'], line: 'Glimmerwell holds the town now. Lanterns on every gate.' },
         { id: 'keepers', when: ['story.side_pick_done', 'story.seal1', '!story.side=glimmer'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
@@ -19887,6 +19908,7 @@ function boot(){
   api.fleetExit = () => DEBUG && window.PPFleet ? PPFleet.close(fleetHost) : false;
   api.fleetState = () => DEBUG && window.PPFleet ? PPFleet.state() : null;
   api.mapHold = (id, flags) => mapHold(id, flags);
+  api.hall2 = () => HALL2_ON;   // TRIAL_HALL_FERNBROOK_MAP: is the flagged contested Hall laid over fb_hall_in this load? (read only)
   api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
   api.mapNodeCenter = id => { const n = REGION_MAP.nodes[id]; return n ? [n.col * 16 + 8, n.row * 16 + 8] : null; };   // region-map logical px
   api.mapLayer = () => mapLayerSnap();

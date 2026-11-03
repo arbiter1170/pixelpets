@@ -2,13 +2,64 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-03 10:11 ET: Glimmerwell fleet lines: June's pass (drafted by Claude in June's role, Vincent to approve) (build 20261103-1015)
+## 2026-11-03 10:11 ET: Glimmerwell fleet lines: June's pass (drafted by Claude in June's role, Vincent to approve) (build 20261103-1111)
 - What changed and why: D1346 left every line on the `?debug=1` fleet lot as PLACEHOLDER for June. June is out, so Claude drafted her pass in her role: all 31 player lines in `glimmer_fleet.js` `LINES` (4 signs; doors, the four civilians, the mast and the stall per hold; the Cruiser; the Waiting Local; the debug `exit` sign unchanged). New spec §10b "Lines for the placements (D1341)": text only for the crackdown (Cruiser getaway, Concierge fly-by), the pick at dawn (Concierge over Juniper's camp, the Glimmer-pick east road, the Keepers-pick fly-by) and Act 2 (the quarry mast and bay, Glow Care), with five open questions (Q-G1 to Q-G5, unnumbered for the Chief of Staff). Spec PLACEHOLDER notes now read "June's pass (drafted by Claude in June's role, Vincent to approve)". A sub-agent no-new-facts review found no CHIP_SECRECY or wording breach; its 2 must-fix and 6 should-fix notes are applied.
 - Files touched: `glimmer_fleet.js` (`LINES` and its header comment only), `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md`, `handoff/shots/glimmer_fleet_lines/`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: claude/glimmer-fleet-lines-june, build 20261103-1015.
+- Commit(s) + build id: claude/glimmer-fleet-lines-june, build 20261103-1111.
 - Tests run and result (widths, checks): `tests/glimmer_fleet.spec.js` at 390 and 320: `PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0` each, `RTDB_RULES RESULT: PASS`; `node tools/scans/run.js`: all PASS (wording, decisions, symlinks, gamejs_map, test_mistakes).
 - Decisions made (colour + reasoning): none settled. Q-G1 to Q-G5 raised with defaults in spec §10b. Copy waits for Vincent's approval.
 - Anything left unfinished: the design repo (STORY.md, CHIP_SECRECY.md, June's drafts) could not be attached in this session, so canon was read from the in-repo specs and shipped in-game Glimmerwell lines; Iris's sign-off on voice. Each D1341 placement is still its own build.
+
+## 2026-11-03 07:05 ET: Build: the contested Fernbrook Trial Hall behind a flag (TRIAL_HALL_FERNBROOK_MAP, D1189-D1196), and "Fernbrook Trial Hall" everywhere (D1192)
+- What changed and why:
+  - The contested Hall from #263, with Vincent's rulings of Nov 2, 10:19 PM ET (#264):
+    - D1189: a Keeper west half, a Glimmerwell east half and a seam between them.
+    - D1190: the props flip with Fernbrook's hold after the pick, and Fen stays.
+  - It is built but **held behind a flag** until Vincent says yes to the previews (rule 9).
+    - `game.js` adds `HALL2_RELEASED = false` and `HALL2_ON`.
+    - Preview: `?debug=1&hall2=1`. It is held in sessionStorage for that tab only, is inert without debug, and is never saved.
+    - Flag off, `fb_hall_in` is exactly today's room.
+  - Flag on, `data/detail_zz_hall_contested.json` `hallPatch` is laid over the room after `fernbrook_rooms.json`. It holds:
+    - the §5.2 rows 3-22 (the west half is byte-identical);
+    - the 36 new objects and the 13 new `when`s from §7.3;
+    - the three moved props;
+    - `h1_local` at 8,20 and `h1_cadet` at 3,5 facing right (D1193 default).
+  - Every changing prop reads the D1171 hold with the rule strings copied into its `when`. This is the D1191 fallback, so `cond()` is unchanged.
+  - Draft art in `sprites.js`, PAL only, no new keys, redrawn from the spec's v2 sheet until Pia's pass:
+    - 6 tiles plus the `glim_tile_b`, `hall_ledge_glim_b` and `hall_flag_worn` variants;
+    - 15 props;
+    - the `fb_hall` skin gains P Z U M I C, which today's grid never uses.
+  - `story.fen_lean` (D1190's addition) is not read or written: the spec puts Fen's turn in Act 2, and Seals lore v3.1 is pending.
+  - D1192 ships live: "Bloom Trial Hall" becomes "Fernbrook Trial Hall" in:
+    - the map name and the `fb_hall_note` sign;
+    - the REGION_MAP blurb;
+    - six NEWS lines and one NEWS title;
+    - two Ribbit posts, and the tag `#BloomHall`, which becomes `#FernbrookHall`;
+    - the town sign `fb_sign_town`, overridden from the new detail file because `maps_slice.json` is verbatim.
+- Files touched:
+  - code and data: `game.js`, `sprites.js`, `data/detail_zz_hall_contested.json` (new), `data/fernbrook_rooms.json`, `data/news.json`, `data/ribbit_posts.json`, `data/mapdata.js`, `tools/GAMEJS_MAP.txt`;
+  - tests: `tests/trial_hall_contested.spec.js` (new), `tests/match_marker.spec.js` (the raw count of holder objects is 32: the overlay restates two holders), `tests/news_glimmer_dark.spec.js` (the base paper is read with D1192's rename), comment renames in `tests/maps_b8.spec.js` and `tests/tap_interact.spec.js`;
+  - shots: `handoff/shots/trial_hall_fernbrook_build/` (new);
+  - docs: `BACKLOG.md`, `OPEN_DECISIONS.md`, `README.md`, `NEXT_PLAN.md`, `tests/README.md`, `CHANGELOG.md`, plus the build stamp.
+- Commit(s) + build id: claude/fernbrook-trial-hall-contested, build 20261103-1026 (first stamped 20261103-0705; restamped at the main catch-ups after #277, #280, #281 and #283).
+- Tests run and result (widths, checks): `tests/trial_hall_contested.spec.js` at 320, 375 and 390, plus every suite that touches the Hall, the names or the news (see the PR). Zero console errors. Save `v` 2.
+- Decisions made (colour + reasoning):
+  - D1189, D1190 and D1192 (red) are built as ruled; D1189's room stays flagged for rule 9.
+  - D1191, D1193 and D1195 are open yellows, built behind the flag on their defaults (D1191 on its fallback). They change before the flip if the votes go the other way.
+  - D1194 and D1196 (green): defaults.
+  - The flag itself is green (an implementation choice inside the approved spec). No new ids.
+- Anything left unfinished:
+  - Vincent's yes on the shots, then `HALL2_RELEASED = true`.
+  - Pia's art pass, and Story's lines (D1196).
+  - The yellow votes, about Wed Nov 4, 10:12 PM ET.
+  - Fen's Act 2 turn (`story.fen_lean`).
+## 2026-11-03 10:21 ET: GLIMMERWELL_VEHICLES_BUILDINGS art redraw (Sprites pass on the engineer drafts, D1345; build 20261103-1021)
+- What changed and why: D1345 says Pia redraws the engineer-draft fleet art before any story placement. This is that pass, done by a Claude Code worker in the PixelPets Sprites seat while Pia is out. All 18 `GW_ART` keys in `glimmer_fleet.js` are redrawn to the tone bible (TRIAL_HALL_FERNBROOK_MAP §6.3): one top-left light, at least 3 values per material, clean faces with detail at the edges and joints, and hard specular dashes. It started from a sub-agent inspiration brief (situations only, rule 9). Cruiser: a fastback cabin with one pillar and one screen glint, a lit beltline, a soot body with one crimson pinstripe, the badge plate on the door, a 1 px honey lettering bar, a white nose band with an ice headlamp, a wine skirt over one unbroken soot line, and a solid mint glow on frame 0. Concierge: a three-value dome, a wine ring with six spaced honey studs and a darker under-edge, gloss-tipped stub fins with left and right running lights, and a mint lens. Buildings: an 8 px panel grid on the roof and wall, a straight wine trace to a honey pad, a frosted strip with a slate band, a recessed glass door shaded top-left, and a bay door with a bolted honey header and 3 px slats. Props: a bevelled badge plate, a lit-edge sign, a stall with identical lanterns, a mast with a solid spine, collars and spaced studs, and a banner with a lit edge, a fold and the chip mark. The four Keepers-hold props are redrawn to match their bases. No new PAL key. Every key name, canvas size and frame count is unchanged. No code, `LINES`, spec or save change.
+- Files touched: `glimmer_fleet.js` (`GW_ART` only), `handoff/shots/glimmer_fleet/redraw/` (5x sheet, the comparison against the Keeper vehicles, and before and after previews and close-ups at 390 and 320 in all three holds), `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/gw-fleet-art-redraw, build 20261103-1021.
+- Tests run and result (widths, checks): `tests/glimmer_fleet.spec.js` at 390, 320 and 375: 9 passed at each width (PAL only, crimson under 10%, no Keeper green outside the four Keepers-hold props, soot on every piece, the Cruiser 44 x 14 at 3.1:1, the Concierge 10 px tall, zero console errors). `node tools/scans/run.js` PASS. The art script's own checks pass: sizes, frames, an unbroken skirt line and a solid frame-0 glow.
+- Decisions made (colour + reasoning): none new. It builds D1345 (green). The palette rules come from spec §8 and the TRIAL_HALL §6.3 tone bible. The design repo's GLIMMERWELL_PALETTE §10 could not be attached in this session.
+- Anything left unfinished: Vincent signs off the previews before merge (rule 9). The NPC looks (D1339) are not part of `GW_ART` and are unchanged.
 
 ## 2026-11-03 10:05 ET: NPC_RANKS_LADDER (#277) catch-up: main 5e5dbc2 merged in (#280, #281, #268) before merge (build 20261103-1005)
 - What changed and why: Vincent approved #277 for merge (Tue Nov 3, 2026). Main had moved (#280 SEALS_BOTH_PATHS, #281 HIGH_CHARITY phase 1, then #268 the Glimmerwell fleet), so main is merged in (twice) with a merge commit. Conflicts were only in docs and generated files: `OPEN_DECISIONS.md` keeps main's id lines and adds #277's D1348-D1350 line (next free D1395); `archive/DECISIONS_SETTLED.md` and `CHANGELOG.md` keep both sides; `data/mapdata.js`, `tools/GAMEJS_MAP.txt` and the build stamp are regenerated. No game change beyond #277's.
