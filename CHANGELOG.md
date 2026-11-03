@@ -9,7 +9,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: `claude/trial-hall-rulings-nov2`; docs only, no build stamp.
 - Tests run and result (widths, checks): `node tools/scans/run.js` (result in the PR); `node tools/scans/decisions.js` and `node tools/scans/wording.js` pass.
 - Decisions made (colour + reasoning): D1189, D1190 and D1192 (red) recorded as settled by Vincent. No new ids; the next free id stays D1210.
-- Anything left unfinished: Seals lore v3.1 is pending its design-repo commit (Iris), and `story.fen_lean` is defined here per that lore. POST_TRIAL_CRACKDOWN Beat 7 (a Block News broadcast, no choice) still has to be reconciled with v3.1's President's curfew broadcast and its choice. The build renames the three inside "Bloom" spots (no data change here).
+- Anything left unfinished: Seals lore v3.1 is pending its design-repo commit (Iris), and `story.fen_lean` is defined here per that lore. Vincent ruled Beat 7 at ~10:53 PM ET: Block News cuts to the President, who gives the curfew broadcast on the TV, and the choice follows. That is recorded here; the Beat 7 script is rewritten with the Lantern House redesign. The build renames the three inside "Bloom" spots (no data change here).
 
 ## 2026-11-02 22:31 ET: Spec: the Keeper crackdown after Trial 1 (POST_TRIAL_CRACKDOWN v0.1), and the Trial Hall's tone pass (TRIAL_HALL_FERNBROOK_MAP v0.2), docs only
 
