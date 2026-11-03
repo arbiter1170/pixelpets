@@ -20,7 +20,7 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
   expect(audit.counts).toEqual({
     // sign is 74: the authored signs plus the runtime "Back at 3. - L." note on 5B.
     // P4 adds eight shops and fourteen stall lines. The lamp-oil counter moves from talk to shop.
-    // talk is 572: the Bloom Trial Hall adds six terrace props, and the four heart lanterns
+    // talk is 572: the Fernbrook Trial Hall adds six terrace props, and the four heart lanterns
     // plus Host Della, Host Garnet and Host Ines are talk.
     // Hearthmoor Plaza (#196), Route 3 with its three side rooms and the Answerers (ARBITER_UNITS), and Brinewick
     // with Trial Hall #3 and its rooms (BRINEWICK v0.1) bring door 45, warp 93, sign 89, talk 669, scene 40,

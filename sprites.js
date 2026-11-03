@@ -2022,6 +2022,21 @@ function buildTiles(){
     rug_coach: ["BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBGBBGBBBBBB","BBBBBGBBBBGBBBBB","BBBBGBBBBBBGBBBB","BBBBGBBBBBBGBBBB","BBBBBGBBBBGBBBBB","BBBBBBGBBGBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB"],
   };
   for (const [k, rows] of Object.entries(ART_PASS_TILES)) T[k] = mkTile(g => paintGrid(g, rows));
+  // TRIAL_HALL_FERNBROOK_MAP §8.1 (D1189, D1195): the contested Hall's Glimmerwell floor and the worn Keeper flagstone. DRAFT art
+  // (engineer stand-in, drawn from the spec's v2 previews) until Pia redraws it. PAL keys only, no new key. Only the flagged Hall
+  // (HALL2_ON in game.js) paints these; today's fb_hall_in grid never uses P Z U M I C.
+  const HALL2_TILES = {
+    glim_tile: ["wwwwwwwwwwwwwwwm", "whhhhhhhhhhhhhKm", "whhhhhhhhhhhhhKm", "whhhhhhhhhhhhhKm", "whhhhhhhhhhwhhKm", "whhhhhhhhhwwhhKm", "whhhhhhhhwwhhhKm", "whhhhhhhwwhhhhKm", "whhhhhhwwhhwhhKm", "whhhhhwwhhwhhhKm", "whhhhwwhhwhhhhKm", "whhhwwhhhhhhhhKm", "whhhwhhhhhhhhhKm", "whhhhhhhhhhhhhKm", "wKKKKKKKKKKKKKKm", "mmmmmmmmmmmmmmmm"],
+    glim_tile_b: ["wwwwwwwwwwwwwwwm", "whhhhhhhhhhhhhKm", "whhhhhhhhhhhhhKm", "whhhhhhhhhhhhhKm", "whhhhhhhhhhhhhKm", "whhKKhhhhhhhhhKm", "whhhhKKhhhhhhhKm", "whhhhhhKKhhhhhKm", "whhhhhhhhKKhhhKm", "whhhhhhhhhhKhhKm", "whhhhhhhhhhhKhKm", "whhhhhhhhhhhhhKm", "whhhhhhhhhhhhhKm", "whhhhhhhhhhhhhKm", "wKKKKKKKKKKKKKKm", "mmmmmmmmmmmmmmmm"],
+    glim_seam: ["IIIIINwwwwwwwwwm", "CCIIINwhhhhhhhKm", "IIIINwhhhhhhhhKm", "IFIIINwhhhhhhhKm", "IIFIIINwhhhhhhKm", "IIFIINwhhhhhhhKm", "IFIgINwhhhhhhhKm", "IIIFNwhhhhhhhhKm", "IlIINwhhhhhhhhKm", "ggIIINwhhhhhhhKm", "glgIIINwhhhhhhKm", "EIIIIINwhhhhhhKm", "IIFlINwhChhhhhKm", "IIIINwhhCChhhhKm", "IIIIINwKKKKKKKKm", "IIIIINwmmmmmmmmm"],
+    glim_step: ["wwwwwwwwwwwwwwww", "VVhhhhhhhhhhhhVV", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "KKKKKKKKKKKKKKKK", "mmmmmmmmmmmmmmmm", "wwwwwwwwwwwwwwww", "VVhhhhhhhhhhhhVV", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "KKKKKKKKKKKKKKKK", "mmmmmmmmmmmmmmmm"],
+    hall_ledge_glim: ["lllllllllllllllE", "ggggEgggggggEggE", "gEgggggggEgggggE", "ggggggEggggggEgE", "gggEggggggggEggE", "EEEEEEEEEEEEEEEE", "wwwwwwwwwwwwwwwh", "hhhhhhhhhhhhhhhm", "NNNNNNNNNNNNNNNN", "NddddNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "VVVrVVVVVVVVVVVV", "pppppppppppppppp", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "kkkkkkkkkkkkkkkk"],
+    hall_ledge_glim_b: ["lllllllllllllllE", "ggggEgggggggEggE", "gEgggggggEgggggE", "ggggggEggggggEgE", "gggEggggggggEggE", "EEEEEEEEEEEEEEEE", "wwwwwwwwwwwwwwwh", "hhhhhhhhhhhhhhhm", "NNNNNNNyNNNNNNNN", "NddddNyyyNNNNNNN", "NNNNNNNyNNNNNNNN", "VVVrVVVVVVVVVVVV", "pppppppppppppppp", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "kkkkkkkkkkkkkkkk"],
+    glim_dais: ["wwwwwwwwwwwwwwwh", "wwwwwwwwwwwwwwwh", "wwwwwwwwwwwwwwwh", "wwKKwwwwwwwwwwwh", "wwwwKKwwwwwwwwwh", "wwwwwwKhwwwwwwwh", "wwwwwwwwhwwwwwwh", "wwwwwwwwwwwwwwwh", "wwwwwwwwwwwwwwwh", "wwwwwwwwwKKwwwwh", "wwwwwwwwwwwKwwwh", "wwwKwwwwwwwwKhwh", "wwwwKhwwwwwwwwwh", "wwwwwwhwwwwwwwwh", "wwwwwwwwwwwwwwwh", "hhhhhhhhhhhhhhhh"],
+    glim_dais_lip: ["wwwwwwwwwwwwwwwh", "wwwwwwwwwwwwwwwh", "wwwwwwwwwwwwwwwh", "wwKKwwwwwwwwwwwh", "wwwwKKwwwwwwwwwh", "wwwwwwKhwwwwwwwh", "wwwwwwwwhwwwwwwh", "wwwwwwwwwwwwwwwh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "KKKKKKKKKKKKKKKK", "KKKKKKKKKKKKKKKK", "mmmmmmmmmmmmmmmm", "VVVVVVVVVVVVVVVV", "mmmmmmmmmmmmmmmm", "NNNNNNNNNNNNNNNN"],
+    hall_flag_worn: ["IIIIIIIIIIEIIIII", "ICCCIIIIIIEIIIII", "IIFIIIIIIIgIIIII", "IIIFIIIIIIlIIIII", "IIIFFIIIIIEIIIII", "EEEEEEggEEEIIIII", "IIIIIEIIIIEIIIII", "IIIIIEICCIEIFIII", "IIIIIEIIIIEIIFII", "IIIIIEIIIIEIIFII", "IIIIIEEEEEElgEEE", "IIIIIEIIIIggEIII", "IIIIIEIIFIIIEIII", "gEEEElIIIFIIEIII", "IIIIIgIIIIIIEIII", "IIIIIEIIIIIIEIII"],
+  };
+  for (const [k, rows] of Object.entries(HALL2_TILES)) T[k] = mkTile(g => paintGrid(g, rows));
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
@@ -2095,9 +2110,10 @@ const HOUSE_SKINS = {
     wall: wallRow('GyFAFEgFFcwB'),
   },
   fb_hall: {
-    remap: { "#":"wall_bloom", "W":"wall_bloom_face", "W2":"wall_bloom_win", "f":"floor_bloom", "T":"hedge_bloom", "=":"rug_bloom", "m":"mat_bloom", ":":"hall_moss", ".":"hall_moss", ",":"hall_path", ";":"hall_flag", "b":"hall_stepstone", "z":"hall_board", "a":"hall_step", "d":"hall_dais", "e":"hall_dais_lip", "N":"hall_ledge_seed", "O":"hall_ledge_rose", "Q":"hall_ledge_herb", "L":"hall_ledge_lily", "G":"hall_ledge_tall", "J":"hall_ledge_lantern", "k":"hall_earth", "V":"hall_hop" },
+    remap: { "#":"wall_bloom", "W":"wall_bloom_face", "W2":"wall_bloom_win", "f":"floor_bloom", "T":"hedge_bloom", "=":"rug_bloom", "m":"mat_bloom", ":":"hall_moss", ".":"hall_moss", ",":"hall_path", ";":"hall_flag", "b":"hall_stepstone", "z":"hall_board", "a":"hall_step", "d":"hall_dais", "e":"hall_dais_lip", "N":"hall_ledge_seed", "O":"hall_ledge_rose", "Q":"hall_ledge_herb", "L":"hall_ledge_lily", "G":"hall_ledge_tall", "J":"hall_ledge_lantern", "k":"hall_earth", "V":"hall_hop",
+      /* TRIAL_HALL_FERNBROOK_MAP §8.1: the flagged contested Hall's east half. Unused by today's grid. */ "P":"glim_tile", "Z":"glim_seam", "U":"glim_step", "M":"hall_ledge_glim", "I":"glim_dais", "C":"glim_dais_lip" },
     decal: { v:'wall_shadow_bloom', u:'window_light_bloom', q:'petal_scatter', j:'leaf_scatter' },
-    walk: { "v":1, "u":1, "q":1, "j":1, ",":1, ";":1, "b":1, "z":1, "a":1, "d":1, "e":1, "N":0, "O":0, "Q":0, "L":0, "G":0, "J":0, "k":1, "V":0 },
+    walk: { "v":1, "u":1, "q":1, "j":1, ",":1, ";":1, "b":1, "z":1, "a":1, "d":1, "e":1, "N":0, "O":0, "Q":0, "L":0, "G":0, "J":0, "k":1, "V":0, "P":1, "Z":1, "U":1, "M":0, "I":1, "C":1 },
     hop: { V: 'down' },
     variants: Object.assign({}, houseVar('floor_bloom', 'floor_bloom_b', 'floor_bloom_c'), {
       hall_moss: [["hall_moss_b", 0.3], ["hall_moss_c", 0.25]],
@@ -2113,6 +2129,8 @@ const HOUSE_SKINS = {
       hall_ledge_lily: [["hall_ledge_lily_b", 0.45]],
       hall_ledge_tall: [["hall_ledge_tall_b", 0.45]],
       hall_ledge_lantern: [["hall_ledge_lantern_b", 0.45]],
+      glim_tile: [["glim_tile_b", 0.35]],
+      hall_ledge_glim: [["hall_ledge_glim_b", 0.45]],
       hedge_bloom: [['hedge_bloom_b', 0.34], ['hedge_bloom_c', 0.33]],
       wall_bloom: [['wall_bloom_b', 0.34], ['wall_bloom_c', 0.33]]
     }),
@@ -2794,6 +2812,26 @@ function buildWorldArt(){
     px(g, PAL.d, 7, 1, 2, 14); px(g, PAL.o, 3, 3, 10, 8); px(g, PAL.h, 5, 5, 6, 4); px(g, PAL.y, 6, 6, 4, 2); px(g, PAL.n, 4, 11, 8, 1);
   });
   A.mr_chalk = mkTile(g => { px(g, PAL.w, 0, 7, 16, 1); px(g, PAL.w, 7, 0, 1, 16); px(g, PAL.y, 2, 8, 1, 1); });
+  // TRIAL_HALL_FERNBROOK_MAP §8.2: the contested Hall's props (Keeper, seam and Glimmerwell). DRAFT art until Pia redraws it.
+  // Text grids of PAL keys, '.' transparent. Used only by the flagged Hall overlay (data/detail_zz_hall_contested.json).
+  const HALL2_ART = {
+    banner_keeper_old: ["..do............", "..doAAAAAAAAA...", "..doAAAAAAAAA...", "..doDDDDEDDDD...", "..doDDDAAADDD...", "..doDDDACADDD...", "..doDDDAAADFD...", "..doDDDDEDGGD...", "..doDDDDEDGGF...", "..doDDDDEDFDD...", "..doDDD...DDD...", "..doDDD...DDD...", "..do.C.C...C.C..", "..do............", ".dddd...........", ".dddd..........."],
+    keep_honour_board: ["................", "..GGGGGGGGGGGG..", "..GyyyyJJyyyyG..", "..GGGGGGGGGGGG..", "..GFFFFFFFFFFG..", "..GFAAAFAAAAFG..", "..GFFFFFFFFFFG..", "..GFAAAAAFFFFG..", "..GFFFFFFFFFFG..", "..GFAAAAAAAFFG..", "..GFFFFFFFFFFG..", "..GFAAAAFFFFFG..", "..GFFFFFFFFFFG..", "..GFyyyyyyFFFG..", "..GGGGGGGGGGGG..", "...BB......BB..."],
+    banner_glim: ["..hwwwwwwwwwwh..", "...NNNNNNNNNN...", "...VVVVVVVVVV...", "...VpVVVVVVpV...", "...VpVVyyVVpV...", "...VpVyywyVpV...", "...VpVyyyyVpV...", "...VpVVyyVVpV...", "...VpVVVVVVpV...", "...VpVVVVVVpV...", "...VVVVVVVVVV...", "...NNNNNNNNNN...", "................", "................", "................", "................"],
+    banner_glim_stand: ["..hwwwwwwwwwwh..", "...NNNNNNNNNN...", "...VVVVVVVVVV...", "...VpVVVVVVpV...", "...VpVVyyVVpV...", "...VpVyywyVpV...", "...VpVyyyyVpV...", "...VpVVyyVVpV...", "...VpVVVVVVpV...", "...VpVVVVVVpV...", "...VVVVVVVVVV...", "...NNNNNNNNNN...", ".......wh.......", ".......wh.......", ".......wh.......", "....mhhhhhhm...."],
+    banner_glim_half: ["..do............", "..doApVVVVVVwh..", "..doAApVVVVVh...", "..doDDDpVVVVV...", "..doDDDApVVVV...", "..doDDDACpVVV...", "..doDDDAAApVV...", "..doDDDDEDGpV...", "..doDDDDEDGGp...", "..doDDDDEDFDD...", "..doDDD...DDD...", "..doDDD...DDD...", "..do.C.C...C.C..", "..do............", ".dddd...........", ".dddd..........."],
+    glim_plaque: ["................", "................", "..mmmmmmmmmmmm..", "..mwhhhhhhhhwm..", "..mhhhhhhhhhhm..", "..mVVVVVVVVVVm..", "..mVyyVyyyVyVm..", "..mVVVVVVVVVVm..", "..mhhhhhhhhhhm..", "..mhKKKKKKKKhm..", "..mhhhhhhhhhhm..", "..mhKKKKKKhhhm..", "..mwhhhhhhhhwm..", "..mmmmmmmmmmmm..", "................", "................"],
+    glim_plaque_covered: ["................", "................", "..mmmmmmmmmmmm..", "..mwhhhhhhhhwm..", "..mhCCCFCCCChm..", "..mVCCCCCCCCVm..", "..mVCFFFFFFCVm..", "..mVCCCCCCCCVm..", "..mhCFFFFCCChm..", "..mhCCCCCCCChm..", "..mhCCCCCCCAhm..", "..mhCCCCCCAAhm..", "..mwhhhhhhhhwm..", "..mmmmmmmmmmmm..", "................", "................"],
+    crest_cover: ["................", "...hhhhhhhhhh...", "...NdNNkNNNdN...", "...NdNNkNNNdN...", "...NdNNkNNNdN...", "...NdNNkNNNdN...", "...NdNNkNNNdN...", "...NdNNkNNNdN...", "...NdNNkNNNdN...", "...NdNNkNNNdN...", "...NdNNkNNNVV...", "...NdNNkNNNVV...", "...NdNNkNNNdN...", "..NNdNNkNNNdNN..", "..NdNNNNkNNNdN..", "................"],
+    bulletin_keepers_x: ["................", ".dddddddddddddd.", ".dddddddddddddd.", ".doookkkkNNNNNd.", ".dookhhkkNVwVNd.", ".dokkkkkkNVyVNd.", ".dokkhhkkNVVVNd.", ".dokkkkkyNNNNNd.", ".dokkkkyydykkod.", ".dokkkkkyyykkod.", ".dokkkkkooooood.", ".dddddddddddddd.", ".dddddddddddddd.", "....dd....dd....", "....dd....dd....", "................"],
+    bulletin_glimmer_x: ["................", ".dddddddddddddd.", ".dddddddddddddd.", ".dookkkkVVVVVod.", ".dokhhhkVVVVVod.", ".dokwwwkVVVVVod.", ".dokkkkkVVVVVod.", ".doCFCVVVVVVVod.", ".doCFFCVVVVVVod.", ".doCFCCwwVVVVod.", ".doVCCCyyyVVVod.", ".dddddddddddddd.", ".dddddddddddddd.", "....dd....dd....", "....dd....dd....", "................"],
+    seam_rope: ["................", "................", "......hwwh......", ".......wh.......", ".......wh.......", "......VwhV......", ".....VpwhpV.....", "....Vp.wh.pV....", "...Vp..wh..pV...", "...V...wh...V...", "..V....wh....V..", "..V....wh....V..", ".V.....wh.....V.", ".V...mhhhhm...V.", "V....mmmmmm....V", "p..............p"],
+    grout_bucket: ["................", "..........FF....", "..........FF....", ".........m......", ".......hw.......", "......whh.......", "....NNNNNNNN....", "....NCCCCCCN....", "....NdNNNNNN....", "....NdNNNNNN....", "....VVVVVVVV....", "....NdNNNNNN....", "....NNNNNNNN....", ".....NNNNNN.....", "................", "................"],
+    tile_crate: [".........w......", "...wh.....wh....", "...h.h...hh.....", "....Kh.wh.hK....", "......KhK...K...", ".BBBBBBBBBBBBBB.", ".FGGGGGFGGGGGGF.", ".FGGyyGFGGGGGGF.", ".FGGyyGFGGGGCCF.", ".FGGGGGFGGGGCFF.", ".FFFFFFFFFFFFFF.", ".FGGGGGFGGGGGGF.", ".FGGGGGFGGGGGGF.", ".FGGGGGFGGGGGGF.", ".FGGGGGFGGGGGGF.", ".FFFFFFFFFFFFFF."],
+    glim_planter: ["................", "......glgg......", ".....glgggg.....", "....glgggggg....", "....lggggggE....", "....ggggggEE....", "....gggggEEE....", ".....gggEEE.....", "......gEEE......", "..wwwwwwwwwwwh..", "..NNNNNNNNNNNN..", "..NdddNNNNNNNN..", "..VVVVVyVVVVVV..", "..NNNNNNNNNNNN..", "..NNNNNNNNNNNN..", "..kkkkkkkkkkkk.."],
+    comfort_lamp_off: ["................", "................", ".....CCCCAA.....", ".....CCCCAA.....", "....CCFCCCAA....", "....CCFCCFAA....", "...CCCCCCFCAA...", "...CCFCCCCCAA...", "..CCCFCCCCFCAA..", "..CCCCCCCCCCAA..", ".......dd.......", ".......dd.......", ".......dd.......", ".......dd.......", ".......dd.......", ".....mmmmmm....."],
+  };
+  for (const [k, rows] of Object.entries(HALL2_ART)) A[k] = mkTile(g => paint(g, rows));
   return A;
 }
 /* ---------- map pass B4: building exteriors, path edges, outdoor props, landmarks ---------- */
