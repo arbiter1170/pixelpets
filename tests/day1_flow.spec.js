@@ -174,7 +174,7 @@ test('Trial 1: three holders before Fen, the Seal, the post-Trial slot, the pick
   await talk(page, 'fen_hall');
   expect((await flags(page))['trainer.hall1_fen']).toBeFalsy();
   const roster = await page.evaluate(() => ['h1_cadet', 'h1_challenger', 'h1_local'].map(id => PixelPets.trainerFor(id)));
-  expect(roster.map(t => t.name)).toEqual(['Ash', 'Bryn', 'Linden']);
+  expect(roster.map(t => t.name)).toEqual(['Sefton', 'Bryn', 'Linden']);
   for (const id of ['h1_local', 'h1_challenger', 'h1_cadet']) {
     await fight(page, id);
     expect((await flags(page))['trainer.' + id]).toBe(true);
