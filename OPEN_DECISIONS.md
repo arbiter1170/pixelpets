@@ -81,7 +81,8 @@ D1395-D1418 in use: PR #278 (D1395-D1410) and branch claude/post-trial-crackdown
 
 D1424-D1430 reserved: Design, Vincent's lore corrections of Tue Nov 3, 2026 (design repo specs/STORY_DECISIONS.md v0.73). D1424-D1427 settled by Vincent; D1428-D1430 open.
 
-Next free id is D1431.
+D1431-D1457 reserved: Design, the lore decision cards of Tue Nov 3, 2026 (design repo specs/STORY_DECISIONS.md v0.74); all settled by Vincent except D1457 (open, Story). D1428 and D1430 settled.
+Next free id is D1458.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
