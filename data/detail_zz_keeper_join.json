@@ -2,7 +2,7 @@
  "spec": "ACT1_KEEPER_JOIN v0.1.1 (design repo, private): the Wickerglen investigation, the orchard lean and the Keeper join",
  "_about": "Ours, not a design copy. After the crackdown's dawn release Ilse sends the holder to Vincent Chi (the debrief's last lines live in detail_zz_crackdown.json). Route 2 opens on story.warden_met (D1551) so the holder can reach Wickerglen; Imogen's battle and the lit lamps wait for the enrolment (r2_lead is hidden on a crackdown save until story.keeper_cadet). An old save (no crackdown) reads every gate as before. Save stays pixelpets.save.v2; every flag here is a new additive story.* key.",
  "_placeholders": {
-  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Every line in this file is a placeholder, including the Constable's name. 'Eleven' Walklings is a PLACEHOLDER number; Vincent Chi's name check is pending (D1524); the jar line and his lean line (story.lean_keep) are the engineer's draft.",
+  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Every line in this file is a placeholder, including the Constable's name. 'Eleven' Walklings is a PLACEHOLDER number; Vincent Chi's name check is pending (D1524); the jar line and his lean line (story.lean_keep) are the engineer's draft. D1562: the enrolment's lanyard line (no question) and the post-recall Lantern Council lines are the engineer's draft until §4.7 and §4.9 are rewritten.",
   "paths": [
    "scenes",
    "looks.chi",
@@ -27,7 +27,13 @@
   "story.sway_fernbrook": "D1504-D1506: Fernbrook's sway, an int -3..3 (lean ±2, face ±1, old-save seed, Act 3 switch -2)",
   "story.ilse_call2": "4.7: Ilse's second call answered (or Amos passes it on without a Keeper1)",
   "story.keeper_cadet": "7f: the holder is a Keeper Cadet (or the old-save move). Never cleared",
-  "story.cover": "7j: glimmer = the lanyard face, undercover for Ilse"
+  "story.cover": "7j: glimmer = the lanyard face, undercover for Ilse",
+  "story.rpt_1": "4.8 R1 (after Hall 2): told / kept, Ilse's first letter. Endings only (D1534)",
+  "story.rpt_2": "4.8 R2 (after the chapter finale): told / kept",
+  "story.rpt_3": "4.9 R3 (after Brinewick, at the Lodge): told / kept",
+  "story.ilse_call3": "4.9: the recall call answered (an undercover Cadet after Brinewick)",
+  "story.cover_done": "9b: the cover is over (or there was none); the recall guard",
+  "story.warden_cut": "reserved: the Act 3 loyalist choice (D1514). Stops the reports"
  },
  "slicePatch": {
   "maps": {
@@ -176,6 +182,8 @@
   },
   "ilse_lodge_after": {
    "linesFirst": {
+    "story.ilse_call3 & !story.cover_done": "@recall",
+    "story.keeper_cadet & story.ep1_end & !story.rpt_3 & !story.cover=glimmer & !story.switched_a3 & !story.warden_cut": "@cadet_sendoff",
     "story.ilse_call2 & !story.keeper_cadet": "@enrol",
     "story.cover=glimmer & !story.side_pick_done": "Juniper's offer still stands. Take it. Smile. Remember your home.",
     "story.orchard_lean & !story.keeper_cadet & !story.ilse_call2": "Fen's crates first. I'll call when it's time.",
@@ -703,7 +711,7 @@
    [
     "say",
     "Warden Ilse",
-    "There's a list in a Commander's tent with your name on it. I'd rather you were on mine."
+    "Your name is on an old list from the war. I'd rather you were on mine."
    ],
    [
     "say",
@@ -743,61 +751,84 @@
     ]
    ],
    [
-    "say",
-    "Warden Ilse",
-    "So. Wear the pin where everyone can see it. Or wear their lanyard, and tell me what they do."
-   ],
-   [
-    "choice",
-    "Which do you wear?",
+    "if",
+    "enrol:ask",
     [
      [
-      "Wear the Cadet pin",
-      [
-       [
-        "inc",
-        "story.sway_fernbrook",
-        1
-       ],
-       [
-        "setFlag",
-        "story.side_pick_done",
-        true
-       ],
-       [
-        "standing",
-        "keepers",
-        null,
-        "sp_pick"
-       ],
-       [
-        "say",
-        "Warden Ilse",
-        "Then walk tall. And remember your home."
-       ],
-       [
-        "run",
-        "know_us"
-       ]
-      ]
+      "say",
+      "Warden Ilse",
+      "So. Wear the pin where everyone can see it. Or wear their lanyard, and tell me what they do."
      ],
      [
-      "Wear their lanyard for Ilse",
+      "choice",
+      "Which do you wear?",
       [
        [
-        "setFlag",
-        "story.cover",
-        "glimmer"
+        "Wear the Cadet pin",
+        [
+         [
+          "inc",
+          "story.sway_fernbrook",
+          1
+         ],
+         [
+          "setFlag",
+          "story.side_pick_done",
+          true
+         ],
+         [
+          "standing",
+          "keepers",
+          null,
+          "sp_pick"
+         ],
+         [
+          "say",
+          "Warden Ilse",
+          "Then walk tall. And remember your home."
+         ],
+         [
+          "run",
+          "know_us"
+         ]
+        ]
        ],
        [
-        "say",
-        "Warden Ilse",
-        "Juniper's offer still stands. Take it. Smile. Remember your home."
+        "Wear their lanyard for Ilse",
+        [
+         [
+          "setFlag",
+          "story.cover",
+          "glimmer"
+         ],
+         [
+          "say",
+          "Warden Ilse",
+          "Juniper's offer still stands. Take it. Smile. Remember your home."
+         ]
+        ]
        ]
-      ]
+      ],
+      "Warden Ilse"
      ]
     ],
-    "Warden Ilse"
+    [
+     [
+      "say",
+      "Warden Ilse",
+      "So. You'll wear their lanyard, and you'll tell me what they do."
+     ],
+     [
+      "setFlag",
+      "story.cover",
+      "glimmer"
+     ],
+     [
+      "say",
+      "Warden Ilse",
+      "Juniper's offer still stands. Take it. Smile. Remember your home."
+     ]
+    ]
    ]
   ],
   "enrol_lanyard": [
@@ -860,6 +891,408 @@
     "run",
     "know_us"
    ]
+  ],
+  "rpt_1": [
+   [
+    "say",
+    "",
+    "Ilse's letter asks one thing: what did you see? Nothing else."
+   ],
+   [
+    "if",
+    "story.side=glimmer",
+    [
+     [
+      "say",
+      "",
+      "You think of Quinn's back room, and the quota."
+     ],
+     [
+      "if",
+      "chip:any",
+      [
+       [
+        "say",
+        "",
+        "And the soft click, and the way {pet} listens now."
+       ]
+      ]
+     ]
+    ],
+    [
+     [
+      "say",
+      "",
+      "You think of Hale's Seal, and the quarry vote that passed by three votes."
+     ]
+    ]
+   ],
+   [
+    "choice",
+    "What do you write back?",
+    [
+     [
+      "Tell her all of it",
+      [
+       [
+        "say",
+        "",
+        "You write it all down, just as you saw it."
+       ],
+       [
+        "setFlag",
+        "story.rpt_1",
+        "told"
+       ]
+      ]
+     ],
+     [
+      "Keep some back",
+      [
+       [
+        "say",
+        "",
+        "You fold the letter with half of it left out."
+       ],
+       [
+        "setFlag",
+        "story.rpt_1",
+        "kept"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "I'll write it down. The Court will want to see this."
+   ]
+  ],
+  "rpt_2": [
+   [
+    "say",
+    "",
+    "Ilse's letter asks one thing: what did you see? Nothing else."
+   ],
+   [
+    "if",
+    "story.side=glimmer",
+    [
+     [
+      "say",
+      "",
+      "You think of the Signal Review, and the screen that answered."
+     ]
+    ],
+    [
+     [
+      "say",
+      "",
+      "You think of the Lantern Council, and the coast road."
+     ]
+    ]
+   ],
+   [
+    "choice",
+    "What do you write back?",
+    [
+     [
+      "Tell her all of it",
+      [
+       [
+        "say",
+        "",
+        "You write it all down, just as you saw it."
+       ],
+       [
+        "setFlag",
+        "story.rpt_2",
+        "told"
+       ]
+      ]
+     ],
+     [
+      "Keep some back",
+      [
+       [
+        "say",
+        "",
+        "You fold the letter with half of it left out."
+       ],
+       [
+        "setFlag",
+        "story.rpt_2",
+        "kept"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Keep your eyes open on the coast. Remember your home."
+   ]
+  ],
+  "rpt_3_note": [
+   [
+    "lanternGuide"
+   ]
+  ],
+  "ilse_recall_call": [
+   [
+    "if",
+    "story.phone_got",
+    [
+     [
+      "say",
+      "",
+      "Your Keeper1 buzzes in your pocket. WARDEN ILSE."
+     ],
+     [
+      "choice",
+      "Warden Ilse is calling.",
+      [
+       [
+        "Answer",
+        [
+         [
+          "say",
+          "Warden Ilse",
+          "Come home. You've worn their colours long enough."
+         ],
+         [
+          "setFlag",
+          "story.ilse_call3",
+          true
+         ]
+        ]
+       ]
+      ],
+      "Warden Ilse"
+     ]
+    ],
+    [
+     [
+      "say",
+      "",
+      "A Lantern House runner finds you with a folded note. COME HOME. I."
+     ],
+     [
+      "setFlag",
+      "story.ilse_call3",
+      true
+     ]
+    ]
+   ]
+  ],
+  "recall": [
+   [
+    "say",
+    "Warden Ilse",
+    "Take it off. Keep it in a drawer, not on your coat."
+   ],
+   [
+    "setFlag",
+    "story.side",
+    "keepers"
+   ],
+   [
+    "setFlag",
+    "story.cover_done",
+    true
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Tell me the last of it. Then you're mine in daylight."
+   ],
+   [
+    "choice",
+    "What do you tell her?",
+    [
+     [
+      "Tell her all of it",
+      [
+       [
+        "if",
+        "story.cover=glimmer",
+        [
+         [
+          "say",
+          "",
+          "You tell her all of it: the manifest, and Dorian's quay."
+         ]
+        ],
+        [
+         [
+          "say",
+          "",
+          "You tell her all of it: the Brinewick crate."
+         ]
+        ]
+       ],
+       [
+        "setFlag",
+        "story.rpt_3",
+        "told"
+       ]
+      ]
+     ],
+     [
+      "Keep some back",
+      [
+       [
+        "say",
+        "",
+        "You tell her some of it. The rest you keep."
+       ],
+       [
+        "setFlag",
+        "story.rpt_3",
+        "kept"
+       ]
+      ]
+     ]
+    ],
+    "Warden Ilse"
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Captain Lumen has asked for you. The capital is waiting, Cadet."
+   ]
+  ],
+  "cadet_sendoff": [
+   [
+    "say",
+    "Warden Ilse",
+    "Tell me the last of it. Then you're mine in daylight."
+   ],
+   [
+    "choice",
+    "What do you tell her?",
+    [
+     [
+      "Tell her all of it",
+      [
+       [
+        "if",
+        "story.cover=glimmer",
+        [
+         [
+          "say",
+          "",
+          "You tell her all of it: the manifest, and Dorian's quay."
+         ]
+        ],
+        [
+         [
+          "say",
+          "",
+          "You tell her all of it: the Brinewick crate."
+         ]
+        ]
+       ],
+       [
+        "setFlag",
+        "story.rpt_3",
+        "told"
+       ]
+      ]
+     ],
+     [
+      "Keep some back",
+      [
+       [
+        "say",
+        "",
+        "You tell her some of it. The rest you keep."
+       ],
+       [
+        "setFlag",
+        "story.rpt_3",
+        "kept"
+       ]
+      ]
+     ]
+    ],
+    "Warden Ilse"
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Captain Lumen has asked for you. The capital is waiting, Cadet."
+   ]
+  ],
+  "hc_council": [
+   [
+    "say",
+    "Captain Lumen",
+    "Both Seals are here. Fernbrook first, then Cobblecrest. The lanterns watched you walk."
+   ],
+   [
+    "if",
+    "story.hc_invite",
+    [
+     [
+      "say",
+      "Captain Lumen",
+      "Ilse's letter arrived ahead of you. She said the Seals would."
+     ]
+    ]
+   ],
+   [
+    "if",
+    "story.ep1_end",
+    [
+     [
+      "say",
+      "Captain Lumen",
+      "You walked the coast in their colours, and came home in ours. Ilse vouches for every step."
+     ],
+     [
+      "say",
+      "",
+      "The chart on the wall shows the coast road, already lit. Lumen taps the capital instead."
+     ]
+    ],
+    [
+     [
+      "say",
+      "Captain Lumen",
+      "The coastal road to Brinewick is on the board. We are opening it. Walk it carefully."
+     ],
+     [
+      "say",
+      "",
+      "The chart names the road. A small light beside it flickers on."
+     ]
+    ]
+   ],
+   [
+    "standing",
+    "keepers",
+    null,
+    "hc_council_k"
+   ],
+   [
+    "if",
+    "!story.ep1_end",
+    [
+     [
+      "say",
+      "",
+      "THE ROAD AHEAD · Route 3 to Brinewick, from Cobblecrest's east road."
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.hc_council_done",
+    true
+   ]
   ]
  },
  "calls": [
@@ -873,6 +1306,17 @@
    ],
    "scene": "ilse_call2",
    "_note": "4.7: the first outdoor step after the lean's result, with no scene running (E7)."
+  },
+  {
+   "id": "ilse_recall",
+   "when": [
+    "story.ep1_end",
+    "story.cover=glimmer",
+    "!story.cover_done",
+    "!story.ilse_call3"
+   ],
+   "scene": "ilse_recall_call",
+   "_note": "4.9 (D1518): the recall after Brinewick, on the first free outdoor step."
   }
  ],
  "lineSwaps": [
@@ -888,6 +1332,42 @@
      "Great work! Units packed. Have a bright day!"
     ]
    ]
+  }
+ ],
+ "hostNotes": [
+  {
+   "_note": "4.8 (D1512, D1534, D1554): R1 and R2 are Ilse's letters through any Lantern House Host, never the wire. Skipped after a switch or the loyalist's choice.",
+   "when": [
+    "story.keeper_cadet",
+    "story.seal2",
+    "!story.rpt_1",
+    "!story.switched_a3 & !story.warden_cut"
+   ],
+   "line": "A letter for you, sealed with the Warden's lantern. She wants one back.",
+   "scene": "rpt_1"
+  },
+  {
+   "when": [
+    "story.keeper_cadet",
+    "story.hc_council_done | story.gb_done",
+    "!story.rpt_2",
+    "!story.switched_a3 & !story.warden_cut"
+   ],
+   "line": "A letter for you, sealed with the Warden's lantern. She wants one back.",
+   "scene": "rpt_2"
+  },
+  {
+   "_note": "4.9: a plain Cadet's R3 is in person at the Lodge; a Host passes the note on.",
+   "when": [
+    "story.keeper_cadet",
+    "story.ep1_end",
+    "!story.rpt_3",
+    "!story.cover=glimmer",
+    "!story.ilse_call_old | story.rpt_old_seen",
+    "!story.switched_a3 & !story.warden_cut"
+   ],
+   "line": "A note from the Warden: come home to the Lodge. She wants the last of it in person.",
+   "scene": "rpt_3_note"
   }
  ]
 }

@@ -20,7 +20,7 @@ const WELCOME = /^Yay! Welcome to the partnership, .+! Brighter by nature\.$/;
 // enrolment on the lanyard face. The line after the beat is the handset (the old pick's Tobin line is retired).
 const TOBIN = 'Juniper presses a thin handset into your hand. No crest. It still sits on their wires.';
 const GLIMMER = [];
-const KEEPERS = ['Wear the Cadet pin'];
+const KEEPERS = [];   // D1562: the enrolment asks nothing
 const LANYARD = { 'story.orchard_lean': 'pack', 'story.orchard_cleared': true, 'story.sway_fernbrook': -2, 'story.ilse_call2': true, 'story.keeper_cadet': true, 'story.cover': 'glimmer' };
 
 // A new-flow save standing at the orchard gate: Day 1, Lizzy's class, the three holders, Fen's Seal and the post-Trial slot.
@@ -178,15 +178,16 @@ test('an old Tour save (the photo already raised unease) keeps its count if the 
     .toEqual({ 'nw-fernbrook-wall': true, 'yo-pavilionwall': true, 'nw-fernbrook-seal-g': true });
 });
 
-test('Keepers pick: no Juniper beat, no photo flag, no unease', async ({ page }) => {
+test('the enrolment alone: no Juniper beat, no photo flag, no unease (the beat is Juniper\'s step only)', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, pickSave({ 'story.orchard_lean': 'open', 'story.orchard_cleared': true, 'story.ilse_call2': true }));
-  expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);   // the pin face
+  expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);
   const lines = await playLogged(page, KEEPERS);
   expect(beatAt(lines)).toBe(-1);
   expect(lines.some(l => BEAT.some(b => b[1] === l[1]))).toBe(false);
   const f = await flags(page);
-  expect(f['story.side_pick_done']).toBe(true);
+  expect(f['story.keeper_cadet']).toBe(true);
+  expect(f['story.side_pick_done']).toBeFalsy();
   expect(f['story.side']).not.toBe('glimmer');
   expect(f['story.tour1_s1']).toBeFalsy();
   expect(f['story.tour_unease']).toBeFalsy();

@@ -121,7 +121,7 @@ test.describe('ACT1_KEEPER_JOIN: Ilse sends the holder to Vincent Chi (K3)', () 
     // 4.1, 1c-1e: the debrief's last lines send the holder to Vincent Chi (PLACEHOLDER).
     expect(lines.slice(-3).map(l => l[1])).toEqual([
       "Fen wrote to me before they shut her door. Walklings walking off at night, near Wickerglen.",
-      "I can't search my own Commanders' tents. I know someone who searches anything.",
+      "Glimmerwell's tents are shut to a Warden. I know someone who walks where I can't.",   // D1700
       "Vincent Chi. No phone, no side. Past the fallen trunk at Wickerglen's east edge. Say I sent you.",
     ]);
     for (const l of lines) expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110);
@@ -381,10 +381,17 @@ async function enrolment(page, face) {
   expect(await sceneId(page)).toBe('enrol');
   return drive(page, [face === 'pin' ? 'Wear the Cadet pin' : 'Wear their lanyard for Ilse']);
 }
+// D1562: every holder takes the lanyard, so the face is always set at Juniper's step on the east road.
+async function juniperStep(page) {
+  await goto(page, 'fernbrook', 30, 6, 'down');
+  expect(await page.evaluate(() => PixelPets.talkTo('juniper_east'))).toBe(true);
+  expect(await sceneId(page)).toBe('enrol_lanyard');
+  return drive(page);
+}
 const len110 = lines => { for (const l of lines) if (l[0] !== '>') expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110); };
 
 test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () => {
-  test('T6, T8, T9: Open the crates, Tobin\'s battle, the second call, the Cadet pin', async ({ page }) => {
+  test('T6, T8, T9 (D1562): Open the crates, Tobin\'s battle, the second call, the enrolment with no question', async ({ page }) => {
     test.setTimeout(180000);
     await boot(page, joinSave(DONE));
     const before = await stored(page);
@@ -418,27 +425,35 @@ test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () =>
     const call = await secondCall(page);
     expect(call.map(l => l[1])).toEqual(expect.arrayContaining(['Things are changing. In the shadows. I can feel it from here.', 'Come home tonight. Before anyone else sends for you.']));
     expect((await flags(page))['story.ilse_call2']).toBe(true);
-    // T9: the enrolment, Pin.
-    const en = await enrolment(page, 'pin');
+    // T9 (D1562 "Always undercover"): the enrolment asks no pin-or-lanyard question; every holder takes the lanyard.
+    expect(await page.evaluate(() => PixelPets.enrolChoice)).toBe('lanyard');
+    const en = await enrolment(page, 'lanyard');
     len110(en);
+    expect(en.filter(l => l[0] === '>')).toEqual([]);   // no choice at all
     expect(said(en, /^As of tonight, you're a Keeper Cadet\./)).toBe(true);
     expect(said(en, /^They'll want you more for saying no\./)).toBe(true);
-    expect(said(en, /^Then walk tall\. And remember your home\.$/)).toBe(true);
+    expect(said(en, /Wear the pin|Then walk tall/)).toBe(false);
+    expect(said(en, /^Juniper's offer still stands\. Take it\. Smile\. Remember your home\.$/)).toBe(true);
     expect(await page.evaluate(() => PixelPets.toasts)).toContain("You're a Keeper Cadet.");
     f = await flags(page);
     expect(f['story.keeper_cadet']).toBe(true);
+    expect(f['story.cover']).toBe('glimmer');
+    expect(f['story.side_pick_done']).toBeUndefined();
+    expect((await quest(page)).id).toBe('enrol_lanyard');
+    await juniperStep(page);
+    f = await flags(page);
+    expect(f['story.side']).toBe('glimmer');
     expect(f['story.side_pick_done']).toBe(true);
-    expect(f['story.side']).toBeUndefined();
-    expect(f['story.cover']).toBeUndefined();
-    expect(f['story.sway_fernbrook']).toBe(3);
+    expect(f['story.sway_fernbrook']).toBe(1);   // open + lanyard: Fernbrook stays split
     expect(f['story.know_us']).toBe(true);
     expect(f['standing.got.sp_pick']).toBe(true);
-    expect(await page.evaluate(() => PixelPets.state.standing.keepers)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('split');
     // The curfew read ends: posts and notice go.
     expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).not.toBe('curfew');
     await goto(page, 'fernbrook', 12, 8, 'down');
     for (const id of ['cd_post_lantern', 'cd_post_hall', 'cd_notice', 'juniper_east']) expect(await ids(page), id).not.toContain(id);
     expect((await quest(page)).id).toBe('heights');
+    expect((await quest(page)).text).toBe('Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.');
     const after = await stored(page);
     expect(after.v).toBe(2);
     for (const k of Object.keys(before.flags)) expect(after.flags, k).toHaveProperty([k]);
@@ -462,6 +477,7 @@ test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () =>
     expect((await quest(page)).id).toBe('enrol');
     await secondCall(page);
     const en = await enrolment(page, 'lanyard');
+    expect(en.filter(l => l[0] === '>')).toEqual([]);
     expect(said(en, /^You've already got their ear\./)).toBe(true);
     expect(said(en, /^Juniper's offer still stands\. Take it\. Smile\. Remember your home\.$/)).toBe(true);
     f = await flags(page);
@@ -521,36 +537,143 @@ test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () =>
 });
 
 test.describe('ACT1_KEEPER_JOIN: Fernbrook settles by lean and face (T11, with K1)', () => {
-  test('T11: open+pin keepers, pack+lanyard glimmer, open+lanyard and pack+pin split: chip, map line, plaza', async ({ page }) => {
+  test('T11 (D1562): pack+lanyard Glimmerwell, open+lanyard split: chip, map line, plaza', async ({ page }) => {
     test.setTimeout(150000);
     await boot(page, joinSave(DONE));
     const out = {};
-    for (const [lean, face] of [['open', 'pin'], ['pack', 'lanyard'], ['open', 'lanyard'], ['pack', 'pin']]) {
+    for (const [lean, face] of [['pack', 'lanyard'], ['open', 'lanyard']]) {
       await page.evaluate(([l]) => { for (const k of ['story.orchard_lean', 'story.sway_fernbrook', 'story.keeper_cadet', 'story.cover', 'story.side', 'story.side_pick_done', 'story.orchard_cleared', 'story.ilse_call2']) PixelPets.setFlag(k, null);
         PixelPets.setFlag('story.orchard_lean', l); PixelPets.setFlag('story.sway_fernbrook', l === 'open' ? 2 : -2); PixelPets.setFlag('story.orchard_cleared', true); PixelPets.setFlag('story.ilse_call2', true); }, [lean]);
       // Before the face is set the town is still split (the hold settles at the face, D1553).
       expect(await page.evaluate(() => PixelPets.mapHold('fernbrook')), lean + ' before').toBe('split');
       await enrolment(page, face);
-      if (face === 'lanyard') { expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true); await drive(page); }
+      expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true); await drive(page);
       await goto(page, 'fernbrook', 12, 8, 'down');
       out[lean + '+' + face] = await page.evaluate(() => ({ hold: PixelPets.mapHold('fernbrook'), line: PixelPets.holdLine('fernbrook'), chip: PixelPets.sideBadge().hold, plaza: PixelPets.fbPlazaPhase(), sway: PixelPets.sway('fernbrook') }));
     }
-    expect(out['open+pin']).toMatchObject({ hold: 'keepers', chip: 'keepers', plaza: 'held_keepers', sway: 3 });
+    // D1562: every new holder wears the lanyard, so a new save's Fernbrook is Glimmerwell's (pack) or split (open); the
+    // Keepers hold (sway >= 2 with a Cadet) is an old Keepers-pick save's, after the move (T16, O9).
     expect(out['pack+lanyard']).toMatchObject({ hold: 'glimmer', chip: 'glimmer', plaza: 'held_glimmer', sway: -3 });
     expect(out['open+lanyard']).toMatchObject({ hold: 'split', chip: 'split', plaza: 'after', sway: 1 });
-    expect(out['pack+pin']).toMatchObject({ hold: 'split', chip: 'split', plaza: 'after', sway: -1 });
     expect(out['open+lanyard'].line).toBe('Keepers walk the lanes. Glimmerwell keeps the gate.');
-    expect(out['open+pin'].line).toBe('The Keepers hold the town now. The orchard stays rooted.');
     expect(out['pack+lanyard'].line).toBe('Glimmerwell holds the town now. Lanterns on every gate.');
   });
 
-  test('D1511 under review: one constant turns the enrolment into the lanyard face (no pin question) @w1', async ({ page }) => {
+  test('D1562: the pin-or-lanyard question stays in the data behind enrol:ask, off in play @w1', async ({ page }) => {
     await boot(page, joinSave(DONE));
-    const ask = JSON.stringify(await page.evaluate(() => PixelPets.sceneScript('enrol')));
-    expect(ask).toContain('Wear the Cadet pin');
-    const lan = JSON.stringify(await page.evaluate(() => PixelPets.enrolFace('lanyard')));
-    expect(lan).not.toContain('Wear the Cadet pin');
-    expect(lan).toContain('["setFlag","story.cover","glimmer"]');
-    expect(lan).toContain('["setFlag","story.keeper_cadet",true]');
+    expect(await page.evaluate(() => PixelPets.enrolChoice)).toBe('lanyard');
+    expect(await page.evaluate(() => PixelPets.condRead('enrol:ask'))).toMatchObject({ cond: false, key: true });
+    const s = JSON.stringify(await page.evaluate(() => PixelPets.sceneScript('enrol')));
+    expect(s).toContain('["if","enrol:ask"');
+    expect(s).toContain('Wear the Cadet pin');   // D1511's branch, kept for ENROL_CHOICE = 'ask'
+  });
+});
+
+// R1/R2 letters at a Lantern House Host; the recall; the plain Cadet's R3; the STANDING line.
+// D1562: a new holder is always undercover, so the public-Keepers Cadet here is an old Keepers-pick save after the move (§9.2)
+// that has had its Lodge talk; its letters carry the Keepers-face lines.
+const PIN = Object.assign({}, DONE, { 'story.orchard_lean': 'open', 'story.orchard_cleared': true, 'story.sway_fernbrook': 3, 'story.keeper_cadet': true, 'story.side_pick_done': true, 'story.know_us': true, 'story.ilse_call_old': true, 'story.cover_done': true, 'story.rpt_old_seen': true });
+const COVER = Object.assign({}, DONE, { 'story.orchard_lean': 'pack', 'story.orchard_cleared': true, 'story.sway_fernbrook': -3, 'story.ilse_call2': true, 'story.keeper_cadet': true, 'story.cover': 'glimmer', 'story.side': 'glimmer', 'story.side_pick_done': true, 'story.tour1_s1': true });
+// A chain row is open: its `when` holds and its own `done` does not (the fixtures skip the steps in between).
+const rowOpen = (page, id) => page.evaluate(i => { const e = PPQuests.byId(i), st = { flags: PixelPets.state.flags, seals: PixelPets.state.seals, pets: 1 };
+  return e.when.every(c => PPQuests.evalCond(c, st)) && !e.done.every(c => PPQuests.evalCond(c, st)); }, id);
+async function hostLetter(page, picks) {
+  await goto(page, 'cc_lantern_in', 4, 4, 'up');
+  expect(await page.evaluate(() => PixelPets.talkTo('cc_lantern_host'))).toBe(true);
+  return drive(page, picks);
+}
+
+test.describe('ACT1_KEEPER_JOIN: reports, the recall and the STANDING line (K7)', () => {
+  test('T12: a public Keepers Cadet gets R1 and R2 by a Host\'s letter; rpt_n written; the guide comes back after', async ({ page }) => {
+    test.setTimeout(120000);
+    await boot(page, joinSave(Object.assign({}, PIN, { 'story.seal2': true })));
+    let lines = await hostLetter(page, ['Tell her all of it']);
+    len110(lines);
+    expect(lines[0]).toEqual(['Host Garnet', "A letter for you, sealed with the Warden's lantern. She wants one back."]);
+    expect(said(lines, /^You think of Hale's Seal, and the quarry vote that passed by three votes\.$/)).toBe(true);
+    expect(lines[lines.length - 1]).toEqual(['Warden Ilse', "I'll write it down. The Court will want to see this."]);   // D1700
+    expect((await flags(page))['story.rpt_1']).toBe('told');
+    // Nothing more is due: the Host is a Host again.
+    expect(await page.evaluate(() => PixelPets.talkTo('cc_lantern_host'))).toBe(true);
+    lines = await drive(page, ['Got it']);
+    expect(said(lines, /^A letter for you/)).toBe(false);
+    await page.evaluate(() => PixelPets.setFlag('story.hc_council_done', true));
+    lines = await hostLetter(page, ['Keep some back']);
+    expect(said(lines, /^You think of the Lantern Council, and the coast road\.$/)).toBe(true);
+    expect(said(lines, /^You fold the letter with half of it left out\.$/)).toBe(true);
+    expect((await flags(page))['story.rpt_2']).toBe('kept');
+    // A plain Cadet after Brinewick: the Host passes Ilse's note on; R3 at the Lodge (9c-9e).
+    await page.evaluate(() => PixelPets.setFlag('story.ep1_end', true));
+    expect(await rowOpen(page, 'cadet_report')).toBe(true);
+    lines = await hostLetter(page, ['Got it']);
+    expect(lines[0][1]).toBe('A note from the Warden: come home to the Lodge. She wants the last of it in person.');
+    await goto(page, 'hm_lodge_in', 5, 5, 'up');
+    expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
+    expect(await sceneId(page)).toBe('cadet_sendoff');
+    lines = await drive(page, ['Tell her all of it']);
+    expect(said(lines, /^Captain Lumen has asked for you\. The capital is waiting, Cadet\.$/)).toBe(true);
+    expect((await flags(page))['story.rpt_3']).toBe('told');
+    // E8 (D1556): the STANDING line; no bag item (D1557).
+    await goto(page, 'hearthmoor', 11, 7, 'down');
+    await page.locator('#questBtn').tap();
+    await page.waitForTimeout(700);   // the panel's tap guard
+    await page.locator('#questTabStanding').click();
+    await expect(page.locator('#questTabStanding')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#stCadet')).toHaveText('Keeper Cadet, Hearthmoor Lodge');
+    await page.keyboard.press('Escape');
+    expect(Object.keys(await page.evaluate(() => PixelPets.state.bag)).filter(k => /pin|cadet/.test(k))).toEqual([]);
+    expect((await stored(page)).v).toBe(2);
+  });
+
+  test('T12, T13: a lanyard Cadet: R1 with the soft click, then the recall after Brinewick; side keepers, keepsakes kept', async ({ page }) => {
+    test.setTimeout(150000);
+    const s = joinSave(Object.assign({}, COVER, { 'story.seal2': true, 'story.arbiter_test_done': true }));
+    s.seals.seal_glim_1 = 1700000000000; s.seals.seal_glim_2 = 1700000000000;
+    await boot(page, s);
+    let lines = await hostLetter(page, ['Tell her all of it']);
+    expect(said(lines, /^You think of Quinn's back room, and the quota\.$/)).toBe(true);
+    expect((await flags(page))['story.rpt_1']).toBe('told');
+    // T13: after Brinewick, Ilse calls the undercover Cadet home on the first free outdoor step.
+    await page.evaluate(() => { PixelPets.setFlag('story.gb_done', true); PixelPets.setFlag('story.rpt_2', 'kept'); PixelPets.setFlag('story.ep1_end', true); });
+    expect(await rowOpen(page, 'recall')).toBe(true);
+    await goto(page, 'cobblecrest', 10, 8, 'down'); await step(page, 'down');
+    expect(await sceneId(page)).toBe('ilse_recall_call');
+    lines = await drive(page, ['Answer']);
+    expect(lines.map(l => l[1])).toContain("Come home. You've worn their colours long enough.");
+    await goto(page, 'hm_lodge_in', 5, 5, 'up');
+    expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
+    expect(await sceneId(page)).toBe('recall');
+    lines = await drive(page, ['Keep some back']);
+    len110(lines);
+    expect(lines[0]).toEqual(['Warden Ilse', 'Take it off. Keep it in a drawer, not on your coat.']);
+    const f = await flags(page);
+    expect(f['story.side']).toBe('keepers');
+    expect(f['story.cover_done']).toBe(true);
+    expect(f['story.rpt_3']).toBe('kept');
+    expect(f['story.switches'] | 0).toBe(0);   // not a switch
+    expect(Object.keys(await page.evaluate(() => PixelPets.state.seals)).sort()).toEqual(['seal_fernbrook', 'seal_glim_1', 'seal_glim_2']);
+    expect(await page.evaluate(() => PixelPets.side)).toBe('keepers');
+    // D1562: the Keepers-side finale, the Lantern Council, follows the recall, so the holder sees both finales in order.
+    expect(f['story.hc_council_done']).toBeUndefined();
+    expect(await rowOpen(page, 'hc_council')).toBe(true);
+    expect(lines[lines.length - 1][1]).toBe('Captain Lumen has asked for you. The capital is waiting, Cadet.');
+    expect(await page.evaluate(() => PixelPets.runScene('hc_council'))).toBe(true);
+    const council = await drive(page);
+    len110(council);
+    expect(said(council, /^You walked the coast in their colours, and came home in ours\./)).toBe(true);
+    expect(said(council, /We are opening it|THE ROAD AHEAD/)).toBe(false);   // the road is already walked
+    expect((await flags(page))['story.hc_council_done']).toBe(true);
+    // The recall rings once: no call after it.
+    await goto(page, 'hearthmoor', 11, 7, 'down'); await step(page, 'down');
+    expect(await sceneId(page)).toBeNull();
+  });
+
+  test('reports stop after an Act 3 switch (D1559, D1629) or the loyalist\'s choice (D1514) @w1', async ({ page }) => {
+    await boot(page, joinSave(Object.assign({}, PIN, { 'story.seal2': true, 'story.switched_a3': true })));
+    let lines = await hostLetter(page, ['Got it']);
+    expect(said(lines, /^A letter for you/)).toBe(false);
+    await page.evaluate(() => { PixelPets.setFlag('story.switched_a3', null); PixelPets.setFlag('story.warden_cut', true); });
+    lines = await hostLetter(page, ['Got it']);
+    expect(said(lines, /^A letter for you/)).toBe(false);
   });
 });

@@ -36,7 +36,7 @@
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
     'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
     'story.chi_jars', 'story.shift_lamp_w', 'story.shift_lamp_n', 'story.shift_lamp_e', 'story.shift_ledger', 'story.chi_told_ledger', 'story.chi_told_lamps', 'story.chi_told_list',   // ACT1_KEEPER_JOIN: Vincent Chi's jars (WEIR_HUT §3.3) and his report hub, not steps
-    'story.sway_fernbrook', 'story.cover', 'story.ilse_call2',   // ACT1_KEEPER_JOIN: Fernbrook's sway, the face, the second call
+    'story.sway_fernbrook', 'story.cover', 'story.ilse_call2', 'story.ilse_call3', 'story.rpt_1', 'story.rpt_2', 'story.warden_cut',   // ACT1_KEEPER_JOIN: sway, face, calls, reports
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -261,7 +261,9 @@
       text: 'Rook is outside the Hall with news from the quarry.', place: "Outside Hale's Hall",
       glimmer: { text: 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', place: "Outside Hale's Hall" },
       target: { map: 'cobblecrest', x: 25, y: 7 } },
-    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'], noImply: true,
+    // ACT1_KEEPER_JOIN §9.3 (D1548): a moved old save that finished the Signal Review skips the Lantern Council. D1562: a new
+    // save plays the Signal Review undercover, then the Council after Ilse's recall (side keepers again), so it sees both.
+    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'], skipIf: ['story.gb_done & story.ilse_call_old'], noImply: true,
       text: 'High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', place: 'High Charity, sky-dock',
       target: { map: 'hc_command_in', x: 2, y: 3 } },
     { id: 'gb_invite', when: ['story.side=glimmer'], done: ['story.gb_invited'],
@@ -299,6 +301,15 @@
     { id: 'ep1_end', when: ['story.route3_open'], done: ['story.ep1_end'],
       text: 'Rook is waiting outside the Trial Hall.', place: 'Brinewick, west pier',
       target: { map: 'brinewick', x: 6, y: 13 } },
+    // ACT1_KEEPER_JOIN §4.9 (D1518): the recall brings an undercover Cadet home; a plain Cadet reports at the Lodge (R3).
+    { id: 'recall', when: ['story.ep1_end', 'story.cover=glimmer', '!story.cover_done'], done: ['story.cover_done', 'story.cover=glimmer'], noImply: true,
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: "Warden Ilse wants you home at the Lodge. Take the lanyard off first.", place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    { id: 'cadet_report', when: ['story.ep1_end', 'story.keeper_cadet', '!story.cover=glimmer', '!story.ilse_call_old | story.rpt_old_seen', '!story.switched_a3', '!story.warden_cut'], done: ['story.rpt_3'], noImply: true,
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: 'Warden Ilse wants the last of it in person. Go to the Lodge.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];

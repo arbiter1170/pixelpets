@@ -384,6 +384,8 @@ const COPY = {
   brine_dorian: ['Dorian Pell is waiting on the quay outside the depot.', 'Brinewick quay', 'Dorian Pell wants your quarterly review, out on the quay.', 'Brinewick quay'],
   hall3: ["Master Marisol's Trial Hall is open on the west pier. Challenge her for the Brinewick Seal.", 'Brinewick Trial Hall', "Quinn is closing the quarter in Marisol's Hall. The captain's match is optional.", 'Brinewick Trial Hall'],
   ep1_end: ['Rook is waiting outside the Trial Hall.', 'Brinewick, west pier'],
+  recall: ['Warden Ilse wants you home at the Lodge. Take the lanyard off first.', 'Hearthmoor, the Lodge'],
+  cadet_report: ['Warden Ilse wants the last of it in person. Go to the Lodge.', 'Hearthmoor, the Lodge'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 

@@ -245,14 +245,16 @@ test('A Keepers pick: Tobin\'s battle after the pick clears the orchard, and Fer
   await playScene(page, []);
   expect((await flags(page))['story.orchard_cleared']).toBe(true);
   expect((await quest(page)).id).toBe('enrol');
-  // The pin face settles the town (ACT1_KEEPER_JOIN 4.7).
+  // The face settles the town (ACT1_KEEPER_JOIN 4.7). D1562: every holder takes the lanyard, so an Open lean leaves it split.
   await page.evaluate(() => PixelPets.setFlag('story.ilse_call2', true));
   expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);
-  await playScene(page, ['Wear the Cadet pin']);
+  await playScene(page, []);
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
   f = await flags(page);
   expect(f['story.side_pick_done']).toBe(true);
   expect(f['story.keeper_cadet']).toBe(true);
-  expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('keepers');
+  expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('split');
   await page.evaluate(() => PixelPets.setFlag('story.heights_done', true));
   expect((await quest(page)).id).toBe('teaser');
 });

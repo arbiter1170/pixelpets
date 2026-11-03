@@ -4003,18 +4003,10 @@ if (HC_V2_ON) Object.assign(SCENES, JSON.parse(JSON.stringify(window.PP_HC_V2.sc
 // FACE_ME (Vincent, Nov 3, 2026): Lizzy's reunion can start from Buddy, with Lizzy wandered off or facing away. She walks
 // back beside the holder and faces them first (whichever of her bodies is here: the morning plaza, the plaza, the school).
 if (SCENES.lizzy_intro) SCENES.lizzy_intro = [['faceMe', ['hm_lizzy_pre', 'hm_lizzy', 'school_lizzy']]].concat(SCENES.lizzy_intro);
-// ACT1_KEEPER_JOIN D1511: the enrolment asks pin or lanyard ('ask'). Under review (Vincent, Nov 3, night: every holder may go
-// undercover in Act 1): 'lanyard' makes the enrolment skip the question and take the lanyard branch, the only change needed
-// here. The choice lives in one data step (scene `enrol`, detail_zz_keeper_join.json); nothing else keys on the pin path.
-const ENROL_CHOICE = 'ask';
-function enrolFace(steps, mode){
-  if (mode !== 'lanyard' || !Array.isArray(steps)) return steps;
-  return steps.flatMap(st => {
-    if (!Array.isArray(st) || st[0] !== 'choice') return [st];
-    const lan = (st[2] || []).find(o => Array.isArray(o[1]) && o[1].some(s => s[0] === 'setFlag' && s[1] === 'story.cover'));
-    return lan ? lan[1] : [st];
-  });
-}
+// ACT1_KEEPER_JOIN D1562 (Vincent, Nov 3, 2026, night: "Always undercover"): the enrolment no longer asks pin or lanyard;
+// every new holder takes the lanyard for Ilse. The question stays in the data behind the `enrol:ask` term (scene `enrol`),
+// so ENROL_CHOICE = 'ask' brings D1511's pin-or-lanyard choice back with no other change.
+const ENROL_CHOICE = 'lanyard';
 // A top-level say first (as before); else one inside an `if` branch, so a second file's swap can wrap a line an earlier file
 // already wrapped (B-2: the crackdown's "After last night," variant wraps Fen's Glimmer-pick line before day1's swap does).
 function swapLine(steps, sw){
@@ -4035,7 +4027,6 @@ for (const k of DETAIL_KEYS) {
   for (const [id, tail] of Object.entries(MD[k].sceneTails || {})) if (SCENES[id] && id[0] !== '_') SCENES[id] = SCENES[id].concat(JSON.parse(JSON.stringify(tail)));
   for (const sw of MD[k].lineSwaps || []) { const out = SCENES[sw.scene] && swapLine(SCENES[sw.scene], sw); if (out) SCENES[sw.scene] = out; }
 }
-if (SCENES.enrol) SCENES.enrol = enrolFace(SCENES.enrol, ENROL_CHOICE);
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 // HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
 for (const k of DETAIL_KEYS) if (MD[k].trainers) for (const [id, t] of Object.entries(MD[k].trainers)) { if (t && Array.isArray(t.team) && t.team.some(m => !BASE_STATS[m && m.form])) continue; TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t); }
@@ -4111,7 +4102,7 @@ function condKeyOk(c){
     const part = raw.trim();
     if (!part || part === 'else' || part === 'talked' || part === 'has:name') return !!part;
     const s = part[0] === '!' ? part.slice(1) : part;
-    return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s.startsWith('seal:') || /^bag:[a-z0-9_]+$/.test(s) || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
+    return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s === 'enrol:ask' || s.startsWith('seal:') || /^bag:[a-z0-9_]+$/.test(s) || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
   });
 }
 function glimmerDevCheck(){
@@ -4957,6 +4948,7 @@ function cond(c, live, o){
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
+  else if (c === 'enrol:ask') v = ENROL_CHOICE === 'ask';   // ACT1_KEEPER_JOIN D1562: the enrolment's pin-or-lanyard question
   else if (c.startsWith('rep:') || c.startsWith('reptier')) v = repCond(c, o);
   else {
     const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c);
@@ -6661,6 +6653,8 @@ function checkTriggers(){
 // fade, sheet or battle rings the first call whose `when` holds (Ilse's second call, the recall). The scene's own answer writes
 // the flag that ends its `when`; until then it rings again on the next outdoor step, like the dawn call (D1404).
 function oldSaveMoveDue(){}   // ACT1_KEEPER_JOIN §9.1: the old-save move (K8)
+const HOST_NOTES = [].concat(...DETAIL_KEYS.map(k => MD[k].hostNotes || [])).filter(n => n && n.scene && n.line);
+const hostNoteDue = () => HOST_NOTES.find(n => SCENES[n.scene] && (n.when || []).every(w => cond(w, false))) || null;
 const STORY_CALLS = [].concat(...DETAIL_KEYS.map(k => MD[k].calls || [])).filter(c => c && c.scene);
 function checkCalls(){
   if (!S || !CUR || scene || fade.busy || overlayOpen() || (battle && battle.on)) return false;
@@ -9273,7 +9267,11 @@ function interact(o){
     }
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
-  if (LANTERN_GUIDE_IDS[o.id]) { openLanternGuide(o, false); return; }
+  if (LANTERN_GUIDE_IDS[o.id]) {
+    const note = hostNoteDue();   // ACT1_KEEPER_JOIN §4.8: Ilse's letters come through a Host, never the wire
+    if (note) return runSteps([['say', objName(o), note.line], ['run', note.scene]], ctx);
+    openLanternGuide(o, false); return;
+  }
   if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
   if (o.kind === 'sign') {
     const line = linesFor(o);
@@ -15227,11 +15225,16 @@ function standingEmblem(k){
   (SC_STANDING.art['emblem_' + k] || []).forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
   return em;
 }
+const CADET_LINE = 'Keeper Cadet, Hearthmoor Lodge';   // D1556, PLACEHOLDER
 function renderStanding(){
   const T = SC_STANDING.tab, sd = side(), rows = $('#stRows'); rows.textContent = '';
   const quiet = PPStanding.SIDES.every(k => standingOf(k, false) <= SC_STANDING.min);
   $('#stPledged').textContent = quiet ? T.empty : PPStanding.fill(T.pledged, { faction: SC_STANDING.sides[sd].name });
   $('#stExplain').textContent = T.explain;
+  // ACT1_KEEPER_JOIN E8 (D1556, D1557): a Cadet gets one line; no pin item. The chip's emblem keeps the public face (D1516).
+  let cadet = $('#stCadet');
+  if (!cadet) { cadet = document.createElement('p'); cadet.id = 'stCadet'; cadet.className = 'q-place'; $('#stPledged').after(cadet); }
+  cadet.hidden = !(S && S.flags['story.keeper_cadet']); cadet.textContent = cadet.hidden ? '' : CADET_LINE;
   for (const k of PPStanding.SIDES) {
     const i = PPStanding.tierInfo(k, standingOf(k, false)), F = SC_STANDING.sides[k], pledged = k === sd;
     const row = document.createElement('div'); row.className = 'st-row' + (pledged ? ' pledged' : ''); row.dataset.side = k;
@@ -20054,7 +20057,7 @@ function boot(){
   api.standingStill = () => DEBUG ? standingStill() : undefined;
   api.lanternRestFlag = () => DEBUG && scene && scene.view ? (scene.view.flags['lantern.rest'] || null) : undefined;
   api.holderDrawn = () => DEBUG ? (((shownLook() || {}).accessory) || 'none') : undefined;
-  api.enrolFace = mode => DEBUG ? copy(enrolFace(sceneSteps('enrol'), mode)) : null;   // ACT1_KEEPER_JOIN D1511 switch check
+  Object.defineProperty(api, 'enrolChoice', { enumerable: true, get(){ return DEBUG ? ENROL_CHOICE : null; } });   // D1562
   Object.defineProperty(api, 'toasts', { enumerable: true, get(){ return DEBUG ? toastLog.slice() : null; } });
   api.talkTo = id => { if (!DEBUG) return undefined; const o = objById(id); if (!o || scene) return false; interact(o); return true; };
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });

@@ -127,13 +127,15 @@ test.describe('post-Trial crackdown', () => {
     await drive(page, ['Open the crates with Fen']);
     await page.evaluate(() => { PixelPets.setFlag('story.orchard_cleared', true); PixelPets.setFlag('story.ilse_call2', true); });
     expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);
-    await drive(page, ['Wear the Cadet pin']);
+    await drive(page);   // D1562: no pin-or-lanyard question; the face is set at Juniper's step
+    expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+    await drive(page);
     expect((await flags(page))['story.side_pick_done']).toBe(true);
     // The pick lifts the curfew order: posts and notice go, the townsfolk come back, the Hall stays shut (D1224).
     const after = (await objs(page)).map(o => o.id);
     for (const id of ['cd_post_lantern', 'cd_post_hall', 'cd_cordon', 'cd_notice', 'juniper_east', 'fen_dawn']) expect(after, id).not.toContain(id);
     expect(after).toEqual(expect.arrayContaining(['odile', 'fb_wynne']));
-    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('held_keepers');
+    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('after');   // open + lanyard: Fernbrook stays split (K1)
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 
