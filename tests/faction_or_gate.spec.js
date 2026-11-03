@@ -160,8 +160,14 @@ test('T-ORDER: cond() and evalCond agree on every §7.1 gate string, for every s
   ]));
   // evalCond knows no seal:/standing terms beyond seal:, so compare on the flag and seal strings both readers take.
   const shared = strings.filter(c => !/standing\.|away:|win:|time:|day:|phase:|has:|chip:|talked|rep/.test(c));
-  for (const kind of Object.keys(K.KINDS)) {
-    const fx = K.KINDS[kind];
+  // SEALS_BOTH_PATHS §4.3: both readers share hasSeal/sealsHeld, so the held-Seal terms and the old-save alias agree too.
+  shared.push('seals>=1', 'seals>=3', 'seal:seal_cobblecrest', '!seal:seal_cobblecrest', 'seal:seal_fernbrook');
+  const kinds = Object.assign({}, K.KINDS, {
+    alias_hale: { flags: { 'story.side': 'glimmer', 'story.seal2': true, 'trainer.hall2_hale': true }, seals: { seal_fernbrook: true, seal_glim_1: true, seal_glim_2: true } },
+    alias_tag_only: { flags: { 'story.side': 'glimmer', 'story.seal2': true }, seals: { seal_glim_1: true, seal_glim_2: true } },
+  });
+  for (const kind of Object.keys(kinds)) {
+    const fx = kinds[kind];
     const diff = await page.evaluate(({ shared, fx }) => {
       const S = PixelPets.state, keep = { flags: S.flags, seals: S.seals };
       S.flags = Object.assign({}, fx.flags); S.seals = Object.assign({}, fx.seals);

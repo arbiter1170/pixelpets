@@ -33,7 +33,7 @@ test.describe('Fernbrook Lantern House: the wire station', () => {
     const props = { fb_wire_set: [5, 2], fb_lamp_w: [2, 2], fb_lamp_e: [8, 2], fb_switchboard: [10, 2], fb_wire_desk: [7, 3],
       fb_bench_a: [2, 8], fb_bench_b: [3, 8], fb_bench_c: [7, 8], fb_bench_d: [8, 8], fb_callbox: [9, 13] };
     for (const [id, [x, y]] of Object.entries(props)) expect(r.objs[id], id).toMatchObject({ x, y, art: true });
-    // The relay racks are silent wall decals on the plinth row (drawn, never block or talk; D1339).
+    // The relay racks are silent wall decals on the plinth row (drawn, never block or talk; D1416).
     expect(r.objs.fb_relay_w).toMatchObject({ x: 3, y: 1, kind: 'decal', art: true });
     expect(r.objs.fb_relay_e).toMatchObject({ x: 7, y: 1, kind: 'decal', art: true });
     expect(r.objs.fb_wire_set_live).toBeUndefined();

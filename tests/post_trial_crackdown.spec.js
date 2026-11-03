@@ -1,4 +1,4 @@
-/* POST_TRIAL_CRACKDOWN v0.3.1 (handoff/specs/POST_TRIAL_CRACKDOWN.md) plus Vincent's Nov 3, 2026 change (D1333): after Seal 1 the
+/* POST_TRIAL_CRACKDOWN v0.3.1 (handoff/specs/POST_TRIAL_CRACKDOWN.md) plus Vincent's Nov 3, 2026 change (D1395): after Seal 1 the
    Keeper tanks roll in, the night passes in the Lantern House, the holder is let go at dawn under a curfew order that stands until the
    pick (§5), and the only change from the spec: Warden Ilse's wire sends the holder home (WARDEN_SUMMONS placeholder) before the pick. Engine steps E1-E5 (D1204). Saves stay pixelpets.save.v2, v 2. */
 const { test, expect } = require('@playwright/test');
@@ -10,7 +10,7 @@ function fernSave(extra) {
   const s = starterSave();
   s.settings.controls = 'modern';
   s.settings.textSpeed = 'fast';
-  Object.assign(s.flags, { 'story.reached_route1': true, 'story.rival1_done': true, 'story.reached_fernbrook': true, 'story.met_glimmerwell': true, 'story.met_fen': true }, extra || {});
+  Object.assign(s.flags, { 'story.reached_route1': true, 'story.rival1_done': true, 'story.reached_fernbrook': true, 'story.met_glimmerwell': true, 'story.met_fen': true, 'story.phone_got': true }, extra || {});
   s.world = { map: 'fernbrook', x: 12, y: 8, facing: 'down', respawn: 'fernbrook' };
   s.standing = { keepers: 0, glimmer: 0 };
   return s;
@@ -84,34 +84,29 @@ test.describe('post-Trial crackdown', () => {
     expect(f['story.crackdown']).toBe(true);
     expect(f['story.hall1_shut']).toBe(true);
     expect(f['story.post_trial_done']).toBe(true);
-    expect(f['story.warden_called']).toBe(true);
-    expect(f['story.fen_lean']).toBe(2);   // PLACEHOLDER encoding (D1334): Keep it +1, He's hiding something +1
+    expect(f['story.warden_called']).toBeUndefined();   // Ilse calls on the first step outside (D1404)
+    expect(f['story.fen_lean']).toBe(2);   // PLACEHOLDER encoding (D1411): Keep it +1, He's hiding something +1
     expect(f['story.side_pick_done']).toBeUndefined();
-    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('warden_summons');
+    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('ilse_call');
     expect(await page.evaluate(() => PixelPets.mapInfo.id)).toBe('fb_lantern_in');
     // The Seal is never removed (SEALS-N); the save stays v2.
     expect(await page.evaluate(() => ({ seals: JSON.stringify(PixelPets.state.seals), v: PixelPets.state.v }))).toEqual(before);
     // Casts end with the scenes: no tank, beam or Commander stays on either map.
     expect((await objs(page)).filter(o => /^cd_(tank|beam|dust|cmdr|off|fen)/.test(o.id))).toEqual([]);
-    await page.evaluate(() => PixelPets.goto('fernbrook', 12, 8)); await page.waitForFunction(() => PixelPets.mapInfo.id === 'fernbrook' && !PixelPets.fading);
+    // RENDEZVOUS_VINCENT beat 1 (D1395, D1404): the first step out of the Lantern House rings the Keeper1; one tap answers.
+    await stepOnto(page, 'fernbrook', 5, 6, 'down');
+    expect(await sceneId(page)).toBe('ilse_call');
+    await drive(page, ['Answer']);
+    expect((await flags(page))['story.warden_called']).toBe(true);
+    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('warden_summons');
     const out = (await objs(page)).map(o => o.id);
     expect(out.filter(id => /^cd_(tank|beam|dust|cmdr|off|fen)/.test(id))).toEqual([]);
-    // §5: the curfew order stands until the pick (D1333 only moves the pick): posts, notice, cordon, Fen at the gate,
-    // Juniper on the east road; the square's townsfolk, Glimmerwell's stand and the plaza are indoors.
-    expect(out).toEqual(expect.arrayContaining(['cd_post_lantern', 'cd_post_hall', 'cd_cordon', 'cd_notice', 'fen_dawn', 'juniper_east']));
-    for (const id of ['odile', 'fb_wynne', 'fb_tobin', 'juniper', 'fb_lantern_stand']) expect(out, id).not.toContain(id);
+    // The curfew order stands until the pick (§5, D1405): posts, notice, cordon, Fen at the gate, Juniper on the east road,
+    // the plaza indoors; the square's townsfolk are back by day once Ilse has called; Glimmerwell's Juniper and stand stay away.
+    expect(out).toEqual(expect.arrayContaining(['cd_post_lantern', 'cd_post_hall', 'cd_cordon', 'cd_notice', 'fen_dawn', 'juniper_east', 'odile', 'fb_wynne']));
+    for (const id of ['juniper', 'fb_lantern_stand']) expect(out, id).not.toContain(id);
     expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('curfew');
-    // §6: the two pitches the night moved. Juniper on the east road; Amos at the Lantern House panel.
-    expect(await page.evaluate(() => PixelPets.talkTo('juniper_east'))).toBe(true);
-    expect(await sceneId(page)).toBe('juniper_pitch');
-    await drive(page);
-    await page.evaluate(() => PixelPets.goto('fb_lantern_in', 5, 5)); await page.waitForFunction(() => PixelPets.mapInfo.id === 'fb_lantern_in' && !PixelPets.fading);
-    expect(await page.evaluate(() => PixelPets.talkTo('amos'))).toBe(true);
-    await drive(page, ['About last night', 'Leave']);
-    const pf = await flags(page);
-    expect([pf['story.pitch_k'], pf['story.pitch_g']]).toEqual([true, true]);
-    await page.evaluate(() => PixelPets.goto('fernbrook', 12, 8)); await page.waitForFunction(() => PixelPets.mapInfo.id === 'fernbrook' && !PixelPets.fading);
-    // No pick yet (D1333): the gate stays quiet until the Warden.
+    // No pick yet (D1395): the gate stays quiet until the Warden.
     await stepOnto(page, 'fernbrook', 9, 9, 'down');
     expect(await sceneId(page)).toBeNull();
     // Warden Ilse at the Lodge.
@@ -194,6 +189,18 @@ test.describe('post-Trial crackdown', () => {
     expect(await sceneId(page)).toBe('crackdown_lantern');
     await drive(page);
     expect((await flags(page))['story.post_trial_done']).toBe(true);
+    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('ilse_call');
+  });
+
+  test('no phone: Amos passes Ilse\'s message on at the end of the night (D1404)', async ({ page }) => {
+    test.setTimeout(180000);
+    await boot(page, 'post_trial', { extra: { 'story.phone_got': false } });
+    await page.evaluate(() => PixelPets.setFlag('story.phone_got', null));
+    await stepOnto(page, 'fb_lantern_in', 5, 14, 'up');
+    expect(await sceneId(page)).toBe('crackdown_lantern');
+    await drive(page);
+    const f = await flags(page);
+    expect([f['story.post_trial_done'], f['story.warden_called']]).toEqual([true, true]);
     expect(await page.evaluate(() => PixelPets.quest.id)).toBe('warden_summons');
   });
 });
