@@ -2182,6 +2182,14 @@ const HOUSE_SKINS = {
     variants: { floor_stitch: [['floor_stitch_b', 0.22], ['floor_stitch_c', 0.18]] },
     wall: wallRow('mhdwhpmdpcsp'),
   },
+  // WEIR_HUT §3.1, §5 (D1591): the weir hut. River-stone flags, a sacking rug and mat, the lipped weir trough and its planks.
+  // Remap '#'/W keep the rough-stone names for anything that reads them; the wall kit draws the walls (cap I, face K).
+  weir_hut: {
+    remap: { '#':'wall_rough', W:'wall_rough_face', W2:'wall_rough_win', '.':'weir_flag', '=':'rug_sacking', m:'mat_sacking', w:'weir_trough', B:'weir_plank' },
+    decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 },
+    variants: { weir_flag: [['weir_flag_b', 0.22], ['weir_flag_c', 0.12]] },
+    wall: wallRow('ICFKmFFFFcsB'),
+  },
 };
 // Shared indoor wall kit (D151). Role letters, not PAL keys. `.` is empty. Mirrors are the other corner, the other side, and the other shadow.
 // A skin opts in with `wall` (role -> PAL key). buildWallKit bakes `<skin>__<part>` once.
@@ -3523,6 +3531,42 @@ const HC_PLACEHOLDER_ART = {
   hc_tank_escort: "A24 Keeper tank, escort (4 frames, 350 ms)",
   hc_tank_command: "A24 Keeper tank, command (4 frames, 350 ms)",
 };
+// WEIR_HUT (D1591, D1599): the weir hut at Hushwater's Old Weir, room hw_weir_hut_in and its porch on hw_cut. The 27 grids
+// as Vincent approved them in the previews (Nov 3, 2026), 16x16, PAL keys only, '.' clear. Each entry is a list of frames;
+// two frames loop (the lamp shelf's pulse, the trough's water), and reduced motion holds frame 0. Tiles go to TILES, props to WART.
+const WEIR_HUT_ART = {
+  tiles: {
+    weir_flag: [["IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIICIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIICIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIICIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIICIIIIIIIIII", "IIIIIIIIIIIIIIII"]],
+    weir_flag_b: [["IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIGGGGIIIIIIII", "IIIIIIIGIIIIIIII", "IIIIIIIGIIIICIII", "IIIIIIIGGGGIIIII", "IIIIIIIIIIIIIIII", "IICIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII"]],
+    weir_flag_c: [["IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIDDIIIIIII", "IIIIIDDDDDIIIIII", "IIIIDDDIDDDIIIII", "IIIIIDDDDDIIICII", "IIIIIIDDIIIIIIII", "IIIIIIIIIIIIIIII", "IICIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIICIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII"]],
+    weir_trough: [["hhhhhhhhhhhhhhhh", "mmmmmmmmmmmmmmmm", "dddddddddddddddd", "nnbbbbbbbbbbbbnn", "bbbbbcbbbbbbbbbb", "bbbbccsbbbbbbbbb", "bbbbbbbbbbbcbbbb", "bbbbbbbbbbccsbbb", "bcbbbbbbbbbbbbbb", "ccsbbbbbbbbbbbbb", "bbbbbbbcbbbbbbbb", "bbbbbbccsbbbbbbb", "bbbbbbbbbbbbbbbb", "nnnnnnnnnnnnnnnn", "mmmmmmmmmmmmmmmm", "hhhhhhhhhhhhhhhh"], ["hhhhhhhhhhhhhhhh", "mmmmmmmmmmmmmmmm", "dddddddddddddddd", "nnbbbbbbbbbbbbnn", "bbbbbbbbbbbbbbbb", "bbbbbbcbbbbbbbbb", "bbbbbccsbbbbbcbb", "bbbbbbbbbbbbccsb", "bbbbbbbbbbbbbbbb", "bbcbbbbbbbbbbbbb", "bccsbbbbbbbbbbbb", "bbbbbbbbcbbbbbbb", "bbbbbbbccsbbbbbb", "nnnnnnnnnnnnnnnn", "mmmmmmmmmmmmmmmm", "hhhhhhhhhhhhhhhh"]],
+    weir_plank: [["hhhhhhhhhhhhhhhh", "FGGGGGGFFGGGGGGF", "FGBGGGGFFGGGBGGF", "FGGGGGGFFGGGGGGF", "FGGGGBGFFGGGGGGF", "FGGGGGGFFGBGGGGF", "FGGGGGGFFGGGGGGF", "FGBGGGGFFGGGGGGF", "FGGGGGGFFGGGGBGF", "FGGGGGGFFGGGGGGF", "FGGGGBGFFGGGGGGF", "FGGGGGGFFGGGGGGF", "FGGGGGGFFGBGGGGF", "FGGGGGGFFGGGGGGF", "FFFFFFFFFFFFFFFF", "hhhhhhhhhhhhhhhh"]],
+    rug_sacking: [["AAAAAAAAAAAAAAAA", "AAAAAAAAAACAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAGAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAGAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AACAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAGAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAACAAA", "AAAAAAAAAAAAAAAA"]],
+    mat_sacking: [["FFFFFFFFFFFFFFFF", "FAAAAAAAAAAAAAAF", "FACCAACCAACCAACF", "FAAAAAAAAAAAAAAF", "FAFFFFFFFFFFFFAF", "FAAAAAAAAAAAAAAF", "FACCAACCAACCAACF", "FAAAAAAAAAAAAAAF", "FACCAACCAACCAACF", "FAAAAAAAAAAAAAAF", "FAFFFFFFFFFFFFAF", "FAAAAAAAAAAAAAAF", "FACCAACCAACCAACF", "FAAAAAAAAAAAAAAF", "FAAAAAAAAAAAAAAF", "FFFFFFFFFFFFFFFF"]],
+  },
+  props: {
+    weir_case_board_l: [["................", "FFFFFFFFFFFFFFFF", "FGGGGGGGGGGGGGGG", "FGAAAAAAAAAAAAAA", "FGACCCCCAAArAAAA", "FGACmmmCAAAArAAA", "FGACmCmCAAAAArAA", "FGACCCCCrAAAAArA", "FGAAAAAAArAAAAAr", "FGAAwwwwAArAAAAA", "FGAAwgDwAAArrrrr", "FGAAwDgwrAAAAAAA", "FGAAwwwwArrAAAAA", "FGAAAAAAAAAAAAAA", "FFFFFFFFFFFFFFFF", ".FF............."]],
+    weir_case_board_r: [["................", "FFFFFFFFFFFFFFFF", "GGGGGGGGGGGGGGGF", "AAAAAAAAAAAAAAGF", "AAAACCCCCAAAAAGF", "AAAArCmmCAAAAAGF", "AAArACmCCAwwwwGF", "AArAACCCCAwgDwGF", "ArAAAAAAAAwDgwGF", "rAAAAAAAAAwwwwGF", "AAAAACCCCAAArAGF", "rrrrrrCmCrrrAAGF", "AAAAACCCCAAAAAGF", "AAAAAAAAAAAAAAGF", "FFFFFFFFFFFFFFFF", ".............FF."]],
+    weir_desk_l: [["................", "................", "................", "................", "................", "....CCCC........", "...CwwwwC.......", "GGGCwmmwCGGGGGGG", "GGGCwwwwCGGGGyGG", "FFFFFFFFFFFFFFFF", "FdFFFFFFFFFFFFFF", "Fd..............", "Fd..............", "Fd..............", "Fd..............", "dd.............."]],
+    weir_desk_r: [["................", "................", "................", "................", "................", "..CCCCC.....B...", "..CmmmC....BBB..", "GGCCCCCGGGGBBBGG", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFdF", "..............dF", "..............dF", "..............dF", "..............dF", "..............dd"]],
+    weir_jars_0: [["................", "................", "................", "..FF...FF...FF..", ".hhhh.hhhh.hhhh.", ".hmmh.hmmh.hmmh.", ".hwmh.hwmh.hwmh.", ".hmmh.hmmh.hmmh.", ".hmmh.hmmh.hmmh.", ".hmmh.hmmh.hmmh.", ".hmmh.hmmh.hmmh.", ".hhhh.hhhh.hhhh.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", "................"]],
+    weir_jars_1: [["................", "................", "................", "..FF...FF...FF..", ".hhhh.hhhh.hhhh.", ".hmmh.hmmh.hmmh.", ".hmlh.hwmh.hwmh.", ".hlgh.hmmh.hmmh.", ".hglh.hmmh.hmmh.", ".hgmh.hmmh.hmmh.", ".hgmh.hmmh.hmmh.", ".hhhh.hhhh.hhhh.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", "................"]],
+    weir_jars_2: [["................", "................", "................", "..FF...FF...FF..", ".hhhh.hhhh.hhhh.", ".hmmh.hmwh.hmmh.", ".hmlh.hwCh.hwmh.", ".hlgh.hwCh.hmmh.", ".hglh.hwmh.hmmh.", ".hgmh.hCmh.hmmh.", ".hgmh.hmmh.hmmh.", ".hhhh.hhhh.hhhh.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", "................"]],
+    weir_jars_3: [["................", "................", "................", "..FF...FF...FF..", ".hhhh.hhhh.hhhh.", ".hmmh.hmwh.hmmh.", ".hmlh.hwCh.hmlh.", ".hlgh.hwCh.hlgh.", ".hglh.hwmh.hglh.", ".hgmh.hCmh.hgmh.", ".hgmh.hmmh.hgmh.", ".hhhh.hhhh.hhhh.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", "................"]],
+    weir_lamp_shelf: [["................", "................", "..AA....AA...AA.", ".CCAA..CCAA.CCAA", ".CyCA..CyCA.CyCA", ".CCCA..CCCA.CCCA", "..d.....d....d..", "..dw....dw...dw.", "...w.....w....w.", "................", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", ".F............F.", ".F............F.", ".FF..........FF."], ["................", "................", "..AA....AA...AA.", ".CCAA..CCAA.CCAA", ".CoCA..CoCA.CoCA", ".CCCA..CCCA.CCCA", "..d.....d....d..", "..dw....dw...dw.", "...w.....w....w.", "................", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", ".F............F.", ".F............F.", ".FF..........FF."]],
+    weir_keeper_lantern: [["................", "......FF........", ".....F..F.......", ".....CCCC.......", "....CIICCC......", "....CIIIICC.....", "...CIIIIIIC.....", "...CIICIIIIC....", "...CIIIIIIIC....", "....GyyyyG......", "....GGGGGG......", "FFFFFFFFFFFFFF..", "FBBBBBBBBBBBBF..", "FBFFFFFFFFFFBF..", "FBBBBBBBBBBBBF..", "FFFFFFFFFFFFFF.."]],
+    weir_cot_head: [["................", "................", "................", "FFFFFFFFFFFFFFFF", "FIIIIIIIIIIIIIIF", "FICCCCCCCCCCCCIF", "FICwCCCCCCCCCCIF", "FICCCCCCCCCCCCIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF"]],
+    weir_cot_foot: [["FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FKKKKKKKKKKKKKKF", "FKmmmmmmmmmmmmKF", "FKKKKKKKKKKKKKKF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FFFFFFFFFFFFFFFF", "Fd............dF", "Fd............dF", "dd............dd", "................", "................", "................", "................", "................"]],
+    weir_stove: [["................", "........hh......", ".......hmmh.h...", "......hmmmmhh...", "......hhhhhh....", "..dddddddddddd..", "..dmmmmmmmmmmd..", "..dmddddddddmd..", "..dmdoooooodmd..", "..dmdyoyoyodmd..", "..dmddddddddmd..", "..dmmmmmmmmmmd..", "..dddddddddddd..", "..d..........d..", "..dd........dd..", "................"]],
+    weir_easel: [["................", ".......FF.......", "..FFFFFFFFFFFF..", "..FCCCCCCCCCCF..", "..FCmmCCCCgCCF..", "..FCmCmCCgggCF..", "..FCCCmmCCgCCF..", "..FCCCCCCCmCCF..", "..FCmmmmmCCCCF..", "..FCCCCCCCCCCF..", "..FFFFFFFFFFFF..", "...F...FF...F...", "...F...FF...F...", "..F....FF....F..", "..F....FF....F..", ".FF...FFFF...FF."]],
+    weir_files: [["................", "................", "................", "................", "...CwCwCCwCw....", "..wCCwCCwCCwC...", "..CwCCwCCwCCw...", "FFFFFFFFFFFFFFF.", "FBBBBBBBBBBBBBF.", "FBrBBBBBBBBBrBF.", "FBBBBBBBBBBBBBF.", "FFFFFFFFFFFFFFF.", "FBBBBBBBBBBBBBF.", "FBBBBBBBBBBBBBF.", "FFFFFFFFFFFFFFF.", "................"]],
+    weir_doorpost: [["......FGGF......", "......FGGF..r...", "......FwwFr.r...", "......FGGF..r...", "......FGGF..r...", "......FwGF..r...", "......FGGF.GGG..", "......FGGF.GyG..", "......FwwF.GGG..", "......FGGF..y...", "......FGGF......", "......FwGF......", "......FGGF......", "......FGGF......", "......FwwF......", ".....FFFFFF....."]],
+    weir_sluice: [["................", "......dddd......", "......dmmd......", ".......dd.......", ".....FFFFFF.....", ".....FGGGGF.....", ".....FGBGGF.....", ".....FGGGGF.....", ".....FGGBGF.....", ".....FGGGGF.....", ".....FGGGGF.....", "....sFGBGGFs....", "...cbFGGGGFbc...", "..cbbFFFFFFbbc..", "...sbbbbbbbbs...", "................"]],
+    weir_boots: [["................", "................", "................", "................", "...dd.....dd....", "...dFd....dFd...", "...dFd....dFd...", "...dFd....dFd...", "...dFFd...dFFd..", "..ddFFFd.ddFFFd.", "..ddddddddddddd.", "..AACAACAACAACA.", "..CAACAACAAcsAA.", "..AACAACAACcAAA.", "................", "................"]],
+    weir_net_crate: [["................", "................", "................", "................", "..hmhmhmhmhmh...", ".hFhFhFhFhFhFh..", ".mBmBmBmBmBmBm..", ".hFhFhFhFhFhFh..", ".mBmBmBmBmBmBm..", ".hFhFhFhFhFhFh..", "FFFFFFFFFFFFFFF.", "FBBBBBBFBBBBBBF.", "FBFFFFBFBFFFFBF.", "FBBBBBBFBBBBBBF.", "FFFFFFFFFFFFFFF.", "................"]],
+    weir_oil_lamp: [["................", "................", "......dddd......", ".......dd.......", "......dmmd......", ".....dwyywd.....", ".....dyooyyd....", ".....dyoyyd.....", ".....dwyywd.....", "......dmmd......", ".....dddddd.....", "................", "...hhhhhhhhhh...", "..hmmmmmmmmmmh..", "..mmmmmmmmmmmm..", "................"]],
+  },
+};
 function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
@@ -3532,6 +3576,8 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   for (const [k, rows] of Object.entries(LIZZY_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   for (const [k, rows] of Object.entries(LIZZY_ART.art)) if (!A[k]) A[k] = paint(rows);
   for (const [k, rows] of Object.entries(MAZE_ART)) if (!A[k]) A[k] = paint(rows);
+  // WEIR_HUT: a one-frame entry is one canvas, a two-frame one an array (props: artFrame; tiles: cellImg in game.js).
+  for (const [sec, dst] of [['tiles', T], ['props', A]]) for (const [k, fr] of Object.entries(WEIR_HUT_ART[sec])) if (!dst[k]) dst[k] = fr.length > 1 ? fr.map(paint) : paint(fr[0]);
   // HIGH_CHARITY placeholders. Existing names are never replaced. door_chained is also mirrored into WART like door_heavy.
   if (city) for (const [k, rows] of Object.entries(HC_CITY_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   if (city) for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(HC_CITY_ART[grp])) if (!A[k]) A[k] = paint(rows);

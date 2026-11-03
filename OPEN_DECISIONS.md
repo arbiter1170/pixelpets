@@ -82,7 +82,8 @@ D1395-D1418 in use: PR #278 (D1395-D1410) and branch claude/post-trial-crackdown
 D1424-D1430 reserved: Design, Vincent's lore corrections of Tue Nov 3, 2026 (design repo specs/STORY_DECISIONS.md v0.73). D1424-D1428 and D1430 settled by Vincent; D1429 open (Story).
 
 D1431-D1457 reserved: Design, the lore decision cards of Tue Nov 3, 2026 (design repo specs/STORY_DECISIONS.md v0.74); all settled by Vincent except D1457 (open, Story). D1428 and D1430 settled.
-Next free id is D1458.
+D1458-D1589 are held by Design packets in the design repo (its specs/STORY_DECISIONS.md lists them). D1590-D1599 reserved: Design, WEIR_HUT v0.1 (design repo specs/WEIR_HUT.md); all ten settled by Vincent, Tue Nov 3, 2026 (all defaults; archive/DECISIONS_SETTLED.md).
+Next free id is D1600.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)

@@ -25,6 +25,22 @@ Vincent, in the Claude Code session that built the crackdown packet: "Let's buil
 | D1205 | yellow, POST_TRIAL_CRACKDOWN §13 | A Keeper wire set prop plays Block News as `say` lines; three Block News stories in NEWS | Not built. Default yes, Fernbrook only | the new overlay, `data/news.json` |
 | D1206 | yellow, POST_TRIAL_CRACKDOWN §12 | The Trial Hall is closed by `deny` during the curfew only; open as a place after the pick | Not built. Default yes | `data/fernbrook_rooms.json` |
 | D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
+
+## Tue Nov 3, 2026, late evening ET: Vincent settles WEIR_HUT v0.1 (all defaults; recorded by Claude Code in the build)
+
+Design `specs/WEIR_HUT.md` v0.1.1 (design master). Vincent saw the previews (rule 9: yes) and took every default. Built in branch `claude/weir-hut-build` (`tests/weir_hut.spec.js`).
+
+- **D1590 (red, SETTLED: default).** The hut stands on `hw_cut`, the Old Weir's south bank at the weir's east foot (x 22-25, y 11-12), door step (23,13), with a towpath and a trimmed wild zone.
+- **D1591 (red, SETTLED: as previewed).** The look: turf roof, rough stone, timber trim, barn door, slit window, oil lamp, barrel, nets outside; inside skin `weir_hut` (stone flags, sacking, a lipped trough crossed on two planks), wall row `ICFKmFFFFcsB`.
+- **D1592 (red, SETTLED: default).** The place name on the HUD is "Weir Hut" (PLACEHOLDER for Story).
+- **D1593 (yellow, SETTLED: 6).** The jar counter: six jars on two sill shelves, reading `story.chi_jars` 0-6 (placeholder flag; another build sets it).
+- **D1594 (yellow, SETTLED: a).** Act 1 access: Wickerglen > Falls > Cut open at `story.warden_met`; the Rim stays shut; Ottilie and Nils wait for `story.cobble_end`; wilds on the Falls and the Cut roll Lv 13-16 until `story.cobble_end`.
+- **D1595 (yellow, SETTLED: default).** The door is barred (deny line) until `story.warden_met | story.cobble_end`.
+- **D1596 (yellow, SETTLED: no rest).** The cot does not rest or heal; only Lantern Houses heal (rule 10).
+- **D1597 (green, SETTLED: default).** Exterior dressing: five towpath cells, oil lamp, rain barrel, nets; no pole, no crest; `hw_weir_s` gains a line.
+- **D1598 (green, SETTLED: default).** Arrival at (4,10); the first step (4,9) fires the meeting scene once (a stub until that scene is built); no new sound.
+- **D1599 (green, SETTLED: default).** Build notes: overlay `data/detail_zz_weir_hut.json` copied verbatim; skin and art in `sprites.js`; every line PLACEHOLDER for Story.
+
 ## Tue Nov 3, 2026, 9:57 AM ET: Vincent settles the rest of GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
 
 Vincent, in his own words in the Claude Code session that wrote #268: "Defaults are fine, merge is approved if no conflicts". This settles the fleet's remaining yellow and green rows on their defaults (the reds were settled at 7:44 AM ET, below).
