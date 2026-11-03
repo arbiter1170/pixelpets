@@ -280,15 +280,12 @@ test('watch on the Day 1 flow: Lizzy\'s class with no Seal turns everyone to the
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
 
-test('curfew: during the crackdown night the plaza people are indoors and the props stay; dawn and the pick bring them back', async ({ page }) => {
-  // D1333 (Vincent, Nov 3, 2026): the curfew is the night only; story.post_trial_done (set at dawn) lifts it.
-  await boot(page, { 'story.lizzy_class': true, 'story.seal1': true, 'story.crackdown': true });
+test('curfew: from the crackdown to the pick the plaza people are indoors and the props stay; the pick brings the winners back', async ({ page }) => {
+  await boot(page, { 'story.lizzy_class': true, 'story.seal1': true, 'story.post_trial_done': true, 'story.crackdown': true });
   expect(await phase(page)).toBe('curfew');
   const p = await present(page);
   for (const id of ALL) expect(p[id], id).toBe(false);
   expect(await page.evaluate(() => ['fbp_lamp_nw', 'fbp_bench_n', 'fbp_banner_n'].map((id) => !!(PixelPets.objPos(id) || {}).present))).toEqual([true, true, true]);
-  await setFlags(page, { 'story.post_trial_done': true });
-  expect(await phase(page)).toBe('after');
   await setFlags(page, KEEPER_SIDE);
   expect(await phase(page)).toBe('held_keepers');
   const q = await present(page);

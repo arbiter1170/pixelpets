@@ -4833,11 +4833,12 @@ function repCond(c, o){
    in `when`, `lines`, `chatter`, `faceWhen` and `bangWhen` keys (with `!`, `&` and `|` as usual). First match wins:
      held_glimmer / held_keepers  Fernbrook flipped to the picked side at the faction pick result after Trial 1 (Vincent's D1171:
                                   story.side_pick_done & story.seal1, then story.side; absent counts as the Keepers, as side() does).
-     curfew                       story.seal1 & story.crackdown & !story.post_trial_done: the crackdown night (POST_TRIAL_CRACKDOWN,
-                                  D1200, D1207). The plaza's people are indoors (their `when` holds `!fbplaza:curfew`); the props stay.
-                                  Vincent, Nov 3, 2026 (D1333): the curfew lifts at dawn, when the night scene sets post_trial_done.
-     after                        story.seal1, no pick yet, outside the crackdown night: the argument is back on (the gap before the
-                                  crackdown, and the days between the dawn release and the pick).
+     curfew                       story.seal1 & story.crackdown, no pick yet: POST_TRIAL_CRACKDOWN §5's curfew (D1200, D1207). The
+                                  plaza's people are indoors (their `when` holds `!fbplaza:curfew`); the props stay. It lifts at the
+                                  pick result, the same read that flips the hold (D1171). D1333: the pick now waits for Warden Ilse,
+                                  so the curfew order stands through the trip home.
+     after                        story.seal1, no pick and no crackdown yet: the argument is back on (the short gap between the Seal
+                                  and the crackdown).
      watch                        the first trial is next: story.lizzy_class & !story.seal1 on the Day 1 flow (#261: the Hall door
                                   opens after Lizzy's class, and story.heights_done only comes after the pick), or story.heights_done
                                   & !story.seal1 for an older save (trialReady's read) (D1244).
@@ -4845,7 +4846,7 @@ function repCond(c, o){
    `held` matches either held_ phase and `contested` any other. Reads only; never writes a flag or the save. */
 function fbPlazaPhase(live){
   const f = k => flagOf(k, live);
-  if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : (f('story.crackdown') && !f('story.post_trial_done') ? 'curfew' : 'after');
+  if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : (f('story.crackdown') ? 'curfew' : 'after');
   if (f('story.lizzy_class') || f('story.heights_done')) return 'watch';
   return 'argue';
 }
@@ -5434,6 +5435,12 @@ function whereNow(name){
   if (name === 'Mom' || name === 'Dad') return wherePack('home', 'home', 'fixed');
   // DAY1_TRIAL1_FLOW (D1166): after her go-home talk Fen is away with the Keeper authorities until Lizzy's class is done.
   if (name === 'Master Fen' && S && S.flags['story.fen_sent_home'] && !S.flags['story.lizzy_class']) return wherePack('work', 'away on Keeper business', 'story');
+  // POST_TRIAL_CRACKDOWN §7.2: under the curfew order (the crackdown until the pick) people are where the curfew put them.
+  if (S && S.flags['story.crackdown'] && !S.flags['story.side_pick_done']) {
+    if (name === 'Master Fen') return wherePack('work', S.flags['story.post_trial_done'] ? 'the orchard gate' : 'Lantern House', 'story');
+    if (name === 'Associate Juniper') return wherePack('work', 'east road', 'story');
+    if (name === 'Odile' || name === 'Wynne' || name === 'Tobin') return wherePack('out', 'Lantern House (curfew)', 'story');
+  }
   if (name === 'Warden Ilse' || name === 'Officer Ness' || name === 'Rook') {
     if (window.PPRep) {
       const tier = PPRep.repTier(name);
@@ -7175,11 +7182,21 @@ function glimmerHallSteps(t, pn){
   if (!S.flags['story.tour1_s1'] || !S.flags['story.tour1_s2'] || !S.flags['story.tour1_s3']) return [['run', 'tour1_wait']];
   return [['run', 'tour1_s4']];
 }
+// POST_TRIAL_CRACKDOWN §6: a detail file may add one keeper-keyed question to the Lantern House panel
+// (`lanternAsk`: { "<keeper>": { when: [conds], label, scene } }), e.g. Amos's pitch after the crackdown night.
+function lanternAsk(who){
+  for (const k of DETAIL_KEYS) {
+    const a = MD[k].lanternAsk && MD[k].lanternAsk[who];
+    if (a && a.scene && sceneSteps(a.scene) && [].concat(a.when || []).every(c => cond(c, false))) return [a.label, [['run', a.scene]]];
+  }
+  return null;
+}
 function placeSteps(dr){
   if (dr.panel === 'lantern') {
     const who = dr.keeper || '';
     const hold = lanternHold();
     const opts = [lanternRestOption()];
+    const ask = !hold && lanternAsk(who); if (ask) opts.push(ask);
     opts.push(hold
       ? ['Not yet', [['say', who, 'The door stays shut until the party is rested.']]]
       : ['Leave', []]);
@@ -11572,13 +11589,12 @@ function lanternCostLine(){
   return 'Welcome in. Talk to a bed and your whole team rests and heals, for ' + LANTERN_REST_COST + ' Acorns, or what you have.';
 }
 function lanternGuideBody(who){
+  const opts = [['Got it', []], ['Say it again', '@lantern_again']];
+  const ask = lanternAsk(who); if (ask) opts.push(ask);   // POST_TRIAL_CRACKDOWN §6: Amos's pitch after the night
   return [
     ['say', who, lanternCostLine()],
     ['say', who, LANTERN_GUIDE_G2],
-    ['choice', 'Got all that?', [
-      ['Got it', []],
-      ['Say it again', '@lantern_again'],
-    ]],
+    ['choice', 'Got all that?', opts],
   ];
 }
 function lanternGuideSteps(o, mark){

@@ -1,6 +1,6 @@
 /* POST_TRIAL_CRACKDOWN v0.3.1 (handoff/specs/POST_TRIAL_CRACKDOWN.md) plus Vincent's Nov 3, 2026 change (D1333): after Seal 1 the
-   Keeper tanks roll in, the night passes in the Lantern House, the curfew lifts at dawn, and Warden Ilse's wire sends the holder home
-   (WARDEN_SUMMONS placeholder) before the faction pick. Engine steps E1-E5 (D1204). Saves stay pixelpets.save.v2, v 2. */
+   Keeper tanks roll in, the night passes in the Lantern House, the holder is let go at dawn under a curfew order that stands until the
+   pick (§5), and the only change from the spec: Warden Ilse's wire sends the holder home (WARDEN_SUMMONS placeholder) before the pick. Engine steps E1-E5 (D1204). Saves stay pixelpets.save.v2, v 2. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -96,8 +96,21 @@ test.describe('post-Trial crackdown', () => {
     await page.evaluate(() => PixelPets.goto('fernbrook', 12, 8)); await page.waitForFunction(() => PixelPets.mapInfo.id === 'fernbrook' && !PixelPets.fading);
     const out = (await objs(page)).map(o => o.id);
     expect(out.filter(id => /^cd_(tank|beam|dust|cmdr|off|fen)/.test(id))).toEqual([]);
-    expect(out).toEqual(expect.arrayContaining(['cd_post_hall', 'cd_cordon', 'fen_dawn', 'odile', 'fb_wynne']));
-    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('after');
+    // §5: the curfew order stands until the pick (D1333 only moves the pick): posts, notice, cordon, Fen at the gate,
+    // Juniper on the east road; the square's townsfolk, Glimmerwell's stand and the plaza are indoors.
+    expect(out).toEqual(expect.arrayContaining(['cd_post_lantern', 'cd_post_hall', 'cd_cordon', 'cd_notice', 'fen_dawn', 'juniper_east']));
+    for (const id of ['odile', 'fb_wynne', 'fb_tobin', 'juniper', 'fb_lantern_stand']) expect(out, id).not.toContain(id);
+    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('curfew');
+    // §6: the two pitches the night moved. Juniper on the east road; Amos at the Lantern House panel.
+    expect(await page.evaluate(() => PixelPets.talkTo('juniper_east'))).toBe(true);
+    expect(await sceneId(page)).toBe('juniper_pitch');
+    await drive(page);
+    await page.evaluate(() => PixelPets.goto('fb_lantern_in', 5, 5)); await page.waitForFunction(() => PixelPets.mapInfo.id === 'fb_lantern_in' && !PixelPets.fading);
+    expect(await page.evaluate(() => PixelPets.talkTo('amos'))).toBe(true);
+    await drive(page, ['About last night', 'Leave']);
+    const pf = await flags(page);
+    expect([pf['story.pitch_k'], pf['story.pitch_g']]).toEqual([true, true]);
+    await page.evaluate(() => PixelPets.goto('fernbrook', 12, 8)); await page.waitForFunction(() => PixelPets.mapInfo.id === 'fernbrook' && !PixelPets.fading);
     // No pick yet (D1333): the gate stays quiet until the Warden.
     await stepOnto(page, 'fernbrook', 9, 9, 'down');
     expect(await sceneId(page)).toBeNull();
@@ -116,6 +129,11 @@ test.describe('post-Trial crackdown', () => {
     expect(await sceneId(page)).toBe('side_pick');
     await drive(page, ['Open the crates with Fen', 'Yes, the Keepers']);
     expect((await flags(page))['story.side_pick_done']).toBe(true);
+    // The pick lifts the curfew order: posts and notice go, the townsfolk come back, the Hall stays shut (D1224).
+    const after = (await objs(page)).map(o => o.id);
+    for (const id of ['cd_post_lantern', 'cd_post_hall', 'cd_cordon', 'cd_notice', 'juniper_east', 'fen_dawn']) expect(after, id).not.toContain(id);
+    expect(after).toEqual(expect.arrayContaining(['odile', 'fb_wynne']));
+    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('held_keepers');
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 
@@ -149,6 +167,7 @@ test.describe('post-Trial crackdown', () => {
   });
 
   test('guards: old saves and other orders never see the crackdown', async ({ page }) => {
+    test.setTimeout(120000);
     // #261's placeholder save: post_trial_done with no crackdown skips the street and the Warden, and keeps the pick.
     await boot(page, 'crackdown_street', { extra: {} });
     await page.evaluate(() => PixelPets.setFlag('story.post_trial_done', true));

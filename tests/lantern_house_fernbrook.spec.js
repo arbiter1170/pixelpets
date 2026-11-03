@@ -1,6 +1,5 @@
 /* LANTERN_HOUSE_FERNBROOK (handoff/specs/LANTERN_HOUSE_FERNBROOK.md, rule 9 room redesign): the Fernbrook Lantern House as the
-   town's wire station. Ids kept, 12x16 kept, the curfew crowd and the live wire set during the crackdown night only (D1333: the
-   curfew ends at dawn, story.post_trial_done). Draft art for Pia; the checks read data and the `art` flag, never pixels. */
+   town's wire station. Ids kept, 12x16 kept, the curfew crowd and the live wire set under the curfew order (the crackdown until the pick, §7). Draft art for Pia; the checks read data and the `art` flag, never pixels. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -24,7 +23,7 @@ const room = page => page.evaluate(() => ({ w: PixelPets.mapInfo.w, h: PixelPets
 
 test.describe('Fernbrook Lantern House: the wire station', () => {
   test('a normal day: ids, size, props and their art', async ({ page }) => {
-    await boot(page, { 'story.post_trial_done': true });   // after the night: the curfew has lifted
+    await boot(page, { 'story.post_trial_done': true, 'story.side': 'keepers', 'story.side_pick_done': true });   // after the pick: the curfew order has lifted
     const r = await room(page);
     expect([r.w, r.h]).toEqual([12, 16]);
     expect(r.objs.amos).toMatchObject({ x: 6, y: 3 });
@@ -41,7 +40,7 @@ test.describe('Fernbrook Lantern House: the wire station', () => {
     for (const id of ['lh_res_kid', 'lh_odile', 'lh_res_b', 'lh_wynne', 'lh_res_c', 'lh_tobin']) expect(r.objs[id], id).toBeUndefined();
   });
 
-  test('the crackdown night: the live set and six townsfolk facing it', async ({ page }) => {
+  test('the curfew order: the live set and six townsfolk facing it', async ({ page }) => {
     await boot(page);   // the post_trial checkpoint has story.crackdown and no post_trial_done
     const r = await room(page);
     expect(r.objs.fb_wire_set).toBeUndefined();
@@ -51,7 +50,7 @@ test.describe('Fernbrook Lantern House: the wire station', () => {
   });
 
   test('walk mask and paths (spec §9), in both states', async ({ page }) => {
-    for (const flags of [{ 'story.post_trial_done': true }, {}]) {
+    for (const flags of [{ 'story.post_trial_done': true, 'story.side': 'keepers', 'story.side_pick_done': true }, {}]) {
       await boot(page, flags);
       const t = await page.evaluate(() => ({ plinth: PixelPets.tileInfo(5, 2).solid, below: PixelPets.tileInfo(5, 3).walk, cable: PixelPets.tileInfo(8, 3).walk,
         runner: PixelPets.tileInfo(5, 12).walk, rug: PixelPets.tileInfo(5, 9).walk, mat: PixelPets.tileInfo(5, 15).ch }));

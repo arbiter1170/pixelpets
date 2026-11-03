@@ -34,7 +34,7 @@
   const NOT_STEPS = ['story.starter_line', 'story.lizzy_wake', 'story.home_walk',   // PARTNER_DAY: house-morning beats (story.home_dressed is the dress step)
     'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
-    'story.hall1_shut', 'story.fen_lean', 'story.warden_called',   // POST_TRIAL_CRACKDOWN / D1333: the shut Hall, Fen's hidden lean, the dawn wire
+    'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1333: the shut Hall, Fen's hidden lean, the dawn wire
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step

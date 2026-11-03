@@ -1,13 +1,15 @@
 {
  "spec": "handoff/specs/POST_TRIAL_CRACKDOWN.md v0.3.1 + LANTERN_HOUSE_FERNBROOK.md; Vincent's Nov 3, 2026 change: no pick at dawn, the Warden's summons first (handoff/specs/WARDEN_SUMMONS.md)",
- "_about": "Ours, not a design copy. The post-Trial crackdown (scenes crackdown_street and crackdown_lantern), the shut Trial Hall, the dawn wire from Warden Ilse and her PLACEHOLDER meeting (warden_meet), which now gates the faction pick (D1333). Casts use castAt (E1); tanks walk with ms (E2); walkAll (E5). Lantern House room objects (fb_wire_set_live, the six lh_* bodies, cd_resume) live in fernbrook_rooms.json, because its maps load after every detail patch.",
+ "_about": "Ours, not a design copy. The post-Trial crackdown (scenes crackdown_street and crackdown_lantern), the shut Trial Hall, the curfew order until the pick (§5: posts, notice, cordon, townsfolk indoors, Glimmerwell on the east road), Amos's and Juniper's pitches (§6), the dawn wire from Warden Ilse and her PLACEHOLDER meeting (warden_meet). D1333 (Vincent): the only change from the spec is that the pick no longer comes right at the dawn release; it waits for story.warden_met. Casts use castAt (E1); tanks walk with ms (E2); walkAll (E5). Lantern House room objects (fb_wire_set_live, the six lh_* bodies, cd_resume) live in fernbrook_rooms.json, because its maps load after every detail patch.",
  "_placeholders": "Every line here is PLACEHOLDER for June (D1208). The Commander is unnamed (D1198). 'Keeper tank' wording and the tanks' look are drafts (D1202). The Warden's lines and the dawn wire are placeholders until WARDEN_SUMMONS is written and settled (D1340-D1346). story.fen_lean steps (+1 Keep it, +1 He's hiding something, -1 He means well, 0 Hand it over) are PLACEHOLDER until Seals lore v3.1's encoding lands (D1334).",
  "flags": {
   "story.crackdown": "POST_TRIAL_CRACKDOWN: set at the end of the street scene (done flag of crackdown_street)",
   "story.hall1_shut": "D1224 (SEALS-O): the Fernbrook Trial Hall is shut by order of High Charity until Fen's Act 2 turn",
   "story.fen_lean": "Seals lore v3.1: Fen's hidden lean, moved by the Beat 1 and Beat 7 choices (inc; encoding PLACEHOLDER)",
   "story.warden_called": "D1333: Amos hands over Warden Ilse's wire at dawn",
-  "story.warden_met": "D1333: the PLACEHOLDER meeting with Warden Ilse at the Lodge; the faction pick waits on it"
+  "story.warden_met": "D1333: the PLACEHOLDER meeting with Warden Ilse at the Lodge; the faction pick waits on it",
+  "story.pitch_k": "FACTION_PICK_TIMING Part C: Amos's pitch heard (POST_TRIAL_CRACKDOWN §6: inside, after the night)",
+  "story.pitch_g": "FACTION_PICK_TIMING Part C: Juniper's pitch heard (POST_TRIAL_CRACKDOWN §6: the east road)"
  },
  "looks": {
   "_note": "PLACEHOLDER (D1198). The Commander keeps the Keeper set (rule 11): a long green cloak and a cap set him apart from the officers' coats. The three Lantern House residents (LANTERN_HOUSE_FERNBROOK §7.2) are kit looks, PLACEHOLDER.",
@@ -847,6 +849,50 @@
     "Warden Ilse",
     "I'm still asking my questions. Go on back to Fernbrook when you're ready. The gate is waiting."
    ]
+  ],
+  "amos_pitch": [
+   [
+    "say",
+    "Keeper Amos",
+    "The order came from High Charity. I don't like it either. I still keep."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "What you saw isn't the Keepers. It's one Commander. Fen's gone over his head."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "Walk with us and help fix it from inside. That is all I will say about it."
+   ],
+   [
+    "setFlag",
+    "story.pitch_k",
+    true
+   ]
+  ],
+  "juniper_pitch": [
+   [
+    "say",
+    "Associate Juniper",
+    "Hi hi! They locked a whole town indoors. We'd never. Have a bright day!"
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "Our insurers advised a strategic relocation. The locals? They will be fine."
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "When you're ready to choose, warm beds and a vet are one road east. Just saying!"
+   ],
+   [
+    "setFlag",
+    "story.pitch_g",
+    true
+   ]
   ]
  },
  "slicePatch": {
@@ -872,35 +918,6 @@
      },
      {
       "kind": "npc",
-      "id": "cd_post_hall",
-      "name": "Officer",
-      "look": "officer",
-      "x": 21,
-      "y": 7,
-      "facing": "down",
-      "hold": true,
-      "when": [
-       "story.hall1_shut"
-      ],
-      "lines": {
-       "else": "The Trial Hall is shut by order of High Charity. Move along, holder."
-      }
-     },
-     {
-      "kind": "prop",
-      "id": "cd_cordon",
-      "x": 23,
-      "y": 7,
-      "sprite": "lantern_cordon",
-      "when": [
-       "story.hall1_shut"
-      ],
-      "lines": {
-       "else": "A Keeper cordon. A brass plate: BY ORDER OF HIGH CHARITY."
-      }
-     },
-     {
-      "kind": "npc",
       "id": "fen_dawn",
       "name": "Master Fen",
       "look": "fen",
@@ -908,7 +925,6 @@
       "y": 9,
       "facing": "left",
       "when": [
-       "story.crackdown",
        "story.post_trial_done",
        "!story.side_pick_done",
        "!story.orchard_cleared"
@@ -919,31 +935,107 @@
        "else": "The roots held through the night. So did we."
       },
       "_note": "WARDEN_SUMMONS §3: Fen waits at the orchard gate from the dawn release until the pick (fen_orchard is hidden by then)."
+     },
+     {
+      "kind": "npc",
+      "id": "cd_post_lantern",
+      "name": "Officer",
+      "look": "officer",
+      "x": 6,
+      "y": 6,
+      "facing": "down",
+      "hold": true,
+      "when": [
+       "story.crackdown",
+       "!story.side_pick_done"
+      ],
+      "lines": {
+       "else": "Curfew's lifted at the pick, holder. Not before."
+      },
+      "_note": "POST_TRIAL_CRACKDOWN §5 (PLACEHOLDER)"
+     },
+     {
+      "kind": "npc",
+      "id": "cd_post_hall",
+      "name": "Officer",
+      "look": "officer",
+      "x": 21,
+      "y": 7,
+      "facing": "down",
+      "hold": true,
+      "when": [
+       "story.crackdown",
+       "!story.side_pick_done"
+      ],
+      "lines": {
+       "else": "The Trial Hall is closed by order."
+      },
+      "_note": "POST_TRIAL_CRACKDOWN §5 (PLACEHOLDER)"
+     },
+     {
+      "kind": "prop",
+      "id": "cd_cordon",
+      "x": 23,
+      "y": 7,
+      "sprite": "lantern_cordon",
+      "when": [
+       "story.crackdown",
+       "!story.side_pick_done"
+      ]
+     },
+     {
+      "kind": "sign",
+      "id": "cd_notice",
+      "x": 7,
+      "y": 6,
+      "sprite": "curfew_notice",
+      "when": [
+       "story.crackdown",
+       "!story.side_pick_done"
+      ],
+      "text": "CURFEW. Dusk to dawn. Residents indoors. By order of High Charity."
+     },
+     {
+      "kind": "npc",
+      "id": "juniper_east",
+      "name": "Associate Juniper",
+      "x": 30,
+      "y": 8,
+      "facing": "left",
+      "when": [
+       "story.crackdown",
+       "!story.side_pick_done"
+      ],
+      "lines": {
+       "!story.pitch_g": "@juniper_pitch",
+       "else": "Our crew camp's past the slide. The lamps are still warm, if you change your mind."
+      },
+      "_note": "POST_TRIAL_CRACKDOWN §5/§6: Glimmerwell relocated to the east road; Juniper's pitch moves here (PLACEHOLDER)"
      }
     ]
    }
   }
  },
  "objPatch": {
-  "_note": "Outdoor townsfolk shelter indoors during the crackdown night only (the curfew lifts at dawn, D1333); the plaza cast hides through fbplaza:curfew.",
+  "_note": "Outdoor townsfolk and Glimmerwell's stand are hidden under the curfew order (the crackdown until the pick, POST_TRIAL_CRACKDOWN §5); the plaza cast hides through fbplaza:curfew. fb_tl_juniper (Day 1's Two Lights beat by the Lantern House door) never fires after the crackdown, on a save that skipped it.",
   "odile": {
    "whenAdd": [
-    "!story.crackdown | story.post_trial_done"
+    "!story.crackdown | story.side_pick_done"
    ]
   },
   "fb_wynne": {
    "whenAdd": [
-    "!story.crackdown | story.post_trial_done"
+    "!story.crackdown | story.side_pick_done"
    ]
   },
   "fb_tobin": {
    "whenAdd": [
-    "!story.crackdown | story.post_trial_done"
+    "!story.crackdown | story.side_pick_done"
    ]
   },
   "juniper": {
    "whenAdd": [
-    "!story.crackdown | story.post_trial_done"
+    "!story.crackdown | story.side_pick_done"
    ]
   },
   "fb_hall": {
@@ -962,6 +1054,34 @@
    "whenAdd": [
     "story.warden_met | !story.crackdown"
    ]
+  },
+  "fb_tl_juniper": {
+   "whenAdd": [
+    "!story.crackdown"
+   ]
+  },
+  "fb_lantern_stand": {
+   "whenAdd": [
+    "!story.crackdown | story.side_pick_done"
+   ]
+  },
+  "fb_constable": {
+   "linesFirst": {
+    "story.crackdown & !story.side_pick_done": "Curfew's posted, citizen. Dusk to dawn, and keep it quiet in between."
+   }
+  }
+ },
+ "lanternAsk": {
+  "_note": "game.js lanternAsk: one extra Lantern House panel option. POST_TRIAL_CRACKDOWN §6: Amos's pitch, after the night, before the pick.",
+  "Keeper Amos": {
+   "when": [
+    "story.post_trial_done",
+    "story.crackdown",
+    "!story.pitch_k",
+    "!story.side_pick_done"
+   ],
+   "label": "About last night",
+   "scene": "amos_pitch"
   }
  }
 }
