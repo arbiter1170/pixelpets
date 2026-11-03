@@ -4410,7 +4410,7 @@ function switchSide(to, opts){
   return true;
 }
 const standingView = () => { const out = {}; for (const sd of PPStanding.SIDES) { const i = PPStanding.tierInfo(sd, standingOf(sd, false)); out[sd] = { points: i.points, tier: i.tier, name: i.name }; }
-  return Object.assign(out, { side: side(), switches: +S.flags['story.switches'] || 0, chapter: PPStanding.chapterOf(S.flags), via: 'rook', canSwitch: PPStanding.canSwitch(S.flags, S.standing, side(), null).ok && !scene && !(battle && battle.on) }); };
+  return Object.assign(out, { side: side(), switches: +S.flags['story.switches'] || 0, chapter: PPStanding.chapterOf(S.flags), via: 'rook', canSwitch: PPStanding.canSwitch(S.flags, S.standing, side(), null, actNow(false)).ok && !scene && !(battle && battle.on) }); };
 // Rook's offer (D127–D129, D131). The only way to change sides. Built when it opens so the cost line shows live numbers.
 // Before story.rc_climax he says not yet, except inside rc_gate: that scene runs this offer and writes the flag after
 // the branch (a "Not yet" there stays on the company side and fights). A cooldown says the refused line. Yes is never free.
@@ -4420,7 +4420,7 @@ function rookOfferSteps(to){
   const atGate = !!(scene && String(scene.id || '').split('@')[0] === 'rc_gate');
   if (!S || (!S.flags['story.rc_climax'] && !atGate)) return [['say', 'Rook', R.notYet]];
   if (from === dest) return [['say', 'Rook', R.wait]];
-  const can = PPStanding.canSwitch(S.flags, S.standing, from, dest);
+  const can = PPStanding.canSwitch(S.flags, S.standing, from, dest, actNow(false));
   if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : can.why === 'locked' ? R.wait : R.notYet]];
   const pts = standingOf(from, true);
   const costLine = PPStanding.fill(W.costLine, { side: SC_STANDING.sides[from].short, from: pts, to: PPStanding.switchCost(pts) });
@@ -4780,7 +4780,14 @@ function takeBattleTrack(kind, trainerId){
 const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
 // Conditions (§4): 'flag', '!flag', 'flag=value', 'seal:id', 'has:name', 'talked' (lines keys only). `live` = read scene pending too.
 // WP-B0: numeric 'flag>=n', 'flag<=n', 'flag>n', 'flag<n' (an unset flag counts as 0) for counters written by the `inc` step.
-function flagOf(k, live){ if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
+// story.act (D915, D977): the act number is derived from the save (PPStanding.actOf), never stored. A stored story.act
+// (debug places, seeded test saves, an old save) is read only under ?debug=1; in normal play it is ignored.
+function actNow(live){
+  const f = live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags;
+  if (DEBUG) { const v = f['story.act']; if (v != null && v !== '' && v !== false && Number.isFinite(+v)) return +v; }
+  return PPStanding.actOf(f, sealsHeld());
+}
+function flagOf(k, live){ if (k === 'story.act') return actNow(live); if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
 function curName(live){ return live && scene && scene.view.name !== undefined ? scene.view.name : (S.player && S.player.name) || null; }
 // LIZZY_REP LR5 (D174, D178). rep: compares the raw number. reptier compares the effective tier.
 // "reptier=warm" with no name is the speaker (NPC lines). A stamp jump applies one new penalty, never the old ones.
@@ -9931,7 +9938,7 @@ async function execStep(st){
     }
     case 'rookOut': {
       const from = side(), dest = from === 'glimmer' ? 'keepers' : 'glimmer';
-      const can = PPStanding.canSwitch(S.flags, S.standing, from, dest);
+      const can = PPStanding.canSwitch(S.flags, S.standing, from, dest, actNow(false));
       if (can.ok) await playScene('rook_offer');
       else await execStep(['say', 'Rook', 'Not here. Find me by the Brinewick road sign. We finish the crates first.']);
       return;
@@ -20032,6 +20039,8 @@ function boot(){
   Object.defineProperty(api, 'heights', { enumerable: true, get(){ return { path: S && S.flags['story.heights_path'] || null, done: !!(S && S.flags['story.heights_done']), know: !!(S && S.flags['story.know_us']) }; } });
   // BS (read-only): both meters with tier index and name, the pledge, the switch count, and whether the desk would allow a switch now.
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
+  // D915 (read-only): the act number as cond() reads story.act (derived; a stored value counts only under ?debug=1).
+  Object.defineProperty(api, 'act', { enumerable: true, get(){ return S ? actNow(false) : null; } });
   api.standingCfg = () => copy(STANDING_CFG);
   api.standingCheck = () => PPStanding.devCheck();
   // LR5 (D174): raw number, effective tier, effective value. repAdd is a debug hook; scenes use the rep step.
