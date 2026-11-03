@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 23:45 ET: FERNBROOK_HOMES: Picker's Cottage gets a red clay tile roof, not sod (build 20261102-2341)
+- What changed and why: Vincent: "That home looks like it has a grass roof." Picker's Cottage (`fbh_picker`) drew `roof_turf`, the same sod tile D910 already took off Cobblecrest's cottage because it reads as lawn; `tests/cc_cottage_roof.spec.js` requires no building to use it, and this branch had been failing that check. It now uses the existing `roof_tile_r` (red clay tile): it reads as a roof at 320 and 390, picks up the red door, and stays apart from the Press House's yellow thatch and the Stitcher's Loft's purple shingle. One data value; no new art, no save change.
+- Files touched: `data/detail_zzz_fernbrook_homes.json` (one roof value), `data/mapdata.js` (generated), `handoff/maps/FERNBROOK_HOMES.md`, `handoff/maps/BUILDING_VARIETY.md`, `handoff/shots/fernbrook_homes/` (`picker-roof-*`, `picker-roof-options-390.png`, `homes-catchup-*` refreshed), `CHANGELOG.md`, build stamp files.
+- Commit(s) + build id: claude/fernbrook-homes, build 20261102-2341.
+- Tests run and result (widths, checks): `fernbrook_homes`, `cc_cottage_roof`, `market_row`, `map_layers` at 320, 375 and 390: 63 passed (`cc_cottage_roof` failed on the previous head, a01ba81). `node tools/scans/run.js` exit 0.
+- Decisions made (colour + reasoning): green, follows D910; part of D1248's previews, so Vincent can still pick another roof from `picker-roof-options-390.png` (red tile, orange tile, blue slate, teal hip, green thatch).
+- Anything left unfinished: the older `after-lane_*` shots still show the sod roof; `picker-roof-*` supersedes them.
+
 ## 2026-11-02 17:33 ET: FERNBROOK_HOMES: three enterable NPC homes on a new south lane (needs Vincent's yes on previews, rule 9)
 
 - What changed and why: Vincent asked for more NPC homes at the bottom of Fernbrook and chose enterable homes with interiors (D1249). Fernbrook grows south from 32x20 to 32x32 (D1250, exception to D81 like D170): a gate in the old south tree line at x17-18 opens onto a lane with the Press House, the Picker's Cottage and the Stitcher's Loft, a flower patch, two orchard trees and a pond. The only change above the old edge is row 18 x18 (tree to grass). Each home has its own exterior (BUILDING_VARIETY rows 28-30) and its own interior skin, floor, rug, mat and wall row, built from recolours of existing PAL grids. Six placeholder residents (D1251). Inspiration brief first: `handoff/maps/FERNBROOK_HOMES.md` §1. **Needs Vincent's yes on the previews (rule 9, D1248) before it deploys.**

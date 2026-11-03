@@ -749,7 +749,7 @@
             "y0": 21,
             "x1": 15,
             "y1": 22,
-            "roof": "roof_turf",
+            "roof": "roof_tile_r",
             "wall": "wall_yellow",
             "door": "door_red",
             "win": "win_round",

@@ -74,7 +74,7 @@ Overlay `data/detail_zzz_fernbrook_homes.json` (sorts after every other detail o
 | Roof id | Cells | Roof | Shape | Wall | Door | Window | Trim | Porch |
 |---|---|---|---|---|---|---|---|---|
 | `fbh_press` | x2-7, roof rows 21-22, wall row 23 | `roof_thatch_y` | `gable+chimney` | `wall_batten_o` | `door_barn` | `win_lamp` | `r` | `fbh_press_porch_barrel`, `fbh_press_porch_hay` |
-| `fbh_picker` | x10-15, roof rows 21-22, wall row 23 | `roof_turf` | `steep` | `wall_yellow` | `door_red` | `win_round` | `g` | `fbh_picker_porch_basket`, `fbh_picker_porch_crate` |
+| `fbh_picker` | x10-15, roof rows 21-22, wall row 23 | `roof_tile_r` | `steep` | `wall_yellow` | `door_red` | `win_round` | `g` | `fbh_picker_porch_basket`, `fbh_picker_porch_crate` |
 | `fbh_stitch` | x22-27, roof rows 21-22, wall row 23 | `roof_shingle_p` | `gable+bunting` | `wall_plaster` | `door_tall_t` | `win_tall` | `p` | `fbh_stitch_porch_line`, `fbh_stitch_porch_planter` |
 
 Doors sit on the wall row (Market Row style) and are entered from the step below: `fbh_press` (4,23), `fbh_picker` (12,23), `fbh_stitch` (24,23). Each step (x,24) has a `door_step` decal.
