@@ -7,7 +7,8 @@
   "_decisions": {
     "hall_slot_1": "Tour. Vincent, Oct 13, 2026: slot 1 stays the stated default (Bright Pavilion Tour). The Audit battle is optional stop 4.",
     "hall_slot_2": "Sacrifice stub (Build 5). Quota is the free floor: three names spoken aloud. Setting a snack down is narrative only (the item stays in the bag, so the review cannot soft-lock). The Tuning, Pick another and the quota give the Bright Tier 2 tag and story.seal2, not the Seal. Face Hale for the Seal battles hall2_hale (merged row, seal_cobblecrest) and onWin runs seal2; after a tag close Hale offers the match again until it is won (D1324, D1325, D1328). Real cost is still D24 (partly superseded by D1325, D1328).",
-    "rook_r5": "Built (Build 6). Keepers brinewick_hook sets story.rook_end ally. Glimmerwell brinewick_hook@glimmer sets stays. Both set story.cobble_end. Not bond-gated. Tone confirmation is still D25."
+    "rook_r5": "Built (Build 6). Keepers brinewick_hook sets story.rook_end ally. Glimmerwell brinewick_hook@glimmer sets stays. Both set story.cobble_end. Not bond-gated. Tone confirmation is still D25.",
+    "d1448_rook_signup": "D1448: Partner Day is only the Keepers' starter day. Rook's teaser@glimmer line says \"Sign-up day\": stand-in copy until Story replaces it (OPEN_DECISIONS row B-7 (copy))."
   },
   "slicePatch": {
     "maps": {
@@ -457,7 +458,7 @@
       [
         "say",
         "Rook",
-        "Yeah, I'm in too. Since spring. Partner day, the jingle, the sticker: all them."
+        "Yeah, I'm in too. Since spring. Sign-up day, the jingle, the sticker: all them."
       ],
       [
         "say",
@@ -1077,7 +1078,7 @@
               [
                 "say",
                 "Master Hale",
-                "You have their cord. The Seal is still mine to give."
+                "You have their lanyard. The Seal is still mine to give."
               ],
               [
                 "choice",
@@ -1120,7 +1121,7 @@
                   [
                     "say",
                     "Associate Quinn",
-                    "Before the cord, one more kindness. A Tuning. Your Walkling hears us a little clearer after."
+                    "Before the lanyard, one more kindness. A Tuning. Your Walkling hears us a little clearer after."
                   ],
                   [
                     "if",
@@ -1226,7 +1227,7 @@
           [
             "say",
             "Associate Quinn",
-            "Hale's Seal, on your Tier 2 cord at last. Logged! Have a bright day!"
+            "Hale's Seal, on your Tier 2 lanyard at last. Logged! Have a bright day!"
           ]
         ],
         [
@@ -1237,14 +1238,14 @@
               [
                 "say",
                 "Associate Quinn",
-                "Review closed. Tier 2 on your cord, clipped to Hale's Seal. Logged!"
+                "Review closed. Tier 2 on your lanyard, clipped to Hale's Seal. Logged!"
               ]
             ],
             [
               [
                 "say",
                 "Associate Quinn",
-                "Review closed. Tier 2 on your cord. Hale still holds your Seal. His floor's open."
+                "Review closed. Tier 2 on your lanyard. Hale still holds your Seal. His floor's open."
               ]
             ]
           ],
@@ -1414,11 +1415,11 @@
       "else": "Crates packed, units happy. Nice!"
     },
     "odile": {
-      "story.side=glimmer": "Mint's a bold colour for an orchard.",
+      "story.side=glimmer": "Wine's a bold colour for an orchard.",
       "!story.side=glimmer": "Fen's trees look brighter today."
     },
     "amos": {
-      "story.side=glimmer": "Beds are beds. Rest up, mint-vest.",
+      "story.side=glimmer": "Beds are beds. Rest up, wine-vest.",
       "!story.side=glimmer": "Rest well, holder. Roots need sleep."
     },
     "fen_after": {
@@ -1481,25 +1482,25 @@
       "odile": {
         "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The windfalls are yours.",
         "!story.side=glimmer&standing.keepers>=2": "Fen's trees like a trusted Keeper.",
-        "story.side=glimmer&standing.keepers>=2": "Mint coat. The orchard still knows you.",
-        "story.side=glimmer&standing.glimmer>=2": "Mint's a bold colour. The trees cope."
+        "story.side=glimmer&standing.keepers>=2": "Wine vest. The orchard still knows you.",
+        "story.side=glimmer&standing.glimmer>=2": "Wine's a bold colour. The trees cope."
       },
       "tobin_glim": {
         "standing.glimmer>=4": "Founder's Pick! I'll update your file.",
         "standing.glimmer>=2": "Junior Bright. Crates love you.",
-        "standing.keepers>=3": "Hall Friend in a mint vest. Funny."
+        "standing.keepers>=3": "Hall Friend in a wine vest. Funny."
       },
       "fen_after": {
         "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The roots agree.",
         "!story.side=glimmer&standing.keepers>=2": "Trusted hands. The trees agree.",
         "story.side=glimmer&standing.keepers>=3": "You left, and the trees kept you.",
-        "story.side=glimmer&standing.glimmer>=2": "Mint vest. Roots remember your step."
+        "story.side=glimmer&standing.glimmer>=2": "Wine vest. Roots remember your step."
       },
       "amos": {
         "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The bed's warm.",
         "!story.side=glimmer&standing.keepers>=2": "Trusted. Rest. Roots need sleep.",
         "!story.side=glimmer&standing.keepers>=1": "Rest well, friend. Roots need sleep.",
-        "story.side=glimmer&standing.keepers>=3": "Mint vest, old friend. Rest anyway.",
+        "story.side=glimmer&standing.keepers>=3": "Wine vest, old friend. Rest anyway.",
         "story.side=glimmer&standing.glimmer>=2": "Bright day, then rest. Beds are beds."
       },
       "hollis_aside": {
@@ -1508,7 +1509,7 @@
         "story.glen_cleared&!story.side=glimmer&standing.keepers>=2": "The lamps died. Your Hall was right."
       },
       "tobin_gate": {
-        "story.seal2&story.side=glimmer&standing.glimmer>=2": "Cord and vest. Gate stays shut, partner.",
+        "story.seal2&story.side=glimmer&standing.glimmer>=2": "Lanyard and vest. Gate's shut, partner.",
         "story.seal2&!story.side=glimmer&standing.keepers>=2": "Hale's Seal. Still no gate. Sorry.",
         "!story.side=glimmer&standing.keepers>=3": "Associates only. Even Hall Friends.",
         "story.side=glimmer&standing.glimmer>=2": "Partners get a smile, not a gate key."
@@ -1523,7 +1524,7 @@
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The road is yours.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. I'll walk you through.",
         "story.side=keepers&standing.keepers>=1": "A pledged Keeper. Evening, friend.",
-        "story.side=glimmer": "Mint coat. Keep your hands shown."
+        "story.side=glimmer": "Wine vest. Keep your hands shown."
       },
       "hm_ness": {
         "story.side=keepers&standing.keepers>=4": "Ally of the Warden. Pass freely.",
@@ -1539,7 +1540,7 @@
       },
       "hmp_cadet": {
         "story.side=keepers&standing.keepers>=1": "Cadet Lisse. The watch will learn you.",
-        "story.side=glimmer": "Mint already? I'm still on plaque duty."
+        "story.side=glimmer": "Wine vest already? Still on plaque duty."
       },
       "r1_ness": {
         "story.side=keepers&standing.keepers>=4": "Ally of the Warden. Pass freely.",
@@ -1557,7 +1558,7 @@
         "story.side=keepers&standing.keepers>=4": "Ally. The ledger has your page.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. I saved you a shelf.",
         "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Ask, and I'll look.",
-        "story.side=glimmer": "Those files are not for mint coats."
+        "story.side=glimmer": "Those files are not for wine vests."
       },
       "hq_wynn": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. Tea is on the hob.",
@@ -1581,7 +1582,7 @@
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. Fernbrook is quiet.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. The orchard is watched.",
         "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Evening, friend.",
-        "story.side=glimmer": "Mint coats don't get the orchard key."
+        "story.side=glimmer": "Wine vests don't get the orchard key."
       },
       "r2_watch": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The glen is watched.",
@@ -1596,7 +1597,7 @@
       "cc_watch": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The cairn knows you.",
         "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Stone stands firm.",
-        "story.side=glimmer": "Mint coats don't move this cairn."
+        "story.side=glimmer": "Wine vests don't move this cairn."
       },
       "cc_mint": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. Your chit is first.",
@@ -1683,7 +1684,7 @@
           "!story.side=glimmer&standing.keepers>=2": "Trusted hands, {name}. Roots first, then blossoms.",
           "!story.side=glimmer&standing.keepers>=1": "A friend of the orchard. Show me your roots, {name}.",
           "story.side=glimmer&standing.keepers>=3": "You packed my crates, and the trees still like you. Show me.",
-          "story.side=glimmer&standing.glimmer>=2": "Mint vest, {name}. Show me what roots you have left."
+          "story.side=glimmer&standing.glimmer>=2": "Wine vest, {name}. Show me what roots you have left."
         },
         "win": {
           "!story.side=glimmer&standing.keepers>=3": "Strong, and kind. Take the Seal. The trees will remember, {name}.",
@@ -1701,7 +1702,7 @@
           "!story.side=glimmer&standing.keepers>=2": "Trusted. Stone stands firm. Show me a patient hand.",
           "!story.side=glimmer&standing.keepers>=1": "A friend of the Hall. Stone stands firm, {player}.",
           "story.side=glimmer&standing.keepers>=2": "You stood with us once. Stone still stands firm, {player}.",
-          "story.side=glimmer&standing.glimmer>=1": "Mint coat, {player}. Stone stands firm all the same."
+          "story.side=glimmer&standing.glimmer>=1": "Wine vest, {player}. Stone stands firm all the same."
         },
         "win": {
           "!story.side=glimmer&standing.keepers>=3": "Ha! You moved the hill, {player}. Gently, like a Warden's Ally.",
@@ -1718,7 +1719,7 @@
         ["if", "!story.side=glimmer&standing.keepers>=4",
           [["say", "Warden Ilse", "Warden's Ally. I told the Halls they could trust you."]],
           [["if", "story.side=glimmer&standing.glimmer>=2",
-            [["say", "Warden Ilse", "That mint collar. The ledger still has your name."]],
+            [["say", "Warden Ilse", "That wine vest. The ledger still has your name."]],
             [["if", "!story.side=glimmer&standing.glimmer>=2",
               [["say", "Warden Ilse", "You wore their vest a while. The lantern is still yours."]],
               []]]]]]
@@ -1727,7 +1728,7 @@
         ["if", "!story.side=glimmer&standing.keepers>=4",
           [["say", "Master Hale", "Warden's Ally. The hill was waiting."]],
           [["if", "story.side=glimmer&standing.glimmer>=2",
-            [["say", "Master Hale", "Mint coat. Stone still knows your name."]],
+            [["say", "Master Hale", "Wine vest. Stone still knows your name."]],
             [["if", "!story.side=glimmer&standing.keepers>=2",
               [["say", "Master Hale", "Trusted hands. Come in, friend."]],
               []]]]]]
@@ -1736,7 +1737,7 @@
         ["if", "!story.side=glimmer&standing.keepers>=1",
           [["say", "Master Fen", "A friend already. Good. I need those hands."]],
           [["if", "story.side=glimmer",
-            [["say", "Master Fen", "You chose the mint. My trees still need a hand."]],
+            [["say", "Master Fen", "You chose the wine vest. My trees still need a hand."]],
             []]]]
       ]
     }

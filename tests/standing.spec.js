@@ -7,7 +7,7 @@ const { starterSave, installSave, trackErrors, gotoGame, shot, playScene } = req
 
 trackErrors(test, expect);
 
-const ACT5_FLAGS = ['story.ep1_end', 'story.seal5', 'story.seal7', 'story.skyloom_done'];   // D915: Act 5 starts at the Skyloom
+const ACT3_FLAGS = ['story.ep1_end', 'story.seal5'];   // D915/D1536: Act 3 starts at Seal 5 (the switch opens there, one way)
 const SIDE_PICK_FLAGS = { 'story.reached_fernbrook': true, 'story.met_glimmerwell': true, 'story.met_fen': true, 'story.side_pick_done': true };
 
 async function gotoDebug(page) {
@@ -110,7 +110,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', a
   expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
-test('no switch before Act 5 (D161); the switch engine still halves the side you leave, once per Seal @w1', async ({ page }) => {
+test('no switch before Act 3 (D1536); the switch engine still halves the side you leave, once per Seal @w1', async ({ page }) => {
   const save = starterSave(); Object.assign(save.flags, SIDE_PICK_FLAGS, { 'story.side': 'keepers', 'story.orchard_cleared': true, 'story.rook_bond': 2, 'story.rc_climax': true });
   save.standing = { keepers: 30, glimmer: 12 };
   save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'down', respawn: 'fernbrook' };
@@ -118,7 +118,7 @@ test('no switch before Act 5 (D161); the switch engine still halves the side you
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   const before = await page.evaluate(() => ({ quest: PixelPets.quest.id, canSwitch: PixelPets.standing.canSwitch, via: PixelPets.standing.via, orchard: PixelPets.sceneFor('orchard') }));
-  expect(before.canSwitch).toBe(false);   // D161 (Vincent, Oct 28, 2026): locked until story.act >= 5
+  expect(before.canSwitch).toBe(false);   // D1536 (replaces D161's Act 5 lock): locked until story.act >= 3
   expect(before.via).toBe('rook');
   expect(before.orchard).toBe('orchard');
   expect(await page.evaluate(() => typeof PixelPets.pledgeDesk)).toBe('undefined');
@@ -140,14 +140,15 @@ test('no switch before Act 5 (D161); the switch engine still halves the side you
   expect(after.quest).toBe(before.quest);
   expect(after.orchard).toBe('orchard@glimmer');
   expect(after.st.canSwitch).toBe(false);
-  // the next Seal opens a new chapter, but the Act 5 lock still holds; with Act 5 reached the per-Seal rule applies again
+  // the next Seal opens a new chapter, but the Act 3 lock still holds
   await page.evaluate(() => PixelPets.setFlag('story.seal1', true));
   expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
-  // Act 5 is derived from the act flags (D915, CHIP_SECRECY §7), never a stored story.act
-  await page.evaluate((ks) => ks.forEach(k => PixelPets.setFlag(k, true)), ACT5_FLAGS);
-  expect(await page.evaluate(() => PixelPets.act)).toBe(5);
-  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(true);
-  await page.evaluate((ks) => ks.forEach(k => PixelPets.setFlag(k, null)), ACT5_FLAGS);
+  // Act 3 is derived from the act flags (D915), never a stored story.act. A Glimmerwell face has nowhere to go: one way (D1536)
+  await page.evaluate((ks) => ks.forEach(k => PixelPets.setFlag(k, true)), ACT3_FLAGS);
+  expect(await page.evaluate(() => PixelPets.act)).toBe(3);
+  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
+  expect(await page.evaluate(() => PPStanding.canSwitch(PixelPets.state.flags, PixelPets.state.standing, 'glimmer', 'keepers', PixelPets.act).why)).toBe('one_way');
+  await page.evaluate((ks) => ks.forEach(k => PixelPets.setFlag(k, null)), ACT3_FLAGS);
   expect(await page.evaluate(() => PixelPets.act)).toBe(1);
   // a free debug switch does not halve
   expect(await page.evaluate(() => PixelPets.standing.chapter)).toBe(1);
@@ -165,6 +166,43 @@ test('no switch before Act 5 (D161); the switch engine still halves the side you
   expect(back.st.switches).toBe(3);
   expect(back.st.keepers.points).toBe(Math.floor(Math.floor(30 / cfg.switch.costDiv) / cfg.switch.costDiv));
   expect(back.st.glimmer.points).toBe(12);
+});
+
+// ACT1_KEEPER_JOIN T15 (D1536, D1513, D1559): the switch is locked in Act 2, opens in Act 3 (story.seal5, or 5 Seals held
+// once Episode 1 is done) toward Glimmerwell only, says one_way toward the Keepers, and moves every story.sway_* by -2, clamped.
+test('Act 3 switch: locked in Act 2, ok in Act 3 to Glimmerwell, one_way to the Keepers; every sway drops 2 after it @w1', async ({ page }) => {
+  const save = starterSave(); Object.assign(save.flags, SIDE_PICK_FLAGS, { 'story.seal1': true, 'story.seal2': true, 'story.seal3': true, 'story.ep1_end': true,
+    'story.rc_climax': true, 'story.keeper_cadet': true, 'story.sway_fernbrook': 3, 'story.sway_kilnmouth': -2, 'story.sway_zz': 0 });
+  save.standing = { keepers: 30, glimmer: 12 };
+  save.seals = { seal_fernbrook: true, seal_cobblecrest: true, seal_brinewick: true };
+  save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'down', respawn: 'fernbrook' };
+  await installSave(page.context(), save, { quietDay: true });
+  await gotoDebug(page);
+  const r = await page.evaluate(() => {
+    const F = PixelPets.state.flags, st = PixelPets.state.standing, C = PPStanding.canSwitch;
+    const a3 = Object.assign({}, F, { 'story.seal5': true });
+    return {
+      act: PixelPets.act, view: PixelPets.standing.canSwitch,
+      act2: C(F, st, 'keepers', 'glimmer', PPStanding.actOf(F, 3)).why,
+      flag: [PPStanding.actOf(a3, 3), C(a3, st, 'keepers', 'glimmer').ok],
+      seals: [PPStanding.actOf(F, 5), C(F, st, 'keepers', 'glimmer', PPStanding.actOf(F, 5)).ok],
+      back: C(a3, st, 'glimmer', 'keepers').why, backNull: C(Object.assign({ 'story.side': 'glimmer' }, a3), st, 'glimmer', null).why,
+      keepNull: C(a3, st, 'keepers', null).ok,
+    };
+  });
+  expect(r).toEqual({ act: 2, view: false, act2: 'locked', flag: [3, true], seals: [3, true], back: 'one_way', backNull: 'one_way', keepNull: true });
+  await page.evaluate(() => PixelPets.setFlag('story.seal5', true));
+  expect(await page.evaluate(() => PixelPets.act)).toBe(3);
+  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(true);
+  expect(await page.evaluate(() => PixelPets.switchSide('glimmer'))).toBe(true);
+  const after = await page.evaluate(() => ({ f: PixelPets.state.flags, st: PixelPets.standing }));
+  expect(after.f['story.sway_fernbrook']).toBe(1);
+  expect(after.f['story.sway_kilnmouth']).toBe(-3);
+  expect(after.f['story.sway_zz']).toBe(-2);
+  expect(after.f['story.switches']).toBe(1);
+  expect(after.st.keepers.points).toBe(15);
+  expect(after.st.canSwitch).toBe(false);
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
 
 test('Pledge desks are gone; Rook says not yet until the crates, and a battle blocks the offer @w1', async ({ page }) => {
