@@ -23,8 +23,8 @@ yes on the 390 previews (layout §0 preview gate, §13 test 10; AGENTS rules 3 a
   `hcCityCheck()` (inside `PixelPets.charityCheck()`).
 - **Flags:** `HC_CITY_V2` (ship switch), `HC_STREET_SOLID_BAYS`, `HC_TANK_POSTS`, `HC_GOV_HOUSE` (true inside the city).
   `?debug=1&hccity=2` turns the preview on for the tab, `?hccity=0` off. Plain `?debug=1` never does (172 specs use it).
-- **Debug places** (Places list, preview only): one per chunk arrival and per new room; the two Act 5 places seed
-  `story.act=5` and `story.hc_gov_met`. `PixelPets.hcCity()` and `PixelPets.hcPlaceholders()` are debug-only.
+- **Debug places** (Places list, preview only): one per chunk arrival and per new room; the Governor's House place seeds
+  `story.act=2` (D1426) and the President's rooms place seeds `story.act=5` and `story.hc_gov_met`. `PixelPets.hcCity()` and `PixelPets.hcPlaceholders()` are debug-only.
 
 ## What is in it (phase 1)
 
@@ -109,7 +109,7 @@ Inspiration only, for Design and the builder to translate into pixels with `PAL`
 | §4.4 9 tank posts, idle-lit, no guns (D1272) | Matched | PLACEHOLDER tank art (A24; POST_TRIAL_CRACKDOWN §10a art is not built) | `the city loads`; reduced motion |
 | §5.1 coach arrival | Matched in data | the Hearthmoor coach tile (12,9) is a roof tile on main in both modes (earlier issue, for QA) | `the coach still lands` |
 | §5.2 the Muster Hall exterior: chained door 10,29 with the keyed deny (`seals>=7`: "Chained. Ask the duty Keeper."), duty Keepers 8,29 / 12,29, notice 14,29, Board 21,26, dark roof (D1306, D1308) | Matched | the call and the Trial are phase 2 (`HC_TRIAL_HALL`) | `the Muster Hall stands chained` |
-| §5.3 gates by path and act (D1266, D1276) | Matched as read in D1373 | "after meeting the Governor" reads the new flag `story.hc_gov_met` (D1370) | `§5.3 gates` |
+| §5.3 gates by path and act (D1266, D1276; layout v0.4, D1426, D1439) | Matched | Governor's House floor 1, Governor Merriden and the ORDERS DOWN chute: Keepers path from Act 2 (`story.act>=2`); floor 2 is not built yet; the President's rooms stay Act 5 and "after meeting the Governor" reads the new flag `story.hc_gov_met` (D1370) | `§5.3 gates` |
 | §6.2 mouths | Matched | | `every mouth warps` |
 | §6.4 budgets (D1280) | Matched | | `the city loads`; build tool |
 | §6.4 / §13.7 perf: no frame over 33 ms at 390 on a mid phone | Differs | no in-game frame meter; headless 4x CPU throttle: chunks p95 17-50 ms, today's High Charity p95 33, today's Hearthmoor p95 67. Gate set at p95 <= 50 ms; the real-phone check is QA's | `@slow perf` |

@@ -444,8 +444,8 @@
      {
       "kind": "npc",
       "id": "fbp_associate_pet",
-      "name": "Bitlet",
-      "pet": "byte/0",
+      "name": "Loamlet",
+      "pet": "mole/0",
       "x": 28,
       "y": 11,
       "hold": true,

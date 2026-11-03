@@ -59,7 +59,7 @@ New props: lamp_post (18,10), (19,17) (moved from (18,17) so x18 stays the walk-
 | `fbp_constable_pet` | Hushlet | owl/0 | (26,11) | pet (no facing) | !fbplaza:held_glimmer |
 | `fbp_sergeant_pet` | Burrowbloom | mole/1 | (26,13) | pet (no facing) | !fbplaza:held_glimmer |
 | `fbp_cadet_pet` | Fetchling | fetch/0 | (26,15) | pet (no facing) | !fbplaza:held_glimmer |
-| `fbp_associate_pet` | Bitlet | byte/0 | (28,11) | pet (no facing) | !fbplaza:held_keepers |
+| `fbp_associate_pet` | Loamlet | mole/0 | (28,11) | pet (no facing) | !fbplaza:held_keepers |
 | `fbp_bright_lead_pet` | Voltwhisk | volt/1 | (28,13) | pet (no facing) | !fbplaza:held_keepers |
 | `fbp_junior_bright_pet` | Filamoth | moth/1 | (28,15) | pet (no facing) | !fbplaza:held_keepers |
 | `fbp_orchard_hand` | Orchard Hand | fbp_orchard_hand | (27,10) | down / up / down | always |
