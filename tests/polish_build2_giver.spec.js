@@ -17,7 +17,7 @@ function save(flags, tracked) {
     'story.leak5b_seen': true,
   }, flags || {});
   s.ui = { sideTracked: tracked, sideSeen: ['phone', 'mom', 'leak_ask'] };
-  s.world = { map: 'hm_home_up', x: 5, y: 4, facing: 'up', respawn: 'hearthmoor' };
+  s.world = { map: 'hm_home_in', x: 5, y: 5, facing: 'up', respawn: 'hearthmoor' };
   return s;
 }
 
@@ -26,7 +26,7 @@ async function boot(page, s) {
   await gotoGame(page, '?debug=1');
   await page.evaluate(() => {
     PixelPets.showTab('walk');
-    PixelPets.goto('hm_home_up', 5, 4, 'up');
+    PixelPets.goto('hm_home_in', 5, 5, 'up')   /* PARTNER_DAY: Mom lives downstairs */;
   });
 }
 
@@ -84,15 +84,17 @@ test('nothing tracked asks the short line, and the main story is named', async (
   expect(await page.evaluate(() => PixelPets.state.ui.sideTracked)).toBe('mom');
 });
 
-test('Mom offers nothing when she is the only quest or already tracked', async ({ page }) => {
+test('Mom offers no tracking when she is the only quest or already tracked, only tips', async ({ page }) => {
   await boot(page, save({ 'story.phone_got': true, 'story.leak5b_seen': false }, 'mom'));
   await talk(page);
-  expect(await playScene(page, [])).toEqual([]);
+  // PARTNER_DAY: with no track offer, Mom asks about tips instead (Vincent, Nov 2, 2026).
+  expect(await playScene(page, ['Not now'])).toEqual(['Ask Mom for tips?']);
   expect(await page.evaluate(() => PixelPets.state.ui.sideTracked)).toBe('mom');
 
   await boot(page, save({}, 'mom'));
   await talk(page);
-  expect(await playScene(page, [])).toEqual([]);
+  // PARTNER_DAY: with no track offer, Mom asks about tips instead (Vincent, Nov 2, 2026).
+  expect(await playScene(page, ['Not now'])).toEqual(['Ask Mom for tips?']);
   expect(await page.evaluate(() => PixelPets.state.ui.sideTracked)).toBe('mom');
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });

@@ -89,7 +89,7 @@ for (const mode of MODES) {
     expect(after.t).toBe('mom');
     expect(after.stored.sideTracked).toBe('mom');
     expect(after.sq.id).toBe('mom');                                // walk cue follows the tracked chain
-    expect(after.sq.target.map).toBe('hm_home_up');
+    expect(after.sq.target.map).toBe('hm_home_in');   // PARTNER_DAY: Mom lives downstairs
     await openMap(page);
     marks = await page.evaluate(() => PixelPets.regionMapMarks);
     expect(marks.ring).toBe('hearthmoor');                          // Mom shares the main node: outer side ring around the main ring
@@ -102,7 +102,7 @@ for (const mode of MODES) {
 test('AC3: talking to Mom first still starts her chain, and her step advances on the card @w1', async ({ page }) => {
   await boot(page, save());
   await page.evaluate(() => PixelPets.runScene('mom_hello'));
-  await playScene(page, ["I'll clear the table"]);
+  await playScene(page, ["I'll clear the table", 'Not now']);   // PARTNER_DAY: then "Ask Mom for tips?"
   const st = await page.evaluate(() => ({ met: PixelPets.state.flags['story.mom_met'], active: PixelPets.sideActive.map((a) => a.id) }));
   expect(st.met).toBe(true);
   expect(st.active).toEqual(['phone', 'mom_chore', 'plaza_ask']);

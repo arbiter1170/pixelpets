@@ -1,7 +1,7 @@
 /* Phone QA regressions from the evil-faction playthrough.
    Widths come from the Playwright projects (320, 375, 390). */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, newPlayerPicker } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -35,16 +35,7 @@ async function gotoDebug(page) {
 
 test('look DONE stays on screen and the name row stays hidden', async ({ page }) => {
   await gotoDebug(page);
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'intro');
-  for (let i = 0; i < 20; i++) {
-    const st = await page.evaluate(() => ({
-      look: !document.querySelector('#ovLook').hidden,
-      waiting: !!(PixelPets.scene && PixelPets.scene.waiting),
-    }));
-    if (st.look) break;
-    if (st.waiting) await page.keyboard.press('Space');
-    await page.waitForTimeout(50);
-  }
+  await newPlayerPicker(page);   // the first picker: in the intro, or at the bedroom mirror since PARTNER_DAY
   await expect(page.locator('#ovLook')).toBeVisible();
   await expect(page.locator('#lookNameRow')).toBeHidden();
   const box = await page.locator('#lookDone').boundingBox();

@@ -218,7 +218,12 @@ test('PEOPLE is empty until someone is met, then Lizzy opens a card', async ({ p
   bare.partnerId = null;
   delete bare.flags['story.starter_received'];
   delete bare.flags['story.starter_line'];
+  // PARTNER_DAY: the opening now meets Mom (and Lizzy), so "nobody yet" is a fresh game stopped before anyone speaks.
+  delete bare.flags['story.intro_seen'];
   await boot(page, bare);
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'intro', null, { timeout: 8000 });
+  await page.evaluate(() => PixelPets.endScene());
+  await page.waitForFunction(() => !PixelPets.scene);
   await page.locator('#repBtn').click();
   await expect(page.locator('#ovRep')).toBeVisible();
   await expect(page.locator('.rep-empty')).toHaveText('Nobody yet. Go say hi.');
