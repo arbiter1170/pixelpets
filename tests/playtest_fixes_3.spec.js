@@ -138,7 +138,10 @@ test('the Lanterns card waits out the rest prompt and comes back in the same pla
   expect(Math.abs(again.x - first.x)).toBeLessThan(2);
   expect(Math.abs(again.y - first.y)).toBeLessThan(2);
   const shown = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
-  expect(shown).toBe(mid);
+  // The 5 s autosave may land in between (BED_TUCK's nap moved the timing): compare without the stamp and the care stats
+  // that fade with time, as faction_or_gate's save proof does. The card itself writes nothing.
+  const calm = raw => { const o = JSON.parse(raw); delete o.last; for (const q of o.party || []) { delete q.hunger; delete q.happy; delete q.energy; } return JSON.stringify(o); };
+  expect(calm(shown)).toBe(calm(mid));
   expect(shown).not.toBe(saved);
   await page.locator('#unlockSkip').click();
   await expect(page.locator('#unlockCard')).toBeHidden();

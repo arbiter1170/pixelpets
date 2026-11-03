@@ -154,7 +154,7 @@ test('T-ORDER: cond() and evalCond agree on every §7.1 gate string, for every s
   expect(strings).toEqual(expect.arrayContaining([
     'story.side_pick_done | story.orchard_cleared',
     '!story.seal1 | !story.side_pick_done & !story.orchard_cleared',
-    'story.crates_seen | story.orchard_cleared',
+    'story.lizzy_class | story.orchard_cleared | story.seal1',   // DAY1_TRIAL1_FLOW D1169 (was story.crates_seen | story.orchard_cleared)
     'story.reached_cobblecrest | story.seal1 & !story.crates_seen',
     'story.side_pick_done | story.pitch_k & story.pitch_g',
   ]));
@@ -179,14 +179,23 @@ test('T-ORDER: cond() and evalCond agree on every §7.1 gate string, for every s
   }
 });
 
-// ---------- The gate matrix: zero diffs against origin/main ----------
+// ---------- The gate matrix: zero diffs against origin/main, except the cells DAY1_TRIAL1_FLOW moves on purpose ----------
 
+// DAY1_TRIAL1_FLOW v0.4 (Vincent, Nov 2, 2026): a save that never picked and never cleared the orchard (p, n) now gets the
+// new flow. The old pick trigger waits for Seal 1, the class and the post-Trial slot (D1172 no, D1175), Tobin is the tally
+// until the pick (his battle waits for it), and the chain resumes at the crates; b' meets the three Hall holders (D1170).
+// Every other cell of every kind still reads exactly as recorded.
+const NEW_FLOW = { 'fernbrook:fb_side_pick': false, 'fernbrook:fern_associate': false };
+const DAY1_DELTA = {
+  p: Object.assign({ 'quest:current': 'crates' }, NEW_FLOW), n: NEW_FLOW, p_fen_only: Object.assign({ 'quest:current': 'crates' }, NEW_FLOW),
+  p_glimmer_only: NEW_FLOW, p_fernbrook_only: NEW_FLOW, "b'": { 'quest:current': 'hall1_holders' },
+};
 for (const kind of Object.keys(K.KINDS)) {
   test(`gate matrix: kind ${kind} reads every §7.1 gate as before the OR change`, async ({ page, context }) => {
     await bootKind(page, context, kind, '?debug=1');
     const now = await page.evaluate(K.readGates, { objs: K.OBJ_GATES, slips: K.BOARD_SLIPS, tells: K.TELLS });
     expect(BEFORE.kinds[kind], 'recorded before-matrix for ' + kind).toBeTruthy();
-    expect(now).toEqual(BEFORE.kinds[kind]);
+    expect(now).toEqual(Object.assign({}, BEFORE.kinds[kind], DAY1_DELTA[kind] || {}));
   });
 }
 
@@ -261,6 +270,10 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
     for (const id of ['fb_east', 'fb_sign_route2_open', 'fb_rubble', 'fb_sign_route2']) cmp(id, route2(id), ['when']);
     for (const id of ['rook_fb', 'fb_teaser']) cmp(id, slice(id), ['when']);
     cmp('fb_hall', live('fb_hall'), []);
+    // DAY1_TRIAL1_FLOW: Fen's orchard body and the two crates also take Part A's line keys; the Hall sign its new text.
+    const sliceSkip = (id, skip) => cmp(id, slice(id), skip);
+    sliceSkip('fen_orchard', ['when', 'lines']); sliceSkip('fern_associate', ['when']);
+    sliceSkip('fb_crate_a', ['lines']); sliceSkip('fb_crate_b', ['lines']); sliceSkip('fb_sign_hall', ['text']);
     out.hallNeed = live('fb_hall').need;
     out.hallDeny = live('fb_hall').deny;
     out.count = WORLD.fernbrook.objs.filter(o => ['fb_east', 'fb_sign_route2_open', 'fb_rubble', 'fb_sign_route2', 'rook_fb', 'fb_teaser', 'fb_hall'].includes(o.id)).length;
@@ -269,11 +282,12 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
   });
   expect(diffs).toEqual({
     fb_east: true, fb_sign_route2_open: true, fb_rubble: true, fb_sign_route2: true, rook_fb: true, fb_teaser: true, fb_hall: true,
-    hallNeed: 'story.crates_seen | story.orchard_cleared',
-    // Copy is unchanged in this PR (June's lines land with the later steps).
-    hallDeny: "The door is latched. A note: 'Out in the orchard. — Fen'",
+    fen_orchard: true, fern_associate: true, fb_crate_a: true, fb_crate_b: true, fb_sign_hall: true,
+    hallNeed: 'story.lizzy_class | story.orchard_cleared | story.seal1',   // D1169
+    // June's line while Day 1 is not done (FPT §2.1); Fen's note while she is away (DAY1_TRIAL1_FLOW §7, PLACEHOLDER).
+    hallDeny: { '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
     count: 7,
-    slips: ['The Trial Hall is latched. Fen is outside, pacing by the steps.', 'The Trial Hall is open. The steps were swept this morning.'],
+    slips: ['The Trial Hall is latched. Tobin is by the orchard gate, counting crates.', 'The Trial Hall is shut. Master Fen is away on Keeper business.', 'The Trial Hall is open. The steps were swept this morning.'],
   });
 });
 

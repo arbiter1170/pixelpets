@@ -32,10 +32,13 @@
             "r": 0,
             "when": [
               "!story.side_pick_done",
-              "!story.orchard_cleared"
+              "!story.orchard_cleared",
+              "story.seal1",
+              "story.lizzy_class",
+              "story.post_trial_done"
             ],
             "scene": "side_pick",
-            "_note": "The orchard gate. Tobin (9,14) faces up with sight 3, so (9,11)-(9,13) are his. Not gated on met_glimmerwell/met_fen: both pitch inside the scene."
+            "_note": "The orchard gate. Tobin (9,14) faces up with sight 3, so (9,11)-(9,13) are his. Not gated on met_glimmerwell/met_fen: both pitch inside the scene. DAY1_TRIAL1_FLOW (Vincent, Nov 2, 2026; D1172 no, D1175): the pick waits for Seal 1, Lizzy's class and the post-Trial slot."
           },
           {
             "kind": "npc",
@@ -295,6 +298,7 @@
                         "Associate Juniper",
                         "Yay! Welcome to the partnership, {name}! Brighter by nature."
                       ],
+                      ["if", "story.seal1", [["seal", "seal_glim_1"]]],
                       [
                         "say",
                         "Tobin",
@@ -530,7 +534,8 @@
         "setFlag",
         "story.seal1",
         true
-      ]
+      ],
+      ["setFlag", "story.post_trial_done", true]
     ],
     "teaser@glimmer": [
       [
