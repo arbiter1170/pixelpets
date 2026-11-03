@@ -4390,6 +4390,16 @@ function moralDevCheck(){
   }
   return bad;
 }
+// ACT1_KEEPER_JOIN §5/§7 (D1504, D1506): per-town sway, story.sway_<node>, a signed whole number kept in -3..3 (positive leans
+// Keepers). Only REGION_MAP nodes marked `sway: true` are contested (Fernbrook in Act 1). Additive S.flags values (save v2):
+// written by the `inc` step (clamped there), the old-save move and the switch; never at load. Hold rules read them (holdCond).
+const SWAY = Object.freeze({ min: -3, max: 3, prefix: 'story.sway_' });
+const clampSway = n => Math.max(SWAY.min, Math.min(SWAY.max, Math.round(Number(n) || 0)));
+function swayOf(node, live){ return clampSway(flagOf(SWAY.prefix + node, live)); }
+function shiftSway(d){
+  const n = Number(d) || 0; if (!n || !S) return;
+  for (const k of Object.keys(S.flags)) if (k.indexOf(SWAY.prefix) === 0 && S.flags[k] != null) S.flags[k] = clampSway((Number(S.flags[k]) || 0) + n);
+}
 // The pledge changes (D15, D131): the side you leave keeps floor(n / costDiv), the side you join is unchanged, story.side
 // is rewritten, story.switches counts, story.switch_chapter / story.switch_at record when (the per-chapter cooldown).
 // Every new switch is story.switch_via "rook" (D127). `free` skips the cost and is debug-only.
@@ -4400,6 +4410,9 @@ function switchSide(to, opts){
   if (to === from) return false;
   if (!(opts && opts.free)) setStanding(from, PPStanding.switchCost(standingOf(from, false)));
   S.flags['story.side'] = to;
+  // ACT1_KEEPER_JOIN §8 E6 (D1506, D1559): the towns saw you turn. Every story.sway_* the save holds moves by swayShift (-2),
+  // clamped -3..3, on a switch to the one-way side. Old-save moves and the recall write story.side with setFlag, not here.
+  if (to === SC_STANDING.switch.oneWay) shiftSway(SC_STANDING.switch.swayShift);
   if (to === 'glimmer') ensureCrackedPhone();
   S.flags['story.switches'] = (+S.flags['story.switches'] || 0) + 1;
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
@@ -4411,7 +4424,8 @@ function switchSide(to, opts){
 }
 const standingView = () => { const out = {}; for (const sd of PPStanding.SIDES) { const i = PPStanding.tierInfo(sd, standingOf(sd, false)); out[sd] = { points: i.points, tier: i.tier, name: i.name }; }
   return Object.assign(out, { side: side(), switches: +S.flags['story.switches'] || 0, chapter: PPStanding.chapterOf(S.flags), via: 'rook', canSwitch: PPStanding.canSwitch(S.flags, S.standing, side(), null, actNow(false)).ok && !scene && !(battle && battle.on) }); };
-// Rook's offer (D127–D129, D131). The only way to change sides. Built when it opens so the cost line shows live numbers.
+// Rook's offer (D127–D129, D131; D1558: from inside the company, at the start of Act 3, Keepers -> Glimmerwell only, D1536).
+// The only way to change sides. Built when it opens so the cost line shows live numbers.
 // Before story.rc_climax he says not yet, except inside rc_gate: that scene runs this offer and writes the flag after
 // the branch (a "Not yet" there stays on the company side and fights). A cooldown says the refused line. Yes is never free.
 function rookOfferSteps(to){
@@ -4421,7 +4435,9 @@ function rookOfferSteps(to){
   if (!S || (!S.flags['story.rc_climax'] && !atGate)) return [['say', 'Rook', R.notYet]];
   if (from === dest) return [['say', 'Rook', R.wait]];
   const can = PPStanding.canSwitch(S.flags, S.standing, from, dest, actNow(false));
-  if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : can.why === 'locked' ? R.wait : R.notYet]];
+  // D1536/D1558: before Act 3 (locked) and for a move back to the Keepers (one_way) Rook says the same wait line as before;
+  // the Act 3 packet writes the offer's own copy (the pick's retired promise lines move there).
+  if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : (can.why === 'locked' || can.why === 'one_way') ? R.wait : R.notYet]];
   const pts = standingOf(from, true);
   const costLine = PPStanding.fill(W.costLine, { side: SC_STANDING.sides[from].short, from: pts, to: PPStanding.switchCost(pts) });
   return [
@@ -4863,14 +4879,26 @@ function repCond(c, o){
                                   opens after Lizzy's class, and story.heights_done only comes after the pick), or story.heights_done
                                   & !story.seal1 for an older save (trialReady's read) (D1244).
      argue                        everything before.
-   `held` matches either held_ phase and `contested` any other. Reads only; never writes a flag or the save. */
+   `held` matches either held_ phase and `contested` any other; `post` (D1561) is a Keeper Cadet's Glimmerwell-held town.
+   Reads only; never writes a flag or the save. */
 function fbPlazaPhase(live){
   const f = k => flagOf(k, live);
+  // ACT1_KEEPER_JOIN §7 E2 (D1505): once the holder is a Keeper Cadet with a face set, the plaza follows the town's hold
+  // (mapHold on the same flags flagOf reads, live or saved): held_keepers, held_glimmer, or `after` for a split town (the
+  // standoff resumes). Saves without story.keeper_cadet (every save today) read the phases below, unchanged.
+  if (f('story.keeper_cadet') && f('story.side_pick_done')) {
+    const h = mapHold('fernbrook', live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags);
+    return h === 'keepers' ? 'held_keepers' : h === 'glimmer' ? 'held_glimmer' : 'after';
+  }
   if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : (f('story.crackdown') ? 'curfew' : 'after');
   if (f('story.lizzy_class') || f('story.heights_done')) return 'watch';
   return 'argue';
 }
+// ACT1_KEEPER_JOIN D1561 (Vincent, Nov 3, 2026, night): `fbplaza:post` is a Keeper Cadet's Fernbrook held by Glimmerwell. One
+// Keeper post stays visible then (the Constable at his tile, `hold`, no patrol). Saves without story.keeper_cadet never read it.
+function fbPlazaPost(live){ return !!(flagOf('story.keeper_cadet', live) && flagOf('story.side_pick_done', live)) && fbPlazaPhase(live) === 'held_glimmer'; }
 function fbPlazaIs(want, live){
+  if (want === 'post') return fbPlazaPost(live);
   const ph = fbPlazaPhase(live), held = ph.indexOf('held_') === 0;
   return want === ph || (want === 'held' && held) || (want === 'contested' && !held);
 }
@@ -9729,7 +9757,9 @@ async function execStep(st){
       return;
     }
     case 'inc': {
-      const n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0); sc.view.flags[a] = n; pend(() => { S.flags[a] = n; });   // WP-B0 counters (Rook bond)
+      let n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0);
+      if (String(a).indexOf(SWAY.prefix) === 0) n = clampSway(n);   // ACT1_KEEPER_JOIN §5: a town's sway stays in -3..3
+      sc.view.flags[a] = n; pend(() => { S.flags[a] = n; });   // WP-B0 counters (Rook bond)
       if (a === 'story.rc_stamped' && n >= 1 && n <= 3) await execStep(['standing', 'glimmer', null, 'rc_stamp' + n]);
       if (a === 'story.rc_loose' && n === 1) await execStep(['standing', 'keepers', null, 'rc_loose']);
       return;
@@ -12408,8 +12438,15 @@ const REGION_MAP = {
     proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]],
       hold: [{ id: 'wild' }] },
     fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Fernbrook Trial Hall.',
-      // D1171: Fernbrook is contested until the pick after Trial 1, then flips to the side the holder picked.
-      hold: [{ id: 'glimmer', when: ['story.side_pick_done', 'story.seal1', 'story.side=glimmer'], line: 'Glimmerwell holds the town now. Lanterns on every gate.' },
+      // ACT1_KEEPER_JOIN §7 (D1504-D1506): a contested town (`sway: true`). Once the holder is a Keeper Cadet with a face set
+      // (story.keeper_cadet & story.side_pick_done) the town settles by story.sway_fernbrook (-3..3, + leans Keepers): >= 2
+      // Keepers, <= -2 Glimmerwell, else split. Rules 4-5 are D1171's flip at the pick, kept for saves that have no
+      // story.keeper_cadet (every save today), so today's play reads exactly as before. Split line: PLACEHOLDER (Story).
+      sway: true,
+      hold: [{ id: 'keepers', when: ['story.keeper_cadet', 'story.side_pick_done', 'story.sway_fernbrook>=2'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
+        { id: 'glimmer', when: ['story.keeper_cadet', 'story.side_pick_done', 'story.sway_fernbrook<=-2'], line: 'Glimmerwell holds the town now. Lanterns on every gate.' },
+        { id: 'split', when: ['story.keeper_cadet', 'story.side_pick_done'], line: 'Keepers walk the lanes. Glimmerwell keeps the gate.' },
+        { id: 'glimmer', when: ['story.side_pick_done', 'story.seal1', 'story.side=glimmer'], line: 'Glimmerwell holds the town now. Lanterns on every gate.' },
         { id: 'keepers', when: ['story.side_pick_done', 'story.seal1', '!story.side=glimmer'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
         { id: 'split', line: 'Keepers keep the town. Glimmerwell keeps a stand.' }] },
     route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]],
@@ -12484,13 +12521,26 @@ function syncMapBtn(){
 }
 const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null };
 let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
+// ACT1_KEEPER_JOIN §7 (D1505, E1): one hold condition read on a flags object, the way cond() reads them: `|` first, then `&`,
+// then `!`; 'k=v' compares a flag's value (story.side=glimmer, D1171); 'k>=n', 'k<=n', 'k>n', 'k<n' compare a number, an unset
+// flag counting as 0 (story.sway_fernbrook>=2). Pure: no S, no live scene view, so the dev check passes plain flag objects.
+function holdCond(F, c){
+  c = String(c == null ? '' : c).trim();
+  if (c.includes('|')) return c.split('|').some(p => !!p.trim() && holdCond(F, p));
+  if (c.includes('&')) return c.split('&').every(p => !!p.trim() && holdCond(F, p));
+  if (!c) return false;
+  if (c[0] === '!') return !holdCond(F, c.slice(1));
+  const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c), f = F || {};
+  if (!m) return !!f[c];
+  if (m[2] === '=') return String(f[m[1]]) === m[3];
+  const n = Number(f[m[1]]) || 0, r = Number(m[3]);
+  if (!Number.isFinite(r)) return false;
+  return m[2] === '>=' ? n >= r : m[2] === '<=' ? n <= r : m[2] === '>' ? n > r : n < r;
+}
 // First matching rule wins. `flags` lets the dev check try a save without touching S. Unvisited places stay ??? on the parchment.
 function matchHold(id, flags){
   const n = REGION_MAP.nodes[id], F = flags || (S && S.flags) || {};
-  // DAY1_TRIAL1_FLOW §9 (D1171): `k=v` reads a flag's value (story.side=glimmer), as evalCond does; '!' negates either form.
-  const one = c => { const k = c.indexOf('='); return k >= 0 ? String(F[c.slice(0, k)]) === c.slice(k + 1) : !!F[c]; };
-  const ok = c => String(c)[0] === '!' ? !one(String(c).slice(1)) : one(String(c));
-  for (const rule of (n && n.hold) || []) if (!rule.when || rule.when.every(ok)) return rule;
+  for (const rule of (n && n.hold) || []) if (!rule.when || rule.when.every(c => holdCond(F, c))) return rule;
   return { id: 'wild', line: MAP_HOLD_LINE.wild };
 }
 function mapHold(id, flags){ return matchHold(id, flags).id; }
@@ -12645,6 +12695,18 @@ function mapDevCheck(){
   if (mapHold('cobble_quarry', {}) !== 'keepers' || mapHold('cobble_quarry', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('quarry');
   if (mapHold('fb_heights', {}) !== 'glimmer' || mapHold('fb_heights', { 'story.sm_done': true }) !== 'split') bad.push('heights');
   if (mapHold('fernbrook', { 'story.side_pick_done': true, 'story.seal1': true, 'story.side': 'glimmer' }) !== 'glimmer' || mapHold('fernbrook', { 'story.side_pick_done': true, 'story.seal1': true }) !== 'keepers') bad.push('fernbrook flip');   // D1171
+  // ACT1_KEEPER_JOIN §7 E10 (D1504, D1505): a Cadet's Fernbrook settles by sway; the old-save flip above still passes.
+  const cadet = sw => ({ 'story.keeper_cadet': true, 'story.side_pick_done': true, 'story.seal1': true, 'story.sway_fernbrook': sw });
+  if (mapHold('fernbrook', cadet(3)) !== 'keepers' || mapHold('fernbrook', cadet(-3)) !== 'glimmer' || mapHold('fernbrook', cadet(1)) !== 'split') bad.push('fernbrook sway');
+  if (mapHold('fernbrook', cadet(2)) !== 'keepers' || mapHold('fernbrook', cadet(-2)) !== 'glimmer' || mapHold('fernbrook', cadet(-1)) !== 'split' || mapHold('fernbrook', cadet(undefined)) !== 'split') bad.push('fernbrook sway edge');
+  if (mapHold('fernbrook', Object.assign(cadet(-3), { 'story.side': 'keepers' })) !== 'glimmer' || mapHold('fernbrook', Object.assign(cadet(3), { 'story.side': 'glimmer' })) !== 'keepers') bad.push('fernbrook sway beats face');
+  if (mapHold('fernbrook', { 'story.side_pick_done': true, 'story.seal1': true, 'story.sway_fernbrook': -3 }) !== 'keepers') bad.push('fernbrook sway inert');   // no Cadet: the built flip
+  if (!holdCond({ 'story.n': 2 }, 'story.n>=2') || holdCond({}, 'story.n>=1') || !holdCond({}, 'story.n<1') || !holdCond({ 'story.n': -2 }, 'story.n<=-2')) bad.push('holdCond numbers');
+  if (!holdCond({ b: true }, 'a | b') || holdCond({ a: true }, 'a & b') || holdCond({ c: true }, 'a | b & c') || !holdCond({ b: true, c: true }, 'a | b & c') || !holdCond({ s: 'glimmer' }, 's=glimmer') || holdCond({ s: 'glimmer' }, '!s=glimmer')) bad.push('holdCond ops');
+  for (const id of ids) for (const rule of REGION_MAP.nodes[id].hold || []) for (const c of rule.when || []) {
+    const m = /story\.sway_([a-z0-9_]+)/.exec(String(c));
+    if (m && (m[1] !== id || !REGION_MAP.nodes[id].sway)) bad.push(id + ': sway read on a town that is not contested');
+  }
   if (mapHold('fernbrook', {}) !== 'split' || mapHold('route2', {}) !== 'split' || mapHold('route2_glen', {}) !== 'glimmer') bad.push('fork');
   if (mapHold('hearthmoor', {}) !== 'keepers' || mapHold('highcharity', {}) !== 'keepers' || mapHold('route1', {}) !== 'keepers') bad.push('keepers');
   if (mapHold('proto', {}) !== 'wild' || mapHold('mahopac', {}) !== 'wild') bad.push('wild');
@@ -19915,6 +19977,8 @@ function boot(){
   api.fleetExit = () => DEBUG && window.PPFleet ? PPFleet.close(fleetHost) : false;
   api.fleetState = () => DEBUG && window.PPFleet ? PPFleet.state() : null;
   api.mapHold = (id, flags) => mapHold(id, flags);
+  api.holdLine = (id, flags) => holdLine(id, flags);   // ACT1_KEEPER_JOIN §7: the hold line the chip and map show (read only)
+  api.sway = node => S ? swayOf(node) : null;           // ACT1_KEEPER_JOIN §5: a contested town's sway, -3..3 (read only)
   api.hall2 = () => HALL2_ON;   // TRIAL_HALL_FERNBROOK_MAP: is the flagged contested Hall laid over fb_hall_in this load? (read only)
   api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
   api.mapNodeCenter = id => { const n = REGION_MAP.nodes[id]; return n ? [n.col * 16 + 8, n.row * 16 + 8] : null; };   // region-map logical px
@@ -20041,6 +20105,9 @@ function boot(){
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
   // D915 (read-only): the act number as cond() reads story.act (derived; a stored value counts only under ?debug=1).
   Object.defineProperty(api, 'act', { enumerable: true, get(){ return S ? actNow(false) : null; } });
+  // ACT1_KEEPER_JOIN §8 (D1514, D1559), read only: Ilse's reports still open; the Act 3 loyalist choice can be offered.
+  Object.defineProperty(api, 'reportsOpen', { enumerable: true, get(){ return S ? PPStanding.reportsOpen(S.flags) : null; } });
+  Object.defineProperty(api, 'loyalistOpen', { enumerable: true, get(){ return S ? PPStanding.loyalistOpen(S.flags, actNow(false)) : null; } });
   api.standingCfg = () => copy(STANDING_CFG);
   api.standingCheck = () => PPStanding.devCheck();
   // LR5 (D174): raw number, effective tier, effective value. repAdd is a debug hook; scenes use the rep step.

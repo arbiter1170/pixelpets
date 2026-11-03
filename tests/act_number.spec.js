@@ -112,7 +112,7 @@ test('a stored story.act=5 without ?debug=1 is ignored and kept: the derived act
   expect(await page.evaluate(() => PixelPets.debug)).toBe(false);
   expect(await page.evaluate(() => PixelPets.act)).toBe(2);
   expect(await pipSays(page)).toBe(LINE[2]);
-  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);   // D161: switching opens in Act 5
+  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);   // D1536: switching opens in Act 3 (Act 2 here)
   const s = await stored(page);
   expect(s.v).toBe(2);
   expect(s.flags['story.act']).toBe(5);   // the old save loads as it was; nothing renames or removes the key
