@@ -244,8 +244,9 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
 
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
   const again = [];
-  await playScene(page, [], (prompt) => { again.push(prompt); });
-  expect(again).toEqual([]);
+  // SEALS_BOTH_PATHS (D1328): after the Tuning closes the review, Hale re-offers his match for the Seal; no second Tuning.
+  await playScene(page, ['Not today'], (prompt) => { again.push(prompt); });
+  expect(again).toEqual(['One match on the stone. Ready?']);
   const still = await page.evaluate(() => PixelPets.state.party.filter((p) => p.chip && p.chip.on).length);
   expect(still).toBe(1);
 });
