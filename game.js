@@ -6602,10 +6602,13 @@ function checkArriveTriggers(){
   }
   return false;
 }
+// WEIR_HUT D1598: a trigger may name a scene another build fills in (chi_hut_first -> chi_meet). Until that scene exists the
+// trigger is a stub: it never fires, never stops the walk and writes nothing.
+const sceneBuilt = o => !o.scene || !!sceneSteps(o.scene);
 function checkTriggers(){
   const x = S.world.x, y = S.world.y;
   for (const o of CUR.objs) {
-    if (o.kind !== 'trigger') continue;
+    if (o.kind !== 'trigger' || !sceneBuilt(o)) continue;
     const inside = present(o) && Math.abs(o.x - x) + Math.abs(o.y - y) <= (o.r || 0);
     if (!inside) {
       if (o.id === 'fb_side_pick' && mapRT.trig[o.id] && !S.flags['story.side_pick_done']) {
@@ -7651,6 +7654,8 @@ function cellImg(m, ch, tx, ty, wf){
     const nm = labTileName(ch, tx, ty, m);
     if (nm !== ch && TILES[nm]) img = TILES[nm];
   }
+  // WEIR_HUT: a skin tile may loop two frames on the water clock (the weir trough); reduced motion holds frame 0.
+  if (Array.isArray(img)) img = img[(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0 : wf % img.length];
   return img;
 }
 function drawMap(t){
@@ -10840,7 +10845,11 @@ function pickSpecies(tags = envTags(), key = spawnKey()){
 const pickStage = (key = spawnKey()) => Math.random() < ((SPAWNS[key] || {}).stage2 || WILD_STAGE2_CHANCE) ? 1 : 0;
 // w.lv: a first form rolls uniformly in its table row's range. A second form on Route 1 / Fernbrook stays Lv 6-8.
 // On a high-level table (row min above 8: Route 2, Wickerglen, the quarry) the second form uses that same range.
+// WEIR_HUT D1594 (a): the Wickerglen > Falls > Cut walk opens at story.warden_met, before Hall 2. Until story.cobble_end the
+// Falls and the Cut roll Wickerglen's band (Lv 13-16); after it they roll their own tables (Lv 19-23) as built.
+const HW_EARLY_BAND = { maps: { hw_falls: 1, hw_cut: 1 }, lv: [13, 16] };
 function wildBaseRange(sp, stage, key){
+  if (HW_EARLY_BAND.maps[key] && !(S && S.flags && S.flags['story.cobble_end'])) return HW_EARLY_BAND.lv.slice();
   const id = SPECIES[sp].id, row = SPAWNS[key] && SPAWNS[key].table.find(r => r[0] === id);
   if (row && (!stage || row[2] > 8)) return [row[2], row[3]];
   const t = STAT_RULES.WILD_LEVELS.proto, own = (STAT_RULES.WILD_LEVELS_SPECIES.proto || {})[id];
@@ -12485,7 +12494,7 @@ const REGION_MAP = {
     hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_3: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
-    hw_rim: 'hw_cut', hw_falls: 'hw_cut',
+    hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
     bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
