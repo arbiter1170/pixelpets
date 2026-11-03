@@ -69,7 +69,9 @@ D1395-D1396 reserved: Vincent's post-crackdown direction (Ilse's call and the Vi
 
 Renumbered (Tue Nov 3, 2026, about 8:25 AM ET): these two rows were first reserved as D1353-D1354, but design master reserved D1353-D1369 for HC_PARADE one minute later and has settled them (STORY_DECISIONS v0.71, which also holds D1370-D1394: the high-charity phase 1 rows D1370-D1374, KEEPER_ANTHEM D1375-D1384, ROTOR_CRAFT D1385-D1394). Design's block stands; this block moved to D1395-D1396 before anything was built.
 
-Next free id is D1397.
+D1397-D1410 reserved: RENDEZVOUS_VINCENT (`handoff/specs/RENDEZVOUS_VINCENT.md`, the quest D1396 asks for; draft for Vincent, Tue Nov 3, 2026, about 8:30 AM ET; checked against game main, every origin branch and design master b11348f).
+
+Next free id is D1411.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -196,6 +198,20 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 | D1320 | yellow, CORE_LOOP_HOOK_AUDIT §8 R8 | One solo Event Hall game as a booth on an existing walkable tile in Hearthmoor Plaza, before the pledge | Not built. All booths are in High Charity after the pledge and Ilse's letter. Default: yes; Design picks the tile, shots before merge | `minigames.js`; a detail overlay |
 | D1321 | yellow, CORE_LOOP_HOOK_AUDIT §8 R9 | One counter-type hint (≤ 110 characters) at the Lantern House after the first loss to a holder whose team counters the lead, naming a counter type that lives on this map | Not built. Default: yes | Lantern House wake-up in `game.js`; `SPAWNS` |
 | D1396 | red, Vincent's direction (Tue Nov 3, 2026) | **Scope the rendezvous quest that starts the pick.** After the crackdown and Ilse's debrief (D1395), Warden Ilse sends the holder to meet **Vincent**, an unaligned NPC: a Glimmerwell agent who disagrees with some of what Glimmerwell does (he hints at the chip, within CHIP_SECRECY) and with the Keepers' move to martial order. The quest should feel like going undercover to see the secrets both factions hold, and it leads into the pick. Open: what Vincent and the holder do, where he stands, where they meet, and how it hands off to the pick | Not built. Default: a spec first (inspiration step, Story and Design), then Vincent's yes; nothing built before it. The NPC's name "Vincent" stands (names can be filled in later) but still needs the name-registry and wording check | spec to come |
+| D1397 | red, RENDEZVOUS_VINCENT | Shape: two trial shifts (§2 A) | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1398 | red, RENDEZVOUS_VINCENT | Vincent's canon: Glimmerwell field agent, unaligned in Act 1, no Keeper1, Walkling "a beat late", old channel to Ilse | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1399 | red, RENDEZVOUS_VINCENT | NPC name "Vincent" (owner's pick, matches his first name); registry check; surname later | Not built. Default: keep | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1400 | red, RENDEZVOUS_VINCENT | Meeting place: Route 1 stream bank (built tiles) | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1401 | red, RENDEZVOUS_VINCENT | Keeper secret: a district call-up roll from High Charity, no copies to Wardens; never the Seal trade | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1402 | red, RENDEZVOUS_VINCENT | Glimmerwell secret: buy-back ledger, the "beat late" Walkling, the "Partners only" door; no chip named | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1403 | red, RENDEZVOUS_VINCENT | Pick stays built at 9,10; trigger adds `story.rdv_done \| !story.crackdown`; amends D1141, D1142, D1175 | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1404 | yellow, RENDEZVOUS_VINCENT | Ilse's call: new call card (one tap; no new sound, no vibration, so no iPhone audio red); Amos fallback | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1405 | yellow, RENDEZVOUS_VINCENT | Townsfolk return by day once `story.ilse_called` (D1200); posts and notice stand until the pick | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1406 | yellow, RENDEZVOUS_VINCENT | Shifts in either order; the night shift is curtain time, never the real clock | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1407 | red, RENDEZVOUS_VINCENT | Should the rendezvous move `story.fen_lean`? (amends D1228) | Not built. Default: no | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1408 | yellow, RENDEZVOUS_VINCENT | Shift choices `inc` the D1146 counters; flavour only | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1409 | green, RENDEZVOUS_VINCENT | Flags, rows and save guards as §5 | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
+| D1410 | green, RENDEZVOUS_VINCENT | About 60 text boxes; tests as §8 | Not built. Default: yes | `handoff/specs/RENDEZVOUS_VINCENT.md` |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

@@ -2,6 +2,21 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 08:30 ET: Spec: RENDEZVOUS_VINCENT v0.1, Ilse's call, the Vincent rendezvous and the road to the pick (D1396; ids D1397-D1410), docs only
+- What changed and why: Vincent asked for the post-crackdown quest to be scoped (D1395, D1396). The default shape is two trial shifts:
+  - Ilse phones the holder home and debriefs them, distraught at the President.
+  - Vincent, a Glimmerwell field agent who stands with neither side, meets the holder at the Route 1 stream bank.
+  - The holder works one shift for each side and sees what each keeps quiet:
+    - the Keepers: a call-up roll of Seal holders sent from High Charity, with no copies to the Wardens;
+    - Glimmerwell: a buy-back ledger of old Seals, a Walkling that answers a beat late after a free check-up, and a "Partners only" door. The chip is never named.
+  - The built pick at the orchard gate runs after the report.
+  - No new room, town or route. All copy is PLACEHOLDER.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md` (new), `OPEN_DECISIONS.md` (D1397-D1410 reserved and opened; next free D1411), `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1397-D1410: 8 red, 4 yellow, 2 green, each with a default (spec §7). Nothing is built before Vincent rules.
+- Anything left unfinished: Vincent's rulings, Story's copy, and Design's check of canon and the UNVERIFIED tiles.
+
 ## 2026-11-03 08:07 ET: Decisions: Vincent settles D1128 (Fen's pacing) as the research recommends, docs only
 - What changed and why: D1128 settled.
   - Keep the bench XP share at 50%.
