@@ -11,14 +11,16 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
     - Only the local party is paid.
   - **Fen's challenge hint.** While the lead is below Lv 12, Fen's Trial panel adds one line before "Begin the trial?": "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first." It is PLACEHOLDER for June, and it never blocks.
   - Fen's team (12/13/14) and her 420-Acorn purse are unchanged.
-- Files touched: `stats.js`, `game.js`, `tools/GAMEJS_MAP.txt`, `tests/fen_pacing.spec.js` (new), `tests/maps_b8.spec.js` (Fen's panel now has the hint line before the choice when the lead is below Lv 12), `tests/README.md`, `CHANGELOG.md`, plus the build stamp.
+- Files touched: `stats.js`, `game.js`, `tools/GAMEJS_MAP.txt`, `tests/fen_pacing.spec.js` (new), `tests/maps_b8.spec.js` (Fen's panel now has the hint line before the choice when the lead is below Lv 12), `tests/README.md`, `CHANGELOG.md`, `handoff/shots/fen_pacing_d1128/`, plus the build stamp.
 - Commit(s) + build id: claude/fen-pacing-d1128, build 20261103-1032 (first stamped 20261103-0821; restamped after catching up with main 656ae76, which has #284, #283, #281, #280 and #277).
 - Tests run and result (widths, checks):
   - `tests/fen_pacing.spec.js`: 12 of 12 passed at 320, 375 and 390.
   - 19 battle, level and Fen suites (level_grow, battle_no_reload, day1_flow, maps_b8, glimmer_fernbrook, match_marker, rematch_party, deploy_held, battle_tips_once, fetch_line, arbiter_units, five_answer, hushwater, brinewick, crash_growup_people, cue_rail, qa_gaps, art_pass): 283 passed, 2 failed.
     - `maps_b8` Fen panel: fixed here (the hint line), and the re-run passed.
     - `rematch_party:316`: fails the same way on clean main 8cd1510.
+  - After the main catch-up (656ae76, build 20261103-1032): fen_pacing, maps_b8, day1_flow, level_grow, battle_no_reload, trial_hall_contested, seals_both_paths, glimmer_fernbrook, qa_gaps, deploy_held, battle_tips_once and match_marker at 320, 375 and 390: 173 passed, 0 failed, 20 skipped (width-gated).
   - Scans pass.
+- Shots (before = main, after = this branch, at 390 and 320): `handoff/shots/fen_pacing_d1128/` (`compare-390.png`, `compare-320.png`).
 - Decisions made (colour + reasoning): D1128 (red), as settled. No new ids. Save stays `pixelpets.save.v2`, `v` 2, no new field.
 - Anything left unfinished:
   - Nina's Fen test (one clean run of the new flow, 12 tries at Fen, pass at 6 or more wins). If it fails, Fen drops one level to 11/12/13, and the hint line and its threshold move with her.
