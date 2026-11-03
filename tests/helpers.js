@@ -122,6 +122,10 @@ async function playScene(page, choices = [], onChoice = null, onSeal = null) {
     if (sc.mode === 'choice') {
       // A tap completes the line without waiting for the frame loop, then the buttons answer.
       if (!sc.full) { await page.keyboard.press('Space'); continue; }
+      // After a pick the mode reads 'choice' until the next line, while staging plays (BED_TUCK's walk to the bed):
+      // only a box that shows buttons is a new choice. The shop sheet has its own buttons.
+      const open = await page.locator('#sbChoices button:visible, #ovShop:visible').count();
+      if (!open) { await page.waitForTimeout(40); continue; }
       await page.waitForFunction(() => window.PixelPets.optionsReady === true);
       const label = left.shift();
       if (label == null) throw new Error('scene asked "' + sc.text + '" but the test had no answer left');

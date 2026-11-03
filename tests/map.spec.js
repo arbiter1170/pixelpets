@@ -135,8 +135,9 @@ test('claims follow the story, and the capital wears Keeper colors', async ({ pa
     line: document.querySelector('#mapHold').textContent,
   }));
   expect(fern.name).toBe('FERNBROOK');
-  expect(fern.hold).toBe('split');
-  expect(fern.line).toContain('Glimmerwell');
+  // DAY1_TRIAL1_FLOW D1171: picked (the Keepers) with Seal 1, so Fernbrook has flipped from contested to the Keepers.
+  expect(fern.hold).toBe('keepers');
+  expect(fern.line).toContain('Keepers');
   const wide = await page.evaluate(() => {
     const inner = document.querySelector('.map-inner');
     const past = [...inner.querySelectorAll('li, p, .map-pname, .map-hold')].filter(el => {

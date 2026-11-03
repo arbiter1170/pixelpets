@@ -20,6 +20,8 @@ function save(world) {
   s.settings.controls = 'modern';
   s.settings.follower = true;
   s.flags['story.early_done'] = true;
+  // DAY1_TRIAL1_FLOW §8: the three Hall holders (they spot the holder on the centre path) are beaten; these tests are about the hall itself.
+  for (const id of ['h1_cadet', 'h1_challenger', 'h1_local']) s.flags['trainer.' + id] = true;
   s.world = Object.assign({ map: 'fb_hall_in', x: 7, y: 22, facing: 'up', respawn: 'fernbrook' }, world || {});
   return s;
 }
@@ -282,7 +284,8 @@ test('the mat warp still fires, and a non-hall step is one cell', async ({ page 
 
   await page.evaluate(() => PixelPets.goto('fernbrook', 22, 6, 'up'));
   await page.keyboard.press('ArrowUp');
-  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).toContain('latched');
+  // DAY1_TRIAL1_FLOW: June's deny line while Day 1 (the crates) is not done (FPT §2.1).
+  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).toContain('Tobin could use a hand with his crates first');
   expect(await page.evaluate(() => PixelPets.state.world.map)).toBe('fernbrook');
 });
 

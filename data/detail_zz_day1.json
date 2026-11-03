@@ -1,0 +1,1075 @@
+{
+ "spec": "DAY1_TRIAL1_FLOW v0.4 (handoff/specs/DAY1_TRIAL1_FLOW.md; Vincent, Nov 2, 2026; D1166-D1171, D1175) on FACTION_PICK_TIMING v0.2.4 Part A (design ffada0b; June's lines from story/drafts AFTER_TRIAL_PICK_ARC_SKETCH, PICK_ARC_OVERHAUL beats 0-13, AFTER_TRIAL_STORY_PASS).",
+ "_about": "Ours, not a design copy. Day 1 in Fernbrook (crates, Two Lights, Fen at dusk), Fen's go-home talk, Mom's ask, Lizzy's class, the three Trial Hall holders, the contested signs. objPatch edits existing objects by id after every overlay (game.js applyObjPatch); sceneTails and lineSwaps adjust built scenes without touching the design JSON. Save stays pixelpets.save.v2: every flag is a new story.* key, read only, nothing written at load.",
+ "_placeholders": {
+  "note": "PLACEHOLDER copy (Story to replace; OPEN_DECISIONS row D1186). June's approved lines are kept as written where FPT has them (crate replies, Fen with Russet, Two Lights beats 1-13, Fen at dusk, Hall door deny for !story.crates_seen).",
+  "paths": [
+   "scenes.crates_fen[2]",
+   "scenes.tl_choice[0]",
+   "scenes.tl_choice[5].choices[3]",
+   "scenes.fen_home",
+   "scenes.mom_class",
+   "scenes.lizzy_class",
+   "sceneTails.seal1",
+   "lineSwaps",
+   "lines",
+   "trainers",
+   "looks",
+   "slicePatch.maps.fernbrook.addObjs (signs)",
+   "objPatch.odile",
+   "objPatch.fb_burrsnout"
+  ]
+ },
+ "flags": {
+  "story.crate_a": "Part A: first crate tapped (Stack it / Listen at it)",
+  "story.crate_b": "second crate",
+  "story.crate_c": "third crate",
+  "story.lean_keep": "D1146: hidden lean counter, care and keeping (flavour only)",
+  "story.lean_fix": "D1146: hidden lean counter, fixing and output (flavour only)",
+  "story.tally_done": "Part A A4: Fen with Russet after the third crate; done flag of the `crates` row",
+  "story.tl_amos": "Two Lights TL-2: Amos's dark window and his ask; done flag of `tl_amos`",
+  "story.tl_cot": "Two Lights: Burrsnout's cot tapped in the dark (flavour)",
+  "story.tl_juniper": "Two Lights TL-3: Juniper's free lantern on the square",
+  "story.wick_done": "D1154: the wick was hung (one-shot; a spent wick can't reopen the errand)",
+  "story.tl_done": "Two Lights TL-4: the light choice; done flag of `tl_light`",
+  "story.crates_seen": "Part A A6: Fen at dusk. Day 1 is over (FPT §7 names it)",
+  "story.fen_sent_home": "A7 (D1166): Fen's potential and go-home talk; she leaves for the Keeper authorities",
+  "story.class_sent": "Mom's ask (D1167), or Fen's variant for a save that already finished Mahopac (R8)",
+  "story.lizzy_class": "Lizzy's class (D1168). Opens the Hall door (D1169) and brings Fen back to the Hall",
+  "story.post_trial_done": "D1175: the post-Trial quest slot. For now Fen's PLACEHOLDER line after the Seal sets it"
+ },
+ "lines": {
+  "fenCrew": "Three holders wait on the path first, {name}. Win all three, then come up to me."
+ },
+ "looks": {
+  "_note": "PLACEHOLDER looks (Story/Design). The cadet keeps the Keeper set (green coat, gold accent; rule 11). The other two wear no uniform.",
+  "h1_cadet": {
+   "skin": "3",
+   "hair": "short",
+   "hairCol": "d",
+   "outfit": "coat",
+   "outfitCol": "g",
+   "accent": "y"
+  },
+  "h1_challenger": {
+   "skin": "2",
+   "hair": "pony",
+   "hairCol": "o",
+   "outfit": "tunic",
+   "outfitCol": "c",
+   "accent": "w"
+  },
+  "h1_local": {
+   "skin": "5",
+   "hair": "bun",
+   "hairCol": "n",
+   "outfit": "vest",
+   "outfitCol": "o",
+   "accent": "g"
+  }
+ },
+ "trainers": {
+  "h1_cadet": {
+   "name": "Ash",
+   "title": "Keeper Cadet",
+   "map": "fb_hall_in",
+   "facing": "left",
+   "sight": 5,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "mole/0",
+     "level": 10
+    },
+    {
+     "form": "beetle/0",
+     "level": 11
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Cadet's honour: nobody reaches Master Fen without a proper match. Ready?",
+    "win": "Well rooted, {player}. The Keepers could use hands like yours.",
+    "lose": "Rest up and try again. The Hall isn't going anywhere."
+   }
+  },
+  "h1_challenger": {
+   "name": "Bryn",
+   "title": "Fernbrook Local",
+   "map": "fb_hall_in",
+   "facing": "left",
+   "sight": 5,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "moth/0",
+     "level": 11
+    },
+    {
+     "form": "beetle/0",
+     "level": 11
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Old Halls, old rules. My Walklings glow brighter under the new lamps. Watch!",
+    "win": "Huh. Bright isn't everything, I guess.",
+    "lose": "See? A little shine goes a long way."
+   }
+  },
+  "h1_local": {
+   "name": "Linden",
+   "title": "Orchard Hand",
+   "map": "fb_hall_in",
+   "facing": "left",
+   "sight": 6,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "mole/0",
+     "level": 11
+    },
+    {
+     "form": "moth/0",
+     "level": 12
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "No sides for me. I just pick apples and win matches. Mostly the apples.",
+    "win": "Go on up. Fen's been waiting for a holder like you.",
+    "lose": "Back to the orchard with you. Come again!"
+   }
+  }
+ },
+ "scenes": {
+  "crate_a": [
+   [
+    "choice",
+    "A Pomlet crate. What do you do?",
+    [
+     [
+      "Stack it",
+      [
+       [
+        "say",
+        "",
+        "Thunk. The crate goes up on the cart. Tobin's tally board clicks over: one more."
+       ],
+       [
+        "inc",
+        "story.lean_fix"
+       ]
+      ]
+     ],
+     [
+      "Listen at it",
+      [
+       [
+        "say",
+        "",
+        "Something small turns over inside and sighs. You stay until it settles."
+       ],
+       [
+        "inc",
+        "story.lean_keep"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.crate_a",
+    true
+   ],
+   [
+    "if",
+    "story.crate_a & story.crate_b & story.crate_c",
+    [
+     [
+      "run",
+      "crates_fen"
+     ]
+    ]
+   ]
+  ],
+  "crate_b": [
+   [
+    "choice",
+    "A Pomlet crate. What do you do?",
+    [
+     [
+      "Stack it",
+      [
+       [
+        "say",
+        "",
+        "Thunk. The crate goes up on the cart. Tobin's tally board clicks over: one more."
+       ],
+       [
+        "inc",
+        "story.lean_fix"
+       ]
+      ]
+     ],
+     [
+      "Listen at it",
+      [
+       [
+        "say",
+        "",
+        "Something small turns over inside and sighs. You stay until it settles."
+       ],
+       [
+        "inc",
+        "story.lean_keep"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.crate_b",
+    true
+   ],
+   [
+    "if",
+    "story.crate_a & story.crate_b & story.crate_c",
+    [
+     [
+      "run",
+      "crates_fen"
+     ]
+    ]
+   ]
+  ],
+  "crate_c": [
+   [
+    "choice",
+    "A Pomlet crate. What do you do?",
+    [
+     [
+      "Stack it",
+      [
+       [
+        "say",
+        "",
+        "Thunk. The crate goes up on the cart. Tobin's tally board clicks over: one more."
+       ],
+       [
+        "inc",
+        "story.lean_fix"
+       ]
+      ]
+     ],
+     [
+      "Listen at it",
+      [
+       [
+        "say",
+        "",
+        "Something small turns over inside and sighs. You stay until it settles."
+       ],
+       [
+        "inc",
+        "story.lean_keep"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.crate_c",
+    true
+   ],
+   [
+    "if",
+    "story.crate_a & story.crate_b & story.crate_c",
+    [
+     [
+      "run",
+      "crates_fen"
+     ]
+    ]
+   ]
+  ],
+  "crates_fen": [
+   [
+    "say",
+    "",
+    "Master Fen walks up the row. A Pomlet called Russet rides on her shoulder."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "Russet planted half this row herself. Her friends in those crates planted the rest."
+   ],
+   [
+    "if",
+    "story.lean_fix>=2",
+    [
+     [
+      "say",
+      "Tobin",
+      "Two up on the cart already! You're a natural packer."
+     ]
+    ],
+    [
+     [
+      "say",
+      "Tobin",
+      "More listening than stacking, huh? The tally can wait."
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.tally_done",
+    true
+   ],
+   [
+    "curtain",
+    "on"
+   ],
+   [
+    "say",
+    "",
+    "Evening comes to Fernbrook. The sky over the orchard turns plum, then dark."
+   ],
+   [
+    "curtain",
+    "off"
+   ]
+  ],
+  "tl_amos": [
+   [
+    "say",
+    "",
+    "The Lantern House window is dark. Someone is counting on a ladder."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "One wick, drowned. One storm, rude. One Loamlet, hurt. That's three problems, {name}."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "I call him Burrsnout. He digs under my beds and plants things. Thorn in his paw tonight."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "A Lantern House heals anyone who knocks. Rest is 5 Acorns. Short? Pay what you have."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "Wynne's stall has wicks. 8 Acorns. I'd go myself, but I can't leave the cot."
+   ],
+   [
+    "setFlag",
+    "story.tl_amos",
+    true
+   ]
+  ],
+  "tl_cot": [
+   [
+    "say",
+    "",
+    "Burrsnout tucks his paw away. In this dark, nobody can see the thorn."
+   ],
+   [
+    "setFlag",
+    "story.tl_cot",
+    true
+   ]
+  ],
+  "tl_juniper": [
+   [
+    "say",
+    "Associate Juniper",
+    "Hi hi! No light? Take a lantern. Free! It's on already. See?"
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "I know folk think we're all shiny talk. But a hurt Walkling shouldn't wait for a wick."
+   ],
+   [
+    "say",
+    "",
+    "Juniper skips off toward the Lantern House, lantern swinging."
+   ],
+   [
+    "setFlag",
+    "story.tl_juniper",
+    true
+   ]
+  ],
+  "tl_choice": [
+   [
+    "say",
+    "",
+    "Juniper's lantern glows on the counter. Keeper Amos looks at it for a long moment."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "...She's not wrong. A Lantern House can't be everywhere. That's the true part nobody likes."
+   ],
+   [
+    "say",
+    "",
+    "Every Walkling in the room turns toward the hill at once. Then back. {pet} too."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "They do that sometimes. Always toward the hill. I stopped asking why."
+   ],
+   [
+    "if",
+    "!bag:lantern_wick",
+    [
+     [
+      "say",
+      "Keeper Amos",
+      "Short on Acorns? Battle a little, sell a little. Acorns come back. Walklings don't."
+     ]
+    ]
+   ],
+   [
+    "choice",
+    "Which light stays on tonight?",
+    [
+     [
+      "Hang Amos's wick",
+      [
+       [
+        "take",
+        "lantern_wick",
+        1
+       ],
+       [
+        "setFlag",
+        "story.wick_done",
+        true
+       ],
+       [
+        "inc",
+        "story.lean_keep"
+       ],
+       [
+        "say",
+        "Keeper Amos",
+        "Slow light. Warm light. It'll still be burning when the lamp folk go home."
+       ],
+       [
+        "run",
+        "tl_end"
+       ]
+      ],
+      null,
+      [
+       "bag:lantern_wick",
+       "!story.wick_done"
+      ]
+     ],
+     [
+      "Keep Juniper's lantern",
+      [
+       [
+        "inc",
+        "story.lean_fix"
+       ],
+       [
+        "say",
+        "Associate Juniper",
+        "Yay! See, Keeper Amos? A bright light is kind too. Have a bright night, little thorn-paw!"
+       ],
+       [
+        "run",
+        "tl_end"
+       ]
+      ]
+     ],
+     [
+      "Let {pet} choose",
+      [
+       [
+        "say",
+        "",
+        "{pet} sniffs both lights, then curls up between them, one ear toward each."
+       ],
+       [
+        "run",
+        "tl_end"
+       ]
+      ]
+     ],
+     [
+      "I'll fetch a wick first",
+      [
+       [
+        "say",
+        "Keeper Amos",
+        "Wynne's stall, east end of the square. I'll keep the cot warm."
+       ]
+      ],
+      null,
+      [
+       "!bag:lantern_wick"
+      ]
+     ]
+    ]
+   ]
+  ],
+  "tl_end": [
+   [
+    "say",
+    "",
+    "In the light, the thorn shows. {pet} noses it, and it slides right out."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "Bed's yours tonight, helper. Fen's waiting in the orchard first. She wants a word."
+   ],
+   [
+    "setFlag",
+    "story.tl_done",
+    true
+   ]
+  ],
+  "fen_dusk": [
+   [
+    "say",
+    "Master Fen",
+    "The Hall opens in the morning. Show me what you two know first. The crates can wait a day."
+   ],
+   [
+    "say",
+    "",
+    "You bed down at the Lantern House. {pet} curls up by the window."
+   ],
+   [
+    "curtain",
+    "on"
+   ],
+   [
+    "rest"
+   ],
+   [
+    "setFlag",
+    "story.crates_seen",
+    true
+   ],
+   [
+    "run",
+    "fen_home"
+   ]
+  ],
+  "fen_home": [
+   [
+    "curtain",
+    "on"
+   ],
+   [
+    "say",
+    "",
+    "Morning comes to Fernbrook. Mist sits low over the orchard."
+   ],
+   [
+    "curtain",
+    "off"
+   ],
+   [
+    "say",
+    "Master Fen",
+    "{name}. I watched you with those crates, and with Amos. You and {pet} have real potential."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "But word came in the night. Disturbances, out in the Amberwild. Walklings acting strange."
+   ],
+   [
+    "say",
+    "Master Fen",
+    "I'm off to see the Keeper authorities about readying holders for it. The Hall stays shut."
+   ],
+   [
+    "if",
+    "story.dream_woke | story.dream_study",
+    [
+     [
+      "say",
+      "Master Fen",
+      "Go home for now. While you're there, sit in on Lizzy's class at the Schoolhouse."
+     ],
+     [
+      "setFlag",
+      "story.class_sent",
+      true
+     ]
+    ],
+    [
+     [
+      "say",
+      "Master Fen",
+      "Go home for now. Your mom will be glad to see you. I'll send word when the Hall is ready."
+     ]
+    ]
+   ],
+   [
+    "say",
+    "",
+    "Master Fen sets off up the road, Russet riding on her shoulder."
+   ],
+   [
+    "setFlag",
+    "story.fen_sent_home",
+    true
+   ]
+  ],
+  "mom_class": [
+   [
+    "say",
+    "Mom",
+    "One more thing, love. Lizzy's teaching a class at the Schoolhouse. Go and sit in."
+   ],
+   [
+    "say",
+    "Mom",
+    "She'll tell you how things stand between the Keepers and Glimmerwell. Better from her than from a sign."
+   ],
+   [
+    "setFlag",
+    "story.class_sent",
+    true
+   ]
+  ],
+  "lizzy_class": [
+   [
+    "if",
+    "!story.lizzy_met",
+    [
+     [
+      "run",
+      "lizzy_intro"
+     ]
+    ]
+   ],
+   [
+    "say",
+    "",
+    "Lizzy's class is in full swing. Pip and Wren sit at their desks. You slip in at the back."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Today's question: who looks after the Amberwild? There are two loud answers."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "The Keepers say rest and care come first. Lantern Houses, slow growing, every bed full."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Glimmerwell says brighter and faster. Free lanterns, clean energy, quarterly targets."
+   ],
+   [
+    "say",
+    "Pip",
+    "My uncle says Glimmerwell lamps make Walklings sleepy."
+   ],
+   [
+    "say",
+    "Wren",
+    "My mom works for Glimmerwell. They fixed our roof!"
+   ],
+   [
+    "say",
+    "Lizzy",
+    "See? Both help someone. Towns like Fernbrook sit right between them, and argue it every night."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "{name}, Master Fen is back in Fernbrook. Her Trial Hall is open. Go show her what you've learned."
+   ],
+   [
+    "setFlag",
+    "story.lizzy_class",
+    true
+   ]
+  ]
+ },
+ "sceneTails": {
+  "_note": "Appended to built scenes at boot (game.js). mom_wake: Mom's ask (Q13). seal1: D1175's PLACEHOLDER Fen line.",
+  "mom_wake": [
+   [
+    "if",
+    "story.fen_sent_home & !story.class_sent",
+    [
+     [
+      "run",
+      "mom_class"
+     ]
+    ]
+   ]
+  ],
+  "seal1": [
+   [
+    "say",
+    "Master Fen",
+    "When you're ready, {name}, come to the orchard gate. Fernbrook has a question for you."
+   ],
+   [
+    "setFlag",
+    "story.post_trial_done",
+    true
+   ]
+  ]
+ },
+ "lineSwaps": [
+  {
+   "scene": "orchard",
+   "when": "story.seal1",
+   "text": "Thank you, truly. The Hall is open. Come when you're ready, and bring your best.",
+   "to": [
+    [
+     "say",
+     "Master Fen",
+     "Thank you, truly. Look at them climb. The orchard remembers its friends."
+    ]
+   ]
+  },
+  {
+   "scene": "know_us",
+   "when": "story.seal1",
+   "text": "{name}. You stood with us. Before any trial, get to know us.",
+   "to": [
+    [
+     "say",
+     "Master Fen",
+     "{name}. You stood with us. Now come and get to know us."
+    ]
+   ]
+  },
+  {
+   "scene": "know_us",
+   "when": "story.seal1",
+   "text": "We keep by going to look. A Hall ribbon can wait until we know who is missing.",
+   "to": [
+    [
+     "say",
+     "Master Fen",
+     "We keep by going to look. Your Seal is a start. Now help us find who is missing."
+    ]
+   ]
+  },
+  {
+   "scene": "know_us@glimmer",
+   "when": "story.seal1",
+   "text": "{name}! Welcome, partner. Before the tour, get to know us.",
+   "to": [
+    [
+     "say",
+     "Associate Juniper",
+     "{name}! Welcome, partner. First, get to know us."
+    ]
+   ]
+  },
+  {
+   "scene": "orchard@glimmer",
+   "when": "story.seal1",
+   "text": "Go on. Come to the Hall if you must. I'll stand for the orchard there.",
+   "to": [
+    [
+     "say",
+     "Master Fen",
+     "Go on, then. You won my Seal fairly. I hope you remember how."
+    ]
+   ]
+  },
+  {
+   "scene": "orchard@glimmer",
+   "when": "story.seal1",
+   "text": "Fen walks to the Hall without looking back. The cart rolls off toward the pavilion.",
+   "to": [
+    [
+     "say",
+     "",
+     "Fen walks back to the Hall without looking back. The cart rolls off toward the pavilion."
+    ]
+   ]
+  },
+  {
+   "scene": "orchard@glimmer",
+   "when": "story.seal1",
+   "text": "Great work! Head to the Hall for your partnership review. Have a bright day!",
+   "to": [
+    [
+     "say",
+     "Tobin",
+     "Great work! Your partnership file is open. Have a bright day!"
+    ]
+   ]
+  }
+ ],
+ "slicePatch": {
+  "maps": {
+   "fernbrook": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "fb_tobin",
+      "name": "Tobin",
+      "look": "associate",
+      "x": 9,
+      "y": 14,
+      "facing": "up",
+      "when": [
+       "!story.side_pick_done",
+       "!story.orchard_cleared"
+      ],
+      "lines": {
+       "!story.tally_done": "Twelve crates by sundown. You've got hands. Want to help? Tap a crate.",
+       "else": "Tally's looking good. Have a bright day!"
+      },
+      "_note": "FPT A3: Tobin with his tally board (no battle before the pick). fern_associate (the battle) waits for the pick (fernbrook_rooms.json)."
+     },
+     {
+      "kind": "prop",
+      "id": "fb_crate_c",
+      "x": 13,
+      "y": 16,
+      "sprite": "crate",
+      "when": [
+       "!story.orchard_cleared"
+      ],
+      "lines": {
+       "!story.side_pick_done & !story.crate_c": "@crate_c",
+       "else": "Tobin's chalk mark on the lid: counted."
+      }
+     },
+     {
+      "kind": "trigger",
+      "id": "fb_tl_juniper",
+      "x": 5,
+      "y": 7,
+      "r": 2,
+      "when": [
+       "!story.side_pick_done",
+       "!story.orchard_cleared",
+       "story.tl_amos",
+       "!story.tl_juniper"
+      ],
+      "scene": "tl_juniper",
+      "_note": "TL-3: on the square, on the way out of the Lantern House (its door is 5,5)."
+     },
+     {
+      "kind": "trigger",
+      "id": "fb_fen_road",
+      "x": 1,
+      "y": 8,
+      "r": 1,
+      "when": [
+       "!story.side_pick_done",
+       "!story.orchard_cleared",
+       "story.crates_seen",
+       "!story.fen_sent_home"
+      ],
+      "scene": "fen_home",
+      "_note": "A7 fallback: a save that stops between Fen at dusk and her morning talk hears it at the west road."
+     },
+     {
+      "kind": "sign",
+      "id": "fb_sign_keepers",
+      "x": 7,
+      "y": 7,
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "text": "KEEPER NOTICE · Rest is 5 Acorns at the Lantern House. Empty pockets sleep free. — Amos"
+     },
+     {
+      "kind": "sign",
+      "id": "fb_sign_glimmer",
+      "x": 18,
+      "y": 7,
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "text": "GLIMMERWELL CO. · Free lanterns at the stand! Fernbrook, brighter by nature."
+     },
+     {
+      "kind": "sign",
+      "id": "fb_sign_meeting",
+      "x": 20,
+      "y": 9,
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "text": "TOWN NOTICE · Who keeps Fernbrook? Meeting on the square at sundown. Both sides speak."
+     },
+     {
+      "kind": "sign",
+      "id": "fb_sign_orchard",
+      "x": 7,
+      "y": 9,
+      "when": [
+       "!story.side_pick_done | !story.seal1"
+      ],
+      "text": "ORCHARD · Keepers say: let them root. Glimmerwell says: crates by Friday. Tobin says: both?"
+     },
+     {
+      "kind": "sign",
+      "id": "fb_sign_held_k",
+      "x": 20,
+      "y": 9,
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "!story.side=glimmer"
+      ],
+      "text": "FERNBROOK · A Keeper town. The Lantern House door is always open."
+     },
+     {
+      "kind": "sign",
+      "id": "fb_sign_held_g",
+      "x": 20,
+      "y": 9,
+      "when": [
+       "story.side_pick_done",
+       "story.seal1",
+       "story.side=glimmer"
+      ],
+      "text": "FERNBROOK · A Glimmerwell Co. partner town. Have a bright day!"
+     }
+    ]
+   }
+  }
+ },
+ "objPatch": {
+  "_note": "game.js applyObjPatch, after every overlay. A missing id is skipped (hm_lizzy_pre, room_lizzy and hm_buddy_pre arrive with #258).",
+  "mom": {
+   "linesBefore": {
+    "anchorKey": "!story.dream_study",
+    "add": {
+     "story.fen_sent_home & !story.class_sent": "@mom_class"
+    }
+   }
+  },
+  "school_lizzy": {
+   "when": [
+    "story.lizzy_met | story.class_sent"
+   ],
+   "linesFirst": {
+    "story.class_sent & !story.lizzy_class": "@lizzy_class"
+   },
+   "scheduleFirst": [
+    {
+     "when": "story.class_sent & !story.lizzy_class",
+     "map": "hm_school_in",
+     "x": 10,
+     "y": 3,
+     "facing": "down",
+     "lines": "teaching",
+     "state": "work",
+     "place": "Schoolhouse"
+    }
+   ]
+  },
+  "school_buddy": {
+   "when": [
+    "story.lizzy_met | story.class_sent"
+   ]
+  },
+  "school_kid_a": {
+   "scheduleFirst": [
+    {
+     "when": "story.class_sent & !story.lizzy_class",
+     "map": "hm_school_in",
+     "x": 2,
+     "y": 4,
+     "facing": "left",
+     "lines": "at desks",
+     "state": "school",
+     "place": "Schoolhouse"
+    }
+   ]
+  },
+  "school_kid_b": {
+   "scheduleFirst": [
+    {
+     "when": "story.class_sent & !story.lizzy_class",
+     "map": "hm_school_in",
+     "x": 2,
+     "y": 4,
+     "facing": "left",
+     "lines": "at desks",
+     "state": "school",
+     "place": "Schoolhouse"
+    }
+   ]
+  },
+  "hm_lizzy": {
+   "whenAdd": [
+    "!story.class_sent | story.lizzy_class"
+   ]
+  },
+  "hm_buddy": {
+   "whenAdd": [
+    "!story.class_sent | story.lizzy_class"
+   ]
+  },
+  "hm_lizzy_pre": {
+   "whenAdd": [
+    "!story.class_sent | story.lizzy_class"
+   ]
+  },
+  "hm_buddy_pre": {
+   "whenAdd": [
+    "!story.class_sent | story.lizzy_class"
+   ]
+  },
+  "juniper": {
+   "whenAdd": [
+    "!story.tl_juniper | story.tl_done"
+   ]
+  },
+  "fb_tour1": {
+   "whenAdd": [
+    "!story.crates_seen"
+   ]
+  },
+  "fb_tour2": {
+   "whenAdd": [
+    "!story.crates_seen"
+   ]
+  },
+  "fb_tour3": {
+   "whenAdd": [
+    "!story.crates_seen"
+   ]
+  },
+  "fb_wynne": {
+   "shopAdd": [
+    "lantern_wick"
+   ]
+  },
+  "odile": {
+   "linesFirst": {
+    "!story.side_pick_done | !story.seal1": "Keepers or Glimmerwell? Half the town argues it every night. I just want my apples picked."
+   }
+  }
+ }
+}

@@ -19,6 +19,11 @@
       "base": 50
     },
     {
+      "name": "Ash",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
       "name": "Associate Hollis",
       "faction": "glimmer",
       "base": 50
@@ -257,6 +262,11 @@
       "base": 50
     },
     {
+      "name": "Bryn",
+      "faction": "none",
+      "base": 50
+    },
+    {
       "name": "Cadet Arlo",
       "faction": "keepers",
       "base": 50
@@ -283,6 +293,11 @@
     },
     {
       "name": "Lark",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Linden",
       "faction": "none",
       "base": 50
     },
