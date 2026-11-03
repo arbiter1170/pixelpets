@@ -2090,7 +2090,7 @@ const HOUSE_SKINS = {
   hc_apt: hcSkin('floor_pile', 'wall_peach', 'mat_room', { weights: [0.22, 0.18], remap: { '=': 'rug_room' }, wall: wallRow('mhdpdomdocsm') }),
   hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop', { wall: wallRow('swbcbwmmbswh') }),
   hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz', { wall: wallRow('rypwhbdmncsr') }),
-  // BRINEWICK. Plank, rope, brass and sea blue; the depot is the one mint-and-graphite room. Wall rows are unique to each room.
+  // BRINEWICK. Plank, rope, brass and sea blue; the depot is the one wine-and-graphite room. Wall rows are unique to each room.
   bw_lantern: hcSkin('floor_ropeplank', 'wall_brine_rest', 'mat_brine_rest', { remap: { '=': 'rug_navy_runner' }, wall: wallRow('nbdwhnnFdcsn') }),
   bw_store: hcSkin('floor_tarboard', 'wall_chandler', 'mat_chandler', { wall: wallRow('mhdhKFFdFcsF') }),
   bw_hall: hcSkin('floor_ferrydeck', 'wall_ferry', 'mat_ferry', { decal: { q: 'deck_lane' }, walk: { q: 1 }, wall: wallRow('ncdwhrrdnswn') }),
@@ -2276,9 +2276,9 @@ function buildWorldArt(){
   A.basket_empty = mkTile(g => { wicker(g); px(g,PAL.d,3,7,10,2); px(g,PAL.w,10,3,4,4); px(g,PAL.h,11,6,3,1); });
   A.wall_lantern = [0,1].map(f => mkTile(g => { px(g,PAL.d,7,0,2,3); px(g,PAL.d,5,3,6,1); px(g,PAL.y,5,4,6,8); px(g,PAL.d,6,5,4,6); px(g,PAL.o,7,7-f,2,3+f); px(g,PAL.y,7,8,2,1+f); px(g,PAL.d,5,12,6,1); }));
   A.floor_lantern = [0,1].map(f => mkTile(g => { oval(g,7.5,4.5,6+f,4+f,'rgba(255,205,117,.25)'); px(g,PAL.d,7,8,2,7); px(g,PAL.d,4,15,8,1); px(g,PAL.y,5,1,6,7); px(g,PAL.d,6,2,4,5); px(g,PAL.o,7,4-f,2,3+f); px(g,PAL.y,7,5,2,1); }));
-  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'l'],[7,'s'],[11,'l']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.V,1,7,14,1); });
+  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'V'],[7,'s'],[11,'V']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.V,1,7,14,1); });
   A.crate = mkTile(g => { px(g,PAL.d,1,3,14,13); px(g,PAL.o,2,4,12,11); px(g,PAL.d,2,9,12,1); for (let i=0;i<11;i++) px(g,PAL.d,2+i,4+i,1,1); px(g,PAL.y,3,5,1,1); });
-  // Rook's Crossroads: a sealed quarry crate. Mint band, three air holes, one glow. Original; the orchard crate stays A.crate.
+  // Rook's Crossroads: a sealed quarry crate. Wine band, three air holes, one glow. Original; the orchard crate stays A.crate.
   A.rc_crate = mkTile(g => {
     px(g,PAL.d,2,3,12,12); px(g,PAL.o,3,4,10,10); px(g,PAL.d,3,3,10,1);
     px(g,PAL.V,3,8,10,2);
@@ -2312,8 +2312,8 @@ function buildWorldArt(){
     px(g,PAL.d,6,5,7,9); px(g,PAL.m,7,6,5,7); px(g,PAL.h,7,6,2,2);
     px(g,PAL.d,12,9,3,5); px(g,PAL.h,12,10,2,2); });
   A.comfort_lamp = [0, 1].map(f => mkTile(g => {
-    px(g,PAL.l,4,2,1,1); px(g,PAL.l,11,3,1,1); px(g,PAL.l,3,6,1,1); px(g,PAL.l,12,5,1,1);
-    px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.l,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
+    px(g,PAL.V,4,2,1,1); px(g,PAL.V,11,3,1,1); px(g,PAL.V,3,6,1,1); px(g,PAL.V,12,5,1,1);
+    px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.V,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
     px(g,PAL.Q,1,1,1,1); px(g,PAL.Q,14,1,1,1); px(g,PAL.Q,1,12,1,1); px(g,PAL.Q,14,10,1,1);
   }));
   // The Signal Review. Wine relay ring, the Capital screen face, and the loaned crate. PAL only. The ring stays off the maps.
@@ -2377,7 +2377,7 @@ function buildWorldArt(){
   });
   A.stage_bunting = mkTile(g => {
     px(g,PAL.d,2,2,1,14); px(g,PAL.d,13,2,1,14); px(g,PAL.m,2,2,12,1);
-    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.l : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.l, x, 5, 2, 2); }
+    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.V : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.V, x, 5, 2, 2); }
   });
   A.miner_lamps = mkTile(g => {
     px(g,PAL.o,1,3,14,2); px(g,PAL.d,1,5,14,1); px(g,PAL.o,1,12,14,2);
