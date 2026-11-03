@@ -6,7 +6,7 @@ Target path: `handoff/specs/DAY1_TRIAL1_FLOW.md` (PUBLIC repo; not `docs/`). Spe
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.3, Mon Nov 2, 2026: v0.2 (merged in #255) plus Vincent's 5:41 PM ET amendment of D1170 (R3 below; main `OPEN_DECISIONS.md` "NEW DIRECTION Nov 2", #259): the Trial Hall roster before Fen is mixed, and the Hall sign drops "A Keepers' Hall". v0.2 was v0.1 plus Vincent's 5:03 and 5:05 PM ET rulings (R9-R12, PRs #256 and #257). |
+| Status | v0.4, Mon Nov 2, 2026: v0.3 plus the build (claude/day1-trial1-build-gtkcop, Slices 3-8b in one PR) and Vincent's answers to its slice-0 questions: D1175 (a post-Trial quest slot before the pick), the pick keeps the built scene and only moves its trigger, all of FPT Part A, Lizzy's diner and court rows stay, the three holders are in. §16 lists where the build differs from §1-§15. v0.3 added the 5:41 PM ET amendment of D1170. |
 | Brief | `handoff/claude_briefs/DAY1_TRIAL1_FLOW_BRIEF_2026-11-02.md` on `pr252` (`chief/decisions-2026-11-02`, fadb984), SLICE 1 section |
 | Rulings | pr252 `OPEN_DECISIONS.md` "NEW DIRECTION Nov 2, 3:55 PM (Vincent)"; Open rows D1144-D1148, D1153-D1157; pr252 `archive/DECISIONS_SETTLED.md` "Mon Nov 2, 2026: Vincent's rulings" (D1141-D1143, D1149-D1152 settled 2:35 PM ET) |
 | Vincent's rulings in this session | R1-R8, Mon Nov 2, 2026, ~4:20 PM ET, Vincent, in this Claude Code session (table below). SETTLED direction. |
@@ -324,3 +324,27 @@ Merge order of what exists: **#253 (OR gate) -> `pd` (partner day, Vincent's int
 | 10 | `claude/day1-trial1-qa` | no | 2-8b | walklings-qa-run on a1, a2, b, b', c, p, n, fresh, Mahopac done, Lizzy-opening-only at 320, 375, 390 |
 
 The `applyCheckpoint` fix (§11) ships with Slice 4a, the first slice whose checkpoints would otherwise build the wrong save.
+
+## 16. Build notes (v0.4: claude/day1-trial1-build-gtkcop)
+
+Vincent's answers to the slice-0 questions (Mon Nov 2, 2026, relayed in this session): (1) keep the built `side_pick` scene and move only its trigger; a new step `post_trial` after `hall1` (D1175) gates the pick, and for now Fen's PLACEHOLDER line after the Seal sets `story.post_trial_done`; a Glimmer pick also gets the Tier 1 lanyard; the Tour stops on new saves; FPT Parts C and D stay out. (2) All of FPT Part A. (3) Lizzy's diner and court rows stay; the class still runs whenever its step is active. (4) The three holders are in. (5) Merge main in after #249 and #258 land; the Chief of Staff (Morgan) reviews and merges.
+
+| Spec item | Built as | Why |
+|---|---|---|
+| §4 chain | `crates` (done `story.tally_done`), `tl_amos`, `tl_light`, `fen_dusk` (done `story.crates_seen`), `fen_home`, `home_trip`, `mom_class`, `lizzy_class`, `orchard`, `hall1_holders`, `hall1`, **`post_trial`**, **`pick`** (done `story.side_pick_done`), then `teaser` | Part A has four pointers, not one, so the cue always points at the next beat (D1188). `post_trial` is D1175. `pick` points at the orchard gate (nothing pointed there once the orchard row stopped doing it) |
+| §4 `home_trip` done | `story.fen_sent_home` **and** `story.dream_woke \| story.dream_study` | doneMask makes a later row imply every row before it; with the OR alone, a save that did Mahopac first skipped all of Day 1 (caught by `tests/day1_save_kinds.spec.js` kind `mahopac_done`) |
+| §4 `orchard` | `when: ['story.side_pick_done']`, **`noImply`**, same position | Seal 1 no longer implies it, so after a Keepers pick the cue points at Tobin's battle after the Heights (D1187) |
+| §4 `hall1_keepers` | `hall1_holders` | v0.3 rename |
+| §6 Fen | No `fen_morning` npc: Fen's orchard body (`fen_orchard`, overlay) carries the line keys that run `fen_dusk` and then `fen_home`; the west-road trigger `fb_fen_road` is the fallback. `whereNow('Master Fen')` reads "away on Keeper business" between the talk and the class | Same tile, one body (D1188) |
+| §6 Mom, Lizzy, kids | Edited by id through `objPatch` in `data/detail_zz_day1.json` (applied after every overlay), so the same rows land on #258's Mom downstairs and its morning Lizzy (`hm_lizzy_pre`) once it merges; a missing id is skipped | Works on main and on #258 without a second copy |
+| §6 `npc` field | `npc` + optional `npcIds` on a step; `liveStep` resolves it (schedule rows for scheduled people, else the present body by name or id, this map first); `questCurrent` now goes through `liveStep` | Slice 3 in this PR; `tests/quest_npc_where.spec.js` checks every hour of a weekday, a Saturday and a Sunday |
+| §7 deny | Keyed `deny` object (`denyLine`, game.js) | Q10 default |
+| §8 holders | `h1_local` (9,20), `h1_challenger` (5,14), `h1_cadet` (9,10) beside the centre path, sight 4; Ash (Keeper Cadet), Bryn (Fernbrook Local), Linden (Orchard Hand); L10-12, two Walklings each. Fen's panel and walk-up wait for all three (`hallCrewDone`) | All copy and looks PLACEHOLDER (D1186). No prop moved, no layout change |
+| §9 flip | `matchHold` reads `k=v`; Fernbrook rules `glimmer`/`keepers` on `story.side_pick_done` + `story.seal1` + the side, before `split`; validator asserts both | As specified (read, Q7 default). Contested signs (`fb_sign_keepers`, `_glimmer`, `_meeting`, `_orchard`) show while `!story.side_pick_done \| !story.seal1`; one held sign after |
+| Part A, Two Lights | Crate taps on `fb_crate_a/b/c`; Tobin is the tally npc `fb_tobin` before the pick and the battle `fern_associate` after it; TL-2 and TL-4 are walk-in triggers inside the Lantern House; the wick is a new key item `lantern_wick` (8 Acorns at Wynne's) read by the new cond `bag:<id>` and used up by a new step `take` | D1154; staging notes are D1188 |
+| Stale lines after the move | Seven built lines that say "before any trial" or "head to the Hall" swap to Seal-1 versions (`lineSwaps`), PLACEHOLDER | D1186 |
+| Glimmer pick | `side_pick`'s Glimmer branch gains `["if", "story.seal1", [["seal", "seal_glim_1"]]]`; `seal1@glimmer` also sets `story.post_trial_done` (the boot check wants every flag of the base scene) | D1150 |
+
+Tests: `tests/day1_flow.spec.js` (the flow, the R8 variant, the Keepers pick, copy limits, reduced motion), `tests/quest_npc_where.spec.js` (every hour), `tests/day1_save_kinds.spec.js` (§5 kinds, slips, deny lines, the clean-build no-write proof, checkpoints). Updated: `faction_or_gate` (the gate cells this flow moves on purpose), `debug_mode` (the `hall1` checkpoint is a new-flow save), `map` (Fernbrook flips for a picked save with Seal 1).
+
+Not built: FPT Parts B (Fen's pre-pick intro), C (pitches) and D (cart, last night); the trimmed `know_us` beats and Heights door triggers; town steering beyond Fernbrook (D1173, red).

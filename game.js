@@ -3828,6 +3828,31 @@ function applyMapPatch(W, patch){
     for (const o of pt.addObjs || []) m.objs.push(JSON.parse(JSON.stringify(o)));
   }
 }
+// DAY1_TRIAL1_FLOW (Vincent, Nov 2, 2026): small edits to existing objects by id, on whatever map holds them, after every
+// overlay (so a verbatim design object and an object another overlay moves are patched alike; a missing id is skipped).
+// { id: { when: [...] (replace), whenAdd: [...], linesBefore: { anchorKey, add: { key: line } }, linesFirst: {...},
+//         scheduleFirst: [rows], shopAdd: [ids] } }. linesBefore without its anchor lands before `else`.
+function applyObjPatch(W, patch){
+  for (const [id, pt] of Object.entries(patch || {})) {
+    if (id[0] === '_') continue;
+    for (const m of Object.values(W)) for (const o of (m && m.objs) || []) {
+      if (!o || o.id !== id) continue;
+      const P = JSON.parse(JSON.stringify(pt));
+      if (P.when) o.when = P.when;
+      if (P.whenAdd) o.when = [].concat(o.when || [], P.whenAdd);
+      if (P.linesFirst) o.lines = Object.assign({}, P.linesFirst, o.lines || {});
+      if (P.linesBefore && o.lines) {
+        const out = {}, anchor = P.linesBefore.anchorKey in o.lines ? P.linesBefore.anchorKey : 'else';
+        let put = false;
+        for (const [k, v] of Object.entries(o.lines)) { if (k === anchor && !put) { Object.assign(out, P.linesBefore.add); put = true; } out[k] = v; }
+        if (!put) Object.assign(out, P.linesBefore.add);
+        o.lines = out;
+      }
+      if (P.scheduleFirst && Array.isArray(o.schedule)) o.schedule = P.scheduleFirst.concat(o.schedule);
+      if (P.shopAdd && Array.isArray(o.shop)) for (const it of P.shopAdd) if (o.shop.indexOf(it) < 0) o.shop.push(it);
+    }
+  }
+}
 const WORLD = (() => {
   const W = JSON.parse(JSON.stringify(MD.maps_slice.maps));
   applyMapPatch(W, MD.interiors.slicePatch);
@@ -3864,6 +3889,7 @@ const WORLD = (() => {
     applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
   }
   if (MD.rook_crossroads) applyMapPatch(W, MD.rook_crossroads.slicePatch);   // Rook's Crossroads: objects only, after detail so the crates stay
+  for (const k of DETAIL_KEYS) if (MD[k].objPatch) applyObjPatch(W, MD[k].objPatch);   // DAY1_TRIAL1_FLOW: last, so every overlay's copy is the one patched
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -3878,6 +3904,16 @@ if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
 if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
 SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
 for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
+// DAY1_TRIAL1_FLOW: a detail file may append steps to a built scene (`sceneTails`, e.g. Mom's ask after mom_wake) or wrap one
+// built line so a condition swaps it (`lineSwaps`: { scene, text, when, to }). The design JSON stays verbatim.
+for (const k of DETAIL_KEYS) {
+  for (const [id, tail] of Object.entries(MD[k].sceneTails || {})) if (SCENES[id] && id[0] !== '_') SCENES[id] = SCENES[id].concat(JSON.parse(JSON.stringify(tail)));
+  for (const sw of MD[k].lineSwaps || []) {
+    const steps = SCENES[sw.scene]; if (!steps) continue;
+    const at = steps.findIndex(st => Array.isArray(st) && st[0] === 'say' && st[2] === sw.text);
+    if (at >= 0) { const copy = steps.slice(); copy[at] = ['if', sw.when, JSON.parse(JSON.stringify(sw.to)), [steps[at]]]; SCENES[sw.scene] = copy; }
+  }
+}
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 // HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
 for (const k of DETAIL_KEYS) if (MD[k].trainers) for (const [id, t] of Object.entries(MD[k].trainers)) { if (t && Array.isArray(t.team) && t.team.some(m => !BASE_STATS[m && m.form])) continue; TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t); }
@@ -3893,6 +3929,15 @@ for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_B
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
 // The first trial (Keepers Hall, or the glimmer Tour's hall panel) waits on Fernbrook Heights, unless this save already earned Seal 1.
+// DAY1_TRIAL1_FLOW §8 (D1170 as amended): three holders stand in the Trial Hall before Fen. Fen waits until all three are
+// beaten, unless this save already has Seal 1 (either Seal) or plays Glimmerwell (the old Tour path).
+const HALL1_CREW = ['h1_cadet', 'h1_challenger', 'h1_local'];
+function hallCrewDone(){
+  if (!S) return false;
+  if (S.flags['story.seal1'] || (S.seals && (S.seals.seal_fernbrook || S.seals.seal_glim_1)) || side() === 'glimmer') return true;
+  return HALL1_CREW.every(id => !TRAINERS[id] || S.flags['trainer.' + id]);
+}
+const day1Line = (k, d) => (MD.detail_zz_day1 && MD.detail_zz_day1.lines && MD.detail_zz_day1.lines[k]) || d;
 function trialReady(){
   if (!S) return false;
   if (S.flags['story.heights_done'] || S.flags['story.seal1']) return true;
@@ -3937,7 +3982,7 @@ function condKeyOk(c){
     const part = raw.trim();
     if (!part || part === 'else' || part === 'talked' || part === 'has:name') return !!part;
     const s = part[0] === '!' ? part.slice(1) : part;
-    return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s.startsWith('seal:') || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
+    return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s.startsWith('seal:') || /^bag:[a-z0-9_]+$/.test(s) || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
   });
 }
 function glimmerDevCheck(){
@@ -4683,6 +4728,7 @@ function cond(c, live, o){
   let v;
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
+  else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
@@ -4940,7 +4986,38 @@ wireSchedules();
   const bren = town && (town.objs || []).find(o => o.id === 'hm_patrol');
   if (bren && !bren.when) bren.when = ['!time:1200-1300'];
 })();
+// DAY1_TRIAL1_FLOW (Vincent, Nov 2, 2026): a step with `npc` points at that person's body where it stands now, so the
+// holder never hunts. A scheduled person (SCHED rows) uses placedRow; anyone else is found by name (or `npcIds`) among the
+// bodies present in WORLD, this map first. The step's own target stays the fallback. Read only; nothing is saved.
+const npcSpotCache = new Map();   // name|ids|map -> { t, mid, o }: which body, re-read for its live tile (the cue runs every frame)
+const NPC_SPOT_MS = 400;
+function npcSpot(name, ids){
+  if (!name || !S) return null;
+  if (!ids && SCHED[name] && SCHED[name].rows) { const r = placedRow(name); return r ? { map: r.map, x: r.x, y: r.y, place: r.place || CLOCK_PLACE[r.map] || null } : null; }
+  const key = name + '|' + (ids || []).join(',') + '|' + (CUR ? CUR.id : ''), t = performance.now();
+  let hit = npcSpotCache.get(key);
+  if (!hit || t - hit.t > NPC_SPOT_MS || (hit.o && !present(hit.o))) {
+    hit = { t, mid: null, o: null };
+    for (const [mid, m] of Object.entries(WORLD)) {
+      for (const o of (m && m.objs) || []) {
+        if (!o || o.kind !== 'npc' || (ids ? ids.indexOf(o.id) < 0 : o.name !== name) || !present(o)) continue;
+        if (!hit.o || (CUR && mid === CUR.id)) { hit.mid = mid; hit.o = o; }
+        if (CUR && mid === CUR.id) break;
+      }
+      if (hit.o && CUR && hit.mid === CUR.id) break;
+    }
+    npcSpotCache.set(key, hit);
+  }
+  if (!hit.o) return null;
+  const at = CUR && hit.mid === CUR.id ? objPos(hit.o) : (schedPos(hit.o) || hit.o);
+  return { map: hit.mid, x: at.x, y: at.y, place: null };
+}
 function liveStep(step){
+  if (step && step.npc) {
+    const spot = npcSpot(step.npc, step.npcIds);
+    if (spot) return Object.assign({}, step, { target: { map: spot.map, x: spot.x, y: spot.y } });
+    return step;
+  }
   if (!step || step.id !== 'leak_ask') return step;
   const spot = placedRow('Lizzy');
   if (!spot || spot.map !== 'hm_school_in') return step;
@@ -5165,6 +5242,8 @@ function liveContactSpot(name){
 }
 function whereNow(name){
   if (name === 'Mom' || name === 'Dad') return wherePack('home', 'home', 'fixed');
+  // DAY1_TRIAL1_FLOW (D1166): after her go-home talk Fen is away with the Keeper authorities until Lizzy's class is done.
+  if (name === 'Master Fen' && S && S.flags['story.fen_sent_home'] && !S.flags['story.lizzy_class']) return wherePack('work', 'away on Keeper business', 'story');
   if (name === 'Warden Ilse' || name === 'Officer Ness' || name === 'Rook') {
     if (window.PPRep) {
       const tier = PPRep.repTier(name);
@@ -5783,6 +5862,24 @@ function onLand(){
 /* ---------- items (INVENTORY v1 §3): one catalog for the Bag, the Travel Shelf, battle, scene `give` and map pickups ---------- */
 // use: where it works ('battle' and/or 'field'); target: needs a pet; cap: stack limit (enforced on grant, not on load); price in Acorns.
 const ITEM_ART = {
+  lantern_wick: [   // DAY1_TRIAL1_FLOW (D1154): a coiled wick with a small flame, PAL only
+    '................',
+    '.......y........',
+    '......yoy.......',
+    '......ooo.......',
+    '.......k........',
+    '.......w........',
+    '.......w........',
+    '....wwwwwww.....',
+    '...wkkkkkkkw....',
+    '...wwwwwwwww....',
+    '....wkkkkkw.....',
+    '....wwwwwww.....',
+    '.....wkkkw......',
+    '.....wwwww......',
+    '................',
+    '................',
+  ],
   heal_snack: [
     '................',
     '................',
@@ -6051,6 +6148,7 @@ const ITEMS = {
   atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
   route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
   keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
+  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Keeper Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Wynne sells them.' },   // D1154, FPT Part A
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
@@ -6302,7 +6400,7 @@ const MATCH_RANGE = 6, MATCH_BOB_MS = 400;
 // D819: walk-up npc holders whose talk opens their match at once, by map:object (the map JSON stays verbatim).
 const MATCH_WALKUP = {
   'hearthmoor:rook_gate': ['rival1_rook', () => true],
-  'fb_hall_in:fen_hall': ['hall1_fen', () => trialReady()],
+  'fb_hall_in:fen_hall': ['hall1_fen', () => trialReady() && hallCrewDone()],
   'cc_hall_in:hale': ['hall2_hale', () => true],
   'hc_arena_in:hc_nia': ['hc_tourney', () => true],
 };
@@ -6775,9 +6873,15 @@ function arriveAt(at){
   try { syncPlaceYield(true); } catch (e) {}
   try { noteMhcRestRoom(); } catch (e) {}
 }
+// DAY1_TRIAL1_FLOW: a door's `deny` may be keyed like npc lines ({ cond: line, else: line }); the first true key wins.
+function denyLine(dr){
+  const d = dr && dr.deny;
+  if (d && typeof d === 'object') { for (const [k, v] of Object.entries(d)) if (cond(k, false)) return v; return 'The door is locked.'; }
+  return d || 'The door is locked.';
+}
 function enterDoor(dr){
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
-  if (dr.need && !needMet(dr.need)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
+  if (dr.need && !needMet(dr.need)) { runSteps([['say', '', denyLine(dr)]]); return; }
   // BRINEWICK: a door may write one story flag on entry, the same `setFlag` field a warp already carries (the depot door).
   if (dr.to && WORLD[dr.to]) { sfx('tap'); if (dr.setFlag) S.flags[dr.setFlag] = true; warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
@@ -6827,6 +6931,7 @@ function placeSteps(dr){
     const t = TRAINERS.hall1_fen, pn = (t && t.panel) || {};
     if (!trialReady()) return sceneSteps('trial_wait') || [['say', 'Master Fen', 'The trial can wait. Walk the Heights first.']];
     if (side() === 'glimmer') return glimmerHallSteps(t, pn);
+    if (!hallCrewDone()) return [['say', pn.who || 'Master Fen', day1Line('fenCrew', 'Three holders wait on the path first. Beat all three, then come up to me.')]];
     if (t && ((t.seal && S.seals[t.seal]) || S.flags['trainer.hall1_fen'])) return [['say', pn.who || 'Master Fen', pn.again || 'Come back any time. The orchard remembers its friends.']];
     const greet = rematchPending('hall1_fen')
       ? (battleGreeting('hall1_fen') || 'Roots first, then blossoms. Show me yours.')
@@ -7519,7 +7624,7 @@ const HC_QUEST = {
 // The main chain stays put. This pointer only replaces the idle `end` card, and only until all five games are cleared.
 const questCurrent = () => {
   if (!S || typeof PPQuests === 'undefined') return null;
-  const q = PPQuests.current(questState());
+  const q = liveStep(PPQuests.current(questState()));   // DAY1_TRIAL1_FLOW: a person's step follows that person
   if (!q || q.id !== 'end' || !S.flags['story.hc_invite'] || HC_CLEAR_FLAGS.every(f => S.flags[f])) return q;
   const g = side() === 'glimmer';
   return { id: HC_QUEST.id, text: g ? HC_QUEST.glimmerText : HC_QUEST.text, place: g ? HC_QUEST.glimmerPlace : HC_QUEST.place, target: HC_QUEST.target, variant: g ? 'glimmer' : undefined };
@@ -8755,6 +8860,8 @@ function placeMhcBump(){
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };
+// DAY1_TRIAL1_FLOW (D1168): while Lizzy's class step is active she and the class are pinned at the Schoolhouse (data rows).
+const lizzyClassOn = () => !!(S && S.flags['story.class_sent'] && !S.flags['story.lizzy_class']);
 function scenePlayed(id){ const fl = (sceneSteps(id) || []).filter(st => st[0] === 'setFlag'); return fl.length > 0 && fl.every(st => S.flags[st[1]]); }
 function faceKeeper(o){ const q = objPos(o); mapRT.face[o.id] = dirName(S.world.x - q.x, S.world.y - q.y); }
 // Talk (bump, tap, the Talk button, Space/Enter). Doors enter; trainers battle until beaten, then say their win line.
@@ -8821,7 +8928,7 @@ function interact(o){
     return runScene(o.scene, ctx);
   }
   if (objName(o) === 'Mom' && S && S.flags['story.rival1_done']) grantKit('scarf');
-  if (o.id === 'school_lizzy' && S && S.flags['story.lizzy_met'] && !S.flags['story.leak5b_seen'] && clockAt('Lizzy', 'hm_school_in')) {
+  if (o.id === 'school_lizzy' && S && S.flags['story.lizzy_met'] && !S.flags['story.leak5b_seen'] && clockAt('Lizzy', 'hm_school_in') && !lizzyClassOn()) {
     mapRT.talked.add(o.id);
     return runScene('leak_school', ctx);
   }
@@ -9396,6 +9503,8 @@ async function execStep(st){
       pend(() => { if (tuned && tuned.chip && tuned.chip.on) tuned.align = 50; alignQuiet = null; });
       return;
     }
+    // DAY1_TRIAL1_FLOW (D1154): ["take", id, n] uses up n of an item (the wick goes on Amos's lamp). Nothing happens if it is not held.
+    case 'take': { const n = Math.min(itemCount(a), Math.max(1, b | 0)); if (n > 0) pend(() => { S.bag[a] = Math.max(0, (S.bag[a] | 0) - n); if (!S.bag[a]) delete S.bag[a]; }); return; }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
     case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity' || r === 'brinewick') S.world.respawn = r; }); return; }
     case 'play': {
@@ -11927,7 +12036,10 @@ const REGION_MAP = {
     proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]],
       hold: [{ id: 'wild' }] },
     fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Bloom Trial Hall.',
-      hold: [{ id: 'split', line: 'Keepers keep the town. Glimmerwell keeps a stand.' }] },
+      // D1171: Fernbrook is contested until the pick after Trial 1, then flips to the side the holder picked.
+      hold: [{ id: 'glimmer', when: ['story.side_pick_done', 'story.seal1', 'story.side=glimmer'], line: 'Glimmerwell holds the town now. Lanterns on every gate.' },
+        { id: 'keepers', when: ['story.side_pick_done', 'story.seal1', '!story.side=glimmer'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
+        { id: 'split', line: 'Keepers keep the town. Glimmerwell keeps a stand.' }] },
     route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]],
       hold: [{ id: 'split', line: 'Keepers keep the road. Glimmerwell runs the Census.' }] },
     route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]],
@@ -12001,7 +12113,9 @@ let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot node
 // First matching rule wins. `flags` lets the dev check try a save without touching S. Unvisited places stay ??? on the parchment.
 function matchHold(id, flags){
   const n = REGION_MAP.nodes[id], F = flags || (S && S.flags) || {};
-  const ok = c => String(c)[0] === '!' ? !F[String(c).slice(1)] : !!F[c];
+  // DAY1_TRIAL1_FLOW §9 (D1171): `k=v` reads a flag's value (story.side=glimmer), as evalCond does; '!' negates either form.
+  const one = c => { const k = c.indexOf('='); return k >= 0 ? String(F[c.slice(0, k)]) === c.slice(k + 1) : !!F[c]; };
+  const ok = c => String(c)[0] === '!' ? !one(String(c).slice(1)) : one(String(c));
   for (const rule of (n && n.hold) || []) if (!rule.when || rule.when.every(ok)) return rule;
   return { id: 'wild', line: MAP_HOLD_LINE.wild };
 }
@@ -12153,6 +12267,7 @@ function mapDevCheck(){
   if (mapHold('cobblecrest', {}) !== 'keepers' || mapHold('cobblecrest', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('cobble');
   if (mapHold('cobble_quarry', {}) !== 'keepers' || mapHold('cobble_quarry', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('quarry');
   if (mapHold('fb_heights', {}) !== 'glimmer' || mapHold('fb_heights', { 'story.sm_done': true }) !== 'split') bad.push('heights');
+  if (mapHold('fernbrook', { 'story.side_pick_done': true, 'story.seal1': true, 'story.side': 'glimmer' }) !== 'glimmer' || mapHold('fernbrook', { 'story.side_pick_done': true, 'story.seal1': true }) !== 'keepers') bad.push('fernbrook flip');   // D1171
   if (mapHold('fernbrook', {}) !== 'split' || mapHold('route2', {}) !== 'split' || mapHold('route2_glen', {}) !== 'glimmer') bad.push('fork');
   if (mapHold('hearthmoor', {}) !== 'keepers' || mapHold('highcharity', {}) !== 'keepers' || mapHold('route1', {}) !== 'keepers') bad.push('keepers');
   if (mapHold('proto', {}) !== 'wild' || mapHold('mahopac', {}) !== 'wild') bad.push('wild');
@@ -17612,13 +17727,17 @@ function applyCheckpoint(id){
   const wasPick = !!S.flags['story.side_pick_done'];
   if (mainI >= 0) {
     reconcileChain(PPQuests.CHAIN, mainI);
-    const orchardAt = PPQuests.CHAIN.findIndex(e => e.id === 'orchard');
-    if (orchardAt >= 0 && mainI > orchardAt) { if (!S.flags['story.side_pick_done']) S.flags['story.side_pick_done'] = true; }
-    else if (orchardAt >= 0 && mainI <= orchardAt) delete S.flags['story.side_pick_done'];
+    // DAY1_TRIAL1_FLOW §11: the pick now comes after Hall 1 and the post-Trial slot. A checkpoint at or before the `pick`
+    // row builds a new-flow save (no pick, orchard not cleared, no Heights); after it, the pick and the orchard come together.
+    const pickAt = PPQuests.CHAIN.findIndex(e => e.id === 'pick');
+    if (pickAt >= 0 && mainI > pickAt) { S.flags['story.side_pick_done'] = true; S.flags['story.orchard_cleared'] = true; }
+    else if (pickAt >= 0) { delete S.flags['story.side_pick_done']; delete S.flags['story.orchard_cleared']; delete S.flags['story.heights_done']; }
     if (!S.flags['story.seal1']) { delete S.flags['story.tour1_s1']; delete S.flags['story.tour1_s2']; delete S.flags['story.tour1_s3']; }
     if (S.flags['story.rival1_done']) S.flags['story.early_done'] = true;
     syncDebugSeals();
     syncDebugTrainers();
+    const crewAt = PPQuests.CHAIN.findIndex(e => e.id === 'hall1_holders');   // DAY1_TRIAL1_FLOW: the three Hall holders
+    if (crewAt >= 0 && mainI > crewAt) for (const id of HALL1_CREW) S.flags['trainer.' + id] = true;
   } else if (sideI >= 0) {
     reconcileChain(PPQuests.SIDE, sideI);
     S.flags['story.intro_seen'] = true;
@@ -19208,7 +19327,7 @@ function boot(){
   Object.defineProperty(api, 'questBoard', { enumerable: true, get(){
     return acceptedBoardList().map(a => ({ chain: a.chain, label: a.label, text: a.step.text }));
   } });
-  Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
+  Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, mirrorOf: q.mirrorOf || null, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse'), navMark: ($('#questBtn') && $('#questBtn').dataset.questMark) || '' }; } });
   // D106: sideQuest is the tracked step; sideActive lists every active chain in unlock order.
   Object.defineProperty(api, 'sideActive', { enumerable: true, get(){ const t = trackedSide(); return sideActiveList().map(a => ({ chain: a.chain, label: a.label, id: a.step.id, text: a.step.text, place: a.step.place, target: a.step.target ? { ...a.step.target } : null, tracked: !!(t && t.chain === a.chain) })); } });
@@ -19276,6 +19395,13 @@ function boot(){
   // FACTION_PICK_TIMING §7 step 1 (?debug=1 only, read-only): one condition string through cond(), the boot validator's
   // condKeyOk and the checkpoints' plainStoryFlag; and one object's gate anywhere in WORLD (its when and its need).
   api.condRead = c => DEBUG && S ? { cond: !!cond(c, false), key: condKeyOk(c), plain: plainStoryFlag(c) } : null;
+  // DAY1_TRIAL1_FLOW (?debug=1 only, read-only): the named npcs drawn on a tile of any map right now (schedule rows included).
+  api.whoAt = (map, x, y) => {
+    if (!DEBUG || !S || !WORLD[map]) return null;
+    return WORLD[map].objs.filter(o => o && (o.kind === 'npc' || o.kind === 'trainer') && present(o)).filter(o => {
+      const at = CUR && CUR.id === map ? objPos(o) : (schedPos(o) || o); return at.x === x && at.y === y; }).map(o => o.name || o.id);
+  };
+  api.npcSpot = (name, ids) => DEBUG ? npcSpot(name, ids) : null;
   api.gateRead = (map, id) => {
     if (!DEBUG || !S || !WORLD[map]) return null;
     const o = WORLD[map].objs.find(x => x.id === id); if (!o) return null;

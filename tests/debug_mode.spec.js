@@ -82,8 +82,9 @@ test('checkpoint, item, faction and standing work from the panel', async ({ page
   expect(landed.quest).toBe('hall1');
   expect(landed.map).toBe('fernbrook');
   expect(landed.seal).toBe(null);
-  expect(landed.orchard).toBe(true);
-  expect(landed.picked).toBe(true);
+  // DAY1_TRIAL1_FLOW §11: the pick comes after Hall 1 now, so the hall1 checkpoint is a new-flow save (no pick, no orchard).
+  expect(landed.orchard).toBe(null);
+  expect(landed.picked).toBe(null);
   expect(landed.intro).toBe(true);
   expect(landed.pets).toBeGreaterThan(0);
 

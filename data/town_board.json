@@ -115,17 +115,29 @@
       "reports": [
         {
           "id": "fb_hall_latched",
-          "text": "The Trial Hall is latched. Fen is outside, pacing by the steps.",
+          "text": "The Trial Hall is latched. Tobin is by the orchard gate, counting crates.",
           "when": [
             "!story.crates_seen",
-            "!story.orchard_cleared"
+            "!story.lizzy_class",
+            "!story.orchard_cleared",
+            "!story.seal1"
+          ]
+        },
+        {
+          "id": "fb_hall_away",
+          "text": "The Trial Hall is shut. Master Fen is away on Keeper business.",
+          "when": [
+            "story.crates_seen",
+            "!story.lizzy_class",
+            "!story.orchard_cleared",
+            "!story.seal1"
           ]
         },
         {
           "id": "fb_hall_open",
           "text": "The Trial Hall is open. The steps were swept this morning.",
           "when": [
-            "story.crates_seen | story.orchard_cleared",
+            "story.lizzy_class | story.orchard_cleared",
             "!story.seal1"
           ]
         },

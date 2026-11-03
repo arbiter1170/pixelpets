@@ -49,7 +49,11 @@
         {"kind": "prop", "id": "fb_jug", "x": 8, "y": 11, "sprite": "cider_jug", "lines": {"else": "A jug of pressed apples. The lid is on."}},
         {"kind": "prop", "id": "fb_stool", "x": 2, "y": 10, "sprite": "orchard_stool", "lines": {"else": "A short stool by the wall."}},
         {"kind": "prop", "id": "fb_basket", "x": 1, "y": 12, "sprite": "orchard_basket", "lines": {"else": "A basket lined with leaves."}},
-        {"kind": "sign", "id": "fb_lantern_note", "x": 10, "y": 12, "text": "A note by the shelf: \"Rest the whole party. 5 Acorns, or what you have. — Amos\""}
+        {"kind": "sign", "id": "fb_lantern_note", "x": 10, "y": 12, "text": "A note by the shelf: \"Rest the whole party. 5 Acorns, or what you have. — Amos\""},
+        {"kind": "npc", "id": "fb_burrsnout", "name": "Burrsnout", "pet": "mole/0", "x": 3, "y": 7, "facing": "up", "when": ["!story.side_pick_done", "!story.orchard_cleared", "story.tally_done", "!story.tl_done"], "lines": {"story.tl_amos & !story.tl_cot": "@tl_cot", "else": "Burrsnout tucks his paw away and watches the dark window."}},
+        {"kind": "npc", "id": "fb_juniper_tl", "name": "Associate Juniper", "x": 8, "y": 6, "facing": "left", "when": ["!story.side_pick_done", "!story.orchard_cleared", "story.tl_juniper", "!story.tl_done"], "lines": {"else": "Go on, pick! The lantern's on either way."}},
+        {"kind": "trigger", "id": "fb_tl_amos", "x": 5, "y": 13, "r": 2, "when": ["!story.side_pick_done", "!story.orchard_cleared", "story.tally_done", "!story.tl_amos"], "scene": "tl_amos"},
+        {"kind": "trigger", "id": "fb_tl_choice", "x": 5, "y": 13, "r": 2, "when": ["!story.side_pick_done", "!story.orchard_cleared", "story.tl_juniper", "!story.tl_done"], "scene": "tl_choice", "_note": "TL-4. 'I'll fetch a wick first' leaves the step open; walking back in plays it again."}
       ]
     },
     "fb_hall_in": {
@@ -95,7 +99,7 @@
       ],
       "objs": [
         {"kind": "warp", "id": "fb_hall_mat", "x": 7, "y": 23, "to": "fernbrook", "tx": 22, "ty": 6, "facing": "down"},
-        {"kind": "npc", "id": "fen_hall", "name": "Master Fen", "x": 7, "y": 4, "facing": "down", "look": "fen", "panel": "hall1"},
+        {"kind": "npc", "id": "fen_hall", "name": "Master Fen", "x": 7, "y": 4, "facing": "down", "look": "fen", "panel": "hall1", "when": ["!story.fen_sent_home | story.lizzy_class"]},
         {"kind": "prop", "id": "fb_hall_lamp_w", "x": 4, "y": 3, "sprite": "dais_lamp", "lines": {"else": "A lamp by the flower dais."}},
         {"kind": "prop", "id": "fb_hall_lamp_e", "x": 11, "y": 3, "sprite": "dais_lamp", "lines": {"else": "A lamp by the flower dais."}},
         {"kind": "prop", "id": "fb_hall_ribbon_w", "x": 2, "y": 6, "sprite": "ribbon_stand", "lines": {"else": "A stand of pale ribbons."}},
@@ -120,23 +124,31 @@
         {"kind": "prop", "id": "fb_hall_t3_herbs", "x": 4, "y": 13, "sprite": "herb_rack", "lines": {"else": "Herbs drying on a rack. Sage, mint and something sharp."}},
         {"kind": "prop", "id": "fb_hall_t2_pot", "x": 9, "y": 15, "sprite": "bloom_pot", "lines": {"else": "Rose cuttings, potted to grow on."}},
         {"kind": "prop", "id": "fb_hall_t1_basket", "x": 6, "y": 17, "sprite": "orchard_basket", "lines": {"else": "A basket of seed packets. Each row is labelled by hand."}},
-        {"kind": "sign", "id": "fb_hall_note", "x": 10, "y": 22, "text": "BLOOM TRIAL HALL. Master Fen waits on the dais."}
+        {"kind": "sign", "id": "fb_hall_note", "x": 10, "y": 22, "text": "BLOOM TRIAL HALL. Master Fen waits on the dais."},
+        {"kind": "trainer", "id": "h1_local", "x": 9, "y": 20, "look": "h1_local", "_note": "DAY1_TRIAL1_FLOW §8 (D1170 as amended): the neutral Fernbrook holder. PLACEHOLDER look and lines (Story); trainer row in detail_zz_day1.json"},
+        {"kind": "trainer", "id": "h1_challenger", "x": 5, "y": 14, "look": "h1_challenger", "_note": "the Glimmerwell-leaning local challenging the Hall. PLACEHOLDER (Story)"},
+        {"kind": "trainer", "id": "h1_cadet", "x": 9, "y": 10, "look": "h1_cadet", "_note": "the Keeper cadet, the only one with a D1161 Keeper rank (title PLACEHOLDER until Design assigns it)"}
       ]
     }
   },
   "slicePatch": {
     "maps": {
       "fernbrook": {
-        "_note": "FACTION_PICK_TIMING v0.2.4 §7 step 1 (design ffada0b): the OR gates of §7.1. maps_slice.json and act1_route2.json stay verbatim, so their changed objects are restated here by id with only `when` changed. Each OR sits in its own when entry; '|' splits before '&'. Nothing sets story.crates_seen yet, so every gate reads as before on every save.",
+        "_note": "FACTION_PICK_TIMING v0.2.4 §7 step 1 (design ffada0b): the OR gates of §7.1. maps_slice.json and act1_route2.json stay verbatim, so their changed objects are restated here by id with only `when` changed. Each OR sits in its own when entry; '|' splits before '&'. Nothing sets story.crates_seen yet, so every gate reads as before on every save. DAY1_TRIAL1_FLOW v0.4 (Vincent, Nov 2, 2026): the Hall door opens on Lizzy's class (D1169; the OR terms keep old saves open, D1172 no), Fen leaves the orchard after her go-home talk (D1166), Tobin's battle waits for the pick (before it he is the tally, detail_zz_day1.json), the crates are Part A's taps (the §7.2 guard sits in each line key), the Hall sign drops 'A Keepers' Hall' (D1170 as amended), and a Glimmer save's teaser is the glimmer Rook only.",
         "replaceObjs": [
           {"kind": "door", "id": "fb_lantern", "x": 5, "y": 5, "panel": "lantern", "keeper": "Keeper Amos", "to": "fb_lantern_in", "tx": 5, "ty": 14, "facing": "up"},
-          {"kind": "door", "id": "fb_hall", "x": 22, "y": 6, "panel": "hall1", "need": "story.crates_seen | story.orchard_cleared", "deny": "The door is latched. A note: 'Out in the orchard. — Fen'", "to": "fb_hall_in", "tx": 7, "ty": 22, "facing": "up"},
+          {"kind": "door", "id": "fb_hall", "x": 22, "y": 6, "panel": "hall1", "need": "story.lizzy_class | story.orchard_cleared | story.seal1", "deny": {"!story.crates_seen": "The Hall is shut for now. Tobin could use a hand with his crates first.", "else": "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'"}, "to": "fb_hall_in", "tx": 7, "ty": 22, "facing": "up"},
           {"kind": "warp", "id": "fb_east", "x": 31, "y": 8, "to": "route2", "tx": 1, "ty": 8, "facing": "right", "when": ["story.seal1", "story.side_pick_done | story.orchard_cleared"], "setFlag": "story.reached_route2"},
           {"kind": "sign", "id": "fb_sign_route2_open", "x": 29, "y": 7, "when": ["story.seal1", "story.side_pick_done | story.orchard_cleared"], "text": "ROUTE 2 · Open again! Rockslide cleared by Glimmerwell Co. Brighter by nature."},
           {"kind": "prop", "id": "fb_rubble", "x": 31, "y": 8, "sprite": "rubble", "when": ["!story.seal1 | !story.side_pick_done & !story.orchard_cleared"]},
           {"kind": "sign", "id": "fb_sign_route2", "x": 29, "y": 7, "when": ["!story.seal1 | !story.side_pick_done & !story.orchard_cleared"], "text": "ROUTE 2 · Closed after a rockslide. The crews say: soon!"},
-          {"kind": "npc", "id": "rook_fb", "name": "Rook", "x": 22, "y": 8, "when": ["seal:seal_fernbrook", "!story.slice_end", "story.side_pick_done | story.orchard_cleared"], "scene": "teaser"},
-          {"kind": "trigger", "id": "fb_teaser", "x": 22, "y": 6, "r": 0, "when": ["seal:seal_fernbrook", "!story.slice_end", "story.side_pick_done | story.orchard_cleared"], "scene": "teaser"}
+          {"kind": "npc", "id": "rook_fb", "name": "Rook", "x": 22, "y": 8, "when": ["seal:seal_fernbrook", "!story.slice_end", "story.side_pick_done | story.orchard_cleared", "!story.side=glimmer"], "scene": "teaser"},
+          {"kind": "trigger", "id": "fb_teaser", "x": 22, "y": 6, "r": 0, "when": ["seal:seal_fernbrook", "!story.slice_end", "story.side_pick_done | story.orchard_cleared", "!story.side=glimmer"], "scene": "teaser"},
+          {"kind": "npc", "id": "fen_orchard", "name": "Master Fen", "x": 10, "y": 9, "when": ["!story.orchard_cleared", "!story.fen_sent_home"], "scene": "fen_intro", "lines": {"!story.side_pick_done & !story.orchard_cleared & story.tl_done & !story.crates_seen": "@fen_dusk", "!story.side_pick_done & !story.orchard_cleared & story.crates_seen": "@fen_home", "!story.side_pick_done & !story.orchard_cleared & story.tally_done & !story.tl_done": "Evening's coming. Keeper Amos could use a hand at the Lantern House.", "else": "The crates are by the gate. The Hall can wait."}},
+          {"kind": "trainer", "id": "fern_associate", "x": 9, "y": 14, "when": ["!story.side=glimmer", "story.side_pick_done | story.orchard_cleared"]},
+          {"kind": "prop", "id": "fb_crate_a", "x": 14, "y": 16, "sprite": "crate", "when": ["!story.orchard_cleared"], "lines": {"!story.side_pick_done & !story.crate_a": "@crate_a", "else": "Tobin's chalk mark on the lid: counted."}},
+          {"kind": "prop", "id": "fb_crate_b", "x": 15, "y": 16, "sprite": "crate", "when": ["!story.orchard_cleared"], "lines": {"!story.side_pick_done & !story.crate_b": "@crate_b", "else": "Tobin's chalk mark on the lid: counted."}},
+          {"kind": "sign", "id": "fb_sign_hall", "x": 24, "y": 7, "text": "FERNBROOK TRIAL HALL · Master Fen"}
         ]
       }
     }
