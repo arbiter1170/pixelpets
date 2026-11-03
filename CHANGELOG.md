@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 04:00 ET: Lantern House rests tuck the partner into a bed (BED_TUCK, Vincent, Nov 3)
+- What changed and why: Vincent's ask: when the holder rests at a Lantern House (the first time, on Rook's walk, and every time after), the holder walks the Walkling over to a bed, puts it in, it sleeps, then recovers. Both rest paths (talk to a bed and pick Rest; a scene's `rest` step, as on Rook's first-loss walk from #249) now run `bedTuck`: the holder walks beside the nearest free bed and faces it, the partner lies in the bed with its eyes shut under the bed's own blanket and a "z" (about 1.4 s), wakes with a heart and a 2 px hop, and hops back out; then the heal and the rest line. Reduced motion keeps the nap (a still "z", no hop); SKIP snaps it. A rest outside a Lantern House is unchanged.
+- Files touched: `game.js` (`bedTuck`, `bedSpots`, `drawBedRest`, the `bedTuck` step, the `rest` step, `lanternRestOption`, `endScene`, debug `bedRest`), `tests/bed_tuck.spec.js` (new), `tests/helpers.js` (`playScene` waits for a box with buttons: the mode reads 'choice' while the walk plays), `tests/playtest_fixes_3.spec.js` (its save comparison now ignores the 5 s autosave stamp, which the longer rest moved into its window), `handoff/shots/bed_tuck/`.
+- Commit(s) + build id: on claude/day1-trial1-build-gtkcop (PR #261).
+- Tests run and result (widths, checks): `bed_tuck` at 320, 375 and 390 (bed path, scene rest at Fernbrook, home rest untouched, reduced motion); `lantern_rest`, `rook_lantern_walk`, `playtest_fixes_3`, `partner_day` at 390 and 320, all pass.
+- Decisions made (colour + reasoning): Vincent's direction (Nov 3, 2026). No new art: the partner's own blink frame, the bed's PAL art as the blanket, the built `emote_sleep` and `emote_heart` glyphs. No save field.
+- Anything left unfinished: none.
+
 ## 2026-11-03 03:00 ET: Fix: the quest arrow leaves the bedroom mirror once you are dressed (PARTNER_DAY, #258)
 - What changed and why: Vincent's bug: after Lizzy comes in and you pick your first look at the mirror, she says Mom is waiting downstairs, but the yellow arrow kept pointing at the mirror. The `wake` step had one target (the mirror) and only finished on `story.intro_seen`, which Mom's good-luck trigger at the foot of the stairs sets. It is now two steps: `dress` (the mirror, done on `story.home_dressed`, partner-day saves only) and `wake` (Mom's spot at the foot of the stairs, `hm_home_in` 2,6; the cue routes through the bedroom door and the stairs).
 - Files touched: `quests.js`, `tests/partner_day.spec.js` (P-2 checks the arrow before and after the mirror), `tests/standing.spec.js` (its pinned copy had not followed #258's `wake` text).

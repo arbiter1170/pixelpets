@@ -7486,7 +7486,8 @@ function drawMap(t){
     const q = objPos(o); ents.push({ y: (q.fy != null ? q.fy : q.y) - 0.02, draw: () => drawObj(g, o, cx, cy, VW, VH, t) });
   }
   if (auraMapOk() && p && p.aura) auraFrame(p.aura, t, 0); else { auraLive = 0; auraDrawn = 0; }
-  if (fol.x != null && p) ents.push({ y: fol.fy, draw: drawFollower });
+  if (fol.x != null && p && !(bedRest.on && bedRest.map === CUR.id)) ents.push({ y: fol.fy, draw: drawFollower });   // BED_TUCK: in the bed instead
+  if (bedRest.on && bedRest.map === CUR.id) ents.push({ y: bedRest.y + 0.05, draw: () => drawBedRest(g, cx, cy, t) });
   ents.push({ y: walk.fy + 0.01, draw: drawPlayer });
   if (window.PPNet && PPNet.mapEnts) PPNet.mapEnts(g, cx, cy).forEach(e => ents.push(e));
   needHeartSkipped = false;
@@ -9135,6 +9136,7 @@ async function execSteps(steps){ for (const st of steps || []) { if (!scene) ret
 async function playScene(id){ const steps = sceneSteps(id); if (!steps) return; const n = storyWrites(); await execSteps(steps); noteBeat(id, n); }   // nested: `run` steps, onWin
 function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); if (S && S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); syncSide(); }
 function endScene(){
+  bedRest.on = false;   // BED_TUCK
   if (shopMeal) closeMealSheet(-1);
   const sc = scene; if (!sc) return;
   const cue = sc.musicCue;
@@ -9591,6 +9593,7 @@ async function execStep(st){
     }
     // Lantern rest only (home naps stay on `rest`, free). Heals the whole party. A hurt party pays LANTERN_REST_COST;
     // a shortfall is covered so a wipe at 0 Acorns cannot trap you. Sets scene.view flag lantern.rest for the next line.
+    case 'bedTuck': { await bedTuck(sc); return; }   // BED_TUCK: the walk to the bed, the nap, the wake-up
     case 'payRest': {
       if (!lanternRestNeeded()) { sc.view.flags['lantern.rest'] = 'full'; setRestDue(false); sfx('rest'); noteLanternRest(); return; }
       const have = S.money | 0, fee = Math.min(have, LANTERN_REST_COST);
@@ -9623,7 +9626,7 @@ async function execStep(st){
       await execStep(['say', '', 'You can change this any time under the gear.']);   /* D70 */
       return;
     }
-    case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
+    case 'rest': if (atLantern()) await bedTuck(sc); sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
     case 'keepPlace': sc.deferRespawn = false; return;   // this scene walks the holder to the Lantern House itself (ROOK_LANTERN_WALK)
     // The guide teaches the Lantern House once: its "Lanterns" unlock card would repeat the same lesson right after the rest.
@@ -11102,6 +11105,58 @@ function closeBattle(){
 const LANTERN_REST_COST = 5;
 const lanternRestNeeded = () => !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow) || Math.round(p.energy) < 100));
 const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1 };
+// BED_TUCK (Vincent, Nov 3, 2026): every Lantern House rest, the first one included, is shown, not told. The holder walks the
+// partner over to a bed, tucks it in, it sleeps (eyes shut, a "z"), wakes with a heart, and hops back out, healed. The bed is
+// the nearest one this holder can stand beside (a prop whose line is `@lantern_rest`). Runtime only; nothing is saved.
+// Reduced motion keeps the same beats with a still "z" and no hop; a skipped scene (or a test's fast cast) snaps through.
+const BED_TUCK_MS = { sleep: 1400, wake: 550, fast: 0 };
+const bedRest = { on: false, map: null, x: 0, y: 0, phase: 'sleep', t0: 0, beds: 0 };
+function bedSpots(){
+  if (!CUR || !S) return [];
+  const out = [];
+  for (const o of CUR.objs) {
+    if (o.kind !== 'prop' || !present(o) || !(o.lines && Object.values(o.lines).some(v => v === '@lantern_rest'))) continue;
+    for (const [dx, dy, face] of [[0, 1, 'up'], [1, 0, 'left'], [-1, 0, 'right'], [0, -1, 'down']]) {
+      const x = o.x + dx, y = o.y + dy;
+      if (solid(x, y)) continue;
+      out.push({ bed: o, x, y, face, d: Math.abs(x - S.world.x) + Math.abs(y - S.world.y) });
+    }
+  }
+  return out.sort((a, b) => a.d - b.d);
+}
+async function bedTuck(sc){
+  const p = pet();
+  if (!sc || !S || !CUR || !p || !(LANTERN_ROOMS[CUR.id] || atLantern())) return false;
+  const spot = bedSpots()[0]; if (!spot) return false;
+  const fast = !!sc.skip || !!window.PP_SIGNAL_FAST, reduce = prefersReduced();   // reduced motion keeps the nap (still), SKIP snaps it
+  if (spot.d > 0) await cutWalkTo(sc, 'player', spot.x, spot.y);
+  if (!scene) return false;
+  S.world.facing = spot.face;
+  Object.assign(bedRest, { on: true, map: CUR.id, x: spot.bed.x, y: spot.bed.y, sprite: spot.bed.sprite, phase: 'sleep', t0: now() });
+  bedRest.beds++;
+  sfx('rest');
+  if (!fast) await cutWait(BED_TUCK_MS.sleep);
+  bedRest.phase = 'wake'; bedRest.t0 = now();
+  if (!fast && !reduce) sfx(chirpName(p));
+  if (!fast) await cutWait(BED_TUCK_MS.wake);
+  bedRest.on = false;
+  return true;
+}
+// Drawn over the bed tile (y-sorted with the room): the partner lying in the bed, eyes shut and a "z" while asleep, then
+// awake with a heart and a 2 px hop (no hop, and a still "z", with reduced motion).
+function drawBedRest(g, cx, cy, t){
+  const p = pet(); if (!bedRest.on || !p || !CUR || bedRest.map !== CUR.id) return;
+  const reduce = prefersReduced(), spr = petSpr(p), awake = bedRest.phase === 'wake';
+  const hop = awake && !reduce ? Math.round(Math.sin(Math.min(1, (now() - bedRest.t0) / 300) * Math.PI) * 2) : 0;
+  const bx = Math.round(bedRest.x * TS - cx), by = Math.round(bedRest.y * TS - cy);
+  const fx = bx - 1, fy = by - (awake ? 6 : 8) - hop;   // asleep: head and shut eyes above the blanket
+  g.drawImage(awake ? spr.n : spr.b, fx, fy);
+  // Asleep, the bed's lower half is drawn back over the partner as its blanket (PAL art of that bed, no new sprite).
+  const bed = !awake && WART[bedRest.sprite] && artFrame(WART[bedRest.sprite], t);
+  if (bed) g.drawImage(bed, 0, 8, 16, 8, bx, by + 8, 16, 8);
+  const bob = reduce ? 0 : Math.floor(t / 500) % 2;
+  drawGlyph(g, awake ? 'emote_heart' : 'emote_sleep', Math.round(bedRest.x * TS - cx) + 4, Math.round(bedRest.y * TS - cy) - 17 - bob);
+}
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
 function setRestDue(on){
   if (!S || !S.world) return;
@@ -11125,7 +11180,7 @@ function lanternRestOption(){
   // The button names the Acorns this rest will take: free at 0, one Acorn at 1, and the rest of what you have up to 5.
   const label = !need ? 'Rest a while' : have <= 0 ? 'Rest (free)' : fee === 1 ? 'Rest (1 Acorn)' : 'Rest (' + fee + ' Acorns)';
   return [label, [
-    ['payRest'], ['respawnHere'],
+    ['bedTuck'], ['payRest'], ['respawnHere'],
     ['if', 'lantern.rest=paid',
       [['say', '', 'You leave ' + (fee === 1 ? '1 Acorn' : fee + ' Acorns') + '. You all doze in the lantern glow. Your team is rested.']],
       [['if', 'lantern.rest=covered',
@@ -19475,6 +19530,7 @@ function boot(){
       const at = CUR && CUR.id === map ? objPos(o) : (schedPos(o) || o); return at.x === x && at.y === y; }).map(o => o.name || o.id);
   };
   api.npcSpot = (name, ids) => DEBUG ? npcSpot(name, ids) : null;
+  api.bedRest = () => DEBUG ? { on: bedRest.on, map: bedRest.map, x: bedRest.x, y: bedRest.y, phase: bedRest.phase, beds: bedRest.beds } : null;   // BED_TUCK
   api.gateRead = (map, id) => {
     if (!DEBUG || !S || !WORLD[map]) return null;
     const o = WORLD[map].objs.find(x => x.id === id); if (!o) return null;
