@@ -74,7 +74,7 @@
    "title": "Keeper Cadet",
    "map": "fb_hall_in",
    "facing": "left",
-   "sight": 4,
+   "sight": 5,
    "ai": "basic",
    "team": [
     {
@@ -98,7 +98,7 @@
    "title": "Fernbrook Local",
    "map": "fb_hall_in",
    "facing": "left",
-   "sight": 4,
+   "sight": 5,
    "ai": "basic",
    "team": [
     {
@@ -121,8 +121,8 @@
    "name": "Linden",
    "title": "Orchard Hand",
    "map": "fb_hall_in",
-   "facing": "right",
-   "sight": 4,
+   "facing": "left",
+   "sight": 6,
    "ai": "basic",
    "team": [
     {

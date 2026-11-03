@@ -125,9 +125,9 @@
         {"kind": "prop", "id": "fb_hall_t2_pot", "x": 9, "y": 15, "sprite": "bloom_pot", "lines": {"else": "Rose cuttings, potted to grow on."}},
         {"kind": "prop", "id": "fb_hall_t1_basket", "x": 6, "y": 17, "sprite": "orchard_basket", "lines": {"else": "A basket of seed packets. Each row is labelled by hand."}},
         {"kind": "sign", "id": "fb_hall_note", "x": 10, "y": 22, "text": "BLOOM TRIAL HALL. Master Fen waits on the dais."},
-        {"kind": "trainer", "id": "h1_local", "x": 6, "y": 20, "look": "h1_local", "_note": "DAY1_TRIAL1_FLOW §8 (D1170 as amended): the neutral Fernbrook holder. PLACEHOLDER look and lines (Story); trainer row in detail_zz_day1.json"},
-        {"kind": "trainer", "id": "h1_challenger", "x": 14, "y": 12, "look": "h1_challenger", "_note": "the Glimmerwell-leaning local challenging the Hall. PLACEHOLDER (Story)"},
-        {"kind": "trainer", "id": "h1_cadet", "x": 14, "y": 8, "look": "h1_cadet", "_note": "the Keeper cadet, the only one with a D1161 Keeper rank (title PLACEHOLDER until Design assigns it)"}
+        {"kind": "trainer", "id": "h1_local", "x": 13, "y": 18, "look": "h1_local", "_note": "DAY1_TRIAL1_FLOW §8 (D1170 as amended): the neutral Fernbrook holder. PLACEHOLDER look and lines (Story); trainer row in detail_zz_day1.json"},
+        {"kind": "trainer", "id": "h1_challenger", "x": 12, "y": 12, "look": "h1_challenger", "_note": "the Glimmerwell-leaning local challenging the Hall. PLACEHOLDER (Story)"},
+        {"kind": "trainer", "id": "h1_cadet", "x": 12, "y": 8, "look": "h1_cadet", "_note": "the Keeper cadet, the only one with a D1161 Keeper rank (title PLACEHOLDER until Design assigns it)"}
       ]
     }
   },
