@@ -90,13 +90,15 @@ test('battle lines say Master Fen, never Trial Master, and stack no titles (deci
   expect(pia.intro).toContain(piaTitle);
 });
 
-test('rankCheck: no pending ranks left, civilians unranked, only the D1160 flags; no label carries a placeholder', async ({ page }) => {
+test('rankCheck: only the D1245 plaza placeholders pending, civilians unranked, only the D1160 flags; no label carries a placeholder', async ({ page }) => {
   await boot(page);
   const c = await page.evaluate(() => PixelPets.rankCheck());
   expect(c.missing).toEqual([]);
   expect(c.bad).toEqual([]);
   expect(c.battle).toEqual([]);
-  expect(c.placeholders).toEqual([]);   // every sworn Keeper has a ladder rank now (D1159)
+  // Every sworn Keeper has a ladder rank now (D1159). Only FERNBROOK_PLAZA's six rank-only placeholders stay pending,
+  // waiting for Design's names (D1245; Vincent, Nov 3: option A).
+  expect(c.placeholders.sort()).toEqual(['Associate', 'Bright Lead', 'Cadet', 'Constable', 'Junior Bright', 'Sergeant'].map((p) => p + ' (D1245)'));
   // Hosts and shopkeepers on a side are civilians: listed, never ranked.
   expect(c.civilians.sort()).toEqual(['Keeper Amos', 'Keeper Halvard', 'Keeper Marigold', 'Keeper Quill', 'Keeper Teague', 'Watch Saffie']);
   const civRanked = await page.evaluate(() => MAPDATA.reputation.cast.filter((e) => e.civilian && e.rank).map((e) => e.name));

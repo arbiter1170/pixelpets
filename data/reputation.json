@@ -733,6 +733,56 @@
       "base": 50
     },
     {
+      "name": "Constable",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Sergeant",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Cadet",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Associate",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Bright Lead",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Junior Bright",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Orchard Hand",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Basket Weaver",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Stall Hand",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Fernbrook Elder",
+      "faction": "none",
+      "base": 50
+    },
+    {
       "name": "Bell Ringer",
       "faction": "none",
       "base": 50
@@ -1041,8 +1091,45 @@
     "fields": "rank: shown before given (\"Master\" + \"Fen\"). given: the bare name. duty: a job that is not a rank (KEEPER_RANKS D893), shown on the contact card. rankFlag: the D id asking whether this NPC is Keeper or Glimmerwell at all; shown as today. rankWhen: a named game condition (game.js RANK_WHEN) that must hold for the rank to show civilian: host or shop; a civilian never carries a rank",
     "display": "game.js shownName(): rank + ' ' + given when the entry has a rank (and rankWhen holds), else label, else the raw name. Keys (S.rep, S.phoneBook, contactKey) stay the raw speaker name",
     "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays",
-    "pending": {},
-    "pendingNote": "pending: none left. Every sworn Keeper on the ladder (KEEPER_RANKS D893) has a rank; hosts and shopkeepers are civilians (below). rankCheck still reads ranks.pending if a new row is added",
+    "pending": {
+      "Constable": {
+        "propose": "Constable",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Sergeant": {
+        "propose": "Sergeant",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Cadet": {
+        "propose": "Cadet",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Associate": {
+        "propose": "Associate",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Bright Lead": {
+        "propose": "Bright Lead",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      },
+      "Junior Bright": {
+        "propose": "Junior Bright",
+        "given": null,
+        "decision": "D1245",
+        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+      }
+    },
+    "pendingNote": "pending: only the six FERNBROOK_PLAZA placeholders (decision D1245) are left: rank-only labels that wait for Design's names, not for a rank. Every sworn Keeper on the ladder (KEEPER_RANKS D893) has a rank (D1159); hosts and shopkeepers are civilians (below). rankCheck counts a name listed here as pending, not missing",
     "civilians": "civilian: \"host\" (Lantern House hosts) or \"shop\" (anyone who runs a shop counter). Civilians are aligned to a faction (their faction field is unchanged) but are not sworn, so they get no rank and show their name as before (cleared task, Nov 3, 2026; settles the hosts part of D1160)"
   }
 }
