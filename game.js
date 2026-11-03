@@ -4003,6 +4003,18 @@ if (HC_V2_ON) Object.assign(SCENES, JSON.parse(JSON.stringify(window.PP_HC_V2.sc
 // FACE_ME (Vincent, Nov 3, 2026): Lizzy's reunion can start from Buddy, with Lizzy wandered off or facing away. She walks
 // back beside the holder and faces them first (whichever of her bodies is here: the morning plaza, the plaza, the school).
 if (SCENES.lizzy_intro) SCENES.lizzy_intro = [['faceMe', ['hm_lizzy_pre', 'hm_lizzy', 'school_lizzy']]].concat(SCENES.lizzy_intro);
+// ACT1_KEEPER_JOIN D1511: the enrolment asks pin or lanyard ('ask'). Under review (Vincent, Nov 3, night: every holder may go
+// undercover in Act 1): 'lanyard' makes the enrolment skip the question and take the lanyard branch, the only change needed
+// here. The choice lives in one data step (scene `enrol`, detail_zz_keeper_join.json); nothing else keys on the pin path.
+const ENROL_CHOICE = 'ask';
+function enrolFace(steps, mode){
+  if (mode !== 'lanyard' || !Array.isArray(steps)) return steps;
+  return steps.flatMap(st => {
+    if (!Array.isArray(st) || st[0] !== 'choice') return [st];
+    const lan = (st[2] || []).find(o => Array.isArray(o[1]) && o[1].some(s => s[0] === 'setFlag' && s[1] === 'story.cover'));
+    return lan ? lan[1] : [st];
+  });
+}
 // A top-level say first (as before); else one inside an `if` branch, so a second file's swap can wrap a line an earlier file
 // already wrapped (B-2: the crackdown's "After last night," variant wraps Fen's Glimmer-pick line before day1's swap does).
 function swapLine(steps, sw){
@@ -4023,6 +4035,7 @@ for (const k of DETAIL_KEYS) {
   for (const [id, tail] of Object.entries(MD[k].sceneTails || {})) if (SCENES[id] && id[0] !== '_') SCENES[id] = SCENES[id].concat(JSON.parse(JSON.stringify(tail)));
   for (const sw of MD[k].lineSwaps || []) { const out = SCENES[sw.scene] && swapLine(SCENES[sw.scene], sw); if (out) SCENES[sw.scene] = out; }
 }
+if (SCENES.enrol) SCENES.enrol = enrolFace(SCENES.enrol, ENROL_CHOICE);
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 // HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
 for (const k of DETAIL_KEYS) if (MD[k].trainers) for (const [id, t] of Object.entries(MD[k].trainers)) { if (t && Array.isArray(t.team) && t.team.some(m => !BASE_STATS[m && m.form])) continue; TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t); }
@@ -20041,6 +20054,7 @@ function boot(){
   api.standingStill = () => DEBUG ? standingStill() : undefined;
   api.lanternRestFlag = () => DEBUG && scene && scene.view ? (scene.view.flags['lantern.rest'] || null) : undefined;
   api.holderDrawn = () => DEBUG ? (((shownLook() || {}).accessory) || 'none') : undefined;
+  api.enrolFace = mode => DEBUG ? copy(enrolFace(sceneSteps('enrol'), mode)) : null;   // ACT1_KEEPER_JOIN D1511 switch check
   Object.defineProperty(api, 'toasts', { enumerable: true, get(){ return DEBUG ? toastLog.slice() : null; } });
   api.talkTo = id => { if (!DEBUG) return undefined; const o = objById(id); if (!o || scene) return false; interact(o); return true; };
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });

@@ -487,8 +487,10 @@ test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () =>
     expect(Object.keys(await page.evaluate(() => PixelPets.state.seals)).sort()).toEqual(['seal_fernbrook', 'seal_glim_1']);
     expect(await page.evaluate(() => PixelPets.state.bag.cracked_phone | 0)).toBe(1);
     // D1561: when Glimmerwell holds Fernbrook after the enrolment, the Keepers keep one post and say why.
-    await goto(page, 'fernbrook', 4, 8, 'down');
-    expect(await page.evaluate(() => PixelPets.talkTo('fb_constable'))).toBe(true);
+    expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('glimmer');
+    expect(await page.evaluate(() => PixelPets.condRead('fbplaza:post').cond)).toBe(true);
+    await goto(page, 'fernbrook', 24, 11, 'right');
+    expect(await page.evaluate(() => PixelPets.talkTo('fbp_constable'))).toBe(true);
     const rue = await drive(page);
     expect(rue[0][1]).toBe("We pulled back to the post after the curfew. We're still here.");
     expect((await stored(page)).v).toBe(2);
@@ -515,5 +517,40 @@ test.describe('ACT1_KEEPER_JOIN: the orchard lean and the enrolment (K6)', () =>
     expect((await quest(page)).id).toBe('pick');
     await lean(page, 'Open the crates with Fen');
     expect((await flags(page))['story.orchard_lean']).toBe('open');
+  });
+});
+
+test.describe('ACT1_KEEPER_JOIN: Fernbrook settles by lean and face (T11, with K1)', () => {
+  test('T11: open+pin keepers, pack+lanyard glimmer, open+lanyard and pack+pin split: chip, map line, plaza', async ({ page }) => {
+    test.setTimeout(150000);
+    await boot(page, joinSave(DONE));
+    const out = {};
+    for (const [lean, face] of [['open', 'pin'], ['pack', 'lanyard'], ['open', 'lanyard'], ['pack', 'pin']]) {
+      await page.evaluate(([l]) => { for (const k of ['story.orchard_lean', 'story.sway_fernbrook', 'story.keeper_cadet', 'story.cover', 'story.side', 'story.side_pick_done', 'story.orchard_cleared', 'story.ilse_call2']) PixelPets.setFlag(k, null);
+        PixelPets.setFlag('story.orchard_lean', l); PixelPets.setFlag('story.sway_fernbrook', l === 'open' ? 2 : -2); PixelPets.setFlag('story.orchard_cleared', true); PixelPets.setFlag('story.ilse_call2', true); }, [lean]);
+      // Before the face is set the town is still split (the hold settles at the face, D1553).
+      expect(await page.evaluate(() => PixelPets.mapHold('fernbrook')), lean + ' before').toBe('split');
+      await enrolment(page, face);
+      if (face === 'lanyard') { expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true); await drive(page); }
+      await goto(page, 'fernbrook', 12, 8, 'down');
+      out[lean + '+' + face] = await page.evaluate(() => ({ hold: PixelPets.mapHold('fernbrook'), line: PixelPets.holdLine('fernbrook'), chip: PixelPets.sideBadge().hold, plaza: PixelPets.fbPlazaPhase(), sway: PixelPets.sway('fernbrook') }));
+    }
+    expect(out['open+pin']).toMatchObject({ hold: 'keepers', chip: 'keepers', plaza: 'held_keepers', sway: 3 });
+    expect(out['pack+lanyard']).toMatchObject({ hold: 'glimmer', chip: 'glimmer', plaza: 'held_glimmer', sway: -3 });
+    expect(out['open+lanyard']).toMatchObject({ hold: 'split', chip: 'split', plaza: 'after', sway: 1 });
+    expect(out['pack+pin']).toMatchObject({ hold: 'split', chip: 'split', plaza: 'after', sway: -1 });
+    expect(out['open+lanyard'].line).toBe('Keepers walk the lanes. Glimmerwell keeps the gate.');
+    expect(out['open+pin'].line).toBe('The Keepers hold the town now. The orchard stays rooted.');
+    expect(out['pack+lanyard'].line).toBe('Glimmerwell holds the town now. Lanterns on every gate.');
+  });
+
+  test('D1511 under review: one constant turns the enrolment into the lanyard face (no pin question) @w1', async ({ page }) => {
+    await boot(page, joinSave(DONE));
+    const ask = JSON.stringify(await page.evaluate(() => PixelPets.sceneScript('enrol')));
+    expect(ask).toContain('Wear the Cadet pin');
+    const lan = JSON.stringify(await page.evaluate(() => PixelPets.enrolFace('lanyard')));
+    expect(lan).not.toContain('Wear the Cadet pin');
+    expect(lan).toContain('["setFlag","story.cover","glimmer"]');
+    expect(lan).toContain('["setFlag","story.keeper_cadet",true]');
   });
 });

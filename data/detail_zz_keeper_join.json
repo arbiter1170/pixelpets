@@ -94,7 +94,7 @@
   }
  },
  "objPatch": {
-  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights. Vincent Chi's body (chi_hut) and the first-step trigger (chi_hut_first, scene chi_meet) come with the weir hut room (WEIR_HUT, detail_zz_weir_hut.json); his lines are keyed here. 4.6-4.7 (D1510, D1511, D1553): the lean waits for Vincent Chi's report on a crackdown save; Tobin's battle stands for an Open lean; Ilse enrols at the Lodge; the lanyard face takes effect at Juniper (either body). D1561: a Glimmerwell-held Fernbrook keeps one Keeper post; Constable Rue says why.",
+  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights. Vincent Chi's body (chi_hut) and the first-step trigger (chi_hut_first, scene chi_meet) come with the weir hut room (WEIR_HUT, detail_zz_weir_hut.json); his lines are keyed here. 4.6-4.7 (D1510, D1511, D1553): the lean waits for Vincent Chi's report on a crackdown save; Tobin's battle stands for an Open lean; Ilse enrols at the Lodge; the lanyard face takes effect at Juniper (either body). D1561: a Glimmerwell-held Fernbrook keeps one Keeper post; the Constable at the plaza post (K1's fbplaza:post) says why.",
   "fb_east": {
    "when": [
     "story.seal1",
@@ -193,15 +193,15 @@
     "story.cover=glimmer & !story.side_pick_done": "@enrol_lanyard"
    }
   },
-  "fb_constable": {
-   "linesFirst": {
-    "story.keeper_cadet & story.side_pick_done & story.sway_fernbrook<=-2": "We pulled back to the post after the curfew. We're still here."
-   }
-  },
   "fb_tobin": {
    "whenAdd": [
     "!story.orchard_lean"
    ]
+  },
+  "fbp_constable": {
+   "linesFirst": {
+    "fbplaza:post": "We pulled back to the post after the curfew. We're still here."
+   }
   }
  },
  "looks": {
