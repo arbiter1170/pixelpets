@@ -9,6 +9,8 @@ trackErrors(test, expect);
 
 const OLD = ['coat', 'hoodie', 'tunic', 'vest', 'sweater', 'dress'];
 const NEW = ['overalls', 'cardigan', 'raincoat', 'cloak', 'apron', 'jacket'];
+const REDRAWN = ['hoodie', 'dress'];   // Vincent, Nov 3: outfits 2 and 6 redrawn with the new ones (9, 10 and the jacket)
+const RING = 5;                        // .preview.on outer box-shadow
 
 async function boot(page, save) {
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -17,11 +19,11 @@ async function boot(page, save) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
-test('new outfits are 16x16 in every facing, use only recolour keys, and read apart', async ({ page }) => {
+test('new and redrawn outfits are 16x16 in every facing, use only recolour keys, and read apart', async ({ page }) => {
   await boot(page);
-  const r = await page.evaluate(([OLD, NEW]) => {
+  const r = await page.evaluate(([OLD, NEW, REDRAWN]) => {
     const bad = [];
-    for (const id of NEW) {
+    for (const id of NEW.concat(REDRAWN)) {
       const o = KEEPER_OUTFITS[id];
       if (!o) { bad.push(id + ' missing'); continue; }
       for (const f of ['down', 'up', 'right']) {
@@ -40,6 +42,22 @@ test('new outfits are 16x16 in every facing, use only recolour keys, and read ap
     const face = id => keeperGrid({ outfit: id }, 'down', 0).join('/');
     const all = OLD.concat(NEW), seen = {};
     for (const id of all) { const k = face(id); if (seen[k]) bad.push(id + ' looks like ' + seen[k]); seen[k] = id; }
+    // Read apart at button size: every two outfits differ in at least 16 of the 256 front-facing pixels.
+    const px = id => keeperGrid({ outfit: id }, 'down', 0).join('');
+    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
+      const a = px(all[i]), b = px(all[j]);
+      let n = 0; for (let k = 0; k < 256; k++) if (a[k] !== b[k]) n++;
+      if (n < 16) bad.push(all[i] + ' and ' + all[j] + ' differ in ' + n + ' px');
+    }
+    // No outfit paints the shoe row (the old dress hem sat beside the shoes), and no hood sits beside the eyes.
+    for (const id of all) for (const f of ['down', 'up', 'right']) for (const fr of KEEPER_OUTFITS[id][f]) {
+      if (fr[15] !== '................') bad.push(id + ' ' + f + ' paints the shoe row');
+      if (f === 'down' && fr.slice(0, 8).some(row => row !== '................')) bad.push(id + ' down paints beside the eyes');
+    }
+    // Cardigan and jacket: the cardigan shows an accent shirt down the front; the jacket's front is outfit colour with a dark zip.
+    const front = (id, ch) => [10, 11, 12].every(y => KEEPER_OUTFITS[id].down[0][y].slice(7, 9).includes(ch));
+    if (!front('cardigan', 'r')) bad.push('cardigan front is not the accent shirt');
+    if (front('jacket', 'r') || !front('jacket', 'd')) bad.push('jacket front is not the dark zip');
     return {
       bad,
       list: KEEPER_LOOKS.outfit.slice(),
@@ -47,7 +65,7 @@ test('new outfits are 16x16 in every facing, use only recolour keys, and read ap
       unknown: normalizeLook({ outfit: 'not_an_outfit' }).outfit,
       owned: NEW.map(id => ownsLook(id, 'outfit')),
     };
-  }, [OLD, NEW]);
+  }, [OLD, NEW, REDRAWN]);
   expect(r.bad).toEqual([]);
   expect(r.list).toEqual(OLD.concat(NEW));            // old ids keep their places; new ones go on the end
   expect(r.kept).toEqual(NEW);
@@ -97,6 +115,57 @@ test('the first picker offers every outfit as a 44px+ button with no sideways sc
   await expect(page.locator('#ovLook')).toBeHidden();
   // The intro shows the pick at once and commits it at the scene's end (D800).
   expect(await page.evaluate(() => PixelPets.keeper.look.outfit)).toBe('raincoat');
+});
+
+// Every outfit button sits fully inside the scroll and above DONE, ring included. At 390 that holds on open with no
+// scroll. A 320 or 375 screen is too short for the rows above OUTFIT, so there the whole grid fits in one view once
+// OUTFIT is scrolled to the top.
+async function outfitsAboveDone(page) {
+  const w = page.viewportSize().width;
+  return page.evaluate(([w, RING]) => {
+    const sc = document.querySelector('#ovLook .look-scroll');
+    if (w < 390) document.querySelector('#lookOutfit').closest('.look-row').scrollIntoView({ block: 'start' });
+    const view = sc.getBoundingClientRect(), done = document.querySelector('#lookDone').getBoundingClientRect();
+    const btns = Array.from(document.querySelectorAll('#lookOutfit button'));
+    const last = btns[btns.length - 1].getBoundingClientRect();
+    return {
+      scrolled: sc.scrollTop,
+      count: btns.length,
+      lastBottom: last.bottom, doneTop: done.top,
+      hidden: btns.filter(b => { const q = b.getBoundingClientRect();
+        return q.top - RING < view.top - 0.5 || q.bottom + RING > view.bottom + 0.5 || q.bottom + RING > done.top + 0.5; }).map(b => b.dataset.opt),
+    };
+  }, [w, RING]);
+}
+
+test('every outfit button sits fully above DONE in WHO ARE YOU? and CHANGE LOOK', async ({ page, browser }, testInfo) => {
+  await introMirror(page);
+  const first = await outfitsAboveDone(page);
+  expect(first.count).toBe(12);
+  expect(first.hidden, 'WHO ARE YOU?').toEqual([]);
+  expect(first.lastBottom + RING).toBeLessThanOrEqual(first.doneTop);
+  if (page.viewportSize().width >= 390) expect(first.scrolled).toBe(0);
+
+  const u = testInfo.project.use;
+  const ctx = await browser.newContext({ viewport: u.viewport, deviceScaleFactor: u.deviceScaleFactor, isMobile: u.isMobile,
+    hasTouch: u.hasTouch, baseURL: u.baseURL, serviceWorkers: 'block', reducedMotion: 'reduce' });
+  const p2 = await ctx.newPage();
+  const errs = [];
+  p2.on('pageerror', (e) => errs.push(e.message));
+  p2.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+  await installSave(ctx, starterSave(), { quietDay: true });
+  await gotoGame(p2);
+  await p2.evaluate(() => PixelPets.showTab('walk'));
+  await p2.locator('#settingsBtn').click();
+  await p2.locator('#setLook').click();
+  await expect(p2.locator('#lookTitle')).toHaveText('CHANGE LOOK');
+  const change = await outfitsAboveDone(p2);
+  expect(change.count).toBe(12);
+  expect(change.hidden, 'CHANGE LOOK').toEqual([]);
+  expect(change.lastBottom + RING).toBeLessThanOrEqual(change.doneTop);
+  if (p2.viewportSize().width >= 390) expect(change.scrolled).toBe(0);
+  await ctx.close();
+  expect(errs).toEqual([]);
 });
 
 test('each new outfit saves through CHANGE LOOK; the save stays v2', async ({ page }) => {
