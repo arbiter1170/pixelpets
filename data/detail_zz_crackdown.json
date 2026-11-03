@@ -925,7 +925,7 @@
   }
  },
  "objPatch": {
-  "_note": "Outdoor townsfolk shelter indoors during the crackdown night only (the curfew lifts at dawn, D1333); the plaza cast hides through fbplaza:curfew.",
+  "_note": "Outdoor townsfolk shelter indoors during the crackdown night only (the curfew lifts at dawn, D1333); the plaza cast hides through fbplaza:curfew. fb_tl_juniper (Day 1's Two Lights beat by the Lantern House door) never fires after the crackdown, on a save that skipped it.",
   "odile": {
    "whenAdd": [
     "!story.crackdown | story.post_trial_done"
@@ -961,6 +961,11 @@
   "fb_side_pick": {
    "whenAdd": [
     "story.warden_met | !story.crackdown"
+   ]
+  },
+  "fb_tl_juniper": {
+   "whenAdd": [
+    "!story.crackdown"
    ]
   }
  }
