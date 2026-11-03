@@ -97,11 +97,11 @@ const state = page => page.evaluate(() => ({
   v: PixelPets.state.v,
 }));
 
-const J7 = "Hale's Seal, on your Tier 2 cord at last. Logged! Have a bright day!";
-const J8 = "Review closed. Tier 2 on your cord, clipped to Hale's Seal. Logged!";
-const J9 = "Review closed. Tier 2 on your cord. Hale still holds your Seal. His floor's open.";
-const J24 = "Marisol's Seal, on your Tier 3 cord at last. Logged! Have a bright day!";
-const J25 = 'Quarter closed. Bright Tier 3 Lanyard. Three marks, one cord.';
+const J7 = "Hale's Seal, on your Tier 2 lanyard at last. Logged! Have a bright day!";
+const J8 = "Review closed. Tier 2 on your lanyard, clipped to Hale's Seal. Logged!";
+const J9 = "Review closed. Tier 2 on your lanyard. Hale still holds your Seal. His floor's open.";
+const J24 = "Marisol's Seal, on your Tier 3 lanyard at last. Logged! Have a bright day!";
+const J25 = 'Quarter closed. Bright Tier 3 Lanyard. Three marks, one lanyard.';   // D1448
 
 test('1. Glimmer, Hall 3: beating Marisol gives the Brinewick Seal and Tier 3, one card', async ({ page }) => {
   test.setTimeout(90000);
@@ -137,7 +137,7 @@ test('2, 3, 11. Hale: quota close, re-offer, a loss keeps it open, the late win 
   // The re-offer (D1328), then a loss: the match stays offered.
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
   r = await play(page, ['Face Hale for the Seal'], 'lose');
-  expect(r.says[0]).toEqual({ who: 'Master Hale', text: 'You have their cord. The Seal is still mine to give.' });
+  expect(r.says[0]).toEqual({ who: 'Master Hale', text: 'You have their lanyard. The Seal is still mine to give.' });
   expect(r.asks[0]).toEqual({ text: 'One match on the stone. Ready?', labels: ['Face Hale for the Seal', 'Not today'] });
   s = await state(page);
   expect(s.seals).not.toContain('seal_cobblecrest');
@@ -221,7 +221,7 @@ test('4. old saves read through the aliases and nothing is written @w1', async (
   // C has the tag but never beat Hale: the re-offer reads.
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
   const r = await play(page, ['Not today']);
-  expect(r.says[0].text).toBe('You have their cord. The Seal is still mine to give.');
+  expect(r.says[0].text).toBe('You have their lanyard. The Seal is still mine to give.');
 });
 
 test('4b. an old save that beat Hale on the Glimmer path reads the "on file" line, not the re-offer @w1', async ({ page }) => {
@@ -312,7 +312,7 @@ test('10. town lines after a quota close, then after beating Hale; the Ferry Han
   let l = await page.evaluate(() => ({ tobin: PixelPets.npcLine('tobin_gate'), miner: PixelPets.npcLine('cc_miner'), tamsin: PixelPets.npcLine('tamsin') }));
   expect(l.miner).toBe("Hale says your cord's from the company, not him. His floor's still open, patient as stone.");
   expect(l.tamsin).toBe("A Bright Tier from the company. Hale's Seal still waits on his floor.");
-  expect(['A Tier 2 cord, huh? Doesn\'t open this gate, sorry. Nothing does. Have a bright day!', 'Cord and vest. Gate stays shut, partner.']).toContain(l.tobin);
+  expect(['A Tier 2 cord, huh? Doesn\'t open this gate, sorry. Nothing does. Have a bright day!', "Lanyard and vest. Gate's shut, partner."]).toContain(l.tobin);
   await boot(page, mkSave(Object.assign({}, COBBLE_G, { 'story.seal2': true, 'trainer.hall2_hale': true }), { seal_fernbrook: 1, seal_glim_1: 1, seal_cobblecrest: 1, seal_glim_2: 1 }));
   l = await page.evaluate(() => ({ miner: PixelPets.npcLine('cc_miner'), tamsin: PixelPets.npcLine('tamsin') }));
   expect(l.miner).toBe("Hale says you moved stone the right way. Patient. That's high praise from him.");

@@ -2,6 +2,29 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 14:18 ET: Lore copy pass: wine vests, Partner Day, lanyard; Hall Masters neutral (B-7 and B-8: D1434, D1448, D1437)
+- What changed and why:
+  - D1434 (Vincent, Tue Nov 3, 2026): Glimmerwell supporters wear wine vests. Every built player line that names the Glimmerwell uniform as mint (vest, coat, collar, "in mint", "the mint", "You chose the mint.") now says wine vest, with the same meaning and at most 110 characters (40 where the line was a short loyalty or plaza line). the 24 listed lines plus 22 more of the same kind: `civic.json`, `detail_zz_plaza.json`, `detail_zzz_fernbrook_plaza.json`, `glimmer_path.json`, `news.json`, `ribbit_posts.json`, `town_board.json`, `town_board_copy.json`.
+  - D1434: the two Glimmerwell banner lines in `detail_zz_hall_contested.json` name no colour now.
+  - Mrs. Calloway's "his friend in mint" lives in verbatim `interiors.json`, so it is re-voiced at runtime: `applyObjPatch` (game.js) gains `linesSet` (replace a line the object already has), used by `detail_zz_day1.json` `objPatch.mrs_calloway`. Her two echoes in the news and Ribbit say "a wine vest" too.
+  - D1448: Rook's Glimmerwell teaser says "Sign-up day" (stand-in copy, OPEN_DECISIONS row B-7 (copy)); Partner Day is only the Keepers' starter day. Every player "cord" meaning the Glimmer tag says lanyard (`glimmer_path.json`, `detail_zz_brinewick.json`, `rook_crossroads.json`), including "Three marks, one lanyard."
+  - D1437: Master Fen, Master Hale and Master Marisol carry faction `none` in `data/reputation.json` (they were `keepers`): no side bonus or join penalty. "Master X" still shows first. `tests/npc_ranks.spec.js` drops "Master" from the Keeper ladder.
+- Files touched:
+  - code and data: `game.js`, `tools/GAMEJS_MAP.txt`, `data/civic.json`, `data/detail_zz_brinewick.json`, `data/detail_zz_day1.json`, `data/detail_zz_hall_contested.json`, `data/detail_zz_plaza.json`, `data/detail_zzz_fernbrook_plaza.json`, `data/glimmer_path.json`, `data/news.json`, `data/reputation.json`, `data/ribbit_posts.json`, `data/rook_crossroads.json`, `data/town_board.json`, `data/town_board_copy.json`, `data/mapdata.js`;
+  - tests: `tests/lore_copy_wine.spec.js` (new), `tests/npc_ranks.spec.js`, `tests/faction_music.spec.js`, `tests/rook_foreshadow.spec.js`, `tests/seals_both_paths.spec.js`, `tests/arbiter_test.spec.js`, `tests/news_glimmer_dark.spec.js` (its merge-base Keeper paper reads the D1434 re-voice);
+  - shots: `handoff/shots/lore_copy_wine/` (before and after at 390 and 320);
+  - docs: `OPEN_DECISIONS.md`, `tests/README.md`, `CHANGELOG.md`, plus the build stamp.
+- Commit(s) + build id: claude/b7-copy-wine-ranks, build 20261103-1418.
+- Tests run and result (widths, checks): `tests/lore_copy_wine.spec.js` at 320, 375 and 390: 9 passed. The 26 specs covering these files (npc_ranks, news, news_glimmer_dark, ribbit, town_board, town_board_gate, brinewick, glimmer_fernbrook, glimmer_cobble, glimmer_route2, glimmer_briefing, faction_music, rook_foreshadow, rook_crossroads, seals_both_paths, arbiter_test, civic, fernbrook_plaza, hearthmoor_plaza, trial_hall_contested, day1_flow, reputation, story_copy_fix, wording_guard, data_integrity, standing): 347 passed, 24 skipped, 2 failed, both fixed and re-run green (arbiter_test, news_glimmer_dark, lore_copy_wine: 30 passed). Zero console errors. Save `v` 2 and unchanged.
+- Decisions made (colour + reasoning):
+  - D1434, D1448, D1437 built as settled. No new decision id.
+  - Green (engineer): "mint coat" and "mint collar" lines also become "wine vest", since they name the same uniform; "mint" words that are not the uniform (lamp light, ink, stickers, lanyards, products) stay and wait on D1087.
+  - Green (engineer): `objPatch.linesSet` instead of editing verbatim `interiors.json`.
+- Anything left unfinished:
+  - Verbatim design data keeps its words: `interiors.json:169` (patched at runtime), `cobblecrest.json:131, :217` ("cord"), `cobblecrest.json:219, :421` (mint-and-white bunting), `act1_route2.json:291` ("partner day" here is the Keepers' day, so it is fine).
+  - D1444 and D1445 (Warden Teodor; civilians "Keeper Amos/Halvard/Marigold/Quill/Teague", "Watch Saffie") wait on Vincent's placeholder-names pass.
+  - The battle `FACTION` table in game.js still lists the three Hall battles as `keepers` (music and battle side); not changed here.
+
 ## 2026-11-03 11:21 ET: Build: the Keeper High Court moves to Charter Hill's Parade, facing Muster Road (D1354, HIGH_CHARITY_LAYOUT v0.3)
 - What changed and why:
   - D1354 (red, SETTLED by Vincent, Tue Nov 3, 2026; design `specs/HC_PARADE.md` §3.1): the Court moves from `hc_civic` 8,45 to the south half of the Parade, so the HC_PARADE speech can play on its steps.

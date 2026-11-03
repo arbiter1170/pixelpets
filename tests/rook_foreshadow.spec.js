@@ -15,7 +15,7 @@ const KEEPERS = [
 
 const GLIMMER = [
   "You got your Tier 1? Took you long enough. I'm going for Bright of the Month.",
-  "Yeah, I'm in too. Since spring. Partner day, the jingle, the sticker: all them.",
+  "Yeah, I'm in too. Since spring. Sign-up day, the jingle, the sticker: all them.",   // D1448
   "Tobin's fast kid from your town? Me. I wanted to tell you myself. Too late, huh?",
   'Imogen says the Route 2 Census needs volunteers. First one there gets the good clipboard.',
   'Race you! ...Hey. Did those Pomlets look kind of grey to you? Never mind. Lighting.',
@@ -29,7 +29,7 @@ const OTHER = [
   'Hey, wait up! Me and {rival} have been practising. Ten whole minutes. I had a coach.',
   "Okay, okay, you're good. Race you to Fernbrook! Somebody's waiting for me.",
   "Race you to Fernbrook! I'm meeting someone. Last one there feeds the other's Walkling!",
-  'If you see Rook, tell him supper keeps. And that his friend in mint called again.',
+  'If you see Rook, tell him supper keeps. And that his friend in a wine vest called again.',   // D1434 (objPatch)
   'A fast kid from your town said yes. Just saying.',
 ];
 
