@@ -2,6 +2,16 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026: Vincent approves the Lantern House and the President's look (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the crackdown: "Approved, president has a preview/look that is seen on the TV during his broadcast moment. Build his character based off that."
+
+- **D1413 (Tue Nov 3, 2026, red, SETTLED by Vincent):** yes: the rebuilt Fernbrook Lantern House (the wire station, LANTERN_HOUSE_FERNBROOK) deploys; rule 9 previews approved (`handoff/shots/lantern_house_fernbrook/build/`).
+- **D1414 (Tue Nov 3, 2026, red, SETTLED by Vincent):** the President's look is the bust on the wire set (`wire_wall_pres`), and his character is built from it: NPC look `president` (skin 3, short grey hair, Keeper green `J` cardigan with a gold front for the bust's gold lapels) and cast `cd_president`, both in `data/detail_zz_crackdown.json`; sheet in `handoff/shots/post_trial_crackdown/build/president_sheet.png`. On-screen naming was not ruled on, so the speaker label stays "The President" (D1241 cleared the name for later use).
+- **Moved word for word from Open:**
+| D1413 | red, rule 9 (LANTERN_HOUSE_FERNBROOK LH-1) | The Fernbrook Lantern House is rebuilt as the wire station, as specced (12x16 kept, LH-4 option A) | Built on the branch; **must not merge until Vincent says yes to the previews** in `handoff/shots/lantern_house_fernbrook/build/` | `data/fernbrook_rooms.json` `fb_lantern_in`, `sprites.js` `SKINS.fb_lantern` |
+| D1414 | red, LANTERN_HOUSE_FERNBROOK LH-2 | The President's look on the wire set (draft bust in Keeper colours) and whether he is named on screen | Draft `wire_wall_pres`; speaker label "The President"; no name on screen | `sprites.js` `wire_wall_pres`; speaker label in `crackdown_lantern` |
+
 ## Tue Nov 3, 2026: Vincent's rulings on POST_TRIAL_CRACKDOWN (recorded by Claude Code)
 
 Vincent, in the Claude Code session that built the crackdown packet: "Let's build it", then on the spec's defaults "Yes, but I'll change some", with one change: "There should be no pick yet, need placeholder and to spec a quest from the warden in starting area who summons the keeper back home to meet her." He also chose the full Lantern House redesign (still behind rule 9 previews, D1413) and draft art now (D1412).

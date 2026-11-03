@@ -1,6 +1,6 @@
 # LANTERN_HOUSE_FERNBROOK: the Fernbrook Lantern House as the town's wire station (`fb_lantern_in`)
 
-**Build (Tue Nov 3, 2026):** built on `claude/post-trial-crackdown` (build 20261103-1058). The curfew state is the spec's read (`story.crackdown & !story.side_pick_done`); with D1395 the pick comes after Warden Ilse, so the crowd stays until then. The parquet tiles are `floor_parquet_oak*` (the name `floor_parquet` was taken). Rule 9: it does not merge until Vincent says yes to `handoff/shots/lantern_house_fernbrook/build/` (D1413).
+**Build (Tue Nov 3, 2026):** built on `claude/post-trial-crackdown` (build 20261103-1143). The curfew state is the spec's read (`story.crackdown & !story.side_pick_done`); with D1395 the pick comes after Warden Ilse, so the crowd stays until then. The parquet tiles are `floor_parquet_oak*` (the name `floor_parquet` was taken). Rule 9: Vincent approved the previews in `handoff/shots/lantern_house_fernbrook/build/` (D1413, Tue Nov 3, 2026), and the President's look on the set is his settled look (D1414).
 
 Target path: `handoff/specs/LANTERN_HOUSE_FERNBROOK.md` (PUBLIC repo; not `docs/`). **Spec and previews only.** Nothing here is built: no game code or data changes. This is a room redesign (AGENTS rule 9), so **nothing builds or deploys until Vincent has seen the before/after previews (§10) and said yes.** The Supervisor sends them to him. All player text below is PLACEHOLDER; Story (June) writes the real lines.
 
