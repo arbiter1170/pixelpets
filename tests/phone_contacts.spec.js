@@ -64,11 +64,13 @@ test('the phone home is icons, contacts are people you have met, and the bag ope
   await page.locator('.phone-app[data-app="contacts"]').click();
   const people = await page.evaluate(() => PixelPets.contacts());
   const names = people.map((p) => p.name);
-  expect(names).toEqual(['Officer Ness', 'Rook', 'Sergeant Bram', 'Warden Ilse']);
+  // PARTNER_DAY (#258): Mom's wake-up scene (mom_luck) sets story.intro_seen, so by Route 1 the holder has met her
+  // downstairs and she is a contact (her tips scene is still to come, so she counts as a quest contact too).
+  expect(names).toEqual(['Mom', 'Officer Ness', 'Rook', 'Sergeant Bram', 'Warden Ilse']);
   expect(people.every((p) => p.quest)).toBe(true);
   expect(names).not.toContain('Hattie');
-  await expect(page.locator('.contact-row')).toHaveCount(4);
-  await expect(page.locator('.contact-row[data-quest="1"]')).toHaveCount(4);
+  await expect(page.locator('.contact-row')).toHaveCount(5);
+  await expect(page.locator('.contact-row[data-quest="1"]')).toHaveCount(5);
   const rowFit = await page.evaluate(() => {
     const body = document.querySelector('#phoneBody');
     return body.scrollWidth <= body.clientWidth + 1;
