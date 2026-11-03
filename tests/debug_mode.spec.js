@@ -155,7 +155,7 @@ test('catalog, side checkpoint, kit and dev checks are there for later work @w1'
   expect(mom.ok).toBe(true);
   expect(mom.chain).toBe('side');
   expect(mom.sideQuest).toBe('mom');
-  expect(mom.map).toBe('hm_home_up');
+  expect(mom.map).toBe('hm_home_in');   // PARTNER_DAY: Mom lives downstairs
   expect(mom.quest).toBe('rival1');
 
   const kit = await page.evaluate(() => {
@@ -170,7 +170,7 @@ test('catalog, side checkpoint, kit and dev checks are there for later work @w1'
   const checks = await page.evaluate(() => window.PixelPets.devChecks());
   for (const list of Object.values(checks)) expect(list).toEqual([]);
   const snap = await page.evaluate(() => window.PixelPets.debugSnapshot());
-  expect(snap.map).toBe('hm_home_up');
+  expect(snap.map).toBe('hm_home_in');
   expect(snap.partner).toBeTruthy();
   expect(snap.debug).toBe(true);
 });

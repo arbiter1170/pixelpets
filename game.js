@@ -2149,6 +2149,15 @@ function tutBox(el){
   if (r.width < 2 || r.height < 2) return null;
   return { x: r.left, y: r.top, w: r.width, h: r.height, el: el };
 }
+// The box of what an element shows (its text and inline glyphs), not the full-width row it sits in (Vincent, Nov 2, 2026:
+// the befriend odds card ringed two whole rows that ran off the screen).
+function tutInk(el){
+  const b = tutBox(el); if (!b) return null;
+  const r = document.createRange(); r.selectNodeContents(el);
+  const c = r.getBoundingClientRect();
+  if (c.width < 2 || c.height < 2) return b;
+  return { x: c.left, y: c.top, w: c.width, h: c.height, el: el };
+}
 function tutJoin(sels){
   const rs = sels.map(s => tutBox($(s))).filter(Boolean);
   if (!rs.length) return [];
@@ -2448,14 +2457,29 @@ function runTutorial(opts){
   clearMoves(); lockTabs(true);
   tutShow(opts.replay ? 'T10' : (opts.resume ? 'T0r' : 'T0'));
 }
+// PARTNER_DAY (Vincent, Nov 2, 2026): too many tutorials after the starter. A holder who played the house morning
+// (story.home_walk) learned to walk there; the tab tour no longer auto-starts and Mom offers it as tips. When the care
+// walk ends (where the tour used to start), the tour's end state is set without it: tutorial_done, today's hello, the bell.
+const WALK_HINT = { modern: 'Tap the mirror. You walk over to it on your own.', arcade: 'Hold the pad to walk to the mirror, then tap TALK.' };
+function tourByMom(force){
+  if (!S || !S.flags['story.home_walk'] || S.flags['story.tutorial_done'] || !S.flags['story.starter_received'] || !pet()) return false;
+  if (!force && S.flags['story.tut_care'] === 'armed') return false;
+  S.flags['story.tutorial_done'] = true;
+  delete S.flags['story.tutorial_step'];
+  S.flags[HELLO_FLAG] = dayKey(Date.now());
+  save();
+  grantKit('bell');
+  return true;
+}
 function tutorialPending(){
   if (S && S.flags['story.tut_care'] === 'armed') {
     const ph = careLes.phase;
     if (ph === 'calm' || ph === 'act' || ph === 'c1' || ph === 'tray') return false;
   }
-  return !!(S && pet() && !tut.on && S.flags['story.starter_received'] && !S.flags['story.tutorial_done'] && !S.flags['story.early_done']);
+  return !!(S && pet() && !tut.on && S.flags['story.starter_received'] && !S.flags['story.tutorial_done'] && !S.flags['story.early_done'] && !S.flags['story.home_walk']);
 }
 function scheduleTutorial(fromScene){
+  if (tourByMom(false)) return;
   if (!tutorialPending()) return;
   if (!fromScene && !S.flags['story.tutorial_step']) return;
   tut.fromScene = !!fromScene || tut.fromScene;
@@ -2501,6 +2525,7 @@ const TCM = {
   M1: 'Every Walkling has a type. {pet} is {type}, and {foe} is {foeType}.',
   M2h: '{type} moves hit {foeType} hard, about double. Use them to finish fast.',
   M2s: '{type} moves barely hurt {foeType}, about half as much. Try another kind of move.',
+  M2sx: '{type} moves barely hurt {foeType}, about half as much. {pet} has no other kind yet, but every hit counts.',
   M2e: '{type} and {foeType} are even. Every move lands the usual way.',
   M2z: '{type} moves can\'t touch {foeType} at all. Pick a move of another type.',
   M3: 'Tap MOVES. Every move shows its type, and STATUS moves show no power.',
@@ -2577,6 +2602,14 @@ function lessonHide(){
   lockTabs(false);
   flushCareToasts();
 }
+// A look-only hole stays inside the screen, ring included, so no highlight runs off an edge.
+function lessonFit(b){
+  if (!b) return null;
+  const m = 7, vw = window.innerWidth, vh = window.innerHeight;
+  const x = Math.max(m, b.x), y = Math.max(m, b.y), r = Math.min(vw - m, b.x + b.w), btm = Math.min(vh - m, b.y + b.h);
+  if (r - x < 2 || btm - y < 2) return b;
+  return { x: x, y: y, w: r - x, h: btm - y, el: b.el };
+}
 function lessonPad(b){
   if (!b) return null;
   if (b.w >= 44 && b.h >= 44) return b;
@@ -2588,7 +2621,10 @@ function lessonCard(o){
   if (unlock.on) return;
   const layer = $('#tutLayer'); if (!layer) return;
   tut.on = true; tut.lesson = o.lesson; tut.soft = !!o.soft; tut.pass = !!o.pass; tut.adv = o.adv || 'next'; tut.act = o.act || null; tut.id = o.id; tut.key = null; tut.replay = false;
-  tut.holes = (o.holes || []).map(lessonPad).filter(Boolean); tut.hi = 0; tut.skipFn = o.skip || null;
+  // Only a hole the player taps through grows to 44 px. A look-only hole (the HP bar, a type chip) keeps its real
+  // size, so the ring hugs the bar instead of spilling over the rows around it (Vincent, Nov 2, 2026).
+  const tapHole = !!o.pass || o.adv === 'tap';
+  tut.holes = (o.holes || []).map(b => tapHole ? lessonPad(b) : lessonFit(b)).filter(Boolean); tut.hi = 0; tut.skipFn = o.skip || null;
   layer.hidden = false; layer.classList.toggle('soft', !!o.soft); layer.classList.add('lesson'); layer.dataset.step = o.id;
   document.body.classList.add('tut-on');
   if (!o.soft) lockTabs(true); else lockTabs(false);
@@ -2816,28 +2852,32 @@ function plainPowerMove(){
   }
   return null;
 }
+function movesOtherKind(f){
+  const p = pet(); if (!p || !Array.isArray(p.moves) || !f) return false;
+  return p.moves.some(id => { const mv = MOVES[id]; return mv && mv.power > 0 && typeMult(mv.type || 'PLAIN', f.type) >= 1; });
+}
 function movesM2(){
   const f = curFoe();
   const m = typeMult((SPECIES[spi(pet())] || {}).type || 'PLAIN', f ? f.type : 'PLAIN');
   if (m === 0) return 'M2z';
   if (m > 1) return 'M2h';
-  if (m < 1) return 'M2s';
+  if (m < 1) return movesOtherKind(f) ? 'M2s' : 'M2sx';   // don't send the player looking for a move they don't have
   return 'M2e';
 }
 function movesHoles(id){
   const one = sel => { const b = tutBox($(sel)); return b ? [b] : []; };
-  if (id === 'M1' || id === 'M2h' || id === 'M2s' || id === 'M2e' || id === 'M2z') return [tutBox($('#btFoeType')), tutBox($('#btMeType'))].filter(Boolean);
+  if (id === 'M1' || id === 'M2h' || id === 'M2s' || id === 'M2sx' || id === 'M2e' || id === 'M2z') return [tutBox($('#btFoeType')), tutBox($('#btMeType'))].filter(Boolean);
   if (id === 'M3') return one('[data-bact="fight"]');
   if (id === 'M4' || id === 'M4p' || id === 'M4n') return one('#btMoves');
   if (id === 'M5') return [tutBox($('#btMood')), tutBox($('#btFoeStages'))].filter(Boolean);
   if (id === 'M6') return one('#btMood');
-  if (id === 'F1') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement), tutBox($('#btMeHp') && $('#btMeHp').parentElement)].filter(Boolean);
+  if (id === 'F1') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement), tutBox($('#btMeHp') && $('#btMeHp').parentElement)].filter(Boolean);   // the .bt-hp bars only
   if (id === 'F2') return [];
   if (id === 'F3') return one('[data-bact="swap"]');
   if (id === 'W1') return one('#btBefriendAct');
   if (id === 'W2' || id === 'W3') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement)].filter(Boolean);
   if (id === 'W4') return one('#btRun');
-  if (id === 'W5') return [tutBox($('#encOdds')), tutBox($('#encTries'))].filter(Boolean);
+  if (id === 'W5') return tutUnion([tutInk($('#encTries')), tutInk($('#encOdds'))].filter(Boolean));   // one ring round the hearts and the odds word
   if (id === 'M7') {
     const badge = $('#btMoves .mv-hint');
     const b = badge ? tutBox(badge) : null;
@@ -2871,6 +2911,14 @@ function movesSkip(){
   save();
   lessonHide();
 }
+// Each look-only card shows at most once (Vincent, Nov 2, 2026: HP and types came back four times). The furthest
+// card seen is kept in story.tut_moves_seen (additive flag); a later choose resumes after it instead of at F1.
+const MOVES_SEEN = ['F1', 'M1', 'M2', 'M5', 'M6', 'F2', 'F3'];
+function movesSeenRank(){ return S ? (+S.flags['story.tut_moves_seen'] || 0) : 0; }
+function movesNoteSeen(line){
+  const k = MOVES_SEEN.indexOf(line.indexOf('M2') === 0 ? 'M2' : line) + 1;
+  if (S && k > movesSeenRank()) { S.flags['story.tut_moves_seen'] = k; save(); }
+}
 function movesShow(id){
   let line = id;
   if (id === 'M2') line = movesM2();
@@ -2896,6 +2944,7 @@ function movesShow(id){
   } else if (line !== 'M3') buttons.push([TCM.B1, () => movesShow('M3')]);
   const pass = line === 'M3' || line === 'M4p' || line === 'M4n';
   lessonCard({ lesson: 'moves', id: line, text: TCM[line], soft: false, pass: pass, adv: pass ? 'tap' : 'next', holes: holes, buttons: buttons, skip: movesSkip });
+  if (tut.on && tut.id === line) movesNoteSeen(line);
   if (line === 'M7') movesLes.m7At = movesLes.chooseN;
 }
 function maybeMovesLesson(){
@@ -2916,8 +2965,12 @@ function maybeMovesLesson(){
   if (S.flags['story.tut_moves_hit'] && !movesLes.hitDue) movesLes.m7done = true;
   const later = movesLes.p1At !== movesLes.chooseN && movesLes.m7At !== movesLes.chooseN;
   if ((st === 'p1' || st === 'p2') && movesLes.hitDue && !movesLes.m7done && later) { movesShow('M7'); return; }
-  if (st === 'armed') { movesShow('F1'); return; }
-  if (st === 'p1' && later) { movesShow('M5'); return; }
+  const seen = movesSeenRank();
+  if (st === 'armed') { movesShow(seen >= 3 ? 'M3' : MOVES_SEEN[seen]); return; }
+  if (st === 'p1' && later) {
+    if (seen >= 7) { movesMarkP2(); return; }                 // part 2 was all seen once; don't play it again
+    movesShow(MOVES_SEEN[Math.max(3, seen)]); return;
+  }
   if (st === 'p2' && movesLes.hitDue && !movesLes.m7done && later) { movesShow('M7'); return; }
 }
 function noteBefBattle(){
@@ -3022,6 +3075,7 @@ function replayMovesLesson(){
   S.flags['story.tut_moves'] = 'armed';
   delete S.flags['story.tut_moves_hit'];
   delete S.flags['story.tut_moves_n'];
+  delete S.flags['story.tut_moves_seen'];   // a replay starts again at F1
   movesLes.hitDue = false; movesLes.m7done = false; movesLes.p1At = -1; movesLes.m7At = -1; movesLes.plain = '';
   save();
   toast(TCM.MR);
@@ -3787,6 +3841,7 @@ function applyMapPatch(W, patch){
       if (k >= 0) m.objs[k] = copy; else m.objs.push(copy);
     }
     for (const o of pt.addObjs || []) m.objs.push(JSON.parse(JSON.stringify(o)));
+    if (pt.removeObjs) m.objs = m.objs.filter(o => pt.removeObjs.indexOf(o.id) < 0);
   }
 }
 const WORLD = (() => {
@@ -4478,6 +4533,11 @@ if (SCENES.starter) SCENES.starter.push(
 const starterMomentMiss = [];
 if (SCENES.starter && MD.starter_moment && MD.starter_moment.inserts)
   applyStarterInserts(SCENES.starter, MD.starter_moment.inserts, starterMomentMiss);
+// PARTNER_DAY (Vincent, Nov 2, 2026): Ilse's talk lands harder and hints at what is ahead (Walklings understand more than
+// folk think; someone will offer to make yours brighter). Lines come from data/detail_zz_partner_day.json `ilseAfter`,
+// spliced after her built "trust is the only armour" line, so the design JSON stays verbatim.
+if (SCENES.starter && MD.detail_zz_partner_day && MD.detail_zz_partner_day.ilseAfter)
+  applyStarterInserts(SCENES.starter, [MD.detail_zz_partner_day.ilseAfter], starterMomentMiss);
 // INTRO_CUTSCENE (D810): every data/cutscene_*.json stages one scene (its `scene`). Inserts go in after STARTER_MOMENT's, so
 // their anchors may name lines either placed; `vars` and `portraits` are kept per scene. A new cutscene is a data file only.
 const CUT_VARS = {}, PORTRAIT_FOR = {}, cutsceneMiss = [];
@@ -4487,9 +4547,34 @@ for (const k of Object.keys(MD).filter(k => k.startsWith('cutscene_')).sort()) {
   if (C.portraits) PORTRAIT_FOR[C.scene] = C.portraits;
   applyStarterInserts(SCENES[C.scene], C.inserts || [], cutsceneMiss);
 }
-if (SCENES.rival1) SCENES.rival1.push(
-  ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
-  ['say', '', 'A wild Walkling waits in the grass, just off the path.']);
+// ROOK_LANTERN_WALK (Vincent, Nov 2, 2026): after losing Rook's first match, Rook walks the holder to the Lantern House so
+// healing makes sense, instead of a teleport. Host Della's guide plays, Rook covers the rest, then he heads for Fernbrook.
+// rival1 is one-shot, so this only ever plays on that first loss. The won branch and its tail are unchanged.
+const ROOK_LANTERN_LOST = [
+  ['castAt', 'rook_walk', 22, 8, 'left'],
+  ['say', 'Rook', "Ha! Hey, don't look like that. Mine just had a head start."],
+  ['say', 'Rook', "{pet}'s worn out. Come on, I'll walk you to the Lantern House. It's right by the plaza."],
+  ['keepPlace'],
+  ['walkTo', 'player', 16, 13, { with: 'rook_walk' }],
+  ['warp', 'hm_lantern_in', 4, 5, 'up'],
+  ['castAt', 'rook_walk_in', 5, 5, 'up'],
+  ['lanternGuide'],
+  ['say', 'Rook', "I've got this one. Pick a bed, any bed."],
+  ['walkTo', 'player', 2, 3],
+  ['rest'], ['respawnHere'],
+  ['say', '', 'You all doze in the lantern glow.'],   // the rest step's toast says "Your team is rested."
+  ['say', 'Rook', "See? Good as new. Lose, rest, go again. That's what these places are for."],
+  ['say', 'Rook', "Race you to Fernbrook! I'm meeting someone. Last one there feeds the other's Walkling!"],
+  ['walkTo', 'rook_walk_in', 4, 6, { drop: true }],
+  ['say', '', 'A wild Walkling waits in the grass, just off the east path.'],
+];
+if (SCENES.rival1) {
+  const fork = SCENES.rival1.find(st => st[0] === 'if' && st[1] === 'story.rival1_result=won');
+  if (fork) fork[3] = ROOK_LANTERN_LOST;
+  SCENES.rival1.push(['if', 'story.rival1_result=won', [
+    ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
+    ['say', '', 'A wild Walkling waits in the grass, just off the path.']]]);
+}
 // BS Standing grants on the Keepers path (spec engineAsks.standingGrants): the orchard win and Seal #1. Amounts come from
 // STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
@@ -4756,7 +4841,7 @@ const shownName = n => (window.PPRep && (PPRep.entry(n) || {}).label) || n;   //
 // Greens: Pip stands at (3,4) and Wren at (6,4) because (2,4) is one desk. Ossabell's (0,0) means her 5B spot.
 // Mr. Gristle's closed tile (9,9) is the lobby wall, so he stands at (6,9). Market Row is P2.
 const SCHED = {};
-const CLOCK_SKIP = { hm_lizzy: 1, hm_buddy: 1 };
+const CLOCK_SKIP = { hm_lizzy: 1, hm_buddy: 1, hm_lizzy_pre: 1, hm_buddy_pre: 1, room_lizzy: 1, room_buddy: 1 };   // PARTNER_DAY: the morning Lizzy and Buddy too
 const CLOCK_NUDGE = {
   school_kid_a: { key: 'hm_school_in:2,4', x: 3, y: 4, facing: 'left' },
   school_kid_b: { key: 'hm_school_in:2,4', x: 6, y: 4, facing: 'left' },
@@ -6449,7 +6534,7 @@ function tickPatrol(dt){
 const PATROL_GLIDE_MS = 420, WANDER_STEP_MS = 360, WANDER_REACH = 2, WANDER_GAP_R = 8;
 const WANDER_FIRST_MS = [3500, 7000], WANDER_DWELL_MS = [2200, 5200], GLANCE_MS = [4500, 9000], GLANCE_HOLD_MS = 1100;
 // Ids that must hold their spot even though the rules above would let them walk (story blockers in wide spaces, set pieces).
-const NPC_STILL = {};
+const NPC_STILL = { mom: 1 };   // PARTNER_DAY: Mom keeps her spot by the rug, off the stairs landing and the goodbye tile
 /* FERNBROOK_PLAZA (D1247): a data-driven stance for set-piece npcs (the plaza standoff). Inert on every npc without these fields.
    `hold: true`   the npc keeps its tile: no walk route, no idle glance, and it does not turn to watch the holder walk past
                   (a talk still turns it to the holder for the talk, and it turns back when the talk ends).
@@ -8050,6 +8135,18 @@ function artFrame(a, t){
 }
 // Buddy at home and at school (D181). Sit and tail-up trade every 500 ms. Eyes close for 120 ms every 4 s.
 // Night curls him up with a slow z. Reduced motion is the sit frame, still.
+function drawMaze(g, X, Y, t){
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const night = ENV && ENV.tags && ENV.tags.indexOf('night') >= 0;
+  g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 3, Y + 14, 11, 2);
+  let img = WART.maze_sit;
+  if (night && WART.maze_sleep) img = WART.maze_sleep;
+  else if (!reduce) {
+    const blink = (t % 3600) < 140;
+    img = blink && WART.maze_blink ? WART.maze_blink : (Math.floor(t / 700) % 4 === 3 && WART.maze_tail ? WART.maze_tail : WART.maze_sit);
+  }
+  g.drawImage(img, X, Y - 2);
+}
 function drawBuddy(g, X, Y, t){
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const night = ENV && ENV.tags && ENV.tags.indexOf('night') >= 0;
@@ -8097,6 +8194,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
+    if (o.pet === 'maze' && WART.maze_sit) { drawMaze(g, X, Y, t); return; }
     if (o.pet) { const [ln, st] = String(o.pet).split('/');
       const stage = +(o.stage != null ? o.stage : st) || 0;
       g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
@@ -8848,6 +8946,8 @@ function interact(o){
   }
   const offer = o.kind === 'npc' ? trackOffer(o) : null;
   if (offer) return runSteps([['say', objName(o), line], ['choice', offer.prompt, [['Track it', [['trackSide', offer.chain]]], ['Not now', []]]]], ctx);
+  // PARTNER_DAY: `after` names a scene that follows a plain line when there is no track offer (Mom's "Ask Mom for tips?").
+  if (o.after && sceneSteps(o.after)) return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line], ['run', o.after]], ctx);
   return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line]], ctx);
 }
 // What the keeper faces: a talkable object on the next tile, or the door of the doorstep you stand on (facing up).
@@ -8978,7 +9078,7 @@ function endScene(){
   if (shopMeal) closeMealSheet(-1);
   const sc = scene; if (!sc) return;
   const cue = sc.musicCue;
-  const openWard = !!sc.openWardrobe;
+  const openWard = !!sc.openWardrobe, openTips = !!sc.openTips;
   const partnerAt = castTileOf(sc, 'partner');
   closeReveal(true);
   clearSceneEmotes();
@@ -9005,6 +9105,7 @@ function endScene(){
   else {
     checkArriveTriggers();   // only triggers marked arrive (a dream warp landing on the next scene)
     if (openWard) openWardrobe();
+    else if (openTips) setTimeout(() => { if (!scene) openTutorialChooser(); }, 0);   // Mom's tips (PARTNER_DAY)
     else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
@@ -9018,11 +9119,15 @@ const pend = f => scene.pending.push(f);
 // Rook skids in" (the Lodge has only Ilse, and outdoor rook_home lives on the Hearthmoor map), so nothing drew him. He appears on
 // the first line that names him or that he speaks, just inside the door mat, facing the keeper, and leaves when the scene ends.
 // A plain npc pushed into CUR.objs for the scene only: drawn, blocking and listed like any other; never saved.
-const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', map: 'hm_lodge_in' }] };
+const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', map: 'hm_lodge_in' }],
+  intro: [{ id: 'lizzy_wake', name: 'Lizzy', look: 'lizzy', map: 'hm_home_room' }, { id: 'buddy_wake', name: 'Buddy', pet: 'fetch/1', map: 'hm_home_room', castOnly: true }],
+  mom_wake: [{ id: 'mom_up', name: 'Mom', look: 'mom', map: 'hm_home_up' }] };   // PARTNER_DAY: Mom lives downstairs now
+// Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the holder).
+const CAST_AT_LOOK = { rook_walk: { name: 'Rook', look: 'rook' }, rook_walk_in: { name: 'Rook', look: 'rook' } };
 function castOnSay(who, text){
   const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
   for (const c of cast) {
-    if (c.map !== CUR.id || CUR.objs.some(o => o.id === c.id)) continue;
+    if (c.castOnly || c.map !== CUR.id || CUR.objs.some(o => o.id === c.id)) continue;
     if (who !== c.name && !new RegExp('\\b' + c.name + '\\b').test(text || '')) continue;
     const at = castSpot(); if (!at) continue;
     const dx = S.world.x - at.x, dy = S.world.y - at.y;
@@ -9136,8 +9241,8 @@ function drawCurtain(g, cx, cy, VW, VH){   // the room is centred on a PAL k voi
 }
 function cutCastAt(sc, id, x, y, facing){
   if (!CUR || CUR.objs.some(o => o.id === id)) return;
-  const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || { id, name: '', look: 'villager' };
-  pushCast({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true });
+  const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || CAST_AT_LOOK[id] || { id, name: '', look: 'villager' };
+  pushCast(Object.assign({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true }, c.pet ? { pet: c.pet } : {}));
   mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' };
 }
 function cutProp(sc, id, sprite){
@@ -9178,7 +9283,8 @@ async function cutWalkTo(sc, who, x, y, opts){
   for (const p of path) {
     if (!scene) break;
     const ms = fast || cutRT.end ? 0 : (isP ? STEP_MS : 120) / cutRT.speed;
-    if (isP) await cutStepPlayer(p, ms);
+    if (isP && mate) await Promise.all([cutStepPlayer(p, ms), glideCast([{ id: mate.id, x: prev.x, y: prev.y }], ms)]).then(() => { const P = mapRT.pos[mate.id]; if (P) P.moving = false; });
+    else if (isP) await cutStepPlayer(p, ms);
     else { const mv = [{ id: who, x: p.x, y: p.y }]; if (mate) mv.push({ id: mate.id, x: prev.x, y: prev.y });
       await glideCast(mv, ms); for (const m of mv) { const P = mapRT.pos[m.id]; if (P) P.moving = false; } }
     prev = p;
@@ -9432,12 +9538,15 @@ async function execStep(st){
     }
     case 'lookPick': {
       sc.skip = false;
-      const lk = await lookPickStep(sc.id === 'intro');
+      const lk = await lookPickStep(sc.id === 'intro' || sc.id === 'home_dress');   // PARTNER_DAY: the bedroom mirror is the first pick
       if (lk) { sc.view.look = lk; pend(() => { S.player.look = lk; }); }
       if (sc.id === 'intro') await execStep(['controlPick']);   // Q26 (D76): asked right after the mirror, before the door note
       return;
     }
     case 'wardrobeOpen': { sc.openWardrobe = true; return; }
+    // PARTNER_DAY: the walk lesson moved from the post-starter tour into the house (Vincent, Nov 2, 2026).
+    case 'walkHint': { await execStep(['say', '', S.settings.controls === 'arcade' ? WALK_HINT.arcade : WALK_HINT.modern]); return; }
+    case 'tipsMenu': { sc.openTips = true; pend(() => tourByMom(true)); return; }
     case 'trackSide': { pend(() => { const a2 = sideActiveList().find(x => x.chain === a); if (!a2) return; setTracked(a); toast('Now tracking: ' + a2.label); }); return; }
     // Q26: Arcade or Modern, in the house before the exit mat. Not a story flag; writes S.settings.controls at once.
     case 'controlPick': {
@@ -9454,6 +9563,9 @@ async function execStep(st){
     }
     case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
+    case 'keepPlace': sc.deferRespawn = false; return;   // this scene walks the holder to the Lantern House itself (ROOK_LANTERN_WALK)
+    // The guide teaches the Lantern House once: its "Lanterns" unlock card would repeat the same lesson right after the rest.
+    case 'lanternGuide': { const g = lanternGuideHere(); if (g) await execSteps(lanternGuideSteps(g, true)); if (S) S.flags['story.unlock_lantern'] = true; return; }
     case 'if': await execSteps(cond(a, true) ? b : c); return;
     case 'push': {
       const nx = S.world.x + a, ny = S.world.y + b;
@@ -11525,7 +11637,7 @@ function aiPick(){
 /* --- turn resolution (§1) --- */
 async function resolveTurn(action){
   const B = battle, id = B.id; if (B.state !== 'CHOOSE') return;
-  if (tut.lesson === 'moves' && tut.id === 'M4') movesMarkP1();
+  if (tut.lesson === 'moves' && (tut.id === 'M4p' || tut.id === 'M4n')) movesMarkP1();   // the card id is M4p or M4n, never M4
   if (tut.lesson === 'moves' || tut.lesson === 'bef') lessonHide();
   B.state = 'RESOLVE'; B.turn++; setPanel('busy');
   if (B.group) {
@@ -11738,7 +11850,9 @@ async function doMove(side, mid, id){
   step('text', { s: uName + ' tries ' + mv.name + '!' });
   await play(id); if (!alive(id)) return;
   const e = mv.effect || null, selfOnly = mv.power === 0 && e && e.target === 'self';
-  if (!selfOnly && !(B.rng() < mv.acc / 100)) { step('sfx', { name: 'miss' }); step('text', { s: uName + ' just misses!' }); await play(id); return; }
+  // The first Rook match is the teaching fight: the holder's hits never miss there (Vincent, Nov 2, 2026: "my first attack did nothing").
+  const sureHit = mine && mv.power > 0 && B.trainerId === 'rival1_rook';
+  if (!selfOnly && !sureHit && !(B.rng() < mv.acc / 100)) { step('sfx', { name: 'miss' }); step('text', { s: uName + ' just misses!' }); await play(id); return; }
   if (mv.power > 0) {
     const att = mine ? myBattler() : foeBattler(f), def = mine ? foeBattler(f) : myBattler(), tgt = otherSide(side), EC = B.echo;
     // Live Wire (D840): the first VOLT move a Cordhound lands in a battle has 1.5x power.

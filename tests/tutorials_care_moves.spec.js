@@ -557,11 +557,15 @@ test('T-M2 only Rook\'s first match shows cards', async ({ page }) => {
 
 test('T-M3 the matchup line follows typeMult', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
-  const pair = async (species, form, line) => {
-    await page.evaluate((sp) => {
+  const KIT = { ember: ['foxfire_flick', 'flick_flame', 'stoke_up'], tide: ['droplet_dash', 'ripple_jab', 'mist_veil'], bloom: ['burrow_bounce', 'seed_toss', 'sap_sip'] };
+  const pair = async (species, form, line, moves) => {
+    await page.evaluate(({ sp, mv }) => {
       PixelPets.state.party[0].species = sp;
+      PixelPets.setMoves(mv);
       PixelPets.state.flags['story.tut_moves'] = 'armed';
-    }, species);
+      delete PixelPets.state.flags['story.tut_moves_seen'];   // each pair starts at F1 (cards show once: battle_tips_once)
+      delete PixelPets.state.flags['story.tut_moves_n'];      // and under the 4-battle cap
+    }, { sp: species, mv: moves || KIT[species] });
     await openWild(page, form, 3);
     await pastF1(page);
     await clickCard(page, 'NEXT');
@@ -569,9 +573,12 @@ test('T-M3 the matchup line follows typeMult', async ({ page }) => {
     await page.evaluate(() => PixelPets.battle.close());
     await page.waitForFunction(() => !PixelPets.battle.on);
   };
-  await pair('ember', 'tide/0', 'M2s');
-  await pair('tide', 'bloom/0', 'M2s');
-  await pair('bloom', 'ember/0', 'M2s');
+  // Starters only know moves of their own type, so a resisted matchup shows M2sx ("no other kind yet").
+  await pair('ember', 'tide/0', 'M2sx');
+  await pair('tide', 'bloom/0', 'M2sx');
+  await pair('bloom', 'ember/0', 'M2sx');
+  // With a move of another kind, the old "Try another kind of move" line (M2s) shows.
+  await pair('ember', 'tide/0', 'M2s', ['bump', 'flick_flame', 'stoke_up']);
   await pair('ember', 'bloom/0', 'M2h');
 });
 
@@ -665,7 +672,8 @@ test('T-M8 a loss keeps the lesson for the next wild battle', async ({ page }) =
   await page.waitForFunction(() => !PixelPets.battle.on);
   expect((await lesson(page)).moves).toBe('p1');
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M5');
+  // M5 was already seen, so part 2 resumes at M6 (each card shows once, Vincent Nov 2, 2026).
+  await page.waitForFunction(() => PixelPets.lesson().card === 'M6');
 });
 
 test('T-M10 four wild battles end the lesson', async ({ page }) => {
@@ -828,7 +836,8 @@ test('T-M9 befriending early leaves the result panel', async ({ page }) => {
   const journal = page.locator('#jnClose');
   if (await journal.isVisible().catch(() => false)) await journal.click();
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'F1');
+  // F1 was already seen, so the lesson resumes at M1 (each card shows once, Vincent Nov 2, 2026).
+  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
 });
 
 async function sampleTypeCard(page, width) {
