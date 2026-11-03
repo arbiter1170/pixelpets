@@ -8,6 +8,8 @@ trackErrors(test, expect);
 
 test('every interactable tap resolves to its action @w1', async ({ page }) => {
   test.setTimeout(60000);
+  // Pin the clock to an ET midday so the audit never depends on when the suite runs.
+  await page.clock.setFixedTime(new Date('2026-11-03T12:00:00-05:00'));
   const s = starterSave();
   s.settings.controls = 'modern';
   await installSave(page.context(), s, { quietDay: true });
@@ -28,7 +30,10 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // the props inside the three homes and on the south lane) add door 3, warp 3, sign 1 and talk 62.
     // DAY1_TRIAL1_FLOW adds sign 6 (four contested Fernbrook signs, two held), talk 6 (three crates, Tobin's tally, Burrsnout,
     // Juniper in the Lantern House), trainer 3 (the Trial Hall holders) and trigger 4 (Two Lights x3, Fen's west-road catch).
-    door: 48, warp: 96, sign: 96, talk: 745, scene: 40, trigger: 38, board: 7,
+    // PARTNER_DAY (#258): the new hall and bedroom (hm_home_hall, hm_home_room), Mom (moved down from hm_home_up) and Maze,
+    // the home pegs, the up_cushion, and hm_buddy_pre / hm_lizzy_pre in Hearthmoor add talk 12, warp 4 (hall_mom,
+    // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
+    door: 48, warp: 100, sign: 96, talk: 757, scene: 40, trigger: 40, board: 7,
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
