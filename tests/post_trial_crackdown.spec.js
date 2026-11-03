@@ -115,10 +115,13 @@ test.describe('post-Trial crackdown', () => {
     expect(await sceneId(page)).toBe('warden_meet');
     await drive(page);
     expect((await flags(page))['story.warden_met']).toBe(true);
-    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('pick');
+    // RENDEZVOUS_VINCENT (D1403): Ilse sends the holder to Vincent; the rendezvous itself is played in rendezvous_vincent.spec.js.
+    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('rdv_meet');
     expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
     expect(await sceneId(page)).toBe('warden_after');
     await drive(page);
+    await page.evaluate(() => { for (const k of ['story.rdv_met', 'story.shift_g', 'story.shift_k', 'story.rdv_done']) PixelPets.setFlag(k, true); });
+    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('pick');
     // Now the built pick runs.
     await stepOnto(page, 'fernbrook', 9, 9, 'down');
     expect(await sceneId(page)).toBe('side_pick');

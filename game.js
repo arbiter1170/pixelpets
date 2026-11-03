@@ -13960,6 +13960,7 @@ function contactPeople(){
     for (const o of m.objs || []) {
       if (!o || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
       if (o.pet) continue;   // a Walkling beside an NPC talks, and never gets a phone card
+      if (o.offWire) continue;   // RENDEZVOUS_VINCENT D1398: someone with no Keeper1 (Vincent) never gets a phone card
       const raw = objName(o), key = contactKey(raw);
       if (!key) continue;
       // One phone card per cast entry. Marisol and Master Marisol share PPRep.key.

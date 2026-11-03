@@ -189,8 +189,9 @@ test('Trial 1: three holders before Fen, the Seal, the post-Trial slot, the pick
   expect(f['story.post_trial_done']).toBeFalsy();
   expect((await quest(page)).id).toBe('crackdown_street');
   expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_side_pick').whenOk)).toBe(false);
-  // The crackdown night and Warden Ilse's summons are played in tests/post_trial_crackdown.spec.js; here their flags stand in.
-  await page.evaluate(() => { for (const k of ['story.crackdown', 'story.hall1_shut', 'story.post_trial_done', 'story.warden_called', 'story.warden_met']) PixelPets.setFlag(k, true); });
+  // The crackdown night and Warden Ilse's summons (tests/post_trial_crackdown.spec.js) and the Vincent rendezvous
+  // (tests/rendezvous_vincent.spec.js) are played elsewhere; here their flags stand in.
+  await page.evaluate(() => { for (const k of ['story.crackdown', 'story.hall1_shut', 'story.post_trial_done', 'story.warden_called', 'story.warden_met', 'story.rdv_met', 'story.shift_g', 'story.shift_k', 'story.rdv_done']) PixelPets.setFlag(k, true); });
   expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('split');
   expect((await quest(page)).id).toBe('pick');
   // The pick at the orchard gate (built scene, moved trigger). A Glimmer pick also gets the Tier 1 lanyard (D1150).

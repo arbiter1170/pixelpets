@@ -33,7 +33,9 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // PARTNER_DAY (#258): the new hall and bedroom (hm_home_hall, hm_home_room), Mom (moved down from hm_home_up) and Maze,
     // the home pegs, the up_cushion, and hm_buddy_pre / hm_lizzy_pre in Hearthmoor add talk 12, warp 4 (hall_mom,
     // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
-    door: 48, warp: 100, sign: 96, talk: 757, scene: 40, trigger: 40, board: 7,
+    // POST_TRIAL_CRACKDOWN (claude/post-trial-crackdown, measured at 620b729): sign 97, talk 778, trigger 43 (its own pin was
+    // still main's). RENDEZVOUS_VINCENT adds talk 1 (Vincent at the stream bank); its shifts reuse Juniper and Amos.
+    door: 48, warp: 100, sign: 97, talk: 779, scene: 40, trigger: 43, board: 7,
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.

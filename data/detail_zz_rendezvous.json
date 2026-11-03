@@ -1,0 +1,449 @@
+{
+ "spec": "handoff/specs/RENDEZVOUS_VINCENT.md v0.1 (D1396-D1410), beats 3-5, on top of POST_TRIAL_CRACKDOWN's call and debrief (beats 1-2)",
+ "_about": "Ours, not a design copy. Vincent at the Route 1 stream bank (29,12), the Glimmerwell shift at Juniper's east-road camp (juniper_east), the Keeper night shift with Keeper Amos (lanternAsk), and the report that sets story.rdv_done, which opens the built side pick. No new room, town or route.",
+ "_placeholders": "Every line here is PLACEHOLDER for June (D1410). Vincent's title is PLACEHOLDER (D1398). No line names the chip, the Tuning or an implant (CHIP_SECRECY).",
+ "flags": {
+  "story.rdv_met": "RENDEZVOUS_VINCENT beat 3: met Vincent at the stream bank (done flag of rdv_meet)",
+  "story.shift_g": "beat 4a: the Glimmerwell shift at Juniper's camp",
+  "story.shift_k": "beat 4b: the Keeper night shift with Amos",
+  "story.rdv_done": "beat 5: the report; the side pick waits on it on crackdown saves (D1403)"
+ },
+ "looks": {
+  "vincent": {
+   "skin": "4",
+   "hair": "short",
+   "hairCol": "k",
+   "outfit": "coat",
+   "outfitCol": "N",
+   "accent": "V",
+   "accessory": "scarf"
+  }
+ },
+ "speakers": {
+  "Vincent": "vincent"
+ },
+ "scenes": {
+  "rdv_meet": [
+   [
+    "say",
+    "Vincent",
+    "So Ilse sent you. Good. No poles down here. The wire can't hear the water."
+   ],
+   [
+    "say",
+    "Vincent",
+    "I wear their colours, holder. I don't wear all their plans."
+   ],
+   [
+    "say",
+    "Vincent",
+    "Both sides want you. So both will open a door. Walk through each one. Look at what they don't show you."
+   ],
+   [
+    "say",
+    "",
+    "Vincent presses a card into your hand. GUEST, in honey letters."
+   ],
+   [
+    "say",
+    "Vincent",
+    "Juniper's crew camps on the east road out of Fernbrook. Show her that card. They're always short of hands."
+   ],
+   [
+    "say",
+    "Vincent",
+    "Amos walks the lamp round after dark. Walk it with him. Ilse's note goes on the Commander's desk."
+   ],
+   [
+    "say",
+    "Vincent",
+    "I'll wait here. They'd know my face. Come back and tell me what you saw."
+   ],
+   [
+    "setFlag",
+    "story.rdv_met",
+    true
+   ]
+  ],
+  "rdv_wait": [
+   [
+    "if",
+    "story.shift_g",
+    [
+     [
+      "say",
+      "Vincent",
+      "Juniper's crew, done. Now Amos. He walks the lamp round from the Lantern House."
+     ]
+    ],
+    [
+     [
+      "if",
+      "story.shift_k",
+      [
+       [
+        "say",
+        "Vincent",
+        "Amos's round, done. Now Juniper's crew, on the east road out of Fernbrook."
+       ]
+      ],
+      [
+       [
+        "say",
+        "Vincent",
+        "One shift with each side. Juniper on the east road, Amos at the Lantern House. Then come back."
+       ]
+      ]
+     ]
+    ]
+   ]
+  ],
+  "shift_g": [
+   [
+    "say",
+    "Associate Juniper",
+    "A Guest pass! Wonderful. We're short of hands. Crates, please!"
+   ],
+   [
+    "say",
+    "",
+    "You pack Comfort Lamps into crates. One, two, three. Every lid gets a honey tag: FREE."
+   ],
+   [
+    "say",
+    "",
+    "A ledger lies open on the cart. OLD SEALS: 3 bought. Fair Acorns."
+   ],
+   [
+    "say",
+    "",
+    "A crew Walkling trots back from a free check-up. Juniper calls its name. It looks up. A beat late."
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "A little sleepy after a check-up. Totally normal! Brighter by nature."
+   ],
+   [
+    "say",
+    "",
+    "The cart's back door is shut. A plate on it: PARTNERS ONLY."
+   ],
+   [
+    "choice",
+    "What do you do?",
+    [
+     [
+      "Ask about the cart",
+      [
+       [
+        "say",
+        "Associate Juniper",
+        "Partners only, sweetie. One day, maybe! It's a partnership."
+       ],
+       [
+        "inc",
+        "story.lean_keep"
+       ]
+      ]
+     ],
+     [
+      "Keep packing",
+      [
+       [
+        "say",
+        "",
+        "You pack the last crate. Juniper hums along."
+       ],
+       [
+        "inc",
+        "story.lean_fix"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "Lovely work! Same time tomorrow? Have a bright day!"
+   ],
+   [
+    "setFlag",
+    "story.pitch_g",
+    true
+   ],
+   [
+    "setFlag",
+    "story.shift_g",
+    true
+   ]
+  ],
+  "shift_k": [
+   [
+    "say",
+    "Keeper Amos",
+    "Walk the lamp round with me? The officers like company after dark."
+   ],
+   [
+    "curtain",
+    "on"
+   ],
+   [
+    "say",
+    "",
+    "Evening. You walk with Amos from lamp to lamp. The officers nod him through."
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "Hall post next. The Commander's desk is by the cordon. That note of yours goes there, I'm told."
+   ],
+   [
+    "say",
+    "",
+    "You set Ilse's note on the field desk. Under it lies a long sheet."
+   ],
+   [
+    "say",
+    "",
+    "FERNBROOK ROLL. Holders with Seals, ready for call-up. By order of High Charity. Copies to Wardens: none."
+   ],
+   [
+    "say",
+    "",
+    "The newest line, in fresh ink: {name}."
+   ],
+   [
+    "choice",
+    "What do you do?",
+    [
+     [
+      "Tell Amos",
+      [
+       [
+        "say",
+        "Keeper Amos",
+        "...A roll. Ilse never saw this, did she? I'll keep it to myself. For now."
+       ],
+       [
+        "inc",
+        "story.lean_keep"
+       ]
+      ]
+     ],
+     [
+      "Keep it quiet",
+      [
+       [
+        "say",
+        "",
+        "You lay the note back on top and walk on."
+       ],
+       [
+        "inc",
+        "story.lean_fix"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Keeper Amos",
+    "Lamps are lit. That's the round. Get some rest, holder."
+   ],
+   [
+    "curtain",
+    "off"
+   ],
+   [
+    "setFlag",
+    "story.pitch_k",
+    true
+   ],
+   [
+    "setFlag",
+    "story.shift_k",
+    true
+   ]
+  ],
+  "rdv_report": [
+   [
+    "say",
+    "Vincent",
+    "You're back. Well? What did they keep in the back room?"
+   ],
+   [
+    "choice",
+    "Tell him about...",
+    [
+     [
+      "The roll",
+      [
+       [
+        "say",
+        "",
+        "You tell him about the roll, and the newest name on it."
+       ],
+       [
+        "say",
+        "Vincent",
+        "That roll was a war list once. The call-up law was never struck out. Someone has dusted it off."
+       ],
+       [
+        "say",
+        "Vincent",
+        "Tanks for a crate dispute. A list of every holder with a Seal. That's not keeping. That's mustering."
+       ],
+       [
+        "say",
+        "",
+        "You tell him about the ledger, and the Walkling that answered late."
+       ],
+       [
+        "say",
+        "Vincent",
+        "They don't buy old Seals to hang on a wall. Ask what a free check-up costs."
+       ],
+       [
+        "say",
+        "Vincent",
+        "My Walkling went in for a free check-up last spring. She still comes when I call. A beat late."
+       ]
+      ]
+     ],
+     [
+      "The ledger",
+      [
+       [
+        "say",
+        "",
+        "You tell him about the ledger, and the Walkling that answered late."
+       ],
+       [
+        "say",
+        "Vincent",
+        "They don't buy old Seals to hang on a wall. Ask what a free check-up costs."
+       ],
+       [
+        "say",
+        "Vincent",
+        "My Walkling went in for a free check-up last spring. She still comes when I call. A beat late."
+       ],
+       [
+        "say",
+        "",
+        "You tell him about the roll, and the newest name on it."
+       ],
+       [
+        "say",
+        "Vincent",
+        "That roll was a war list once. The call-up law was never struck out. Someone has dusted it off."
+       ],
+       [
+        "say",
+        "Vincent",
+        "Tanks for a crate dispute. A list of every holder with a Seal. That's not keeping. That's mustering."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "if",
+    "story.lean_keep>=3",
+    [
+     [
+      "say",
+      "Vincent",
+      "You listened more than you packed. Hold on to that."
+     ]
+    ],
+    [
+     [
+      "if",
+      "story.lean_fix>=3",
+      [
+       [
+        "say",
+        "Vincent",
+        "You get things done. Make sure you know what for."
+       ]
+      ],
+      [
+       [
+        "say",
+        "Vincent",
+        "You looked. That's all I asked."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Vincent",
+    "I won't pick for you. Fen's at the orchard gate."
+   ],
+   [
+    "say",
+    "",
+    "Vincent climbs the bank and is gone."
+   ],
+   [
+    "setFlag",
+    "story.rdv_done",
+    true
+   ]
+  ]
+ },
+ "lanternAsk": {
+  "Keeper Amos": {
+   "when": [
+    "story.rdv_met",
+    "!story.shift_k",
+    "!story.side_pick_done"
+   ],
+   "label": "Walk the round",
+   "scene": "shift_k"
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "route1": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "rdv_vincent",
+      "name": "Vincent",
+      "look": "vincent",
+      "x": 29,
+      "y": 12,
+      "facing": "down",
+      "offWire": true,
+      "when": [
+       "story.crackdown",
+       "story.warden_met",
+       "!story.rdv_done",
+       "!story.side_pick_done"
+      ],
+      "lines": {
+       "!story.rdv_met": "@rdv_meet",
+       "story.shift_g & story.shift_k": "@rdv_report",
+       "else": "@rdv_wait"
+      },
+      "_note": "RENDEZVOUS_VINCENT §3 beat 3 (D1400): the stream-bank sand below the bridge. Off the wire (D1398): never a phone contact."
+     }
+    ]
+   }
+  }
+ },
+ "objPatch": {
+  "juniper_east": {
+   "linesFirst": {
+    "story.rdv_met & !story.shift_g": "@shift_g"
+   }
+  }
+ }
+}

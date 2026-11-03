@@ -7,7 +7,7 @@
   "story.hall1_shut": "D1224 (SEALS-O): the Fernbrook Trial Hall is shut by order of High Charity until Fen's Act 2 turn",
   "story.fen_lean": "Seals lore v3.1: Fen's hidden lean, moved by the Beat 1 and Beat 7 choices (inc; encoding PLACEHOLDER)",
   "story.warden_called": "D1395/D1404: Warden Ilse's call answered (or Amos passes the message on when there is no phone); RENDEZVOUS_VINCENT's story.ilse_called",
-  "story.warden_met": "D1395: the Lodge debrief done; the pick waits on it until the rendezvous build; RENDEZVOUS_VINCENT's story.ilse_debrief"
+  "story.warden_met": "D1395: the Lodge debrief done; RENDEZVOUS_VINCENT's story.ilse_debrief. The pick waits on story.rdv_done (D1403)"
  },
  "looks": {
   "_note": "PLACEHOLDER (D1198). The Commander keeps the Keeper set (rule 11): a long green cloak and a cap set him apart from the officers' coats. The three Lantern House residents (LANTERN_HOUSE_FERNBROOK §7.2) are kit looks, PLACEHOLDER.",
@@ -839,13 +839,18 @@
    ],
    [
     "say",
+    "Warden Ilse",
+    "There's a man who can see both sides. Vincent. He wears Glimmerwell colours. He's told me true things before."
+   ],
+   [
+    "say",
     "",
     "Ilse folds a note, seals it, and presses it into your hand. A runner's note."
    ],
    [
     "say",
     "Warden Ilse",
-    "Keep that close. For now, Fernbrook still wants your answer. Fen is at the orchard gate."
+    "Keep that close. Then go to Vincent, at the Route 1 stream bank by the bridge."
    ],
    [
     "setFlag",
@@ -855,9 +860,22 @@
   ],
   "warden_after": [
    [
-    "say",
-    "Warden Ilse",
-    "I'm still asking my questions. Keep that note safe. Fen is waiting at the orchard gate."
+    "if",
+    "story.rdv_done",
+    [
+     [
+      "say",
+      "Warden Ilse",
+      "You've seen both sides now. Fen is at the orchard gate."
+     ]
+    ],
+    [
+     [
+      "say",
+      "Warden Ilse",
+      "Vincent is waiting at the Route 1 stream bank, by the bridge. Keep that note safe."
+     ]
+    ]
    ]
   ],
   "ilse_call": [
@@ -931,7 +949,8 @@
       ],
       "lines": {
        "story.warden_called & !story.warden_met": "The Warden rang you too? Go. I'll be at the gate.",
-       "story.warden_met": "You saw Ilse? Good. Then let's settle the rest, here at the gate.",
+       "story.warden_met & !story.rdv_done": "Ilse sent you on? Then go. I'll be here at the gate.",
+       "story.rdv_done": "You're back. Then let's settle the rest, here at the gate.",
        "else": "The roots held through the night. So did we."
       },
       "_note": "WARDEN_SUMMONS §3: Fen waits at the orchard gate from the dawn release until the pick (fen_orchard is hidden by then)."
@@ -1067,7 +1086,7 @@
   },
   "fb_side_pick": {
    "whenAdd": [
-    "story.warden_met | !story.crackdown"
+    "story.rdv_done | !story.crackdown"
    ]
   },
   "fb_tl_juniper": {

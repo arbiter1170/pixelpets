@@ -162,16 +162,27 @@
       text: 'Get to the Lantern House.', place: 'Fernbrook Lantern House',
       npc: 'Keeper Amos', npcIds: ['amos'], target: { map: 'fb_lantern_in', x: 5, y: 13 } },
     // D1395 (Vincent, Nov 3, 2026): no pick at dawn. RENDEZVOUS_VINCENT beats 1-2: Warden Ilse phones on the first step out of the
-    // Lantern House (D1404), then the Lodge debrief. The pick waits on story.warden_met until the rendezvous build moves it to rdv_done.
+    // Lantern House (D1404), then the Lodge debrief, which sends the holder to Vincent (rdv_* rows below).
     { id: 'ilse_call', when: ['story.post_trial_done', 'story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_called'],
       text: 'Morning in Fernbrook. Step outside the Lantern House.', place: 'Fernbrook Lantern House',
       target: { map: 'fernbrook', x: 5, y: 7 } },
     { id: 'warden_summons', when: ['story.warden_called', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_met'],
       text: "Warden Ilse wants you home. Go to the Warden's Lodge.", place: 'Hearthmoor, the Lodge',
       npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'], target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    // RENDEZVOUS_VINCENT beats 3-5 (D1396-D1410): Vincent at the Route 1 stream bank, one shift with each side, the report.
+    { id: 'rdv_meet', when: ['story.warden_met', 'story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.rdv_met'],
+      text: 'Meet Vincent at the Route 1 stream bank, by the bridge.', place: 'Route 1, the stream bank',
+      npc: 'Vincent', npcIds: ['rdv_vincent'], target: { map: 'route1', x: 29, y: 12 } },
+    { id: 'rdv_shifts', when: ['story.rdv_met', 'story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.shift_g', 'story.shift_k'],
+      text: 'Work one shift for each side: Juniper on the east road, Amos at the Lantern House.', place: 'Fernbrook',
+      npc: 'Associate Juniper', npcIds: ['juniper_east'], target: { map: 'fernbrook', x: 30, y: 8 } },
+    { id: 'rdv_report', when: ['story.shift_g', 'story.shift_k', 'story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.rdv_done'],
+      text: 'Tell Vincent what you saw.', place: 'Route 1, the stream bank',
+      npc: 'Vincent', npcIds: ['rdv_vincent'], target: { map: 'route1', x: 29, y: 12 } },
     // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
     // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.
-    { id: 'pick', when: ['story.post_trial_done', 'story.warden_met | !story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],
+    // D1403: on crackdown saves the pick waits for the rendezvous report (story.rdv_done); #261 placeholder saves pick as before.
+    { id: 'pick', when: ['story.post_trial_done', 'story.rdv_done | !story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],
       text: 'Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', place: 'Orchard gate',
       npc: 'Master Fen', npcIds: ['fen_dawn'], target: { map: 'fernbrook', x: 9, y: 10 } },
     // D1187: after a Keepers pick on the new flow, Tobin's built battle still clears the orchard (FPT Part D is not built).
