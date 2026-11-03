@@ -113,10 +113,10 @@ Four pieces, all in one exterior language: white panel walls with a soot plinth 
 |---|---|---|---|---|
 | Footprint | 6 x 3 (roof 2 rows, wall 1), flat roof | a 2 x 2 stall prop (32 x 32 art), blocks 2 cells | a 1 x 3 prop (16 x 48 art), blocks 1 cell | 7 x 4 (roof 2, wall 2), arched roof |
 | Door | a deep, recessed glass door (16 x 16). Shut: "By appointment. We'll call you." (natural blocker, CHIP_SECRECY) | open counter, no door | none (a staff mast) | a 48 x 32 roll door with a honey header, slats, a crimson stop light and mint guide strips. Shut: "Fleet staff only." |
-| Sign (June's pass, drafted by Claude in June's role, Vincent to approve) | GLOW CARE · A Glimmerwell partner clinic for Walklings. Members by appointment. Brighter by nature! | BRIGHT SWAP · Old oil lamps in, Glimmer lanterns out. Free! It's a partnership! | GLIMMERWELL RELAY · Keeps the lamps talking to each other. The hum is normal. Have a bright day! | FLEET BAY · Courtesy Cruisers. Arriving where you need us. Have a bright day! |
+| Sign (June's pass, drafted by Claude in June's role, Vincent to approve) | GLOW CARE · A Glimmerwell clinic for Walklings. Members by appointment. Brighter by nature! | BRIGHT SWAP · Old oil lamps in, Glimmer lanterns out. Free! It's a partnership! | GLIMMERWELL RELAY · Keeps the lamps talking to each other. The hum is normal. Have a bright day! | FLEET BAY · Courtesy Cruisers. Arriving where you need us. Have a bright day! |
 | Civilian (no rank) | Receptionist: white jacket, soot trim | Swap Clerk: wine apron, white trim | Mast Tech: grey overalls, soot trim, goggles | Bay Attendant: white vest, ice trim |
 | Chip and Tuning | the badge plate; frosted glass; nothing inside is ever drawn | free lanterns swapped for oil lamps (canon: the lamps "count Walklings") | the relay ring and the hum ("a chipped Walkling is a relay") | the vehicles hover on the same hum |
-| Keepers hold | door shuttered with a Keeper slip "CLOSED PENDING REVIEW. By order."; badge covered by a slip; the Receptionist "just answers the phone" | a cream cloth over the rack, a slip "A LAMP IS A LAMP"; the Clerk is idle | dark cap, grey studs, no blink, a slip "POWER CUT BY ORDER"; the Mast Tech enjoys "the first quiet night in a year" | the parked Cruiser is gone ("towed to the Keeper yard"), a slip on the roll door "VEHICLES HELD BY ORDER"; no vehicles in the sky or on the road |
+| Keepers hold | door shuttered with a Keeper slip "CLOSED PENDING REVIEW. By order."; badge covered by a slip; the Receptionist "just answers the phone" | a cream cloth over the rack, a slip "A LAMP IS A LAMP"; the Clerk is idle | dark cap, grey studs, no blink, a slip "POWER CUT BY ORDER"; the Mast Tech enjoys "the first quiet night since it went up" | the parked Cruiser is gone ("towed to the Keeper yard"), a slip on the roll door "VEHICLES HELD BY ORDER"; no vehicles in the sky or on the road |
 | Glimmerwell hold | "Booked through next season"; a Waiting Local queues at the door | half the rack gone; "Half the town swapped already" | ring lit; "Signal's never been stronger" | two Cruisers out, a Sky Concierge with its light pool; two wine banners and two Comfort Lamps line the road |
 
 **Contested (no hold yet):** the base state above. The faction band shows Glimmerwell, the Cruiser patrols, the Concierge hovers without its light pool.
@@ -202,7 +202,7 @@ Voice: Glimmerwell is bright and corporate ("Brighter by nature!", "It's a partn
 | Beat 1, after 1d (both Keeper vehicles parked), as the Sky Concierge crosses the square | (narration) | Overhead, a white lens glides across the square, humming. A Sky Concierge. It doesn't stop. |
 | Beat 1, after 1f (the officers are cast) (*optional*) | Officer | Glimmerwell. Eyes front. Orders. |
 | Beat 3, during 3a and before the escort at 3c (Juniper reaches 30,8, after her "Brighter... somewhere else!"; see Q-G1 for the camera) | (narration) | At the rubble, a long black shell waits a hand above the road. Juniper hops in. |
-| Beat 3 | Associate Juniper | (from the window) Glimmerwell is relocating! Have a bright day, Fernbrook! |
+| Beat 3 | Associate Juniper | (from the window) It's fine! Everything's fine! Have a bright day, Fernbrook! |
 | Beat 3 | (narration) | The Courtesy Cruiser glides off past the rubble, glow on. |
 
 ### B. The pick at dawn (`fb_side_pick`; Juniper's pitch at 30,8)
@@ -212,7 +212,7 @@ Voice: Glimmerwell is bright and corporate ("Brighter by nature!", "It's a partn
 | On the walk up to 30,8 at dawn | (narration) | Past the rubble, a Sky Concierge hangs over Juniper's camp. Mint light pools under it. |
 | Juniper's pitch (`story.pitch_g`), opener | Associate Juniper | See our Sky Concierge? Warm light, no curfew, nobody shut indoors. Brighter by nature! |
 | Glimmer pick, the result scene (the hold flip, D1171) | (narration) | The east road brightens. A Courtesy Cruiser parks by the rubble. Wine banners go up. |
-| Glimmer pick, the result scene (see Q-G2) | Associate Juniper | Fernbrook's a partnership town now! Free lanterns at the Bright Swap. Have a bright day! |
+| Glimmer pick, the result scene, after her P6g line (see Q-G2) | Associate Juniper | Yay! The Bright Swap's open on the east road. Free lanterns for everyone! Have a bright day! |
 | Glimmer pick, the stall sign | sign | BRIGHT SWAP · Old oil lamps in, Glimmer lanterns out. Free! It's a partnership! |
 | Glimmer pick, the stall | prop | as the lot (`LINES.stall`, by hold) |
 | Glimmer pick, the parked Cruiser | prop | A Courtesy Cruiser, parked by the east road. It hums. Arriving where you need us. |
@@ -229,7 +229,7 @@ After `story.quarry_bought` (Cobblecrest is already a Glimmerwell town by `facti
 | The relay mast at the Bright Quarry, sign | sign | GLIMMERWELL RELAY · Bright Quarry. Keeps the lamps talking to each other. The hum is normal. |
 | The mast | prop | as the lot (`LINES.mast`, by hold) |
 | A Mast Tech at the quarry (*optional*; a new body, role name only, Q-G4) | Mast Tech | New owners, new mast! Don't mind the hum. It's normal. Have a bright day! |
-| The same Mast Tech, Keepers hold (replaces the lot's "first quiet night in a year", which doesn't fit a new mast) | Mast Tech | The Keepers cut the power. Quiet at last. I slept like a stone. |
+| The same Mast Tech, Keepers hold | Mast Tech | as the lot (`LINES.mast_tech.keepers`: "First quiet night since it went up" fits a new mast) |
 | Fleet Bay by the quarry road, sign | sign | FLEET BAY · Bright Quarry. Courtesy Cruisers. Arriving where you need us. |
 | The bay door | door | as the lot (`LINES.bay_door`, by hold) |
 | A Bay Attendant (*optional*; a new body, role name only, Q-G4) | Bay Attendant | The quarry road gets its own Cruiser now. Nothing's wrong! We just like to reassure. |
@@ -239,11 +239,13 @@ After `story.quarry_bought` (Cobblecrest is already a Glimmerwell town by `facti
 
 | # | Colour | Question | Default in these lines |
 |---|---|---|---|
-| Q-G1 | yellow | In the crackdown, does the Cruiser carry Juniper away, or only past the rubble to her crew camp? And does the camera show it (at 3c it follows the holder west to 5,6)? | Past the rubble, so her dawn pitch at 30,8 stands; the lines never say where she goes. The getaway plays during 3a, before the escort, with the camera panning east and back; if the build can't show it, cut the three getaway lines |
-| Q-G2 | green | Is Juniper in the Glimmer-pick result scene to say her line, and Constable Rue in the Keepers-pick one? | Yes if the built result scene has them; if not, cut their lines and keep the narration |
-| Q-G3 | yellow (Story's call under D1341) | Which Act 2 town gets Glow Care: Cobblecrest or Brinewick (§10 leaves it to Story)? | Open. Lines are the same either way; Story proposes Brinewick, beside the depot, so the clinic stands apart from the quarry's mast and bay |
-| Q-G4 | red (naming) | Personal names for the four civilians and any Act 2 bodies | None: role names only (Receptionist, Swap Clerk, Mast Tech, Bay Attendant, Waiting Local) |
-| Q-G5 | yellow | Is the Keeper vehicle's name player-visible (POST_TRIAL_CRACKDOWN says "tanks"; §1 here says "Watch Coach")? | These lines never name it |
+| Q-G1 | yellow | In the crackdown, does the Cruiser carry Juniper away, or only past the rubble to her crew camp? And does the camera show it (at 3c it follows the holder west to 5,6)? | Partly answered by canon: her crew camp is at 30,8 and `juniper_east` stands there from the crackdown to the pick (design `specs/POST_TRIAL_CRACKDOWN.md` §6, lines 292 and 308), so the Cruiser only takes her past the rubble. The camera is still open. The getaway plays during 3a, before the escort, with the camera panning east and back; if the build can't show it, cut the three getaway lines. Note: that spec's tone line (line 418) still says Glimmerwell in this quest is "only Juniper and her emptied stand"; D1341 now adds the Cruiser and Concierge, so Design should update it |
+| Q-G2 | green | Is Juniper in the Glimmer-pick result scene to say her line, and Constable Rue in the Keepers-pick one? | Partly answered: in June's pick arc, Juniper and Tobin stand at the gate with Fen, and Juniper speaks the Glimmer result line "Welcome to the partnership, {name}!..." (P6g; design `story/drafts/PICK_ARC_OVERHAUL_2026-10-31.md` lines 214 and 225). So her line here plays after P6g and doesn't say "partnership" again. Rue is not in that scene (lines 214-226): cut Rue's line unless the build puts him there |
+| Q-G3 | yellow (Story's call under D1341) | Which Act 2 town gets Glow Care (§10 leaves it to Story)? | Open. Canon notes: Act 2's towns are Brightgate (Glimmerwell's HQ, Hall 4) and Kilnmouth (Hall 5) (design `story/drafts/ACT2_BEAT_SHEET_2026-10-30.md` line 6); Cobblecrest and Brinewick are Episode 1, Halls 2 and 3 (design `STORY.md` lines 756-765). Brightgate HQ already has a planned Tuning wing behind a front desk (design `specs/CHIP_SECRECY.md` §3). Tamsin's signed line points to a "free check-up" at Cobblecrest's quarry (CHIP_SECRECY §6, slot 8). The lines are the same in any town |
+| Q-G4 | red (naming) | Personal names for the four civilians and any Act 2 bodies | None: role names only (Receptionist, Swap Clerk, Mast Tech, Bay Attendant, Waiting Local), the same way the hint slots use new townsfolk (design `specs/CHIP_SECRECY.md` §7 ruling 4). At the Bright Quarry, built Clerk Mint could speak instead of a new body (design `STORY.md` line 703) |
+| Q-G5 | yellow | Is the Keeper vehicle's name player-visible (POST_TRIAL_CRACKDOWN says "tanks"; §1 here says "Watch Coach")? | Still open: design D1202 (red) uses "Keeper tank" in narration as PLACEHOLDER until Vincent picks (design `specs/POST_TRIAL_CRACKDOWN.md` lines 625 and 648). "Watch Coach" appears nowhere in the design repo. These lines never name it |
+| Q-G6 | yellow | The Glimmerwell Relay sign is seen on both paths. June's drafts keep "relay" out of every line that isn't Glimmer-only (design `story/drafts/CHIP_HINTS_2026-10-29.md` "Canon kept"; `ACT2_BEAT_SHEET_2026-10-30.md` line 9), because a chipped Walkling is "a relay" in game. Does the sign keep the word? | Yes: the name is settled (D1335), and CHIP_SECRECY keeps the built "RELAY HOUSE · Staff only. The hum is normal." sign as a good hint (§2, R3). No NPC line and no Keeper says "relay"; Keepers say "the lamps" (R1) |
+| Q-G7 | yellow | When do the Cobblecrest mast and bay appear? `story.quarry_bought` comes in Episode 1 (design `STORY.md` line 756), but D1341 places them in Act 2, which starts at `story.ep1_end` (CHIP_SECRECY §7 ruling 7) | Open. The lines work either way ("New owners, new mast!" holds once the quarry is sold) |
 
 ## 11. The build in this PR (behind the flag)
 

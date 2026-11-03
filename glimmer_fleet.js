@@ -90,12 +90,12 @@ window.PPFleet = (() => {
   };
   const PARKED = { x: 20, y: 7, facing: 'left' };   // Cruiser B on the Fleet Bay apron (blocks its three cells)
   const LINES = {   // June's pass (drafted by Claude in June's role, Vincent to approve; D1346), by hold
-    clinic_sign: 'GLOW CARE · A Glimmerwell partner clinic for Walklings. Members by appointment. Brighter by nature!',
+    clinic_sign: 'GLOW CARE · A Glimmerwell clinic for Walklings. Members by appointment. Brighter by nature!',
     clinic_door: { split: "The frosted door stays shut. A plaque: 'By appointment only. We'll call you!'", glimmer: "The frosted door stays shut. A plaque: 'Booked through next season. We'll call you!'", keepers: "Shuttered. A Keeper slip on the shutter: 'CLOSED PENDING REVIEW. By order.'" },
     receptionist: { split: "Welcome to Glow Care! Members by appointment. We'll call you when it's your Walkling's turn!", keepers: "We're closed for a Keeper 'review'. I just answer the phone. Brighter by nature... eventually!", glimmer: "Booked through next season! Everyone wants a brighter Walkling. We'll call you. Have a bright day!" },
     mast_sign: 'GLIMMERWELL RELAY · Keeps the lamps talking to each other. The hum is normal. Have a bright day!',
     mast: { split: 'A slim mast with a wine ring and honey studs. It hums, soft and steady.', keepers: "The mast is dark and still. A Keeper slip on the base: 'POWER CUT BY ORDER.'", glimmer: 'The ring glows and a red light blinks. Up close, the hum is louder.' },
-    mast_tech: { split: "Don't mind the hum. It's normal. Totally, completely normal. Have a bright day!", keepers: 'The Keepers cut the power. First quiet night in a year. I slept like a stone.', glimmer: "Signal's never been stronger! Hear that hum? Normal. Strong and normal. Have a bright day!" },
+    mast_tech: { split: "Don't mind the hum. It's normal. Totally, completely normal. Have a bright day!", keepers: 'The Keepers cut the power. First quiet night since it went up. I slept like a stone.', glimmer: "Signal's never been stronger! Hear that hum? Normal. Strong and normal. Have a bright day!" },
     stall_sign: "BRIGHT SWAP · Old oil lamps in, Glimmer lanterns out. Free! It's a partnership!",
     stall: { split: 'A rack of Glimmer lanterns, each with a honey tag: FREE.', keepers: "A cream cloth over the rack. A Keeper slip: 'A LAMP IS A LAMP.'", glimmer: 'Half the rack is gone. The honey tags left all say FREE.' },
     swap_clerk: { split: "Bring me any old oil lamp, take home a Glimmer lantern. Free! Why? It's a partnership!", keepers: "Covered up by order. The Keepers say a lamp's a lamp. I say it's a partnership!", glimmer: 'Half the town swapped already! The old oil lamps? Relocated. Have a bright day!' },
