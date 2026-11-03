@@ -48,14 +48,14 @@ async function at(page) {
 
 test('a free-tile tap walks around a person to the tile behind them', async ({ page }) => {
   await boot(page);
-  // Mom stands at (5, 3). The tile north of her is still open. Rook's room now has a stove on the old goal tile.
-  await place(page, 'hm_home_up', 5, 4, 'up');
-  const path = await page.evaluate(() => PixelPets.findPath([{ x: 5, y: 2 }]));
+  // PARTNER_DAY: Mom stands downstairs at (5, 4) now (Maze at (6, 4)). The tile north of her is still open.
+  await place(page, 'hm_home_in', 5, 5, 'up');
+  const path = await page.evaluate(() => PixelPets.findPath([{ x: 5, y: 3 }]));
   expect(path.length).toBeGreaterThan(1);
-  expect(path.some(p => p.x === 5 && p.y === 3)).toBe(false);
-  expect(path[path.length - 1]).toEqual({ x: 5, y: 2 });
-  await tapTile(page, 5, 2);
-  await expect.poll(() => at(page), { timeout: 8000 }).toEqual({ x: 5, y: 2, map: 'hm_home_up' });
+  expect(path.some(p => p.x === 5 && p.y === 4)).toBe(false);
+  expect(path[path.length - 1]).toEqual({ x: 5, y: 3 });
+  await tapTile(page, 5, 3);
+  await expect.poll(() => at(page), { timeout: 8000 }).toEqual({ x: 5, y: 3, map: 'hm_home_in' });
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   await expect(page.locator('#ovScene')).toBeHidden();
   await shot(page, 'tap-path-around');

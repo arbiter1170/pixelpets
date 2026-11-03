@@ -44,7 +44,9 @@ const PPSave = (() => {
     }
   }
   const MAP_W = 24, MAP_H = 20;                 // v1 positions were on the 24x20 proto map
-  const NEW_GAME = MD ? MD.interiors.newGame : { map: 'proto', x: 3, y: 3, facing: 'down' };
+  // PARTNER_DAY (Vincent, Nov 2, 2026): a detail overlay may move the fresh-game start (the bedroom upstairs); the last one wins.
+  const NEW_GAME = MD ? Object.keys(MD).filter(k => k.startsWith('detail_')).sort().reduce((ng, k) => (MD[k] && MD[k].newGame) || ng, MD.interiors.newGame)
+    : { map: 'proto', x: 3, y: 3, facing: 'down' };
   const LODGE_STEP = { map: 'hearthmoor', x: 11, y: 6, facing: 'up' };          // mid-starter resume (MAPS_SLICE §10)
   const LANTERN_STEP = { map: 'hearthmoor', x: 16, y: 13, facing: 'down' };     // existing saves / unknown maps (§10)
   const V1_KNOWN = ['v', 'uid', 'created', 'last', 'pets', 'active', 'seen', 'steps', 'pos'];
@@ -68,7 +70,7 @@ const PPSave = (() => {
   };
   function writeCorrupt(from, raw){ ls.set(CORRUPT_KEY, JSON.stringify({ at: Date.now(), from, raw })); }
 
-  // The fresh-game start: INTERIORS §3.3 newGame = your home room hm_home_in (1,3) facing down. A new object every call.
+  // The fresh-game start: INTERIORS §3.3 newGame (your bedroom since PARTNER_DAY, see NEW_GAME). A new object every call.
   const startWorld = () => ({ map: NEW_GAME.map, x: NEW_GAME.x, y: NEW_GAME.y, facing: NEW_GAME.facing, respawn: null });
   function defaultStateV2(now = Date.now()){
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],

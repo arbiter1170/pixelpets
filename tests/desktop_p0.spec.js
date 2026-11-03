@@ -95,12 +95,13 @@ test('Space and Enter still talk to the person you face', async ({ page, browser
     await boot(p, '?debug=1', talkSave());
     await p.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.goto === 'function');
     await p.evaluate(() => PixelPets.showTab('walk'));
-    const at = await p.evaluate(() => PixelPets.goto('hm_home_up', 5, 2, 'down'));
-    expect(at).toMatchObject({ map: 'hm_home_up', x: 5, y: 2 });
+    // PARTNER_DAY: Mom moved downstairs and her talk now ends in a tips choice, so the one-line talk is Maze (6,4).
+    const at = await p.evaluate(() => PixelPets.goto('hm_home_in', 6, 3, 'down'));
+    expect(at).toMatchObject({ map: 'hm_home_in', x: 6, y: 3 });
     await expect(p.locator('#talkBtn')).toHaveAttribute('aria-disabled', 'false');
     const line = () => p.waitForFunction(() => {
       const s = window.PixelPets.scene;
-      return !!(s && s.mode === 'say' && s.full && /trusts you/.test(s.text || ''));
+      return !!(s && s.mode === 'say' && s.full && /nose to nose/.test(s.text || ''));
     });
     const closeLine = async (key) => {
       await p.keyboard.press(key);

@@ -215,7 +215,7 @@ test('the Lodge pick plays the new loop and the card stays above the say box', a
   expect(reveal && reveal.music).toBe('starter_pick');
   expect(reveal && reveal.card).toBe(true);
   expect(reveal && reveal.partner).toBe(true);
-  expect(beatKinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name']);
+  expect(beatKinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name', 'choice']);   // PARTNER_DAY: Ilse's "Ilse studies {pet}" question
   expect(after.music).toBe('town');
   expect(after.cast).toBe(false);
   expect(after.stingers).toBe(1);
@@ -237,7 +237,7 @@ test('two fast YES taps on the basket card pick once and play the starter sound 
     got: PixelPets.state.flags['story.starter_received'],
     party: PixelPets.state.party.length,
   }));
-  expect(beatKinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name']);
+  expect(beatKinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name', 'choice']);   // PARTNER_DAY: Ilse's "Ilse studies {pet}" question
   expect(after.stingers).toBe(1);
   expect(after.line).toBe('tide');
   expect(after.got).toBe(true);
@@ -249,7 +249,7 @@ test('SKIP from the first line stops only at the quiz, the baskets, the hello an
   await bootLodge(page);
   const stops = await playStarter(page, { skip: true, hello: 'Crouch down low' });
   const left = await page.evaluate(() => document.getElementById('ovReveal').hidden);
-  expect(beatKinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name']);
+  expect(beatKinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name', 'choice']);   // PARTNER_DAY: Ilse's "Ilse studies {pet}" question
   expect(left).toBe(true);
   expect(await page.evaluate(() => window.PixelPets.scene)).toBeFalsy();
 });

@@ -7,11 +7,12 @@ trackErrors(test, expect);
 
 const ROOMS = [
   { id: 'hm_home_in', w: 9, h: 8, ax: 4, ay: 6, safe: [4, 6], floor: '.',
-    old: ['home_mat', 'home_stairs', 'home_bed', 'home_terminal', 'home_glowbox', 'home_bookshelf', 'home_table', 'home_mirror', 'home_note_kept'],
+    // PARTNER_DAY: home_bed and home_mirror keep their ids in your room upstairs (hm_home_room); Mom moved down here.
+    old: ['home_mat', 'home_stairs', 'home_terminal', 'home_glowbox', 'home_bookshelf', 'home_table', 'home_note_kept', 'mom'],
     exit: { x: 4, y: 6, dir: 'down', to: 'hearthmoor', tx: 3, ty: 5 } },
-  { id: 'hm_home_up', w: 9, h: 8, ax: 2, ay: 5, safe: [4, 5], floor: '.',
-    old: ['home_stairs_down', 'mom', 'up_bed', 'up_shelf'],
-    exit: { x: 2, y: 5, dir: 'left', to: 'hm_home_in', tx: 1, ty: 6 } },
+  { id: 'hm_home_up', w: 9, h: 8, ax: 4, ay: 6, safe: [4, 5], floor: '.',
+    old: ['home_stairs_down', 'up_bed', 'up_shelf'],
+    exit: { x: 4, y: 6, dir: 'down', to: 'hm_home_hall', tx: 6, ty: 2 } },   // PARTNER_DAY: Mom's old room opens onto the hallway
   { id: 'hm_lodge_in', w: 11, h: 9, ax: 5, ay: 7, safe: [5, 7], floor: '.',
     old: ['lodge_mat', 'ilse_lodge_after', 'lodge_lantern', 'lodge_empty_a', 'lodge_empty_b', 'lodge_empty_c', 'lodge_ledger'],
     exit: { x: 5, y: 7, dir: 'down', to: 'hearthmoor', tx: 15, ty: 6 } },

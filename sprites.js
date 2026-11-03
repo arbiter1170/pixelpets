@@ -2026,6 +2026,9 @@ const floorFixVar = name => ({ [name]: [[name + '_b', 0.22], [name + '_c', 0.18]
 const HOUSE_SKINS = {
   // D153: one role table per skin. Cap differs from the face. Every interior skin opts in; the old wall tiles stay for exteriors.
   house_home: { remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'floor_pine', '=':'rug_rag', m:'mat_home', '^':'stair_home' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: floorFixVar('floor_pine'), wall: { c:'G', C:'y', L:'F', f:'w', F:'h', T:'G', B:'B', S:'F', R:'G', G:'c', W:'s', D:'B' } },
+  // PARTNER_DAY rooms (rule 9: inspiration brief, then existing tiles only). Each pairing is new: no other room uses it.
+  house_bedroom: { remap: { '#':'wall_peach', W:'wall_peach_face', W2:'wall_peach_win', '.':'floor_pine', '=':'rug_sunflower', m:'mat_home', '^':'stair_home' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: floorFixVar('floor_pine'), wall: wallRow('GyBhmwBFGcsB') },
+  house_hallway: { remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'floor_loft', '~':'runner_hall', '=':'runner_hall', m:'mat_loft', '^':'stair_loft', E:'floor_loft' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1, '~':1, E:1 }, variants: floorFixVar('floor_loft'), wall: wallRow('GyFCIBFFGcsF') },
   house_loft: { remap: { '#':'wall_cream', W:'wall_cream_face', W2:'wall_cream_win', '.':'floor_loft', '=':'rug_loft', m:'mat_loft', '^':'stair_loft' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: floorFixVar('floor_loft'), wall: wallRow('GyFCGoFFocsF') },
   house_lodge: { remap: { '#':'wall_warden', W:'wall_warden_face', W2:'wall_warden_win', '.':'floor_wardstone', '=':'rug_warden', m:'mat_warden' }, decal: { v:'wall_shadow_warden', u:'window_light_warden' }, walk: { v:1, u:1 }, variants: floorFixVar('floor_wardstone'), wall: wallRow('FGdCIJJFJcsF') },
   house_lantern: { remap: { '#':'wall_lantern', W:'wall_lantern_face', W2:'wall_lantern_win', '.':'floor_lantern', '=':'rug_lantern', m:'mat_lantern_warm' }, decal: { v:'wall_shadow_warm', u:'window_light_warm' }, walk: { v:1, u:1 }, variants: houseVar('floor_lantern', 'floor_lantern_b', 'floor_lantern_c'), wall: wallRow('BGFCDEEFEswF') },
@@ -3063,6 +3066,14 @@ const LIZZY_ART = {
     buddy_z_1: ["...........wwww.",".............w..","............w...","...........wwww.","................","........hhh.....","..........h.....",".........h......","........hhh.....","................","................","................","................","................","................","................"],
   },
 };
+// PARTNER_DAY (Vincent, Nov 2, 2026): Maze, Mom's calico-cat Walkling. NPC art only (not a species), 16x16, PAL keys,
+// drawn like Buddy: sit, tail flick, blink and a night curl.
+const MAZE_ART = {
+  maze_sit: ["................", "................", "......k.....k...", ".....kok...kdk..", ".....koowwwddk..", ".....koowwwwdk..", ".....kwkwwwkwk..", ".....kwwwrwwwk..", "......kwwwwwk...", ".....kwwwwwwok..", "....kddwwwwoook.", "....kddwwwwwook.", "....kwwwwwwwwwk.", "....kwwkwwwkwwk.", "..kkkwwkwwwkwwk.", ".koooookkkkkkk.."],
+  maze_tail: ["................", "................", "......k.....k...", ".....kok...kdk..", ".....koowwwddk..", ".....koowwwwdk..", ".....kwkwwwkwk..", ".....kwwwrwwwk..", "......kwwwwwk...", ".....kwwwwwwok..", "....kddwwwwoook.", "....kddwwwwwook.", "....kwwwwwwwwwk.", "....kwwkwwwkwwk.", ".k..kwwkwwwkwwk.", "koookkkkkkkkkk.."],
+  maze_blink: ["................", "................", "......k.....k...", ".....kok...kdk..", ".....koowwwddk..", ".....koowwwwdk..", ".....kwkwwwwwk..", ".....kwwwrwwwk..", "......kwwwwwk...", ".....kwwwwwwok..", "....kddwwwwoook.", "....kddwwwwwook.", "....kwwwwwwwwwk.", "....kwwkwwwkwwk.", "..kkkwwkwwwkwwk.", ".koooookkkkkkk.."],
+  maze_sleep: ["................", "................", "................", "................", "................", "......k.....k...", ".....kok...kdk..", ".....koowwwddk..", ".....kwddwddwk..", ".....kwwwrwwwk..", "....kkwwwwwwwkk.", "...kddwwwwwwoook", "...kddwwwwwwwook", "...kwwwwwwwwwwwk", "..kkwwwwwwwwwwwk", ".koookkkkkkkkkk."]
+};
 function addExteriorArt(T, A){
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
@@ -3071,6 +3082,7 @@ function addExteriorArt(T, A){
   for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(EXTERIOR_ART[grp])) if (!A[k]) A[k] = paint(rows);
   for (const [k, rows] of Object.entries(LIZZY_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   for (const [k, rows] of Object.entries(LIZZY_ART.art)) if (!A[k]) A[k] = paint(rows);
+  for (const [k, rows] of Object.entries(MAZE_ART)) if (!A[k]) A[k] = paint(rows);
   const frames = (ids, ms) => { const a = ids.map(id => A[id]); a.ms = ms; return a; };
   if (A.leak_drip_0) A.leak_drip = frames(['leak_drip_0', 'leak_drip_1', 'leak_drip_2'], 450);
   if (A.leak_puddle_0) A.leak_puddle = frames(['leak_puddle_0', 'leak_puddle_1'], 900);

@@ -2457,14 +2457,29 @@ function runTutorial(opts){
   clearMoves(); lockTabs(true);
   tutShow(opts.replay ? 'T10' : (opts.resume ? 'T0r' : 'T0'));
 }
+// PARTNER_DAY (Vincent, Nov 2, 2026): too many tutorials after the starter. A holder who played the house morning
+// (story.home_walk) learned to walk there; the tab tour no longer auto-starts and Mom offers it as tips. When the care
+// walk ends (where the tour used to start), the tour's end state is set without it: tutorial_done, today's hello, the bell.
+const WALK_HINT = { modern: 'Tap the mirror. You walk over to it on your own.', arcade: 'Hold the pad to walk to the mirror, then tap TALK.' };
+function tourByMom(force){
+  if (!S || !S.flags['story.home_walk'] || S.flags['story.tutorial_done'] || !S.flags['story.starter_received'] || !pet()) return false;
+  if (!force && S.flags['story.tut_care'] === 'armed') return false;
+  S.flags['story.tutorial_done'] = true;
+  delete S.flags['story.tutorial_step'];
+  S.flags[HELLO_FLAG] = dayKey(Date.now());
+  save();
+  grantKit('bell');
+  return true;
+}
 function tutorialPending(){
   if (S && S.flags['story.tut_care'] === 'armed') {
     const ph = careLes.phase;
     if (ph === 'calm' || ph === 'act' || ph === 'c1' || ph === 'tray') return false;
   }
-  return !!(S && pet() && !tut.on && S.flags['story.starter_received'] && !S.flags['story.tutorial_done'] && !S.flags['story.early_done']);
+  return !!(S && pet() && !tut.on && S.flags['story.starter_received'] && !S.flags['story.tutorial_done'] && !S.flags['story.early_done'] && !S.flags['story.home_walk']);
 }
 function scheduleTutorial(fromScene){
+  if (tourByMom(false)) return;
   if (!tutorialPending()) return;
   if (!fromScene && !S.flags['story.tutorial_step']) return;
   tut.fromScene = !!fromScene || tut.fromScene;
@@ -3826,6 +3841,7 @@ function applyMapPatch(W, patch){
       if (k >= 0) m.objs[k] = copy; else m.objs.push(copy);
     }
     for (const o of pt.addObjs || []) m.objs.push(JSON.parse(JSON.stringify(o)));
+    if (pt.removeObjs) m.objs = m.objs.filter(o => pt.removeObjs.indexOf(o.id) < 0);
   }
 }
 const WORLD = (() => {
@@ -4517,6 +4533,11 @@ if (SCENES.starter) SCENES.starter.push(
 const starterMomentMiss = [];
 if (SCENES.starter && MD.starter_moment && MD.starter_moment.inserts)
   applyStarterInserts(SCENES.starter, MD.starter_moment.inserts, starterMomentMiss);
+// PARTNER_DAY (Vincent, Nov 2, 2026): Ilse's talk lands harder and hints at what is ahead (Walklings understand more than
+// folk think; someone will offer to make yours brighter). Lines come from data/detail_zz_partner_day.json `ilseAfter`,
+// spliced after her built "trust is the only armour" line, so the design JSON stays verbatim.
+if (SCENES.starter && MD.detail_zz_partner_day && MD.detail_zz_partner_day.ilseAfter)
+  applyStarterInserts(SCENES.starter, [MD.detail_zz_partner_day.ilseAfter], starterMomentMiss);
 // INTRO_CUTSCENE (D810): every data/cutscene_*.json stages one scene (its `scene`). Inserts go in after STARTER_MOMENT's, so
 // their anchors may name lines either placed; `vars` and `portraits` are kept per scene. A new cutscene is a data file only.
 const CUT_VARS = {}, PORTRAIT_FOR = {}, cutsceneMiss = [];
@@ -4800,7 +4821,7 @@ const shownName = n => (window.PPRep && (PPRep.entry(n) || {}).label) || n;   //
 // Greens: Pip stands at (3,4) and Wren at (6,4) because (2,4) is one desk. Ossabell's (0,0) means her 5B spot.
 // Mr. Gristle's closed tile (9,9) is the lobby wall, so he stands at (6,9). Market Row is P2.
 const SCHED = {};
-const CLOCK_SKIP = { hm_lizzy: 1, hm_buddy: 1 };
+const CLOCK_SKIP = { hm_lizzy: 1, hm_buddy: 1, hm_lizzy_pre: 1, hm_buddy_pre: 1, room_lizzy: 1, room_buddy: 1 };   // PARTNER_DAY: the morning Lizzy and Buddy too
 const CLOCK_NUDGE = {
   school_kid_a: { key: 'hm_school_in:2,4', x: 3, y: 4, facing: 'left' },
   school_kid_b: { key: 'hm_school_in:2,4', x: 6, y: 4, facing: 'left' },
@@ -6493,7 +6514,7 @@ function tickPatrol(dt){
 const PATROL_GLIDE_MS = 420, WANDER_STEP_MS = 360, WANDER_REACH = 2, WANDER_GAP_R = 8;
 const WANDER_FIRST_MS = [3500, 7000], WANDER_DWELL_MS = [2200, 5200], GLANCE_MS = [4500, 9000], GLANCE_HOLD_MS = 1100;
 // Ids that must hold their spot even though the rules above would let them walk (story blockers in wide spaces, set pieces).
-const NPC_STILL = {};
+const NPC_STILL = { mom: 1 };   // PARTNER_DAY: Mom keeps her spot by the rug, off the stairs landing and the goodbye tile
 const lifeRnd = ([a, b]) => a + Math.random() * (b - a);
 // A tile another walker is gliding onto, the follower's tile, a creature or the holder's next tile: not free for an npc step.
 function npcStepTaken(x, y){
@@ -8067,6 +8088,18 @@ function artFrame(a, t){
 }
 // Buddy at home and at school (D181). Sit and tail-up trade every 500 ms. Eyes close for 120 ms every 4 s.
 // Night curls him up with a slow z. Reduced motion is the sit frame, still.
+function drawMaze(g, X, Y, t){
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const night = ENV && ENV.tags && ENV.tags.indexOf('night') >= 0;
+  g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 3, Y + 14, 11, 2);
+  let img = WART.maze_sit;
+  if (night && WART.maze_sleep) img = WART.maze_sleep;
+  else if (!reduce) {
+    const blink = (t % 3600) < 140;
+    img = blink && WART.maze_blink ? WART.maze_blink : (Math.floor(t / 700) % 4 === 3 && WART.maze_tail ? WART.maze_tail : WART.maze_sit);
+  }
+  g.drawImage(img, X, Y - 2);
+}
 function drawBuddy(g, X, Y, t){
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const night = ENV && ENV.tags && ENV.tags.indexOf('night') >= 0;
@@ -8114,6 +8147,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
+    if (o.pet === 'maze' && WART.maze_sit) { drawMaze(g, X, Y, t); return; }
     if (o.pet) { const [ln, st] = String(o.pet).split('/');
       const stage = +(o.stage != null ? o.stage : st) || 0;
       g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
@@ -8865,6 +8899,8 @@ function interact(o){
   }
   const offer = o.kind === 'npc' ? trackOffer(o) : null;
   if (offer) return runSteps([['say', objName(o), line], ['choice', offer.prompt, [['Track it', [['trackSide', offer.chain]]], ['Not now', []]]]], ctx);
+  // PARTNER_DAY: `after` names a scene that follows a plain line when there is no track offer (Mom's "Ask Mom for tips?").
+  if (o.after && sceneSteps(o.after)) return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line], ['run', o.after]], ctx);
   return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line]], ctx);
 }
 // What the keeper faces: a talkable object on the next tile, or the door of the doorstep you stand on (facing up).
@@ -8995,7 +9031,7 @@ function endScene(){
   if (shopMeal) closeMealSheet(-1);
   const sc = scene; if (!sc) return;
   const cue = sc.musicCue;
-  const openWard = !!sc.openWardrobe;
+  const openWard = !!sc.openWardrobe, openTips = !!sc.openTips;
   const partnerAt = castTileOf(sc, 'partner');
   closeReveal(true);
   clearSceneEmotes();
@@ -9022,6 +9058,7 @@ function endScene(){
   else {
     checkArriveTriggers();   // only triggers marked arrive (a dream warp landing on the next scene)
     if (openWard) openWardrobe();
+    else if (openTips) setTimeout(() => { if (!scene) openTutorialChooser(); }, 0);   // Mom's tips (PARTNER_DAY)
     else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
@@ -9035,13 +9072,15 @@ const pend = f => scene.pending.push(f);
 // Rook skids in" (the Lodge has only Ilse, and outdoor rook_home lives on the Hearthmoor map), so nothing drew him. He appears on
 // the first line that names him or that he speaks, just inside the door mat, facing the keeper, and leaves when the scene ends.
 // A plain npc pushed into CUR.objs for the scene only: drawn, blocking and listed like any other; never saved.
-const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', map: 'hm_lodge_in' }] };
+const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', map: 'hm_lodge_in' }],
+  intro: [{ id: 'lizzy_wake', name: 'Lizzy', look: 'lizzy', map: 'hm_home_room' }, { id: 'buddy_wake', name: 'Buddy', pet: 'fetch/1', map: 'hm_home_room', castOnly: true }],
+  mom_wake: [{ id: 'mom_up', name: 'Mom', look: 'mom', map: 'hm_home_up' }] };   // PARTNER_DAY: Mom lives downstairs now
 // Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the holder).
 const CAST_AT_LOOK = { rook_walk: { name: 'Rook', look: 'rook' }, rook_walk_in: { name: 'Rook', look: 'rook' } };
 function castOnSay(who, text){
   const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
   for (const c of cast) {
-    if (c.map !== CUR.id || CUR.objs.some(o => o.id === c.id)) continue;
+    if (c.castOnly || c.map !== CUR.id || CUR.objs.some(o => o.id === c.id)) continue;
     if (who !== c.name && !new RegExp('\\b' + c.name + '\\b').test(text || '')) continue;
     const at = castSpot(); if (!at) continue;
     const dx = S.world.x - at.x, dy = S.world.y - at.y;
@@ -9156,7 +9195,7 @@ function drawCurtain(g, cx, cy, VW, VH){   // the room is centred on a PAL k voi
 function cutCastAt(sc, id, x, y, facing){
   if (!CUR || CUR.objs.some(o => o.id === id)) return;
   const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || CAST_AT_LOOK[id] || { id, name: '', look: 'villager' };
-  pushCast({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true });
+  pushCast(Object.assign({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true }, c.pet ? { pet: c.pet } : {}));
   mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' };
 }
 function cutProp(sc, id, sprite){
@@ -9452,12 +9491,15 @@ async function execStep(st){
     }
     case 'lookPick': {
       sc.skip = false;
-      const lk = await lookPickStep(sc.id === 'intro');
+      const lk = await lookPickStep(sc.id === 'intro' || sc.id === 'home_dress');   // PARTNER_DAY: the bedroom mirror is the first pick
       if (lk) { sc.view.look = lk; pend(() => { S.player.look = lk; }); }
       if (sc.id === 'intro') await execStep(['controlPick']);   // Q26 (D76): asked right after the mirror, before the door note
       return;
     }
     case 'wardrobeOpen': { sc.openWardrobe = true; return; }
+    // PARTNER_DAY: the walk lesson moved from the post-starter tour into the house (Vincent, Nov 2, 2026).
+    case 'walkHint': { await execStep(['say', '', S.settings.controls === 'arcade' ? WALK_HINT.arcade : WALK_HINT.modern]); return; }
+    case 'tipsMenu': { sc.openTips = true; pend(() => tourByMom(true)); return; }
     case 'trackSide': { pend(() => { const a2 = sideActiveList().find(x => x.chain === a); if (!a2) return; setTracked(a); toast('Now tracking: ' + a2.label); }); return; }
     // Q26: Arcade or Modern, in the house before the exit mat. Not a story flag; writes S.settings.controls at once.
     case 'controlPick': {
