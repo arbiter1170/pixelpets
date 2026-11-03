@@ -2,6 +2,19 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 01:32 ET: NPC ranks checked against the Keeper ladder; hosts and shopkeepers stay unranked; the Trial Hall cadet is Cadet Sefton (build 20261103-0132)
+
+- What changed and why: the cleared task asked for #262's merged ranks to be checked against the lore rank ladder and each faction's guide in the design repo (KEEPER_RANKS v0.2 and STORY.md §3, §3a, §6, §12), for the leftover rank placeholders to be replaced, and for the Ash name clash to be fixed. Hosts and shopkeepers are civilians aligned to a faction and get no rank.
+  - Ladder ranks (D1159, settled): Officer Mo, Officer Wynn, Officer Vesper, Officer Rue, Sergeant Rowan, Constable Moss, Constable Ivo, Constable Linnea, Constable Tamm and Cadet Pryce now show rank first. The duty (Archivist, Clerk, Operator, Watch, Scout, Signaller) moves to a line on the contact card. `ranks.pending` is now empty.
+  - Civilians: Keeper Amos (a Lantern House host), Keeper Marigold, Keeper Quill, Keeper Teague, Keeper Halvard and Watch Saffie (shopkeepers) keep their names and get no rank. Every host and shop NPC in the cast is marked `civilian` ("host" or "shop"). `rankCheck()` lists them under `civilians` and fails any civilian that has a rank.
+  - The Ash clash: the Trial Hall Keeper cadet (`h1_cadet`) is now Sefton ("Cadet Sefton"). "Ash" clashed with Grete Ash (the Plaza sweeper), with STORY's planned Hall 5 master Tobias Ash, and with a name on Design's franchise list. `REP_CANON` and `save.js` fold an old "Ash" trust or contact mark into "Sefton" (copy only; the old key stays; `v` 2). The name stays PLACEHOLDER copy under D1186.
+  - Every merged rank checked: all Keeper ranks are on the ladder, or are a Hall Master's "Master" (settled F). Glimmerwell's Associate, Field Lead, Head of Acquisitions and Junior Bright match STORY §3 and §6. No `[Rank]` is left in data or player text. The Day 1 spec's two `[Rank] PLACEHOLDER` notes now name Cadet Sefton.
+- Files touched: `data/reputation.json`, `data/detail_zz_day1.json`, `data/mapdata.js` (regenerated), `rep.js`, `save.js`, `game.js` (rankCheck), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `tests/npc_ranks.spec.js`, `tests/day1_flow.spec.js`, `tests/README.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `handoff/shots/npc_ranks_ladder/` (new), `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/npc-ranks-style-guide-f3fde8`, build 20261103-0132.
+- Tests run and result (widths, checks): `tests/npc_ranks.spec.js` and `tests/day1_flow.spec.js` at 320, 375 and 390 (45 passed); full suite at 390 (see the PR). Playwright ran with the box's Chromium; `npm run test:agent` stops at its RTDB rules precheck here (the local emulator cannot load its rules through the sandbox proxy, the same as #262). `node tools/scans/run.js` passes.
+- Decisions made (colour + reasoning): D1159 settled (red; the cleared task). The hosts part of D1160 is settled. New open rows: D1348 (red: civilians whose names still carry "Keeper" or "Watch"), D1349 (red: Warden Teodor runs a shop), D1350 (red: "Rowan" is on Design's franchise list). Green: "Sefton" was checked against every game and design file and a web search.
+- Anything left unfinished: D1348-D1350, the rest of D1160, and Story's final name for the cadet (D1186).
+
 ## 2026-11-03 00:15 ET: Audit: what the core loop needs to hook players (CORE_LOOP_HOOK_AUDIT v0.1), docs only
 
 - What changed and why: Morgan asked for an honest audit of the core loop, with concrete things to build. New doc `handoff/specs/CORE_LOOP_HOOK_AUDIT.md` covers:

@@ -4854,15 +4854,17 @@ const shownName = n => {   // CALEB_FIX: a cast `label` is display only too
   return e.label || n;
 };
 // Dev check (read-only; PixelPets.rankCheck). Every Keeper or Glimmerwell cast entry has a rank, a pending proposal
-// (reputation.json ranks.pending: shown with its plain name until Vincent OKs the rank, D1159) or a flag (rankFlag);
-// a folded name (rep.js REP_CANON) is checked under the name it folds into. No cast label may carry a "[...]" placeholder.
+// (reputation.json ranks.pending: shown with its plain name until Vincent OKs the rank, D1159), a flag (rankFlag) or a
+// `civilian` mark (a host or shopkeeper: aligned to a side, not sworn, so never ranked); a folded name (rep.js REP_CANON)
+// is checked under the name it folds into. No cast label may carry a "[...]" placeholder.
 function rankCheck(){
-  const out = { missing: [], placeholders: [], flagged: [], bad: [], battle: [] };
+  const out = { missing: [], placeholders: [], flagged: [], civilians: [], bad: [], battle: [] };
   const R = (typeof MAPDATA === 'object' && MAPDATA.reputation) || {};
   const cast = R.cast || [], pending = (R.ranks && R.ranks.pending) || {};
   for (const e of cast) {
     if (!e || (e.faction !== 'keepers' && e.faction !== 'glimmer' && !e.rank)) continue;
     if (window.PPRep && PPRep.key(e.name) !== e.name) continue;
+    if (e.civilian) { if (e.rank) out.bad.push(e.name + ': civilian with a rank'); else out.civilians.push(e.name); continue; }
     const p = pending[e.name];
     if (p && !e.rank) out.placeholders.push(e.name + ' (' + (p.decision || 'D1159') + ')');
     else if (p) out.bad.push(e.name + ': ranked and still pending');
