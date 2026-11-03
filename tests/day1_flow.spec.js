@@ -192,7 +192,7 @@ test('Trial 1: three holders before Fen, the Seal, the post-Trial slot, the pick
   // The crackdown night and Warden Ilse's summons are played in tests/post_trial_crackdown.spec.js; here their flags stand in.
   await page.evaluate(() => { for (const k of ['story.crackdown', 'story.hall1_shut', 'story.post_trial_done', 'story.warden_called', 'story.warden_met']) PixelPets.setFlag(k, true); });
   expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('split');
-  expect((await quest(page)).id).toBe('pick');
+  expect((await quest(page)).id).toBe('chi_meet');   // ACT1_KEEPER_JOIN: the Wickerglen investigation comes before the gate
   // The pick at the orchard gate (built scene, moved trigger). A Glimmer pick also gets the Tier 1 lanyard (D1150).
   expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_side_pick').whenOk)).toBe(true);
   await page.evaluate(() => PixelPets.goto('fernbrook', 9, 9, 'down'));

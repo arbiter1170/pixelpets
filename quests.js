@@ -35,6 +35,7 @@
     'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
     'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
+    'story.chi_jars',   // ACT1_KEEPER_JOIN: Vincent Chi's jar counter (WEIR_HUT §3.3), not a step
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -169,6 +170,11 @@
     { id: 'warden_summons', when: ['story.warden_called', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_met'],
       text: "Warden Ilse wants you home. Go to the Warden's Lodge.", place: 'Hearthmoor, the Lodge',
       npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'], target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    // ACT1_KEEPER_JOIN §6 (D1551): the Wickerglen investigation. Every row is noImply: the investigation walks Route 2 and
+    // meets Imogen early (story.reached_route2, story.met_census, story.met_lead), and those later rows would otherwise imply these.
+    { id: 'chi_meet', when: ['story.warden_met', '!story.side_pick_done'], done: ['story.chi_met'], noImply: true,
+      text: "Find Vincent Chi, past the fallen trunk at Wickerglen's east edge.", place: "Wickerglen, east edge",
+      target: { map: 'route2_glen', x: 22, y: 4 } },
     // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
     // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.
     { id: 'pick', when: ['story.post_trial_done', 'story.warden_met | !story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],

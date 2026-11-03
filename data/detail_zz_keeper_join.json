@@ -1,0 +1,108 @@
+{
+ "spec": "ACT1_KEEPER_JOIN v0.1.1 (design repo, private): the Wickerglen investigation, the orchard lean and the Keeper join",
+ "_about": "Ours, not a design copy. After the crackdown's dawn release Ilse sends the holder to Vincent Chi (the debrief's last lines live in detail_zz_crackdown.json). Route 2 opens on story.warden_met (D1551) so the holder can reach Wickerglen; Imogen's battle and the lit lamps wait for the enrolment (r2_lead is hidden on a crackdown save until story.keeper_cadet). An old save (no crackdown) reads every gate as before. Save stays pixelpets.save.v2; every flag here is a new additive story.* key.",
+ "_placeholders": {
+  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Every line in this file is a placeholder, including the Constable's name.",
+  "paths": [
+   "slicePatch.maps.route2_glen.addObjs",
+   "objPatch"
+  ]
+ },
+ "flags": {
+  "story.chi_met": "ACT1_KEEPER_JOIN 2f: Vincent Chi met in the weir hut",
+  "story.chi_jars": "WEIR_HUT §3.3: the jars on Vincent Chi's sill, a number 0-6 (one per thing seen)"
+ },
+ "slicePatch": {
+  "maps": {
+   "route2_glen": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "glen_imogen",
+      "name": "Field Lead Imogen",
+      "look": "imogen",
+      "x": 12,
+      "y": 5,
+      "facing": "down",
+      "when": [
+       "story.chi_met",
+       "!story.keeper_cadet",
+       "!story.glen_cleared"
+      ],
+      "lines": {
+       "else": "Come back once you've got a team worth showing me."
+      },
+      "_note": "ACT1_KEEPER_JOIN §4.3: Imogen's body on the battle tile while her battle waits for the enrolment (D1551)."
+     },
+     {
+      "kind": "npc",
+      "id": "glen_constable",
+      "name": "Keeper Constable",
+      "look": "officer",
+      "x": 10,
+      "y": 6,
+      "facing": "down",
+      "when": [
+       "story.ilse_call2",
+       "!story.heights_done",
+       "!story.glen_cleared"
+      ],
+      "lines": {
+       "else": "Orders came down. A review. Don't ask me how long."
+      },
+      "_note": "ACT1_KEEPER_JOIN §7 (D1555): Wickerglen's slip is data only. PLACEHOLDER name; the built officer look."
+     }
+    ]
+   }
+  }
+ },
+ "objPatch": {
+  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights.",
+  "fb_east": {
+   "when": [
+    "story.seal1",
+    "story.side_pick_done | story.orchard_cleared | story.warden_met"
+   ]
+  },
+  "fb_sign_route2_open": {
+   "when": [
+    "story.seal1",
+    "story.side_pick_done | story.orchard_cleared | story.warden_met"
+   ]
+  },
+  "fb_rubble": {
+   "when": [
+    "!story.seal1 | !story.side_pick_done & !story.orchard_cleared & !story.warden_met"
+   ]
+  },
+  "r2_lead": {
+   "when": [
+    "!story.glen_cleared",
+    "story.keeper_cadet | !story.crackdown"
+   ]
+  },
+  "glen_intro": {
+   "whenAdd": [
+    "story.keeper_cadet | !story.crackdown"
+   ]
+  },
+  "glen_lamp_w": {
+   "linesFirst": {
+    "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
+    "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
+   }
+  },
+  "glen_lamp_n": {
+   "linesFirst": {
+    "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
+    "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
+   }
+  },
+  "glen_lamp_e": {
+   "linesFirst": {
+    "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
+    "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
+   }
+  }
+ }
+}

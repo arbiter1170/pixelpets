@@ -901,17 +901,17 @@
    [
     "say",
     "Warden Ilse",
-    "I can't search my own Commanders' tents. Not openly. Not yet."
-   ],
-   [
-    "say",
-    "",
-    "Ilse folds a note, seals it, and presses it into your hand. A runner's note."
+    "Fen wrote to me before they shut her door. Walklings walking off at night, near Wickerglen."
    ],
    [
     "say",
     "Warden Ilse",
-    "Keep that close. For now, Fernbrook still wants your answer. Fen is at the orchard gate."
+    "I can't search my own Commanders' tents. I know someone who searches anything."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Vincent Chi. No phone, no side. Past the fallen trunk at Wickerglen's east edge. Say I sent you."
    ],
    [
     "setFlag",
@@ -923,7 +923,7 @@
    [
     "say",
     "Warden Ilse",
-    "I'm still asking my questions. Keep that note safe. Fen is waiting at the orchard gate."
+    "Vincent Chi. Past the fallen trunk at Wickerglen's east edge. Say I sent you."
    ]
   ],
   "ilse_call": [
@@ -996,11 +996,13 @@
        "!story.orchard_cleared"
       ],
       "lines": {
+       "story.orchard_lean=open": "Tobin won't listen to me. Try him.",
+       "story.chi_done": "You saw Ilse? Good. Then let's settle the rest, here at the gate.",
        "story.warden_called & !story.warden_met": "The Warden rang you too? Go. I'll be at the gate.",
-       "story.warden_met": "You saw Ilse? Good. Then let's settle the rest, here at the gate.",
+       "story.warden_met": "Ilse sent you east? Go on. The crates aren't going anywhere today.",
        "else": "The roots held through the night. So did we."
       },
-      "_note": "WARDEN_SUMMONS §3: Fen waits at the orchard gate from the dawn release until the pick (fen_orchard is hidden by then)."
+      "_note": "WARDEN_SUMMONS §3: Fen waits at the orchard gate from the dawn release until the lean. ACT1_KEEPER_JOIN: the Wickerglen investigation comes first; the lean (fb_side_pick) waits for story.chi_done. Re-pointed lines are PLACEHOLDER."
      },
      {
       "kind": "npc",
@@ -1067,8 +1069,8 @@
       "id": "juniper_east",
       "name": "Associate Juniper",
       "x": 30,
-      "y": 8,
-      "facing": "left",
+      "y": 7,
+      "facing": "down",
       "when": [
        "story.crackdown",
        "!story.side_pick_done"
@@ -1076,7 +1078,7 @@
       "lines": {
        "else": "Our crew camp's past the slide. The lamps are still warm. Have a bright day!"
       },
-      "_note": "POST_TRIAL_CRACKDOWN §5: Glimmerwell relocated to the east road. RENDEZVOUS_VINCENT's Glimmerwell shift starts here (that build); PLACEHOLDER line."
+      "_note": "POST_TRIAL_CRACKDOWN §5: Glimmerwell relocated to the east road. ACT1_KEEPER_JOIN: fb_east opens on story.warden_met, so she stands at 30,7 beside the road (30,8 would close the only way to the warp at 31,8). PLACEHOLDER line."
      },
      {
       "kind": "trigger",

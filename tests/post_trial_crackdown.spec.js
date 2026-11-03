@@ -115,7 +115,7 @@ test.describe('post-Trial crackdown', () => {
     expect(await sceneId(page)).toBe('warden_meet');
     await drive(page);
     expect((await flags(page))['story.warden_met']).toBe(true);
-    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('pick');
+    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('chi_meet');   // ACT1_KEEPER_JOIN: Ilse sends the holder to Vincent Chi
     expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
     expect(await sceneId(page)).toBe('warden_after');
     await drive(page);

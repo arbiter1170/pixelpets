@@ -877,6 +877,16 @@
       "name": "Resident",
       "faction": "none",
       "base": 50
+    },
+    {
+      "name": "Keeper Constable",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Vincent Chi",
+      "faction": "none",
+      "base": 50
     }
   ],
   "tiers": [
