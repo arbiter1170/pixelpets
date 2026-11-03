@@ -41,8 +41,11 @@ test('the dialog speaker tab shows rank, then name, and never a placeholder (Vin
     Tobin: 'Associate Tobin', Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen',
     'Associate Juniper': 'Associate Juniper', 'Dorian Pell': 'Head of Acquisitions Dorian Pell',
     'Officer Ness': 'Officer Ness', 'Warden Ilse': 'Warden Ilse', 'Captain Lumen': 'Captain Lumen', 'Cadet Arlo': 'Cadet Arlo',
-    // Keepers whose ladder rank waits on Vincent (D1159) show their plain name, never a placeholder.
-    'Keeper Amos': 'Keeper Amos', 'Watch Ivo': 'Watch Ivo', 'Clerk Wynn': 'Clerk Wynn',
+    // The D1159 ladder ranks (KEEPER_RANKS D893): a duty (Watch, Clerk, Archivist, Operator) moves to the contact card.
+    'Watch Ivo': 'Constable Ivo', 'Clerk Wynn': 'Officer Wynn', 'Archivist Mo': 'Officer Mo', 'Operator Rue': 'Officer Rue',
+    'Keeper Rowan': 'Sergeant Rowan', 'Keeper Pryce': 'Cadet Pryce', Sefton: 'Cadet Sefton', Ash: 'Cadet Sefton',
+    // Hosts and shopkeepers are civilians: aligned to a side, never ranked, shown as before.
+    'Keeper Amos': 'Keeper Amos', 'Keeper Quill': 'Keeper Quill', 'Watch Saffie': 'Watch Saffie', 'Host Della': 'Host Della',
     Mom: 'Mom', Morolow: 'Caleb', 'Clerk Nia': 'Clerk Nia',
   };
   for (const [raw, shown] of Object.entries(want)) {
@@ -87,22 +90,26 @@ test('battle lines say Master Fen, never Trial Master, and stack no titles (deci
   expect(pia.intro).toContain(piaTitle);
 });
 
-test('rankCheck lists only the pending ranks (D1159) and the flagged NPCs (D1160); no label carries a placeholder', async ({ page }) => {
+test('rankCheck: only the D1245 plaza placeholders pending, civilians unranked, only the D1160 flags; no label carries a placeholder', async ({ page }) => {
   await boot(page);
   const c = await page.evaluate(() => PixelPets.rankCheck());
   expect(c.missing).toEqual([]);
   expect(c.bad).toEqual([]);
   expect(c.battle).toEqual([]);
-  // Every pending name that is in the cast (16 today; Ash too once #261's Trial Hall holders land) is listed, and only those.
-  const pend = await page.evaluate(() => {
-    const R = MAPDATA.reputation, names = new Set(R.cast.map((e) => e.name));
-    return Object.keys(R.ranks.pending).filter((n) => names.has(n)).sort();
-  });
-  expect(pend.length).toBeGreaterThanOrEqual(16);
-  expect(c.placeholders.map((p) => p.replace(/ \((D1159|D1245)\)$/, '')).sort()).toEqual(pend);
-  // D1159: Keepers waiting for Vincent's OK on a rank. D1245: FERNBROOK_PLAZA's rank-only placeholders, waiting for Design's names (Vincent, Nov 3).
-  const PLAZA = ['Associate', 'Bright Lead', 'Cadet', 'Constable', 'Junior Bright', 'Sergeant'];
-  for (const p of c.placeholders) expect(p).toMatch(PLAZA.includes(p.replace(/ \(D\d+\)$/, '')) ? /\(D1245\)$/ : /\(D1159\)$/);
+  // Every sworn Keeper has a ladder rank now (D1159). Only FERNBROOK_PLAZA's six rank-only placeholders stay pending,
+  // waiting for Design's names (D1245; Vincent, Nov 3: option A).
+  expect(c.placeholders.sort()).toEqual(['Associate', 'Bright Lead', 'Cadet', 'Constable', 'Junior Bright', 'Sergeant'].map((p) => p + ' (D1245)'));
+  // Hosts and shopkeepers on a side are civilians: listed, never ranked.
+  expect(c.civilians.sort()).toEqual(['Keeper Amos', 'Keeper Halvard', 'Keeper Marigold', 'Keeper Quill', 'Keeper Teague', 'Watch Saffie']);
+  const civRanked = await page.evaluate(() => MAPDATA.reputation.cast.filter((e) => e.civilian && e.rank).map((e) => e.name));
+  expect(civRanked).toEqual([]);
+  // Every rank on a Keeper is on the ladder (or is a Hall Master's "Master").
+  const ladder = ['Cadet', 'Constable', 'Officer', 'Sergeant', 'Captain', 'Commander', 'Warden', 'Master'];
+  const offLadder = await page.evaluate((L) => MAPDATA.reputation.cast.filter((e) => e.faction === 'keepers' && e.rank && !L.includes(e.rank)).map((e) => e.name), ladder);
+  expect(offLadder).toEqual([]);
+  // A duty is only held by a Cadet, Constable or Officer (KEEPER_RANKS).
+  const badDuty = await page.evaluate(() => MAPDATA.reputation.cast.filter((e) => e.duty && !['Cadet', 'Constable', 'Officer'].includes(e.rank)).map((e) => e.name));
+  expect(badDuty).toEqual([]);
   const labels = await page.evaluate(() => MAPDATA.reputation.cast.map((e) => PixelPets.shownName(e.name)));
   for (const l of labels) expect(l).not.toMatch(/\[|\]/);
   expect(c.flagged.map((f) => f.replace(/ \(D1160\)$/, '')).sort()).toEqual(
@@ -152,19 +159,59 @@ test('an old Tobin / Hale save keeps its trust and gets one ranked contact card 
   await shot(page, 'npc-ranks-contacts');
 });
 
-test('a Keeper still waiting on a rank shows the plain name on the contact card; the town board signs rank first', async ({ page }) => {
+test('a ranked Keeper with a duty shows rank first and the duty line on the contact card', async ({ page }) => {
   await boot(page, { 'story.phone_got': true }, { phoneBook: { met: { 'Watch Ivo': true }, fav: {} } });
   await page.locator('#phoneBtn').click();
   await expect(page.locator('#ovPhone')).toBeVisible();
   await page.locator('.phone-app[data-app="contacts"]').click();
-  const ivo = page.locator('.contact-name', { hasText: 'Watch Ivo' });
+  const ivo = page.locator('.contact-name', { hasText: 'Constable Ivo' });
   await expect(ivo).toBeVisible();
   await ivo.click();
-  await expect(page.locator('.contact-card-name')).toHaveText('Watch Ivo');
-  await expect(page.locator('.contact-duty')).toHaveCount(0);   // the duty line comes with the rank, once Vincent OKs it
+  await expect(page.locator('.contact-card-name')).toHaveText('Constable Ivo');
+  await expect(page.locator('.contact-duty')).toHaveText('Watch');
   expect(await page.locator('#ovPhone').innerText()).not.toMatch(/\[Rank\]/);
   const card = await page.locator('.contact-card-name').evaluate((el) => el.getBoundingClientRect().right <= window.innerWidth);
   expect(card).toBe(true);
   await shot(page, 'npc-ranks-card-ivo');
   expect(await page.evaluate(() => PixelPets.shownName('Officer Cald'))).toBe('Officer Cald');
+});
+
+test('a civilian host keeps the plain name and no duty line on the contact card', async ({ page }) => {
+  await boot(page, { 'story.phone_got': true }, { phoneBook: { met: { 'Keeper Amos': true }, fav: {} } });
+  await page.locator('#phoneBtn').click();
+  await expect(page.locator('#ovPhone')).toBeVisible();
+  await page.locator('.phone-app[data-app="contacts"]').click();
+  const amos = page.locator('.contact-name', { hasText: 'Keeper Amos' });
+  await expect(amos).toBeVisible();
+  await amos.click();
+  await expect(page.locator('.contact-card-name')).toHaveText('Keeper Amos');
+  await expect(page.locator('.contact-duty')).toHaveCount(0);
+  expect(await page.locator('#ovPhone').innerText()).not.toMatch(/\[Rank\]|Officer Amos|Constable Amos/);
+  const fits = await page.locator('.contact-card-name').evaluate((el) => el.getBoundingClientRect().right <= window.innerWidth);
+  expect(fits).toBe(true);
+  await shot(page, 'npc-ranks-card-amos');
+});
+
+test('the Trial Hall cadet is Cadet Sefton; an old save that met Ash keeps the trust and contact; keys only grow', async ({ page }) => {
+  const before = save({ 'story.phone_got': true }, { rep: { Ash: 58 }, phoneBook: { met: { Ash: true }, fav: {} } });
+  const beforeKeys = Object.keys(before).sort();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await installSave(page.context(), before, { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
+  const got = await page.evaluate(() => {
+    const st = PixelPets.state, l = PixelPets.holderLines('h1_cadet');
+    return {
+      v: st.v, repOld: st.rep.Ash, repNew: st.rep.Sefton, metNew: st.phoneBook.met.Sefton, label: l.label, intro: l.intro,
+      grete: PixelPets.shownName('Grete Ash'), keys: Object.keys(JSON.parse(localStorage.getItem('pixelpets.save.v2'))).sort(),
+    };
+  });
+  expect(got.v).toBe(2);
+  expect(got.repOld).toBe(58);
+  expect(got.repNew).toBe(58);
+  expect(got.metNew).toBe(true);
+  expect(got.label).toBe('Cadet Sefton');
+  expect(got.intro).toBe('Cadet Sefton wants a friendly match with Tester!');
+  expect(got.grete).toBe('Grete Ash');   // the Plaza sweeper is a different person and keeps her name
+  for (const k of beforeKeys) expect(got.keys).toContain(k);
 });
