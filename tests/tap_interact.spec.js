@@ -25,6 +25,7 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // Hearthmoor Plaza (#196), Route 3 with its three side rooms and the Answerers (ARBITER_UNITS), and Brinewick
     // with Trial Hall #3 and its rooms (BRINEWICK v0.1) bring door 45, warp 93, sign 89, talk 669, scene 40,
     // trigger 34, board 7, trainer 25, shop 14 and wild 9.
+    // FERNBROOK_PLAZA (D1243-D1247) adds talk 16: three Keepers, three Glimmerwell holders, their six Walklings and four townsfolk.
     // FERNBROOK_HOMES (D1248): three home doors and their three mats, the lane sign, and 62 talk taps (six residents plus
     // the props inside the three homes and on the south lane) add door 3, warp 3, sign 1 and talk 62.
     // DAY1_TRIAL1_FLOW adds sign 6 (four contested Fernbrook signs, two held), talk 6 (three crates, Tobin's tally, Burrsnout,
@@ -32,7 +33,7 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // PARTNER_DAY (#258): the new hall and bedroom (hm_home_hall, hm_home_room), Mom (moved down from hm_home_up) and Maze,
     // the home pegs, the up_cushion, and hm_buddy_pre / hm_lizzy_pre in Hearthmoor add talk 12, warp 4 (hall_mom,
     // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
-    door: 48, warp: 100, sign: 96, talk: 741, scene: 40, trigger: 40, board: 7,
+    door: 48, warp: 100, sign: 96, talk: 757, scene: 40, trigger: 40, board: 7,
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
