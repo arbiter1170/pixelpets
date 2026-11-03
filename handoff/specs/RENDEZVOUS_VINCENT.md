@@ -2,6 +2,19 @@
 
 **Spec only; nothing is built.** Drafted Tue Nov 3, 2026; **every §7 default approved by Vincent (Tue Nov 3, 2026, 8:38 AM ET)**. D1396 (the umbrella) stays open until the quest is built. Target: `handoff/specs/RENDEZVOUS_VINCENT.md` (public game repo, not `docs/`). All player text is PLACEHOLDER for Story. Staging every player sees is red: nothing builds before Vincent rules on §7.
 
+> **Merged with WARDEN_SUMMONS (Vincent, Tue Nov 3, 2026, 9:56 AM ET).** `claude/post-trial-crackdown` also carries a WARDEN_SUMMONS spec (Amos's wire, back to Fen for the pick). Vincent ruled that this spec wins on the outcome:
+> - Ilse **phones** the holder.
+> - At the Lodge she is **distraught at the President** and sends the holder to Vincent.
+> - The pick waits for the report.
+>
+> From WARDEN_SUMMONS we keep the keyed town lines on Route 1 and in Hearthmoor, the old-save guard on the pick gate, and the way Ilse's lines are hooked in (overlay or code wrap; `interiors.json` stays untouched).
+>
+> **Flag mapping:** this spec's `story.ilse_called` and `story.ilse_debrief` are the crackdown branch's `story.warden_called` and `story.warden_met`, and the build uses those names.
+>
+> **Build split:**
+> - The crackdown session ships the crackdown plus Ilse's call and the debrief (beats 1-2).
+> - The Trial Hall session builds the rendezvous, the two shifts and the report (beats 3-5) on top of that branch (`claude/rendezvous-vincent`). It then moves the pick gate to `story.rdv_done | !story.crackdown`.
+
 ## 1. Status and sources
 
 | Item | Value |

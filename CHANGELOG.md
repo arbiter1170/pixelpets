@@ -2,6 +2,19 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 9:56 AM ET: Spec note: RENDEZVOUS_VINCENT merged with WARDEN_SUMMONS, and the build split (Vincent), docs only
+- What changed and why: Vincent ruled that RENDEZVOUS_VINCENT wins over the crackdown branch's WARDEN_SUMMONS on the outcome:
+  - a phone call;
+  - a distraught Ilse who sends the holder to Vincent;
+  - the pick after the report.
+  WARDEN_SUMMONS's town lines and its old-save guard are kept, and the build reuses its flags (`story.warden_called`, `story.warden_met`). The crackdown session builds the call and the debrief. This session builds the rendezvous, the shifts and the report on top of that.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): Vincent's call (merge, split). No new ids.
+- Anything left unfinished:
+  - The crackdown branch's ids (D1333-D1346) clash with #268's settled D1333-D1347. That session has been asked to renumber from D1411.
+
 ## 2026-11-03 8:38 AM ET: Decisions: Vincent approves every RENDEZVOUS_VINCENT default (D1397-D1410), docs only
 - What changed and why: Vincent approved all defaults for the Vincent quest (two trial shifts, the stream-bank meeting, the Keeper call-up roll and the Glimmerwell ledger as the secrets, the name kept, Fen's lean unchanged, and the rest of §7). The 14 rows move to the archive, and the spec marks them SETTLED. D1396 stays open until the quest is built.
 - Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
