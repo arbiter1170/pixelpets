@@ -107,6 +107,8 @@ test('the Sacrifice quota grants Tier 2 without a battle @w1', async ({ page }) 
     points: PixelPets.standing.glimmer.points,
     keepers: PixelPets.standing.keepers.points,
     hale: PixelPets.trainerFor('hall2_hale').seal,
+    cobble: PixelPets.hasSeal('seal_cobblecrest'),
+    held: PixelPets.sealsHeld(),
     chip: PixelPets.state.party[0].chip || null,
   }));
   expect(after.seal2).toBe(true);
@@ -116,7 +118,10 @@ test('the Sacrifice quota grants Tier 2 without a battle @w1', async ({ page }) 
   expect(after.points).toBe(5);
   expect(after.chip).toBe(null);
   expect(after.keepers).toBe(0);
-  expect(after.hale).toBe('seal_glim_2');
+  // SEALS_BOTH_PATHS (D1325, D1326): the merged Hale row gives the real Seal; the quota gives the tag and the chapter, not the Seal.
+  expect(after.hale).toBe('seal_cobblecrest');
+  expect(after.cobble).toBe(false);
+  expect(after.held).toBe(0);
   await page.evaluate(() => PixelPets.setSide('keepers'));
   expect(await page.evaluate(() => PixelPets.trainerFor('hall2_hale').seal)).toBe('seal_cobblecrest');
 });
@@ -134,6 +139,8 @@ test('tuning the partner chips them and still grants Tier 2 @w1', async ({ page 
       snacks: PixelPets.state.bag.heal_snack || 0,
       seal2: PixelPets.state.flags['story.seal2'],
       lanyard: !!PixelPets.state.seals.seal_glim_2,
+      cobble: !!PixelPets.state.seals.seal_cobblecrest,
+      held: PixelPets.sealsHeld(),
       done: PixelPets.state.flags['story.arbiter_test_done'],
       active: PixelPets.state.flags['story.arbiter_test_active'],
       align: p.align,
@@ -144,6 +151,8 @@ test('tuning the partner chips them and still grants Tier 2 @w1', async ({ page 
   expect(after.snacks).toBe(2);
   expect(after.seal2).toBe(true);
   expect(after.lanyard).toBe(true);
+  expect(after.cobble).toBe(false);   // D1325: the Tuning gives the tag, not the Seal
+  expect(after.held).toBe(0);
   expect(after.done).toBe(true);
   expect(after.active).toBe(false);
   expect(after.align).toBe(50);
@@ -151,20 +160,31 @@ test('tuning the partner chips them and still grants Tier 2 @w1', async ({ page 
   expect(after.v).toBe(2);
 });
 
-test('facing the review still grants Tier 2 @w1', async ({ page }) => {
+test('facing Hale grants the Seal and Tier 2, one card @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, cobbleSave({ 'story.quarry_bought': true }));
   expect(await page.evaluate(() => PixelPets.trainerFor('hall2_hale').onWin)).toBe('seal2');
+  // Every Seal card the battle or the scene shows writes its name here (D1327: one card per win, the tag card muted).
+  await page.evaluate(() => {
+    window.__cards = [];
+    const el = document.querySelector('#btSeal');
+    new MutationObserver(() => { if (!el.hidden) window.__cards.push(document.querySelector('#btSealName').textContent); })
+      .observe(el, { attributes: true, attributeFilter: ['hidden'] });
+  });
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
-  await playThrough(page, ['Face the review']);
+  await playThrough(page, ['Face Hale for the Seal']);
   const after = await page.evaluate(() => ({
+    cards: window.__cards,
+    cobble: !!PixelPets.state.seals.seal_cobblecrest,
     seal2: PixelPets.state.flags['story.seal2'],
     lanyard: !!PixelPets.state.seals.seal_glim_2,
     points: PixelPets.standing.glimmer.points,
     chip: PixelPets.state.party[0].chip || null,
   }));
+  expect(after.cobble).toBe(true);
   expect(after.seal2).toBe(true);
   expect(after.lanyard).toBe(true);
+  expect(after.cards).toEqual(['Cobblecrest Seal']);
   expect(after.points).toBe(5);
   expect(after.chip).toBe(null);
 });
