@@ -9561,7 +9561,28 @@ async function walkCast(paths){
 }
 // INTRO_CUTSCENE (D801-D809): scene staging. A walk or wait hides the text box but keeps the tap layer: the first tap
 // doubles the pace, the second ends the beat (D808). Casts and prop swaps last until the scene ends (cutReset).
-const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [] };
+const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [], cam: null, camEase: null };
+/* HC_PARADE (owner's direction, Tue Nov 3, 2026): ["camera", id] makes the view follow a scene actor (the President's car, then
+   the President) instead of the holder; ["camera", null] hands it back. A switch eases over 400 ms; reduced motion and SKIP cut.
+   The scene's end always returns the view to the holder (cutReset). */
+function cutCamPoint(){
+  let x = walk.fx, y = walk.fy;
+  const o = cutRT.cam && CUR ? CUR.objs.find(q => q.id === cutRT.cam) : null;
+  if (o) { const q = objPos(o); x = q.fx != null ? q.fx : q.x; y = q.fy != null ? q.fy : q.y; }
+  const e = cutRT.camEase;
+  if (e) {
+    const k = Math.min(1, (now() - e.t0) / 400);
+    if (k >= 1 || prefersReduced()) cutRT.camEase = null;
+    else { const m = 1 - (1 - k) * (1 - k); x = e.x + (x - e.x) * m; y = e.y + (y - e.y) * m; }
+  }
+  return { x, y };
+}
+function cutCamera(sc, id){
+  const p = cutCamPoint();
+  cutRT.camEase = cutFast(sc) ? null : { x: p.x, y: p.y, t0: now() };
+  cutRT.cam = id || null;
+  if (sc) (sc.camLog = sc.camLog || []).push(cutRT.cam);   // for the debug probe (hcParade)
+}
 function cutFast(sc){ return !!(sc && sc.skip) || signalCastFast(); }
 function cutVar(sc, v){
   if (typeof v !== 'string' || v[0] !== '$') return v;
@@ -9726,7 +9747,7 @@ function cutStepPlayer(p, ms){            // the frame loop skips updateWalk whi
   })());
 }
 function cutReset(sc){
-  cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
+  cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true); cutRT.cam = null; cutRT.camEase = null;
   for (const p of cutRT.props) p.o.sprite = p.sprite; cutRT.props = [];
   for (const o of cutRT.hidden || []) delete o._cutHide; cutRT.hidden = [];
   const box = $('#sbox'); if (box) box.hidden = false;
@@ -10015,6 +10036,7 @@ async function execStep(st){
     case 'castAt': { cutCastAt(sc, a, b, c, d); return; }
     // HC_PARADE: ["hide", "people" | [ids]] keeps the map's own people (and parked tanks) off the map until the scene ends.
     case 'hide': { cutHide(a); return; }
+    case 'camera': { cutCamera(sc, a); return; }
     // HC_PARADE E8 (D1369): ["emoteAll", [ids], glyph, ms] shows one emote on every listed actor in the same frame (the clap).
     case 'emoteAll': { if (sc.skip) return; for (const id of a || []) sceneEmote(id, b, (c | 0) || 1200); return; }
     // HC_PARADE §5 (D1359-D1361): a street battle with an ally and two foes picked at random; a loss restarts it.
@@ -10416,7 +10438,8 @@ function syncWalkCam(t){
   const c = $('#mapCanvas'); if (!c || !c.width || !walk) return;
   tickCamBias(t == null ? performance.now() : t);
   // Follow the keeper's drawn (whole-pixel) spot, so an odd canvas size can't make the keeper wobble 1 px against the screen.
-  const VW = c.width, VH = c.height, px_ = Math.round(walk.fx * TS), py_ = Math.round(walk.fy * TS);
+  const cp = scene && (cutRT.cam || cutRT.camEase) ? cutCamPoint() : null;   // HC_PARADE: a scene's ["camera", id] follows that actor
+  const VW = c.width, VH = c.height, px_ = Math.round((cp ? cp.x : walk.fx) * TS), py_ = Math.round((cp ? cp.y : walk.fy) * TS);
   const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
   const prevY = walk.cam.y;
   // Clamp to the band above the partner strip. Centre in the open band under the area chip, so a north
@@ -20201,7 +20224,7 @@ function boot(){
     const c = $('#mapCanvas'), vx0 = walk.cam.x / TS, vy0 = walk.cam.y / TS, vx1 = vx0 + c.width / TS, vy1 = vy0 + c.height / TS;
     const live = CUR.objs.filter(o => present(o));
     const inView = o => { const q = objPos(o), x = q.fx != null ? q.fx : q.x, y = q.fy != null ? q.fy : q.y; return x + 2 >= vx0 && x - 2 <= vx1 && y + 1 >= vy0 && y <= vy1 + 1; };
-    return { map: CUR.id, scene: scene ? scene.id : null, battle: !!battle.on, battleId: battle.id, people: live.filter(o => o.kind === 'npc' || o.kind === 'trainer').length,
+    return { map: CUR.id, scene: scene ? scene.id : null, battle: !!battle.on, battleId: battle.id, cam: cutRT.cam, camLog: scene && scene.camLog ? scene.camLog.slice() : [], people: live.filter(o => o.kind === 'npc' || o.kind === 'trainer').length,
       tanksInView: live.filter(o => o.kind === 'prop' && /tank_(cmd_)?[rl]$|^hc_tank/.test(o.sprite || '') && inView(o)).length,
       hidden: CUR.objs.filter(o => o._cutHide).length, cast: live.filter(o => o.cast).map(o => { const q = objPos(o); return { id: o.id, x: q.fx != null ? q.fx : q.x, y: q.fy != null ? q.fy : q.y, sprite: o.sprite || null, fly: !!o.fly }; }),
       last: scene && scene.hcLast ? JSON.parse(JSON.stringify(scene.hcLast)) : null, used: scene && scene.hcUsed ? [...scene.hcUsed] : [] };

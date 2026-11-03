@@ -3636,9 +3636,9 @@ function addHcParadeArt(T, A){
     const d = P(g, false, 64), up = f ? 1 : 0;
     for (let i = 0; i < 8; i++) { const x = 1 + i * 8; d(HAIR[(i + v * 3) % 8], x + 2, 2 - up, 4, 4); d(COAT[(i + v) % 7], x, 6 - up, 8, 3); }
     for (let i = 0; i < 7; i++) {
-      const x = 4 + i * 8, coat = (v === 2 && i === 3) ? 's' : COAT[(i * 3 + v) % 7];
+      const x = 4 + i * 8, coat = (v === 2 && i === 3) ? 'V' : COAT[(i * 3 + v) % 7];   // one supporter's vest: Glimmerwell wine (rule 11)
       d(HAIR[(i * 5 + v) % 8], x + 1, 6 - up, 5, 5); d(coat, x - 1, 10 - up, 9, 6 + up);
-      if (v === 2 && i === 3) d('V', x + 3, 13 - up, 1, 1);
+      if (v === 2 && i === 3) d('N', x + 3, 13 - up, 1, 1);
       if (f && i % 3 === 0 && !(v === 2 && i === 3)) { d('3', x - 1, 7, 1, 2); d('3', x + 7, 7, 1, 2); }
     }
     if (v === 1) { d('F', 14, 0, 1, 7); d('y', 15, 0, 3, 2); d('J', 15, 2, 3, 1); d('F', 46, 0, 1, 7); d('y', 47, 0, 3, 2); d('J', 47, 2, 3, 1); }

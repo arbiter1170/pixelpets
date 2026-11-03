@@ -26,6 +26,8 @@ save. Plain `?debug=1` and normal play keep `hc_gate` (Keeper Moss's welcome) ex
   - **E10** a trigger with `load: true` plays when its map loads (boot, or an arrival once the fade clears). `hc_parade_start`
     on the Square (`!story.hc_greeted & !story.hc_parade_square`) and `hc_parade_resume` on Charter Hill
     (`story.hc_parade_square & !story.hc_parade_seen`).
+  - `["camera", id | null]` (owner's direction, Tue Nov 3): the view follows a scene actor instead of the holder; a switch
+    eases over 400 ms (reduced motion and SKIP cut); the scene's end always hands the view back.
   - Staging helpers: `["hide", "people"]` keeps a map's own people and parked tanks off until the scene ends (the Square's
     townsfolk, Moss, the patrols); `walkTo {line: true}` walks a straight lane (a parade column, a flyer); `{ghost: true}`
     lets a staging walk pass other scene actors; a say step with `{face: false}` keeps the portrait frame empty (D1356).
@@ -52,18 +54,18 @@ art holds frame 0; emotes still show. SKIP still stops at each battle.
 | 1.5 w2 | | Officer column, two abreast, eight | `walkAll {line, ms 160, drop}` | auto |
 | 1.5 w3 | | Escort tank, then command tank (2 in view max) | `keeper_tank_r`, `keeper_tank_cmd_r`, ms 280 | auto |
 | 1.5 w4 | | Second column | as w2 | auto |
-| 1.5 w5-1.6 | | The car and four guards stop before the holder; the hand at the window; Officer A raises a hand; the crowd claps at once | `prop hc_pcar_hand_r`, `emote emote_hand`, `emoteAll emote_clap` | auto |
-| 1.7 | | The car turns north up Charter Avenue (off view) | `walkAll {line}` to 53,20 then 53,8, drop | auto |
+| 1.5 w5-1.6 | | **The view rides with the car** (`camera pr_car`, owner's direction) until it stops before the holder; the hand at the window; Officer A raises a hand; the crowd claps at once | `prop hc_pcar_hand_r`, `emote emote_hand`, `emoteAll emote_clap` | auto |
+| 1.7 | | The view hands back to the holder (`camera null`, a 400 ms ease); the car turns north up Charter Avenue (off view) | `walkAll {line}` to 53,20 then 53,8, drop | auto |
 | 1.5 w6 | | Escort tank, last column | | auto |
 | 1.7 | | "The President speaks at the Court. Citizens will attend." The crowd walks east | `walkAll {line, drop}` | tap, auto |
 | 1.8 | | Curtain; `story.hc_parade_square`; warp to hc_civic | `curtain on`, `setFlag`, `warp` (commits the flag) | auto |
 | 2.1-2.2 | hc_civic | Muster Road packed: 12 civilians (six in vests), 14 crowd strips on the back rows and sidewalks, tanks at both road ends (4,31 / 60,31), the rotor craft hovering over the Court facing the crowd (altitude 36, its down-beam on the cell behind the President's step; ROTOR_CRAFT §6.2), four guards behind the cordon (row 28 / row 29), Officers A and B | `castAt` behind the curtain | auto |
 | 2.3 | | Four Officers march in along the road and file into the Court door (dropped) | BFS walks to 32,27 | auto |
-| 2.4 | | The car up the aisle to 33,31, four close guards beside it; door open; the President (16x16 back-lit prop) walks with them to the top of the steps (32,27; guards 30/31/33/34,27) | | auto |
+| 2.4 | | **The view rides with the car** from Charter Avenue (54,31; `camera pr_car2`) up the road to 33,31, four close guards beside it; door open; the President (16x16 back-lit prop) walks with them to the top of the steps (32,27; guards 30/31/33/34,27); the view follows him (`camera pr_pres`) and holds him in view through the speech | | auto |
 | 2.5 | | A civilian steps toward the cordon; a guard steps across: "Citizen. Back."; `anthem_dark` (PLACEHOLDER, silent) | | auto, tap |
 | 2.6 | | The speech, seven lines, "The President", no portrait | `say {face: false}` | tap |
 | 2.7 | | Officer A's hand; the crowd claps | `emoteAll` | auto |
-| (2.8) | | He goes back into the Court; the guards stay | walk, drop | auto |
+| 2.8 | | **He goes back into the Court before the battles** (owner's direction); the view eases back to the holder; the guards stay | `camera null`, walk, drop | auto |
 | 3.1-3.3 | | Three street battles (between them, the packet's line endings) | `hcFight 1..3` | battle |
 | 3 end K | | Officer A walks up; thanks and hand-off (PLACEHOLDER HOOK, D1363); Moss's letter line if `!story.hc_invite` | | tap |
 | 3 end G | | "Not here. Run!"; the holder runs west along row 34; curtain; Lantern Quay north edge (22,1); HOOK (PLACEHOLDER, D1362); the letter line | `warp hc_waterfront` | tap |
@@ -121,7 +123,7 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
 - **Reads at a glance:** the darkest thing on bright steps, at the centre of a ring of green.
 - **Avoid:** eyes or a mouth; any shorthand for a real leader (moustache, sash, medals, epaulettes); crowns; a halo; red, wine, soot or crimson.
 
-#### Mint vest
+#### Mint vest (superseded: the vest is now wine, see below)
 
 - **Mood:** a bright, friendly badge of belonging; easy to spot in a crowd, which is the point and the risk.
 - **References:** a volunteer's high-visibility vest at a fun run; a shop assistant's pastel tabard; a team bib over everyday clothes.
@@ -129,6 +131,10 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
 - **Reads at a glance:** the lightest coloured torso on screen; opposite to Keeper `J`/`D` in hue and value.
 - **Avoid:** `g` or `l` as the body colour, crimson `Q`, any text.
 - **Note from the brief writer:** Glimmerwell's palette moved to wine `V`, soot `N` and crimson `Q` (v0.3.1). Whether mint is still the supporters' mark under rule 11 is for Design or the Chief of Staff to confirm; the vest is built from the look kit (`outfit: 'vest'`, `outfitCol: 's'`, accent `V`) so a colour change is one line in `tools/hc_parade.py`.
+- **Owner's direction (Tue Nov 3, 2026, in the build session): "Mint vest doesn't fit anymore, needs respect."** The
+  supporters' vest now stays inside Glimmerwell's locked set (AGENTS rule 11): body wine `V`, trim soot `N`, no crimson `Q`
+  (kept for the bag, card and sparkle). One civilian's red cardigan became orange so nothing else in the crowd reads as a
+  vest. The crowd strip's one supporter wears the same wine. Checked by `tests/hc_parade.spec.js` (rule 11 test).
 
 ## PLACEHOLDERs (nothing here is final)
 
@@ -155,6 +161,6 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
   PR lands first this merges cleanly; if it is reworked, this branch re-merges it. Its `OPEN_DECISIONS.md` header claims
   D1333-D1339 and D1340-D1346, which main already gives to #268 (D1333-D1347): a collision for that branch's owner, not
   renumbered here.
-- **Mint vests** under rule 11 (see the brief note above).
+- ~~Mint vests under rule 11~~: settled by the owner, Tue Nov 3: wine `V` with soot `N` (see the brief note above).
 - **At ship time** (with HC_CITY_V2): `save.js` must size the city's maps, or a save on Charter Hill loads at the Hearthmoor
   Lantern House and E10's boot path never sees Charter Hill. In the preview the resume is exercised by arriving on Charter Hill.

@@ -15,19 +15,20 @@ Sound:   the anthem cues (KEEPER_ANTHEM, D1357) are not built: the `music` steps
 
 # ---------- cast (castAt entries: people use a look, props a sprite) ----------
 OFFICER = 'officer'
-CIV_LOOKS = {   # PLACEHOLDER townsfolk looks from the look kit (existing parts only); the mint vests are `vest` in s/t with a V button
+CIV_LOOKS = {   # PLACEHOLDER townsfolk looks from the look kit (existing parts only). The supporters' vests are
+#   Glimmerwell's locked set (AGENTS rule 11): wine `V`, soot `N` trim, no crimson (owner, Tue Nov 3, 2026: mint no longer fits)
     'hc_pr_civ_1': {'skin': '2', 'hair': 'short', 'hairCol': 'o', 'outfit': 'coat', 'outfitCol': 'b', 'accent': 'w'},
-    'hc_pr_civ_2': {'skin': '4', 'hair': 'bob', 'hairCol': 'd', 'outfit': 'cardigan', 'outfitCol': 'r', 'accent': 'y'},
+    'hc_pr_civ_2': {'skin': '4', 'hair': 'bob', 'hairCol': 'd', 'outfit': 'cardigan', 'outfitCol': 'o', 'accent': 'y'},   # not red: reads apart from the wine vests
     'hc_pr_civ_3': {'skin': '1', 'hair': 'curls', 'hairCol': 'y', 'outfit': 'sweater', 'outfitCol': 'm', 'accent': 'w'},
     'hc_pr_civ_4': {'skin': '5', 'hair': 'buzz', 'hairCol': 'k', 'outfit': 'jacket', 'outfitCol': 'n', 'accent': 'o'},
     'hc_pr_civ_5': {'skin': '3', 'hair': 'bun', 'hairCol': 'p', 'outfit': 'raincoat', 'outfitCol': 'y', 'accent': 'w'},
     'hc_pr_civ_6': {'skin': '6', 'hair': 'long', 'hairCol': 'd', 'outfit': 'tunic', 'outfitCol': 'p', 'accent': 'y'},
-    'hc_pr_mv_1': {'skin': '2', 'hair': 'pony', 'hairCol': 'F', 'outfit': 'vest', 'outfitCol': 's', 'accent': 'V'},
-    'hc_pr_mv_2': {'skin': '5', 'hair': 'short', 'hairCol': 'd', 'outfit': 'vest', 'outfitCol': 's', 'accent': 'V'},
-    'hc_pr_mv_3': {'skin': '3', 'hair': 'curls', 'hairCol': 'k', 'outfit': 'vest', 'outfitCol': 's', 'accent': 'V'},
-    'hc_pr_mv_4': {'skin': '1', 'hair': 'bob', 'hairCol': 'y', 'outfit': 'vest', 'outfitCol': 's', 'accent': 'V'},
-    'hc_pr_mv_5': {'skin': '4', 'hair': 'spiky', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 's', 'accent': 'V'},
-    'hc_pr_mv_6': {'skin': '6', 'hair': 'bun', 'hairCol': 'h', 'outfit': 'vest', 'outfitCol': 's', 'accent': 'V'},
+    'hc_pr_mv_1': {'skin': '2', 'hair': 'pony', 'hairCol': 'F', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_2': {'skin': '5', 'hair': 'short', 'hairCol': 'd', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_3': {'skin': '3', 'hair': 'curls', 'hairCol': 'k', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_4': {'skin': '1', 'hair': 'bob', 'hairCol': 'y', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_5': {'skin': '4', 'hair': 'spiky', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_6': {'skin': '6', 'hair': 'bun', 'hairCol': 'h', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
 }
 # Generic labels (D1361: no new names). Officer A / Officer B are the packet's FRIEND SLOT placeholders.
 N_OFF_A, N_OFF_B, N_GUARD, N_SUPP, N_CIV, N_KEEPER = 'Officer A', 'Officer B', 'Keeper Guard', 'Glimmerwell supporter', 'Citizen', 'Keeper'
@@ -91,7 +92,7 @@ def part1_tail(sd):
                        ['pr_tank_b', X1 - 5, 21, {'ms': TANK_MS, 'line': True, 'drop': True}]]]]
     S += wave_march()                                                                                           # wave 4
     car_stop = sx                                                                                               # wave 5: the car stops in front of the holder
-    S += [cast('pr_car', X0, 20, 'right'), cast('pr_guard_1', X0 + 1, 21, 'right'), cast('pr_guard_2', X0 - 1, 21, 'right'),
+    S += [cast('pr_car', X0, 20, 'right'), ['camera', 'pr_car'],                                               # owner: follow the car cast('pr_guard_1', X0 + 1, 21, 'right'), cast('pr_guard_2', X0 - 1, 21, 'right'),
           cast('pr_guard_3', X0 + 1, 19, 'right'), cast('pr_guard_4', X0 - 1, 19, 'right'),
           ['walkAll', [['pr_car', car_stop, 20, {'ms': CAR_MS, 'line': True}],
                        ['pr_guard_1', car_stop + 1, 21, {'ms': CAR_MS, 'line': True}], ['pr_guard_2', car_stop - 1, 21, {'ms': CAR_MS, 'line': True}],
@@ -99,6 +100,7 @@ def part1_tail(sd):
           ['prop', 'pr_car', 'hc_pcar_hand_r'], ['wait', 1200],                                                  # 1.6 one gloved hand at the window
           ['emote', 'pr_off_a', 'emote_hand', 900], ['wait', 300],
           ['emoteAll', P1_CIV, 'emote_clap', 1100], ['wait', 1100],                                              # E8: all at once, stops at once
+          ['camera', None],
           ['prop', 'pr_car', 'hc_pcar_r'],
           ['walkAll', [['pr_car', 53, 20, {'ms': CAR_MS, 'line': True}], ['pr_guard_1', 54, 21, {'ms': CAR_MS, 'line': True}],
                        ['pr_guard_2', 52, 21, {'ms': CAR_MS, 'line': True}], ['pr_guard_3', 54, 19, {'ms': CAR_MS, 'line': True}],
@@ -118,13 +120,13 @@ def part1_tail(sd):
 # ---------- Part 2 and Part 3: Charter Hill (map hc_civic), Muster Road closed, the Court's steps on row 27 ----------
 HILL_SPOT = {'keepers': (28, 30), 'glimmer': (28, 34)}               # 2.1: the front edge of the crowd / the very back
 CIV2 = [(24, 30), (25, 30), (26, 30), (24, 31), (25, 31), (26, 31), (27, 31), (24, 33), (25, 33), (26, 33), (27, 33), (23, 33)]
-MINT2 = {1, 5, 6, 8, 10, 11}                                         # six of the twelve wear the vest (the foe pool for six picks)
+VEST2 = {1, 5, 6, 8, 10, 11}                                         # six of the twelve wear the vest (the foe pool for six picks)
 P2_CIV = [f'pr_c2_{i}' for i in range(1, 13)]
 mv = iter(range(1, 7)); cv = iter(range(1, 13))
 for i, cid in enumerate(P2_CIV):
-    if i in MINT2: CAST[cid] = {'name': N_SUPP, 'look': f'hc_pr_mv_{next(mv)}'}
+    if i in VEST2: CAST[cid] = {'name': N_SUPP, 'look': f'hc_pr_mv_{next(mv)}'}
     else: CAST[cid] = {'name': N_CIV, 'look': f'hc_pr_civ_{(next(cv) - 1) % 6 + 1}'}
-P2_MINT = [P2_CIV[i] for i in sorted(MINT2)]
+P2_VEST = [P2_CIV[i] for i in sorted(VEST2)]
 LINE2 = [(29, 28), (30, 28), (34, 28), (35, 28)]                     # 2.2 the guard line, behind the cordon
 CORDON2 = [(26, 29), (27, 29), (28, 29), (29, 29), (30, 29), (34, 29), (35, 29), (36, 29)]
 STRIPS2 = [(21, 30), (21, 31), (21, 33), (21, 34), (24, 34), (37, 33), (41, 33), (37, 34), (41, 34),
@@ -152,12 +154,12 @@ def part2_speech():
     S += [cast(f'pr_march_{k + 1}', 40 + k, 31, 'left') for k in range(4)]
     S += [['walkAll', [[f'pr_march_{k + 1}', *COURT_DOOR, {'ms': 150, 'drop': True}] for k in range(4)]]]
     # 2.4 the car up the aisle, four close guards beside it; a small figure gets out
-    S += [cast('pr_car2', 46, 31, 'left'), cast('pr_guard_1', 47, 30, 'left'), cast('pr_guard_2', 45, 30, 'left'),
-          cast('pr_guard_3', 47, 32, 'left'), cast('pr_guard_4', 45, 32, 'left'),
+    S += [cast('pr_car2', 54, 31, 'left'), cast('pr_guard_1', 55, 30, 'left'), cast('pr_guard_2', 53, 30, 'left'),
+          cast('pr_guard_3', 55, 32, 'left'), cast('pr_guard_4', 53, 32, 'left'), ['camera', 'pr_car2'],   # owner: the view rides with the car
           ['walkAll', [['pr_car2', *CAR_STOP, {'ms': CAR_MS, 'line': True}],
                        ['pr_guard_1', CAR_STOP[0] + 1, 30, {'ms': CAR_MS, 'line': True}], ['pr_guard_2', CAR_STOP[0] - 2, 30, {'ms': CAR_MS, 'line': True}],
                        ['pr_guard_3', CAR_STOP[0] + 1, 32, {'ms': CAR_MS, 'line': True}], ['pr_guard_4', CAR_STOP[0] - 2, 32, {'ms': CAR_MS, 'line': True}]]],
-          ['prop', 'pr_car2', 'hc_pcar_door_l'], cast('pr_pres', 32, 30, 'up'), ['wait', 400],
+          ['prop', 'pr_car2', 'hc_pcar_door_l'], cast('pr_pres', 32, 30, 'up'), ['camera', 'pr_pres'], ['wait', 400],   # ...until he is in view
           ['walkAll', [['pr_pres', *PRES_TOP, {'ms': 260}]] + [[f'pr_guard_{k + 1}', x, y, {'ms': 260}] for k, (x, y) in enumerate(CLOSE2)]],
           ['prop', 'pr_car2', 'hc_pcar_l']]
     # 2.5 nobody gets close
@@ -168,7 +170,7 @@ def part2_speech():
     for line in SPEECH: S.append(['say', 'The President', line, {'face': False}])
     if True:   # 2.7 the clap on the raised hand
         S += [['emote', 'pr_off_a', 'emote_hand', 900], ['wait', 250], ['emoteAll', P2_CIV, 'emote_clap', 1100], ['wait', 1100]]
-    S += [['walkTo', 'pr_pres', *COURT_DOOR, {'drop': True}]]                                                    # he goes in; the guards stay
+    S += [['camera', None], ['walkTo', 'pr_pres', *COURT_DOOR, {'drop': True}]]                                  # he goes back in before the battles (owner); the guards stay
     return S
 
 SPEECH = [
@@ -184,10 +186,10 @@ GUARDS2 = [f'pr_line_{k}' for k in range(1, 5)] + [f'pr_guard_{k}' for k in rang
 FIGHT = {   # §5 (D1360, D1361): the pools, labels and the PLACEHOLDER team pool per side (Story and Design, open)
     'again': 'Get up. Again.',
     'pools': {
-        'keepers': {'ally': GUARDS2, 'foe': P2_MINT, 'allyName': N_GUARD, 'foeName': N_SUPP, 'call': 'Holder. With me.',
+        'keepers': {'ally': GUARDS2, 'foe': P2_VEST, 'allyName': N_GUARD, 'foeName': N_SUPP, 'call': 'Holder. With me.',
                     'team': ['moth/1', 'crab/1', 'vane/0'], 'allyTeam': ['mole/1'],
                     'lines': {'intro': "You won't take this street.", 'win': 'Fine. Fine!', 'lose': 'Not today, Keeper.'}},
-        'glimmer': {'ally': P2_MINT, 'foe': GUARDS2, 'allyName': N_SUPP, 'foeName': N_GUARD, 'call': "You're with us? Then stand with me.",
+        'glimmer': {'ally': P2_VEST, 'foe': GUARDS2, 'allyName': N_SUPP, 'foeName': N_GUARD, 'call': "You're with us? Then stand with me.",
                     'team': ['mole/1', 'beetle/1', 'stone/0'], 'allyTeam': ['moth/1'],
                     'lines': {'intro': 'Citizen. Stand down.', 'win': 'Fall back.', 'lose': 'Stay down, citizen.'}},
     },

@@ -36,12 +36,14 @@ async function waitScene(page, id) { await expect.poll(async () => { const s = a
 // Plays the scene to its end: taps through lines (SKIP when asked), wins every battle (or loses battle `lose` once first).
 // Samples the budgets on every beat and records each line and each battle it saw.
 async function playThrough(page, o = {}) {
-  const seen = { lines: [], battles: [], peak: { people: 0, tanks: 0 }, frac: [], picks: [], skipped: false };
+  const seen = { lines: [], battles: [], peak: { people: 0, tanks: 0 }, frac: [], picks: [], skipped: false, cams: [] };
   let lost = false, quiet = 0;
   for (let i = 0; i < 3000; i++) {
     const st = await page.evaluate(() => { const h = PixelPets.hcParade(), sc = PixelPets.scene, box = document.querySelector('#sbox');
       return { h, sc, boxOn: !!(sc && box && !box.hidden && !document.querySelector('#ovScene').hidden), skip: !document.querySelector('#sbSkip').hidden,
         trainer: h.battle ? PixelPets.battle && PixelPets.battle.trainerId : null, money: PixelPets.state.money, flags: { ...PixelPets.state.flags } }; });
+    if (st.h.scene === 'hc_parade' && st.h.camLog.length >= seen.cams.length) seen.cams = st.h.camLog;
+    if (st.h.battle && st.h.cam) seen.camInBattle = true;
     seen.peak.people = Math.max(seen.peak.people, st.h.people); seen.peak.tanks = Math.max(seen.peak.tanks, st.h.tanksInView);
     if (o.reduced) for (const c of st.h.cast) if (!Number.isInteger(c.x) || !Number.isInteger(c.y)) seen.frac.push(c.id + '@' + c.x + ',' + c.y);
     if (st.h.last) { const k = JSON.stringify(st.h.last); if (!seen.picks.includes(k)) seen.picks.push(k); }
@@ -96,6 +98,10 @@ for (const side of ['keepers', 'glimmer']) {
     if (side === 'glimmer') { expect(seen.end.map).toBe('hc_waterfront'); expect(seen.end.y).toBeLessThanOrEqual(2); }
     else { expect(seen.end.map).toBe('hc_civic'); expect(seen.end.y).toBeGreaterThanOrEqual(30); expect(seen.end.y).toBeLessThanOrEqual(34); }
     expect(seen.battles.length).toBe(3);
+    // Owner (Tue Nov 3): the view follows the car on both maps, then the President until he is in view; never during a battle
+    expect(seen.cams).toEqual(['pr_car', null, 'pr_car2', 'pr_pres', null]);
+    expect(seen.camInBattle || false).toBe(false);
+    expect(seen.end.h.cam).toBeNull();
     // T4: every scene actor gone, every hidden body back, on both maps
     const left = await page.evaluate(() => ['highcharity', 'hc_civic'].map(id => ({ id, cast: WORLD[id].objs.filter(o => o.cast).length,
       hidden: WORLD[id].objs.filter(o => o._cutHide).length, child: WORLD[id].objs.some(o => o.id === 'hc_child') })));
@@ -211,6 +217,14 @@ test('T11: every parade line passes the wording rules and fits 110', async () =>
   expect(BANNED.test(pools)).toBe(false);
   expect(lines.filter(l => /President/.test(l)).every(l => !/\b(Vance|Merriden)\b/.test(l))).toBe(true);   // "The President", never a name
   expect(JSON.stringify(DATA)).not.toMatch(/\bgun|rifle|cannon|turret\b/i);
+});
+
+test('rule 11 (owner, Tue Nov 3): the supporters\' vests stay inside Glimmerwell\'s set: wine with soot, no mint, no crimson', async () => {
+  const vests = Object.entries(DATA.looks).filter(([k]) => /^hc_pr_mv_/.test(k)).map(([, v]) => v);
+  expect(vests.length).toBe(6);
+  for (const v of vests) { expect(v.outfit).toBe('vest'); expect(v.outfitCol).toBe('V'); expect(v.accent).toBe('N'); }
+  const civ = Object.entries(DATA.looks).filter(([k]) => /^hc_pr_civ_/.test(k)).map(([, v]) => v.outfitCol);
+  expect(civ).not.toContain('r');   // no civilian in a red that reads as the vest
 });
 
 test('D1354: the Keeper High Court stands on the Parade\'s south half, its door facing Muster Road; the old corner is open', async () => {
