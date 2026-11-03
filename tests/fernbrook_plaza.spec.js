@@ -1,7 +1,8 @@
 /* FERNBROOK_PLAZA (D1243-D1247): the stream field east of the orchard crates is a plaza. Three Keepers and three Glimmerwell
    holders, each with a Walkling, face off over who controls Fernbrook while four townsfolk stand around them, scared. Phases
-   come from one helper (game.js fbPlazaPhase, `fbplaza:` conds, D1244): argue; watch (the first trial is next: today
-   story.heights_done & !story.seal1) where everyone turns to the Hall; after (Seal, no pick yet); and held_keepers /
+   come from one helper (game.js fbPlazaPhase, `fbplaza:` conds, D1244): argue; watch (the first trial is next: Lizzy's class,
+   or story.heights_done on an older save, with no Seal) where everyone turns to the Hall; after (Seal, no pick yet); curfew
+   (the crackdown to the pick, everyone indoors); and held_keepers /
    held_glimmer (Vincent's D1171: the picked side holds Fernbrook after Trial 1), where the other side and its Walklings vanish.
    The `hold` / `faceWhen` / `bangWhen` npc fields are the engine hook. Runs at 320, 375 and 390. Save stays v2, no new keys. */
 const { test, expect } = require('@playwright/test');
@@ -263,6 +264,33 @@ test('flip to keepers: Glimmerwell and their Walklings vanish, the Keepers thank
   expect(await phase(page)).toBe('argue');
   p = await present(page);
   for (const id of ALL) expect(p[id], id).toBe(true);
+});
+
+// Morgan's review of #266 (Nov 3, 2026): on the Day 1 flow (#261) the Hall door opens after Lizzy's class and story.heights_done only
+// comes after the pick, so the class turns "watch" on. And the crackdown curfew (POST_TRIAL_CRACKDOWN §5) empties the plaza.
+test('watch on the Day 1 flow: Lizzy\'s class with no Seal turns everyone to the Hall; the Seal ends it', async ({ page }) => {
+  await boot(page, { 'story.lizzy_class': true });
+  expect(await phase(page)).toBe('watch');
+  const f = await facings(page, KEEPERS.concat(GLIMMER));
+  for (const id of KEEPERS.concat(GLIMMER)) expect(f[id], id).toBe('up');
+  const p = await present(page);
+  for (const id of ALL) expect(p[id], id).toBe(true);
+  await setFlags(page, { 'story.seal1': true });
+  expect(await phase(page)).toBe('after');
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
+});
+
+test('curfew: from the crackdown to the pick the plaza people are indoors and the props stay; the pick brings the winners back', async ({ page }) => {
+  await boot(page, { 'story.lizzy_class': true, 'story.seal1': true, 'story.post_trial_done': true, 'story.crackdown': true });
+  expect(await phase(page)).toBe('curfew');
+  const p = await present(page);
+  for (const id of ALL) expect(p[id], id).toBe(false);
+  expect(await page.evaluate(() => ['fbp_lamp_nw', 'fbp_bench_n', 'fbp_banner_n'].map((id) => !!(PixelPets.objPos(id) || {}).present))).toEqual([true, true, true]);
+  await setFlags(page, KEEPER_SIDE);
+  expect(await phase(page)).toBe('held_keepers');
+  const q = await present(page);
+  for (const id of KEEPERS.concat(K_PETS, TOWNSFOLK)) expect(q[id], id).toBe(true);
+  for (const id of GLIMMER.concat(G_PETS)) expect(q[id], id).toBe(false);
 });
 
 test('the region map hold is untouched here: Fernbrook reads split, and the map check stays clean', async ({ page }) => {

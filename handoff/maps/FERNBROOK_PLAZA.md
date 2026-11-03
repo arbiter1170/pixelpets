@@ -31,12 +31,13 @@ New props: lamp_post (18,10), (18,17); stone_urn (18,12), (18,15); bench_long (2
 | Phase | Read today | Notes |
 |---|---|---|
 | argue | before watch | sides face each other, `!` balloons, townsfolk face in |
-| watch | `story.heights_done & !story.seal1` | the first trial is next (trialReady's read). DAY1_TRIAL1_FLOW will retarget this one line to the new Hall-door gate (D1244) |
-| after | `story.seal1`, no `story.side_pick_done` | the argument resumes; lines react to the Seal |
+| watch | `story.lizzy_class & !story.seal1`, or `story.heights_done & !story.seal1` | the first trial is next. On the Day 1 flow (#261) the Hall door opens after Lizzy's class and `story.heights_done` only comes after the pick, so the class is the read; `story.heights_done` stays for older saves (trialReady's read) (D1244; Morgan's review of #266, Nov 3, 2026) |
+| after | `story.seal1`, no `story.side_pick_done`, no `story.crackdown` | the argument resumes; lines react to the Seal (the short gap between the Seal and the crackdown) |
+| curfew | `story.seal1 & story.crackdown`, no `story.side_pick_done` | POST_TRIAL_CRACKDOWN §5 (D1200, D1207): the curfew read `story.crackdown & !story.side_pick_done`. Every plaza person and Walkling is indoors (`!fbplaza:curfew` in their `when`); lamps, benches, banners and Comfort Lamps stay. It lifts at the pick result, the same read that flips the hold |
 | held_keepers | `story.side_pick_done & story.seal1 & !story.side=glimmer` | Vincent's D1171; Glimmerwell, their Walklings and Comfort Lamps vanish |
 | held_glimmer | `story.side_pick_done & story.seal1 & story.side=glimmer` | Vincent's D1171; Keepers, their Walklings and banners vanish |
 
-`fbplaza:held` matches either held phase and `fbplaza:contested` the others. No flag is written and the save gains no field. REGION_MAP / `matchHold` are not touched: the map-hold flip is `claude/fernbrook-flip` (slice 8b), which should read the same rule.
+`fbplaza:held` matches either held phase and `fbplaza:contested` the others. No flag is written and the save gains no field. REGION_MAP / `matchHold` are not touched here: #261 built the map-hold flip (`matchHold` rules on `story.side_pick_done`, `story.seal1` and `story.side`), the same rule the held phases read.
 
 ## Engine hook (D1247)
 

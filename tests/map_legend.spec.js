@@ -27,10 +27,11 @@ async function openWith(page, flags = {}, seals = null) {
   });
 }
 
-test('criteria 1-2: a new save shows PLACES (5) and QUESTS without Seal; no SIDES, no halos, no hold line @w1', async ({ page }) => {
+// D1164 (Vincent, Nov 2, 2026) supersedes D109's pledge gate: who holds a place shows for every place walked into, pick or not.
+test('criteria 1-2: a new save shows PLACES (5), QUESTS without Seal, and SIDES with the home halo and hold line (D1164) @w1', async ({ page }) => {
   const r = await openWith(page);
-  expect(r.groups).toEqual([{ h: 'PLACES', items: PLACES }, { h: 'QUESTS', items: QUESTS.slice(0, 3) }]);
-  expect(r.hold).toBe(false); expect(r.note).toBe(false); expect(r.claims).toBe(0);
+  expect(r.groups).toEqual([{ h: 'PLACES', items: PLACES }, { h: 'QUESTS', items: QUESTS.slice(0, 3) }, { h: 'SIDES', items: SIDES }]);
+  expect(r.hold).toBe(true); expect(r.note).toBe(true); expect(r.claims).toBe(1);   // Hearthmoor only: nowhere else is visited
 });
 
 test('criterion 3: after the pledge SIDES (4), the note, halos and the hold line show @w1', async ({ page }) => {
@@ -69,8 +70,8 @@ test('criterion 5: rects per §4 (±2), and no pill wraps or clips', async ({ pa
     near([m.key[0], m.key[2]], [x, w], 'key');
     near(m.heads.PLACES, [x, y0, w, 18], 'PLACES'); near(m.rows.PLACES.map(v => v - y0), [18, 48], 'PLACES rows');
     near(m.heads.QUESTS, [x, y0 + 82, w, 18], 'QUESTS'); near(m.rows.QUESTS.map(v => v - y0), [100], 'QUESTS rows');
-    if (unlocked) { near(m.heads.SIDES, [x, y0 + 134, w, 18], 'SIDES'); near(m.rows.SIDES.map(v => v - y0), [152, 182], 'SIDES rows'); }
-    else { expect(m.heads.SIDES).toBeUndefined(); near([m.keyH], [134], 'KEY height new save'); }
+    near(m.heads.SIDES, [x, y0 + 134, w, 18], 'SIDES'); near(m.rows.SIDES.map(v => v - y0), [152, 182], 'SIDES rows');   // D1164: always shown
+    near([m.keyH], [134], 'KEY to the end of QUESTS');
   }
 });
 

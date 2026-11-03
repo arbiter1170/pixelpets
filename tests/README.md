@@ -261,6 +261,23 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 `tests/news.spec.js` (D1012-D1016, NEWS_FEED v0.3): PPNews and PPRibbit devChecks are clean; an edition holds still within its MORNING/EVENING/NIGHT slot, keeps one unread key per day and lead, and turns over across a week; the pool has at least 160 stories, 100 voices, 60 notices, 20 polls and 25 "about you" pieces; the lead moves with story progress (the quarry sale); no early paper or feed mentions a later place or beat, across weather and time of day; no Keeper-side paper, ad or feed names chips; sky and phase gates hold, every token is filled with the holder's own facts, and the Walkling of the day is only a form the holder has seen; NEWS sits before RIBBIT with an unread dot, opens on FRONT, and FRONT/READ/TOWN/YOU fit at every width with 44 px taps under reduced motion (open the full story, step the wire, one accordion open, three voices, no ads on the Keeper1, three poll options); the poll takes one tap, sums to 100 and survives a reload, and the paper reopens on the last tab; a new lead brings back the dot and a BREAKING bar that clears once read; the cracked handset reads LIFTED COPY with bracketed tabs; the Scrapbook clips the front page on first read for 3 Acorns once (D1016), clips a new lead again, adds passed leads as unpaid back issues in lead order, opens a clipping on a tap, never lists an unreached lead, and survives a reload; one bar thins the briefs; junk newsSeen/newsTab/newsPoll/newsClips are dropped and v stays 2.
 
+`tests/npc_ranks.spec.js` (NPC_RANKS, Vincent, Nov 2, 2026, `?debug=1`, all three widths, reduced motion) checks rank-first names everywhere a name shows:
+- the dialog speaker tab (Master Fen, Associate Tobin, Field Lead Imogen, Head of Acquisitions Dorian Pell, and plain names with no placeholder for the Keepers still waiting on a rank), and that each label fits;
+- Rook's title following his lanyard (D902 default);
+- battle intro, win and summon lines through `PixelPets.holderLines` (no "Trial Master" and no stacked titles);
+- `PixelPets.rankCheck()` listing only the D1159 pending ranks (`ranks.pending`, Ash included once #261 lands) and the D1160 flags, with no `[...]` in any cast label;
+- an old save that met "Tobin" and "Hale" keeping its trust and getting one ranked contact card each (copy-only fold; `v` 2; keys only grow);
+- a pending Keeper's contact card shows the plain name and no duty line yet.
+
+`tests/side_badge.spec.js` (SIDE_BADGE, Vincent, Nov 2, 2026, `?debug=1`, all three widths) checks:
+- faction control sits inside the place chip (a 12 px emblem and a hold stripe, no separate button) in modern and arcade, before and after the pick;
+- the chip's aria label names the pledge and who holds the place;
+- TODAY's STANDING row is at least 44 px; before the pick it opens a card with no points (decision A), after the pick it opens STANDING;
+- arriving lays KEEPERS, BOTH SIDES, GLIMMERWELL or UNCLAIMED over the place line inside the chip (B, C), and Cobblecrest flips on `story.quarry_bought`;
+- rooms never show the word, and stepping back out into the same town doesn't either (D);
+- the save gains nothing;
+- the region map shows the halo and hold line for every visited place before the pick, while an unvisited place stays ??? (D1164; `tests/map_legend.spec.js` and `tests/map.spec.js` follow the same rule).
+
 `tests/news_glimmer_dark.spec.js` covers the darker Glimmer-side NEWS paper (Vincent, Nov 1, 2026). In Node it checks `PPNews.devCheck()`. On a late Glimmer-side save, most features, briefs and voices must be the dark Glimmer-only wire, and the Lantern Post must be rare. Every Keeper-side edition must be byte-identical to `news.js` and `data/mapdata.js` from the merge base with `origin/main` (never `HEAD`), with no INSIGN or facility hint. Those hints must also wait for `story.seal2`. In the game, at 320, 375 and 390 with reduced motion on, the cracked handset prints a dark story on FRONT, TOWN opens with 44 px tabs, and the save adds no field beyond the phone's existing ones (`v` 2). With `PP_ARTIFACTS` set it writes shots to `news_dark/`.
 
 `tests/ribbit.spec.js` checks that the Ribbit feed is stable, that the quarry sale has its own line, and that the phone shows Block News and Chirp Worldwide.

@@ -31,7 +31,10 @@
   const clamp = n => { const r = rangeOf(); return Math.max(r[0], Math.min(r[1], Math.round(n))); };
 
   // Labels that are one person. The cast keeps the value. REP_ALIAS below reads an old save key the other way.
-  const REP_CANON = { Marisol: 'Master Marisol' };
+  // NPC_RANKS (Vincent, Nov 2, 2026): one name per person, so trust and the phone card never split (STORY.md §12).
+  // save.js copies a mark saved under an old name to the new one when the new key is absent (FOLD_KEYS there).
+  const REP_CANON = { Marisol: 'Master Marisol', Fen: 'Master Fen', Hale: 'Master Hale', Tobin: 'Associate Tobin',
+    Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen' };
   function key(name) {
     if (typeof name !== 'string') return '';
     const k = name.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
@@ -46,7 +49,7 @@
     for (const e of list) {
       if (!e || typeof e.name !== 'string') continue;
       const k = key(e.name);
-      if (k && !m.has(k)) m.set(k, e);
+      if (k && (!m.has(k) || e.name === k)) m.set(k, e);   // a folded old name never shadows the cast name it folds into
     }
     castCache = m;
     return m;
@@ -149,6 +152,6 @@
   root.PPRep = {
     bind, key, entry, isFixed: name => isFixed(typeof name === 'string' ? entry(name) : name),
     repGet, repAdd, repTier, repEffective, tierAt, tierRank, alignOf: name => align(entry(name)),
-    sources, devCheck,
+    sources, devCheck, canon: () => Object.assign({}, REP_CANON),
   };
 })(window);
