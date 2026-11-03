@@ -8,6 +8,13 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: claude/phone-contacts-tap-interact-tests-pkuob2, build 20261103-0016.
 - Tests run and result (widths, checks): `phone_contacts` at 320 and 390 and `tap_interact` at 320 (it is `@w1`): 3 passed. Same audit counts at 00:10, 12:00 and 23:30 ET and on dates from June to February. `node tools/scans/run.js` run on the diff.
 - Decisions made (colour + reasoning): green, a test-only fix that matches the shipped Partner Day flow.
+
+## 2026-11-03 00:15 ET: FERNBROOK_HOMES review fix (Morgan): the Apple Picker's npc id no longer clashes with the door (build 20261103-0010)
+- What changed and why: the Picker's Cottage door and the resident inside both used the id `fbh_picker`. The inside npc (and its look) is now `fbh_picker_res`; the door, the house skin and the roof keep `fbh_picker`. `tests/tap_interact.spec.js` also counts #258's bedroom and hallway (warp +4, trigger +2, talk +12), which main itself did not. OPEN_DECISIONS header: High Charity D1255-D1281, Lantern House D1282-D1286, WARDROBE_SHOP D1287-D1294, Glimmerwell fleet D1295-D1309; next free D1310. Merged origin/main (#262; `data/reputation.json` keeps both sides' cast).
+- Files touched: `data/detail_zzz_fernbrook_homes.json`, `tests/fernbrook_homes.spec.js`, `tests/tap_interact.spec.js`, `handoff/maps/FERNBROOK_HOMES.md`, `OPEN_DECISIONS.md`, `data/reputation.json` (merge), generated files.
+- Commit(s) + build id: this commit, build 20261103-0010.
+- Tests run and result (widths, checks): `fernbrook_homes`, `tap_interact`, `interior_walls` at 320, 375 and 390: 29 passed; `map_reach_sweep` and `data_integrity` pass. `node tools/scans/run.js`: exit 0.
+- Decisions made (colour + reasoning): green, an id fix; no save field (npc ids are not saved).
 - Anything left unfinished: none.
 
 ## 2026-11-02 23:45 ET: FERNBROOK_HOMES: Picker's Cottage gets a red clay tile roof, not sod (build 20261102-2341)
