@@ -6,13 +6,13 @@ Target path: `handoff/specs/POST_TRIAL_CRACKDOWN.md` (PUBLIC repo; not `docs/`).
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.1, Mon Nov 2, 2026, ~11:45 PM ET |
+| Status | Draft v0.2, Tue Nov 3, 2026, ~12:15 AM ET. v0.2 makes the Keeper tanks a showpiece (§10a): an inspiration brief, a detailed 64x40 design with every frame, two variants, the arrival prototyped in the engine and recorded at 390 and 320, five small engine changes, and tests. v0.1 was Mon Nov 2, ~11:45 PM ET |
 | Ask | Vincent's eight-beat outline (via Morgan), plus his clarification: the Seal-gain ban never blocks the player. The holder already has the Fernbrook Seal. The ban is world news and NPC reactions only, foreshadowing that the Keepers do bad things too |
 | Builds on | Draft PR #261 (`claude/day1-trial1-build-gtkcop`, bc38b01): the `post_trial` and `pick` rows, `sceneTails.seal1`, the `fb_side_pick` trigger, Fen's whereabouts, and the D1171 flip. Main has #249 (Rook's Lantern House walk). `#261 file:N` cites that branch |
 | Canon read | design repo `STORY.md` v0.7.8: §2 Seals and levels, §2a Solvane, §3 Keepers, §3a Government and power, §9 Trial Halls; `specs/KEEPER_RANKS.md`; FACTION_PICK_TIMING Parts C-D and June's drafts (`story/drafts/*2026-10-31.md`). None of them has a crackdown, curfew or police action in Fernbrook: this is new canon |
 | Decisions read | D1142, D1144, D1145, D1150, D1151, D1155, D1170, D1171, D1173, D1174, D1175 (and #261's D1186-D1188) |
 | Skills | walklings-story-craft, walklings-dialog-camera, walklings-dialog-npc-walk, walklings-cutscene, gamedev-level-design, walklings-decision-ids, walklings-wording-check |
-| Storyboard | `handoff/shots/post_trial_crackdown/` (§9): three beats rendered in #261's build at 390 and 320, with draft art injected at runtime (not committed) |
+| Storyboard | `handoff/shots/post_trial_crackdown/` (§9, §10a): three beats rendered in #261's build at 390 and 320; the tank arrival recorded as GIFs; a tank frame sheet. All draft art, injected at runtime (not committed) |
 | Decision ids | D1197-D1209, reserved in this PR (§13) |
 
 ## 2. The quest on one page (walklings-story-craft §1)
@@ -63,19 +63,23 @@ Canon fit (STORY §3a, CANON): "the President and every Keeper commander know po
 - #261's `sceneTails.seal1` placeholder (Fen's "come to the orchard gate" line plus `setFlag story.post_trial_done`) is **replaced**: the tail keeps only a Fen line pointing the holder outside. Story writes it.
 - Camera: the holder arrives at 22,7. Curtain bars on.
 
-### Beat 1. The Watch Coaches roll in (street, auto then talk)
+### Beat 1. The Keeper tanks roll in (street, auto then talk)
+
+This beat **ran in the engine** (§10a.6): #261's build with the §10a engine changes patched in at load, draft art, zero console errors, and every actor on its tile at the end. The tanks are §10a's.
 
 | Step | Who | Move / action | Camera |
 |---|---|---|---|
-| 1a | holder | `walkTo player 21,8`: steps down to the road | follows the holder |
-| 1b | Watch Coach A | `castAt cd_coach_a 1,8 right`, then `walkTo cd_coach_a 17,8` (a prop gliding; prototype, §11 S2) | the coach enters the right of the frame at 390; at 320 the camera stays on the holder and the coach slides in from the left edge |
-| 1c | Watch Coach B | `castAt cd_coach_b 1,8 right`, then `walkTo cd_coach_b 12,8` | |
-| 1d | Commander | `castAt cd_cmdr 17,9 right`, then `walkTo cd_cmdr 22,9`, facing up | the speaker nudge (D171) keeps him clear of the box |
-| 1e | officers | `walkAll` (new, §11): `cd_off_a` 17,7 to 20,8; `cd_off_b` 18,9 to 24,8 | |
+| 1a | | `curtain on`; `wait 300` | the holder stays at the Hall door (22,7), facing down |
+| 1b | the light first | `castAt cd_beam 4,8` (the searchlight beam, a cast prop) and `castAt cd_tank_a 3,8` (the command tank), then `walkTo cd_beam 20,8 {with: cd_tank_a, ms: 300}`: the beam leads and the tank follows one tile behind | at 320 and 390 the beam crosses the left edge first, then the tank. It stops with the pool of light on the holder |
+| 1c | | `castAt cd_dust 16,8` (dust behind the treads); `wait 500` | |
+| 1d | the escort tank | `castAt cd_tank_b 3,8`, then `walkTo cd_tank_b 13,8 {ms: 260}` | it parks off screen behind the first at 320 |
+| 1e | the hatch | `prop cd_tank_a keeper_tank_cmd_r_hatch1`, `wait 220`, `hatch2`, `wait 220`, `hatch3`, `wait 700`, then back to `keeper_tank_cmd_r` | the Commander rises out of the turret |
+| 1f | Commander, officers | `castAt cd_cmdr 20,9`, `cd_off_a 15,9`, `cd_off_b 16,7`, then `walkAll [[cd_cmdr,22,9],[cd_off_a,21,9],[cd_off_b,24,8]]` | the speaker nudge (D171) keeps him clear of the box (seen at 320) |
+| 1g | holder | after the Commander's first line, `walkTo player 21,8` (steps down to the road to face him, freeing 22,7 for Fen) | |
 
 | Speaker | Line (PLACEHOLDER) |
 |---|---|
-| (narration) | Iron wheels grind on the road. Two Watch Coaches roll into Fernbrook, lanterns blazing. |
+| (narration) | A white beam slides up the road. Then the ground starts to hum. |
 | Commander | By order of the Keepers, this square is closed. Everyone home. Now. |
 | Commander | Glimmerwell staff will pack up and leave Fernbrook tonight. |
 | Associate Juniper | We have a permit! ...Fine. Fine! Glimmerwell is relocating. |
@@ -104,7 +108,7 @@ The threat is words only. The Seal is never removed (`S.seals` and `story.seal1`
 | 3a | townsfolk and Juniper | `walkAll`: Juniper 14,6 to 30,8 (east, toward the rubble); Wynne 25,7 to 26,5; Odile 27,9 to 28,11; Juniper's stand `fb_lantern_stand` swaps to empty (`prop`) | when `story.crackdown` is set at 3e, their `when`s hide them. They are hidden, never `drop`ped: dropping a real map NPC removes it for the session |
 | 3b | Constable Rue | stays at 4,9 | one line as the holder passes |
 | 3c | escort | `walkAll`: `cd_cmdr` to 6,8; `cd_off_a` to 7,7; `cd_off_b` to 9,8; then `walkTo player 5,6 {with: cd_fen}` | the camera follows the holder west along row 8; the storyboard's Beat 3 frame is 13,8 |
-| 3d | Watch Coach A | `walkTo cd_coach_a 10,8`, trailing (optional, cut if the glide prototype fails) | |
+| 3d | the tanks | stay parked on the road, lanterns sweeping (idle frames); dropped at the warp | |
 | 3e | | `setFlag story.crackdown`; `curtain off`; `warp fb_lantern_in 5,14` | |
 
 | Speaker | Line (PLACEHOLDER) |
@@ -149,7 +153,7 @@ Fen's challenge is a line, not a battle: no forced battle in a cutscene (walklin
 | Master Fen | You'd arrest a Hall Master in her own town? Listen to yourself. |
 | Commander | A Seal says a holder can help run things here. Fernbrook doesn't need the help. |
 
-"Immediately" becomes "at first light". The coaches don't run at night, and it gives the pick its dawn (D1142, FPT Part D). Default D1203; Vincent can make it "now" (then §6 option B).
+"Immediately" becomes "at first light". The Lantern Coach doesn't run at night, and it gives the pick its dawn (D1142, FPT Part D). Default D1203; Vincent can make it "now" (then §6 option B).
 
 ### Beat 6. "The Seal only matters if you comply" (Lantern House)
 
@@ -211,7 +215,7 @@ The curfew is **a read, not a flag**: `story.crackdown & !story.side_pick_done`.
 | `fen_dawn` (new Fen body) | fernbrook 10,9 (the orchard) | `["story.post_trial_done", "!story.side_pick_done", "!story.orchard_cleared"]` | points the holder at the gate; the built pick follows |
 | `juniper_east` (new body of Juniper) | fernbrook 30,8, beside the rubble | `["story.crackdown", "!story.side_pick_done"]` | her pitch (§6) |
 | Constable Rue | 4,9 | unchanged | a curfew-keyed line |
-| Watch Coaches | | not on the map at dawn | |
+| Keeper tanks | | not on the map at dawn (their casts end with the street scene) | |
 
 The new bodies don't block the path: the road (row 8) stays open from the Lantern House to the gate (9,10) and to 30,8. They are checked the same way as the Hall spec's path model (T5).
 
@@ -296,7 +300,7 @@ Two NPC lines in other towns after the pick (PLACEHOLDER, Story): a holder in Co
 |---|---|---|
 | Fen defies Keeper police but must stay a Keeper (D1170) | STORY §3a: Wardens outrank Commanders and aren't in the cover-up | Fen appeals **up** the ladder ("I'm writing to the Warden"), never against the Keepers as a whole. Her line: "A Commander doesn't outrank the lantern's law." |
 | The Keepers look heavy-handed right before the pick (balance) | the pick needs two fair options | Ledger below. Default: Amos owns it, the officers are uneasy, Rue is kind, Fen defies from inside. Glimmerwell runs and leaves locals, and Juniper spins it. Telemetry later: the pick ratio before and after (no new code; QA notes it) |
-| "Tanks" in a cozy pet game | STORY transport: Lantern Coach, lantern airships, Glimmerwell carts. No guns anywhere in canon | **Watch Coaches** (D1202): armoured Keeper coaches in green lacquer and iron, with a lantern searchlight turret. No barrel, no gun. Optional sky beat: a patrol skiff from Sky-Dock Command (not in this spec's art) |
+| "Tanks" in a cozy pet game | STORY transport: Lantern Coach, lantern airships, Glimmerwell carts. No guns anywhere in canon | **They are tanks, with no gun** (D1202; §10a): a low hull on treads with a dominant turret, but the turret carries a great caged searchlight lantern and a loudhailer bell. It threatens by watching and ordering. Green lacquer, iron and brass: unmistakably Keeper, never Glimmerwell's gloss and red |
 | Curfew and ban vs town steering (D1173, red, open) | steering is "which side a Trial steered a town toward" | The curfew is scene-scoped (crackdown to pick) and the ban is world news; neither writes town state. D1173 stays untouched. If Vincent picks Seal option A (D1199), Seals become the steering key, and this beat is the first sign of it |
 | Tone and age | STORY.md:137-144 says the audience is 16-28 with "no blood on screen, ever"; walklings-story-craft says all-ages ("no peril without hope") | Pitched for both: no weapon drawn, no one taken away on screen, no Walkling harmed. "Arrested" and "detained" appear as words only. Hope arrives in the same scene (Fen's appeal, Amos's beds). The audience conflict is flagged to Morgan (§12, row 11) |
 | The Commander is in on the cover-up (canon) | STORY §3a | The line never says it. He just doesn't value Seals: a seed only |
@@ -317,9 +321,10 @@ Two NPC lines in other towns after the pick (PLACEHOLDER, Story): a holder in Co
 ## 9. Storyboard (code-drawn, 390 and 320)
 
 In `handoff/shots/post_trial_crackdown/`:
-- `storyboard-390.png`, `storyboard-320.png`: Beat 1 (the Commander at the Hall door, the coaches on the road), Beat 3 (the escort; the street empties; Juniper at the east end), Beat 5 (the Commander and officers across the Lantern House door).
+- `storyboard-390.png`, `storyboard-320.png`: Beat 1 (the Commander at the Hall door, the tanks on the road), Beat 3 (the escort; the street empties; Juniper at the east end), Beat 5 (the Commander and officers across the Lantern House door).
 - Full screens: `beat{1,3,5}-*-{390,320}.png`.
-- `draft_art_sheet.png`: the Watch Coach, the wire set off and on, the curfew notice and the lantern cordon at 5x.
+- `draft_art_sheet.png`: both tanks, the wire set off and on, the curfew notice and the lantern cordon at 4x.
+- **The tanks** (§10a): `tank_sheet.png` (every frame at 4x), `tanks-arrival-390.gif` and `tanks-arrival-320.gif` (the arrival, recorded in the engine), and `tanks-storyboard-{390,320}.png` (four stills: the light, parked, the hatch, the Commander's line).
 
 How they were made:
 - #261's build, with the cast and props added to `MAPDATA` at load, plus draft art and a draft Commander look.
@@ -328,7 +333,7 @@ How they were made:
 Findings from the storyboard (already folded in above):
 1. **The Commander needs a silhouette.** With the officer look plus grey hair he reads as one more officer. A long coat and a peaked cap are needed (§10).
 2. **The wire set was off screen at 320** from the rug, so in Beat 7 the holder walks up to it.
-3. **The Watch Coach at 32x32** reads as a heavy coach, not a cart. A wider vehicle would read better, but the draw code is only known to handle 32 px wide (cull margin, #261 `game.js:8219`; UNVERIFIED wider). Default 32x32; a two-cell coach (front and back props) is an option.
+3. **The vehicle.** v0.1's 32x32 coach read as a cart. The tank is now 64x40 (§10a). The engine draws it, but its fixed cull margin made wide art pop at the screen edges, so §10a.5 adds a width-aware cull, verified in the arrival recording.
 
 ## 10. Art (Pia) and story (June)
 
@@ -336,7 +341,7 @@ Findings from the storyboard (already folded in above):
 
 | Asset | New / existing | Size | Draft (storyboard) | Notes |
 |---|---|---|---|---|
-| `watch_coach` | **new** | 32x32 prop (`drawArt`, bottom-centred) | green lacquer `J` body with `E` shade; `m`/`d` iron bands; barred `h` windows; a painted gold crest; brass lantern turret (`y`, `F` cage) with a `C`/`y` beam; iron wheels with brass hubs; a front plough plate | needs a facing-right copy (or a flip) and, optionally, 2 wheel frames. No gun shapes |
+| Keeper tanks (`keeper_tank*`, `tank_beam_*`, `tank_dust`) | **new** | 64x40, plus a 96x40 beam | see §10a | the showpiece of the quest |
 | Commander look | **new** (look entry) | keeper look | coat `J`, accent `y`, hair `h` (draft) | needs a silhouette: long coat, peaked cap (the look kit has `cap`; a peaked one may be new), gold shoulder. Inside the Keeper set (rule 11) |
 | Officer look | existing `officer` | | | optional: a cap, to read as on duty |
 | `wire_set`, `wire_set_on` | **new** | 16x16 | an oak cabinet with a brass grille; teal screen `t`/`s`, `w` text lines when on | a Keeper object: the wires are Keeper-owned (STORY §3) |
@@ -353,18 +358,139 @@ June (Story):
 - three Block News stories and two NPC reactions;
 - sign-off on the balance ledger.
 
+## 10a. The Keeper tanks (vehicle packet)
+
+Vincent wants a lot of attention and detail on the tanks. They are the image of this quest: the first time the Keepers' law arrives as a machine. This section is the packet for them: inspiration, design, every frame, choreography, engine needs, tests. Draft art and an engine prototype back every claim. Nothing here ships until Pia redraws it and Vincent says yes.
+
+### 10a.1 Inspiration (run with a sub-agent, Mon Nov 2, 2026; reference only)
+
+- **Pillars**
+  - **Silhouette:** low, wide, heavy. A long tread loop, a flat riveted hull and a squat dome turret set back, wider than a house door.
+  - **Materials:** the Keeper craft made institutional. Dark green lacquer held down by iron straps, gold rivet rows, oak trim and brass lamp rings. Matte and hand-painted, never glossy.
+  - **No gun, still a threat:** it threatens by **watching and ordering**. A caged eye that can light anyone, a bell that announces rules, a mass that blocks a street, and a slow, unstoppable approach.
+  - **Stays Keeper:** warm palette, a hand-painted crest, lantern culture (kin to High Charity's airships), pennants. Glimmerwell's black-and-red gloss and hard wedges are kept out.
+- **References (situations, not designs):**
+  - a steam traction engine (brass bands, a short rear stack, slow ceremonial weight);
+  - a riveted early armoured car (plate seams, slit visors, a domed turret);
+  - a lighthouse lamp (stepped glass rings in a brass cage);
+  - a lacquered steam fire pump (gold-leaf lining; a civic, proud vehicle);
+  - a river monitor (low hull, round turret);
+  - a barred prison van ("the law owns this");
+  - a searchlight on a yoke;
+  - a ceremonial coach (a crest on the door panel).
+- **Pitfalls named, and what the design does:**
+  - **Too toy-like.** It stays low, wide and dark, with small wheels.
+  - **Reads as a train, bus or tractor.** No window row; a short rear stack; a full tread loop with sprocket teeth; the turret dominates the top line.
+  - **The lamp reads as a cannon.** The lantern is a drum wider than it is deep, shown as a glowing ringed disc with cage bars across it; the loudhailer is a flared bell angled up.
+
+### 10a.2 The design (draft v2; `tank_sheet.png`)
+
+**Size:** 64x40 px, bottom-centred on one cell (`drawArt`). On the map it spans about 4 tiles wide and 2.5 tall: bigger than any NPC and as wide as the Lantern House door is far from its well. Side view; drawn facing left and mirrored for right.
+
+| Part | Pixels (draft) | Notes for Pia |
+|---|---|---|
+| Ground shadow | the engine's own shadow colour, a 54 px tapering ellipse | |
+| Tread loop | `k` loop with `d` belt; links alternate `m`/`k` every 3 px on the top and bottom runs; the top run sags 1 px between wheels | the links scroll 1 px a frame when driving |
+| Running gear | front idler (plain iron, `d`/`m`), rear drive sprocket (`m`, 8 tooth notches), five road wheels (`k` rim, `m` face, `y` brass hub bolt) | hub bolts rotate when driving |
+| Oak fender | `G` rail with an `A` lit front run and an `F` edge, casting a `k` shadow onto the top run | separates the hull from the treads |
+| Hull | low trapezoid, front sloped 5 px, rear 3 px; deep green lacquer `J`; iron glacis `d` with a lit `m` edge and gold `y` rivets every 3 rows | dark: green close to black |
+| Panels | three lacquer panels split by two iron straps (`d`/`m`) with `y` rivets every 3 px; `E` bevel on top, `d` shade below; the deck edge lit `D` at the front-left | one light, top-left |
+| Front | vision slit (`k`, with 1 px `y`: someone inside); a front running lantern (`A` ring, `w`/`y`) | for the night arrival |
+| Trim line | command: gold `y` along the hull; escort: iron `m` | |
+| Side plate | command: crest (gold rim, cream field, painted lantern, `A` laurel band); escort: cream order plate with 3 ticks, plus mud dither `F` on the lower hull | |
+| Oak rack | three staves (`F`/`G`), brass end posts, a rope coil | |
+| Rear stack | `d`/`m`, with an `A`/`y` brass cap ring | steam rises from here |
+| Turret | a broad squat dome set back (25 px wide), `J` with `E`/`D` lit top-left and `k` shade right, a rivet ring on an iron base | dominates the top line |
+| Hatch | `F`/`G` lid with a `y` hinge; open: lid upright with the crest painted on its underside | the Commander rises from here |
+| **Great lantern** | on the turret front, on an iron yoke: `A` brass ring (command: a second `y` ring), `C` pale ring, `y` glow, a 2x2 `w` hot core, two `F` cage bars across the face, a `J` hood | **the read at 1x:** "a glowing ringed disc on a dark tank lump". Off: a `G`/`C` lens |
+| Loudhailer | a flared bell angled up beside the lantern (command: brass `A`/`y`; escort: iron `m`/`h`) | a bell, never a tube |
+| Pennant | an oak pole at the turret's rear; command: a long double-tailed `J` pennant with `y` border and tails; escort: a short `J` flag | |
+| Searchlight beam | a separate 96x40 sprite: a cone from the lens forward and down, cream `rgba(244,236,214,.32)` with a brighter core, and a warm pool where it lands | the only translucent art; cast one tile ahead of the tank so its narrow end meets the lens |
+| Dust | 3 frames of dithered `A` puffs at 55% alpha | behind the treads when a tank stops |
+
+**PAL keys used:** `J E D k d m h w y A G F C` and the engine's shadow rgba. **No `V`, `N` or `Q`:** nothing Glimmerwell.
+
+### 10a.3 Frames
+
+| Sprite key | Frames | Timing | What moves |
+|---|---|---|---|
+| `keeper_tank_cmd_{l,r}`, `keeper_tank_{l,r}` (parked) | 6 | 350 ms | the lantern yaws left, centre, right (held 700 ms each); the pennant flutters every frame; one steam puff on the last frame |
+| `..._move` (driving) | 4 | 150 ms | links scroll, hub bolts turn, the sprocket teeth step, the hull bobs 1 px on frame 3 and the turret lags a frame behind it, steam puffs grow and drift up and back |
+| `keeper_tank_cmd_{l,r}_hatch1..3` | 3 stills | swapped by `prop` steps, 220 ms apart | the lid flips up; cap and face appear; shoulders and a hand on the rim |
+| `keeper_tank_cmd_off_r`, `keeper_tank_off_r` | 1 | | lantern dark, for the dawn |
+| `tank_beam_{l,r}` | 1 | | static. A sweep is optional (3 positions) |
+| `tank_dust` | 3 | 160 ms | |
+
+**Reduced motion** (`artFrame`): every animated sprite holds frame 0. The tanks still arrive (SKIP and reduced motion snap walks, so they appear parked). No flashing in any mode.
+
+### 10a.4 The two tanks
+
+| | Command tank (`cd_tank_a`) | Escort tank (`cd_tank_b`) |
+|---|---|---|
+| Who rides it | the Commander (emerges from the hatch) | officers |
+| Side plate | crest with laurel band | order plate, mud |
+| Trim | gold line | iron line |
+| Lantern | bigger (second gold ring) | standard |
+| Loudhailer | brass | iron |
+| Pennant | long, double-tailed, gold | short |
+
+One base sprite; the variant is a palette swap plus a few overlay pixels.
+
+### 10a.5 Engine needs (all prototyped in the arrival recording)
+
+Each change below was patched into #261's `game.js` **only as it was served to the test browser** (the repo is untouched). The recorded arrival ran with them and zero console errors.
+
+| # | Change | Where (#261) | Size |
+|---|---|---|---|
+| E1 | `castAt` can cast a **prop**: a `CAST_AT_LOOK` (or `SCENE_CAST`) entry with `sprite` pushes `{kind: 'prop', sprite}` instead of an NPC | `cutCastAt`, `game.js:9263` | 1 line |
+| E2 | `walkTo` takes a per-tile **`ms`** for non-holder walkers (tanks roll at 260-300 ms a tile, not 120) | `cutWalkTo`, `game.js:9306` | 1 line |
+| E3 | Props show their **`_move` frames while moving** (`mapRT.pos[id].moving`) | `drawObj` prop branch, `game.js:8238` | 1 line |
+| E4 | **Width-aware cull**: the margin is `(artWidth - 16) / 2 + 10`, so 64- and 96-wide art doesn't pop at the screen edges (it does today: the margin is a fixed 26 px left and 10 px right) | `drawObj`, `game.js:8219` | 2 lines |
+| E5 | **`walkAll`** step: parallel walks, each a `cutWalkTo` | `execStep`, beside `walkTo` (`game.js:9601`) | 1 line |
+| E6 | **Footprint** (not prototyped): a prop field `footprint: [w, h]` so a parked tank blocks the 3-4 cells it covers, not just its anchor cell. Only matters if a tank stays parked where people walk; in this spec they are cast for the scene only | `blockerAt`, `game.js:4795` | small |
+
+E1-E5 are D1204 (yellow). Glide, `with` and `drop` already work on props: `glideCast` writes `mapRT.pos` for any object.
+
+### 10a.6 The arrival as it ran (Beat 1)
+
+Recorded in #261's build at 390 and 320 (`tanks-arrival-390.gif`, `tanks-arrival-320.gif`; ~13 s; the real clock put it in late evening, which suits it):
+
+1. **The light comes first.** The beam crosses the left edge and slides up the road a tile every 300 ms; the command tank follows one tile behind it (`with`). It stops with the pool of light on the holder at the Hall door.
+2. **Dust** puffs behind the treads; the escort tank rolls up and parks behind (off screen at 320).
+3. **The hatch** opens in three steps and the Commander rises with a hand on the rim.
+4. **The Commander and two officers** step out together (`walkAll`) and fan out around the holder. The first line plays with the box clear of the speaker.
+
+All seven cast actors ended on their target tiles: `cd_beam` 20,8, `cd_tank_a` 19,8, `cd_dust` 16,8, `cd_tank_b` 13,8, `cd_cmdr` 22,9, `cd_off_a` 21,9, `cd_off_b` 24,8.
+
+Further ideas from the brief, not yet in the default (Story and Design pick):
+- the beam sweeps three positions and each NPC it hits flinches and steps back;
+- house windows go dark one by one after the curfew line;
+- a "the ground hums" text cue in place of sound. Sound is red: iPhone audio.
+
+### 10a.7 Tests for the tanks (add to `tests/post_trial_crackdown.spec.js`)
+
+| # | Check |
+|---|---|
+| V1 | Every tank sprite key exists in `WART`, with frame counts and `ms` as in §10a.3 |
+| V2 | While a tank's `mapRT.pos` is `moving`, `drawObj` picks the `_move` key; parked, the idle key |
+| V3 | Width-aware cull: with the camera placed so a tank's anchor cell is 1-2 tiles off screen, its visible half still draws (pixel read on the canvas edge) |
+| V4 | After Beat 1, actor tiles match §10a.6. SKIP and reduced motion land every tank in one frame; no fractional positions |
+| V5 | Reduced motion: the tank frame stays 0 over 2 s |
+| V6 | No tank cast remains after the street scene ends (`clearCast`) |
+| V7 | Q and red keys: no `V`/`N`/`Q` pixels in any tank sprite (the art scan) |
+
 ## 11. Slices and rough effort
 
 | Slice | Who | Content | Effort |
 |---|---|---|---|
 | S0 | Vincent | rule on the red rows (D1197-D1203) and look at the storyboard | |
 | S1 | June | lines, voice cards, names; the balance pass | 1-2 days |
-| S2 | engineer | **engine, small:** (a) a `walkAll` step (parallel walks; wraps the existing internal `walkCast`, #261 `game.js:9224`); (b) prototype a prop glide with `walkTo` (vehicles; UNVERIFIED today); (c) keyed `deny` entry for the Hall; (d) `whereNow` curfew rows | 1 day |
-| S3 | Pia | the art in §10 | 2 days |
+| S2 | engineer | **engine, small (E1-E5, each a line or two, all prototyped):** prop casts, per-tile `ms`, `_move` frames, width-aware cull, `walkAll` (§10a.5). Plus the keyed `deny` entry for the Hall and the `whereNow` curfew rows | 1 day |
+| S3 | Pia | **the tanks** (§10a: 2 variants x 2 facings; 6 idle + 4 drive + 3 hatch frames; beam; dust), plus the rest of §10 | 4-5 days (the tanks are about 3 of them) |
 | S4 | engineer | **data build:** `data/detail_zz_crackdown.json` (scenes, objects, `when`s, triggers, the `sceneTails.seal1` change); chain rows; `reputation.json` cast entries; `news.json` stories; `python3 tools/gen_mapdata.py`. Previews from a patched copy of main at 320, 375 and 390 before the PR | 2 days |
 | S5 | engineer and QA | tests (§11.1); walklings-qa-run on saves n, fresh, "Mahopac done", a2/b' (skip), c (never) | 1 day |
 
-About 7-9 working days in all. It can ship after #261 merges. It doesn't depend on the Trial Hall redesign, though both read the same hold.
+About 9-11 working days in all, with the tanks as the largest art item. It can ship after #261 merges. It doesn't depend on the Trial Hall redesign, though both read the same hold.
 
 ### 11.1 Acceptance tests (`tests/post_trial_crackdown.spec.js`)
 
@@ -410,14 +536,14 @@ Checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:45 PM ET:
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
-| D1197 | **red** (canon, staging) | The crackdown happens, as §4: after Trial 1 a Keeper Commander with Watch Coaches and officers closes Fernbrook, stops its Trials, sends Glimmerwell away, threatens the holder's Seal and orders the holder and Fen out. Fen defies him and appeals to the Warden. Fills D1175 | As §4 |
+| D1197 | **red** (canon, staging) | The crackdown happens, as §4: after Trial 1 a Keeper Commander arrives with two Keeper tanks (§10a) and officers, closes Fernbrook, stops its Trials, sends Glimmerwell away, threatens the holder's Seal (words only) and orders the holder and Fen out. Fen defies him and appeals to the Warden. Fills D1175 | As §4 |
 | D1198 | **red** (canon, naming) | Who the Commander is: canon rank Commander (above the town's Captain; STORY §3a, in on the cover-up, never said). Name, look and whether he comes back | Rank "Commander", name PLACEHOLDER (Story), returns in Act 2 or 5 (Story) |
 | D1199 | **red** (canon) | **What a Seal unlocks.** **A. The town's voice:** a Seal is a key to the town's matters: a seat and a say at its town meeting (the `fb_sign_meeting` sign at fernbrook 20,9 already exists), and later the lever of town steering (D1173). That's why a Commander who wants towns quiet hates Seals. **B. Solvane's lock:** the Halls were set up with the first Keepers (STORY §2a: Solvane set up the Keepers), and each Seal is one piece of an old key; enough Seals open the way to the Stormbell Spire in Act 5. **C. The Masters' archive:** each Seal opens the Hall's record room behind the dais, where Masters keep town records and copies of lamp cases (the cases Commanders empty, STORY §3a), the paper trail for the President choice | **A** (lowest canon cost, matches Vincent's beat 5, explains the ban). A and B can stack later. No mechanic until D1173 |
 | D1200 | **red** (curfew) | The curfew: scene-scoped from the end of the street scene to the pick result; residents indoors, visitors out by first light; a read, not a flag; lifts at the pick | As §5 |
 | D1201 | **red** (ban) | The Seal-gain ban is world news and NPC reaction only (Vincent's clarification). It never blocks the player, never removes a Seal, never changes a cap or gate | As §7.4 |
-| D1202 | **red** (naming, tone) | No "tanks": **Watch Coaches**, armoured Keeper coaches with a lantern searchlight, no guns. Alternatives: "Lantern Wagons", or a patrol skiff from Sky-Dock Command landing in the square | Watch Coach |
+| D1202 | **red** (naming, tone) | **The vehicles are tanks with no gun** (§10a): low hull, treads, dominant turret, but the turret carries a caged searchlight lantern and a loudhailer bell. What the game calls them: "tank" in narration and lines (Vincent's word), or a Keeper name ("Watch Tank", "Lantern Tank") | Shape as §10a. Name: "Keeper tank" in narration, PLACEHOLDER until Vincent picks |
 | D1203 | **red** (amends D1142, FPT) | Hand-off: "leave at first light" (not "now"). The pick stays at `fb_side_pick` at dawn as built; FPT Part D's morning cart is replaced by the crackdown night; Amos's pitch moves into the Lantern House and Juniper's to the east road | Option A (§6) |
-| D1204 | yellow (step kinds) | New `walkAll` step (parallel walks), and vehicles gliding as props via `walkTo` (prototype) | Add both; if the glide fails, the coaches appear behind a fade |
+| D1204 | yellow (step kinds, engine) | E1-E5 of §10a.5: prop casts, per-tile `ms`, `_move` frames, width-aware cull, `walkAll`. All prototyped (the arrival recording). E6 footprint only if a tank stays parked where people walk | Add E1-E5 |
 | D1205 | yellow | The wire set: a Keeper "wire set" prop in each Lantern House that plays Block News as `say` lines, plus three Block News stories in the NEWS app (data only) | Yes; only Fernbrook's for now |
 | D1206 | yellow | The Trial Hall during and after the curfew: closed by `deny` during it, open as a place after the pick (TRIAL_HALL_FERNBROOK_MAP §7 stays visible) | Yes |
 | D1207 | yellow | Fernbrook NPCs and the plaza cast hidden during the curfew read; officers posted at 6,6 and 21,7; notice and cordon | As §5 |

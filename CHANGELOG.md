@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 00:15 ET: Spec: the Keeper tanks (POST_TRIAL_CRACKDOWN v0.2, docs only)
+
+- What changed and why: Vincent wants a lot of attention and detail on the tanks. New §10a in `handoff/specs/POST_TRIAL_CRACKDOWN.md`. The vehicles are now tanks with no gun: a low lacquered hull on treads, and a dominant dome turret carrying a caged searchlight lantern and a loudhailer bell, in Keeper green, iron and brass. §10a has an inspiration brief, a 64x40 design with every part listed, frames (6 parked, 4 driving, 3 hatch), command and escort variants, a 96x40 searchlight beam, dust, tests, and five small engine changes (prop casts, per-tile walk speed, moving frames, width-aware cull, `walkAll`). All of it was prototyped by patching the served `game.js` only, and the arrival was recorded in the engine at 390 and 320.
+- Files touched: `handoff/specs/POST_TRIAL_CRACKDOWN.md` (v0.2), `handoff/shots/post_trial_crackdown/` (tank sheet, arrival GIFs, tank storyboard; storyboard and art sheet redone with the tanks), `OPEN_DECISIONS.md` (D1197, D1202, D1204 reworded), `CHANGELOG.md`.
+- Commit(s) + build id: `claude/fernbrook-trial-hall-spec-acsv52`; docs only, no build stamp.
+- Tests run and result (widths, checks): the arrival ran in #261's build at 390 and 320 with zero console errors and all seven cast actors on their target tiles; storyboard frames clean; `node tools/scans/decisions.js` and the wording scan pass.
+- Decisions made (colour + reasoning): D1202 (red) now defaults to the tank shape, and its name waits on Vincent; D1204 (yellow) now lists engine changes E1-E5.
+- Anything left unfinished: Vincent's look at the tanks; Pia's redraw (about 3 days for the tanks); the build after #261 merges.
+
 ## 2026-11-02 23:50 ET: Spec: the Keeper crackdown after Trial 1 (POST_TRIAL_CRACKDOWN v0.1), and the Trial Hall's tone pass (TRIAL_HALL_FERNBROOK_MAP v0.2), docs only
 
 - What changed and why: (1) Vincent's eight-beat outline for the quest in the D1175 slot. New spec `handoff/specs/POST_TRIAL_CRACKDOWN.md`: a Keeper Commander with Watch Coaches (not tanks) and officers closes Fernbrook after Trial 1. Fen defies him and appeals to the Warden. A Lantern House wire set carries Block News (curfew, a proposed Seal-gain ban that is world news only). The holder leaves at first light; the pick stays at the orchard gate at dawn. It covers the script with walks, camera, props and art; the hand-off to the pick and the pitches; canon and tone checks with a balance ledger; markers and save safety (a curfew read, one new flag); slices; and three options for what a Seal unlocks. (2) Vincent: the Hall's two sides "look a little rubbery". The Hall spec goes to v0.2: a tone bible (living Keeper vs sterile Glimmerwell), draft art redrawn with materials and light, and Keeper wall dressing (honour board, oil sconces). Spec only: nothing builds before Vincent rules on the red rows and sees the previews.
