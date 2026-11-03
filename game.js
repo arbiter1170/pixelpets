@@ -4760,11 +4760,36 @@ function repCond(c, o){
 }
 // FACTION_PICK_TIMING §7 step 1: every condition reader splits `|` first, then `&`, then `!`, with no brackets, so
 // `a | b & c` reads as a, or (b and c). cond(), evalCond (quests.js), condKeyOk and plainStoryFlag all keep this order.
+/* FERNBROOK_PLAZA (D1243-D1247): the plaza standoff's phase, the one place its flag reads live. Data says `fbplaza:<phase>`
+   in `when`, `lines`, `chatter`, `faceWhen` and `bangWhen` keys (with `!`, `&` and `|` as usual). First match wins:
+     held_glimmer / held_keepers  Fernbrook flipped to the picked side at the faction pick result after Trial 1 (Vincent's D1171:
+                                  story.side_pick_done & story.seal1, then story.side; absent counts as the Keepers, as side() does).
+     curfew                       story.seal1 & story.crackdown, no pick yet: POST_TRIAL_CRACKDOWN §5's curfew (D1200, D1207). The
+                                  plaza's people are indoors (their `when` holds `!fbplaza:curfew`); the props stay. It lifts at the
+                                  pick result, the same read that flips the hold (D1171).
+     after                        story.seal1, no pick and no crackdown yet: the argument is back on (the short gap between the Seal
+                                  and the crackdown).
+     watch                        the first trial is next: story.lizzy_class & !story.seal1 on the Day 1 flow (#261: the Hall door
+                                  opens after Lizzy's class, and story.heights_done only comes after the pick), or story.heights_done
+                                  & !story.seal1 for an older save (trialReady's read) (D1244).
+     argue                        everything before.
+   `held` matches either held_ phase and `contested` any other. Reads only; never writes a flag or the save. */
+function fbPlazaPhase(live){
+  const f = k => flagOf(k, live);
+  if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : (f('story.crackdown') ? 'curfew' : 'after');
+  if (f('story.lizzy_class') || f('story.heights_done')) return 'watch';
+  return 'argue';
+}
+function fbPlazaIs(want, live){
+  const ph = fbPlazaPhase(live), held = ph.indexOf('held_') === 0;
+  return want === ph || (want === 'held' && held) || (want === 'contested' && !held);
+}
 function cond(c, live, o){
   if (typeof c === 'string' && c.includes('|')) return c.split('|').some(part => !!part.trim() && cond(part.trim(), live, o));
   if (typeof c === 'string' && c.includes('&')) return c.split('&').every(part => part && cond(part.trim(), live, o));
   if (c === 'else') return true;
   let neg = false; if (c[0] === '!') { neg = true; c = c.slice(1); }
+  if (typeof c === 'string' && c.indexOf('fbplaza:') === 0) { const v = fbPlazaIs(c.slice(8), live); return neg ? !v : v; }
   if (typeof c === 'string' && window.PPClock) {
     const bit = PPClock.match(c);
     if (bit !== null) return neg ? !bit : bit;
@@ -6696,6 +6721,32 @@ const PATROL_GLIDE_MS = 420, WANDER_STEP_MS = 360, WANDER_REACH = 2, WANDER_GAP_
 const WANDER_FIRST_MS = [3500, 7000], WANDER_DWELL_MS = [2200, 5200], GLANCE_MS = [4500, 9000], GLANCE_HOLD_MS = 1100;
 // Ids that must hold their spot even though the rules above would let them walk (story blockers in wide spaces, set pieces).
 const NPC_STILL = { mom: 1 };   // PARTNER_DAY: Mom keeps her spot by the rug, off the stairs landing and the goodbye tile
+/* FERNBROOK_PLAZA (D1247): a data-driven stance for set-piece npcs (the plaza standoff). Inert on every npc without these fields.
+   `hold: true`   the npc keeps its tile: no walk route, no idle glance, and it does not turn to watch the holder walk past
+                  (a talk still turns it to the holder for the talk, and it turns back when the talk ends).
+   `faceWhen`     { cond: facing, ..., else: facing }: the first passing condition picks its facing (a rival, then the Hall).
+   `bangWhen`     a cond, or a list of conds (any passes): a "!" balloon pulses every few seconds while the holder is near.
+                  Balloons are not motion, so reduced motion keeps them (as NPC_LIFE does). Runtime only; never saved. */
+const STANCE_BANG_MS = [2600, 4400], STANCE_NEAR = 7;
+function stanceFace(o){
+  const fw = o && o.faceWhen; if (!fw || typeof fw !== 'object') return null;
+  for (const [k, v] of Object.entries(fw)) if (DIRS[v] && cond(k, false, o)) return v;
+  return null;
+}
+function tickStance(){
+  if (!CUR || !S || scene || fade.busy || (battle && battle.on) || overlayOpen()) return;
+  const t = now(), B = mapRT.bang || (mapRT.bang = {});
+  for (const o of CUR.objs) {
+    if (!o.bangWhen || o.kind !== 'npc') continue;
+    if (B[o.id] == null) { let h = 0; for (const ch of String(o.id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; B[o.id] = t + 700 + (h % 2600); continue; }
+    if (t < B[o.id]) continue;
+    B[o.id] = t + lifeRnd(STANCE_BANG_MS);
+    if (!present(o) || reactOf(o.id)) continue;
+    const q = objPos(o); if (Math.abs(q.x - S.world.x) + Math.abs(q.y - S.world.y) > STANCE_NEAR) continue;
+    if (![].concat(o.bangWhen).some(c => typeof c === 'string' && cond(c, false, o))) continue;
+    npcReact(o, 'emote_bang', null, 900);
+  }
+}
 const lifeRnd = ([a, b]) => a + Math.random() * (b - a);
 // A tile another walker is gliding onto, the follower's tile, a creature or the holder's next tile: not free for an npc step.
 function npcStepTaken(x, y){
@@ -6717,7 +6768,7 @@ function tickGlides(){
   }
 }
 function wanderable(o){
-  if (!o || o.kind !== 'npc' || o.cast || o.pet || o.frozen || o.patrol || o.catch || o.roll) return false;
+  if (!o || o.kind !== 'npc' || o.cast || o.pet || o.frozen || o.patrol || o.catch || o.roll || o.hold) return false;
   if (o.shop || o.meals || o.wardrobe || o.panel || o.booth || o.board || o.keeper || o.shot) return false;
   return !(LANTERN_GUIDE_IDS[o.id] || NPC_STILL[o.id] || MATCH_WALKUP[CUR.id + ':' + o.id]);
 }
@@ -6819,7 +6870,7 @@ function tickWander(){
   if (!CUR || !S || scene || fade.busy || (battle && battle.on) || overlayOpen() || prefersReduced()) return;
   let built = 0;                             // routes are worked out one npc per tick, so arriving on a busy map never stalls a frame
   for (const o of CUR.objs) {
-    if (o.kind !== 'npc' || o.pet || o.frozen || o.cast || o.patrol || !present(o)) continue;
+    if (o.kind !== 'npc' || o.pet || o.frozen || o.cast || o.patrol || o.hold || !present(o)) continue;   // hold: FERNBROOK_PLAZA stance
     const had = mapRT.life && mapRT.life[o.id];
     if ((!had || had.key !== (h => h.x + ',' + h.y)(npcHome(o))) && built++) continue;
     const L = npcLife(o), P = mapRT.pos[o.id];
@@ -6964,6 +7015,7 @@ function updateWalk(dt, t){
   if (!moveHeld()) bump.held = false;
   tickPatrol(dt);
   tickWander();
+  tickStance();
 }
 /* --- warps, doors and the fade (MAPS_SLICE §3, INTERIORS §3.1): 250 ms, input locked, save right after --- */
 const FADE_MS = 250;
@@ -8343,7 +8395,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
       g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
       g.drawImage(sprFor(ln, stage, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2));
       return; }
-    const face = mapRT.face[o.id] || glanceFace(o) || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
+    const face = mapRT.face[o.id] || glanceFace(o) || stanceFace(o) || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
     const img = keeperFrames(npcLook(o))[face][fr], b = npcBob(o, t);   // NPC_LIFE: reaction hop / shake, talk bob
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
@@ -19444,7 +19496,7 @@ function boot(){
     wanderNow: () => { for (const L of Object.values(mapRT.life || {})) { L.next = 0; L.glanceAt = 0; } wanderAt = 0; return true; },   // debug: skip the waits
     bubbles: () => ({ boxes: bubbleBoxes.map(b => Object.assign({}, b)), match: bubbleBoxes.filter(b => b.match).map(b => b.match) }),
     showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
-    objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
+    objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || stanceFace(o) || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down', hold: !!o.hold }; },
     forceTrainer: id => { if (!TRAINERS[id] || S.flags['trainer.' + id]) return false; showTab('walk'); if (overlayOpen()) return; return openBattle({ kind: 'trainer', trainerId: id }); },
     restartCareWalk: () => {
       if (!S) return false;
@@ -19558,6 +19610,7 @@ function boot(){
       if ((k === 'story.seal1' || k === 'story.seal2' || k === 'story.seal3') && v && !was) noteSealsUp(prevSeals);
       save(); syncSide(); return S.flags[k];
     },
+    fbPlazaPhase: () => S ? fbPlazaPhase() : null,   // FERNBROOK_PLAZA debug read (D1244); the cheat wrapper keeps it inert without ?debug=1
     setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); save(); syncSide(); return side(); },   // WP-B0
     runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.

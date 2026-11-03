@@ -24,13 +24,13 @@ const PEOPLE = [
   { id: 'fbh_hedger', map: 'fernbrook', name: 'Hedge Trimmer', line: 'One snip too many and the whole hedge sulks. I go slow.' },
   { id: 'fbh_gatherer', map: 'fernbrook', name: 'Windfall Gatherer', line: 'Windfalls go to the press. The bruised ones go to the Walklings. Nobody minds.' },
 ];
-// Merged Fernbrook rows 0-17 before this build (maps_slice plus every earlier overlay). This build must not move any of them.
+// Merged Fernbrook rows 0-17 before this build (maps_slice plus every earlier overlay). This build must not move any of them. Rows 10-17 carry FERNBROOK_PLAZA (#266).
 const OLD_ROWS = [
   'TTTTTTpTTTTTTTTTTTTTTTTTTTTTTTTT', 'TTggggggggggTTgggggRRRRRRRRggggT', 'TggRRRRRRggggggggggRRRRRRRRgTTgT', 'TggRRRRRRggfgggggggRRRRRRRRggTgT',
   'TggHHHHHHggggggfgggRRRRRRRRggggT', 'TggggpgggggggggggggHHHHHHHHggggT', 'TggggpppppfgggggggggggpggggggggT', 'TggggpppppgggggggfggggpggggfgggT',
-  'pppppppppppppppppppppppppppppppp', 'TggggggggggggggggggggggggggggggT', 'TgFFFFFFFgFFFFFFFgggggggggggggTT', 'TgFtttttttttttttFggssssssttttggT',
-  'TgFtTtTtTtTtTtTtFggswwwwsttttfgT', 'TgFtttttttttttttFggswwwwsttttggT', 'TgFtttttttttttttFggswwwwsttttggT', 'TgFtTtTtTtTtTtTtFggswwwwsttttggT',
-  'TgFtttttttttttttFggssssssttttggT', 'TgFtttttttttttttFTgggggggggggTgT',
+  'pppppppppppppppppppppppppppppppp', 'TggggggggggggggggggggggggggggggT', 'TgFFFFFFFgFFFFFFFgPPPPPPPPPPPPTT', 'TgFtttttttttttttFgPccccccPPPPPgT',
+  'TgFtTtTtTtTtTtTtFgPcwwwwcPPPPPgT', 'TgFtttttttttttttFgPcwwwwcPPPPPgT', 'TgFtttttttttttttFgPcwwwwcPPPPPgT', 'TgFtTtTtTtTtTtTtFgPcwwwwcPPPPPgT',
+  'TgFtttttttttttttFgPccccccPPPPPgT', 'TgFtttttttttttttFTPPPPPPPPPPPTgT',
 ];
 
 function save(world, flags) {
@@ -94,7 +94,7 @@ test('Fernbrook grows south to 32x32 and nothing above the old edge moves', asyn
   expect(r.rows[25]).toBe('TgppppppppppppppppppppppppppppgT');
   expect(r.rows[31]).toBe('T'.repeat(32));
   expect(r.rows[23]).toBe('TgHHHHHHggHHHHHHgppgggHHHHHHgggT');
-  expect(r.zones).toEqual([{ x: 3, y: 11, w: 13, h: 7 }, { x: 19, y: 11, w: 10, h: 6 }]);
+  expect(r.zones).toEqual([{ x: 3, y: 11, w: 13, h: 7 }]);   // FERNBROOK_PLAZA (#266) drops the stream-field zone; the orchard zone stays
   expect(r.old).toEqual({ lantern: [5, 5], hall: [22, 6], west: [0, 8], east: [31, 8], heights: [6, 0], odile: [27, 9], wynne: [25, 7], snack: [28, 16] });
   expect(r.safe).toEqual({ x: 5, y: 6 });
   expect(r.respawn).toMatchObject({ x: 5, y: 5 });
