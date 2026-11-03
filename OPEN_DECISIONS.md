@@ -40,7 +40,11 @@ D1189-D1196 reserved: TRIAL_HALL_FERNBROOK_MAP (`handoff/specs/TRIAL_HALL_FERNBR
 
 D1197-D1209 reserved: POST_TRIAL_CRACKDOWN (`handoff/specs/POST_TRIAL_CRACKDOWN.md`, the quest in the D1175 slot; same PR, checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:31 PM ET).
 
-Next free id is D1210.
+D1210-D1219 are held by unmerged branches with no PR yet (line copied from draft #261's header, Tue Nov 3, 2026): D1210-D1214 `claude/fernbrook-plaza` (Fernbrook plaza standoff), D1215-D1219 `claude/fernbrook-homes` (south Fernbrook homes).
+
+D1220-D1224 reserved: LANTERN_HOUSE_FERNBROOK (`handoff/specs/LANTERN_HOUSE_FERNBROOK.md`, the Fernbrook Lantern House as the town's wire station; checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:20 PM ET).
+
+Next free id is D1225.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
