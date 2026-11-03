@@ -40,9 +40,9 @@ test('the key names factions, and a new place stays hidden', async ({ page }) =>
   expect(card.line).toContain('Keepers');
   expect(card.here).toBe(false);
   expect(card.pledge).toBe(true);
-  // MAP_LEGEND: a new save shows PLACES and QUESTS without Seal; SIDES waits for the pledge (D109).
-  for (const word of ['PLACES', 'Town', 'Route', 'Side place', 'Not visited', 'Coach', 'QUESTS', 'You', 'Next step', 'Side task']) expect(card.key).toContain(word);
-  for (const word of ['SIDES', 'Keepers', 'Glimmerwell', 'Both sides', 'Wild', 'Seal']) expect(card.key).not.toContain(word);
+  // MAP_LEGEND: a new save shows PLACES and QUESTS without Seal. SIDES shows from the start (D1164 supersedes D109's pledge gate).
+  for (const word of ['PLACES', 'Town', 'Route', 'Side place', 'Not visited', 'Coach', 'QUESTS', 'You', 'Next step', 'Side task', 'SIDES', 'Keepers', 'Glimmerwell', 'Both sides', 'Wild']) expect(card.key).toContain(word);
+  for (const word of ['Seal']) expect(card.key).not.toContain(word);
   await shot(page, 'region-map-home');
   const box = await page.locator('#regionCanvas').boundingBox();
   await page.mouse.click(box.x + (104 / 320) * box.width, box.y + (120 / 192) * box.height);
@@ -135,8 +135,9 @@ test('claims follow the story, and the capital wears Keeper colors', async ({ pa
     line: document.querySelector('#mapHold').textContent,
   }));
   expect(fern.name).toBe('FERNBROOK');
-  expect(fern.hold).toBe('split');
-  expect(fern.line).toContain('Glimmerwell');
+  // DAY1_TRIAL1_FLOW D1171: picked (the Keepers) with Seal 1, so Fernbrook has flipped from contested to the Keepers.
+  expect(fern.hold).toBe('keepers');
+  expect(fern.line).toContain('Keepers');
   const wide = await page.evaluate(() => {
     const inner = document.querySelector('.map-inner');
     const past = [...inner.querySelectorAll('li, p, .map-pname, .map-hold')].filter(el => {

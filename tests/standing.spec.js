@@ -279,7 +279,9 @@ test('STANDING tab: hidden before the pick, two rows after it, 44 px tabs, no ov
 
 // The designer's rows (GLIMMER_PATH v0.2), copied here so the shipped copy is checked against the spec.
 const COPY = {
-  wake: ['Good morning! Look around your room, then read the note by the door.', 'Hearthmoor, home'],
+  // PARTNER_DAY (#258) and its arrow fix: get dressed at the mirror, then Mom downstairs.
+  dress: ["It's partner day! Get dressed at your mirror.", 'Hearthmoor, home'],
+  wake: ["You're dressed. Mom is waiting downstairs to see you off.", 'Hearthmoor, home'],
   lodge: ["Someone small is waiting at the Warden's Lodge. Ilse has a Walkling for you.", "Warden's Lodge"],
   rival1: ['Rook is bouncing by the east gate. Go and say hello.', 'Hearthmoor, east gate'],
   first_wild: ['A wild Walkling is nosing through the grass by the east path. Walk up gently.', 'Hearthmoor, east path'],
@@ -288,8 +290,21 @@ const COPY = {
   glimmer: ["There's a shiny new stand in the square. See what all the fuss is about.", 'Fernbrook square'],
   fen: ['Master Fen is out in the orchard, west of the square. She looks worried.', 'Fernbrook orchard'],
   heights: ['Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', 'Fernbrook Heights', 'Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.', 'Fernbrook Heights'],
+  // DAY1_TRIAL1_FLOW v0.4: Day 1 at the crates, Fen's go-home talk, Mom's trip (home_trip mirrors the live `mom` step), the class.
+  crates: ['Tobin is tallying crates at the orchard gate. Lend a hand with three of them.', 'Orchard gate'],
+  tl_amos: ['Evening in Fernbrook. The Lantern House window is dark. See Keeper Amos.', 'Fernbrook Lantern House'],
+  tl_light: ["Amos needs a light for Burrsnout's cot. Wynne's stall sells wicks. Juniper has her own idea.", 'Fernbrook Lantern House'],
+  fen_dusk: ['Master Fen is waiting in the orchard. She wants a word before night.', 'Fernbrook orchard'],
+  fen_home: ['Morning. Master Fen wants a word in the orchard before you go.', 'Fernbrook orchard'],
+  home_trip: ['Head home to Hearthmoor. Mom has plans for you and your Walkling.', 'Hearthmoor, home'],   // no live `mom` step here (no starter), so its own copy
+  mom_class: ['Mom wants a word before you head out again.', 'Hearthmoor, home'],
+  lizzy_class: ["Lizzy's class is on at the Hearthmoor Schoolhouse. Sit in and listen.", 'Hearthmoor Schoolhouse'],
   orchard: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
+  hall1_holders: ['Three holders stand between you and Master Fen. Win all three matches in the Trial Hall.', 'Fernbrook Trial Hall'],
   hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", 'Fernbrook Trial Hall'],
+  post_trial: ['Master Fen has one more thing for you in the Trial Hall.', 'Fernbrook Trial Hall'],
+  pick: ['Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', 'Orchard gate'],
+  tobin_crates: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate'],
   teaser: ['Rook has news, waiting outside the Trial Hall.', 'Trial Hall doorstep', 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', 'Trial Hall doorstep'],
   route2: ['The rubble east of Fernbrook is cleared. Route 2 is waiting.', 'Fernbrook, east edge'],
   census: ['Follow Route 2 east. Glimmerwell has set something up halfway along.', 'Route 2, halfway', 'The Glow Census tent is halfway along Route 2. They need volunteers.', 'Route 2, halfway'],
@@ -334,6 +349,9 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
       }
       // BRINEWICK: story.route3_open is only ever set after the chapter end (D848), so the Keepers council is done by then.
       if (flags['story.route3_open']) flags['story.hc_council_done'] = true;
+      // DAY1_TRIAL1_FLOW: Tobin's post-pick row comes after the Heights pointer, so the Heights are done by then.
+      if (e.id === 'tobin_crates' || e.id === 'orchard') flags['story.heights_done'] = true;   // both come after the Heights pointer
+      if (e.id === 'mom_class') flags['story.dream_woke'] = true;   // home_trip's done is an OR string, not one flag
       const st = (side) => ({ flags: Object.assign({ 'story.side': side }, flags), seals: {}, pets: 1 });
       const k = Q.current(st('keepers')), g = Q.current(st('glimmer'));
       out.rows[e.id] = { kid: k && k.id, ktext: k && k.text, kplace: k && k.place, gid: g && g.id, gtext: g && g.text, gplace: g && g.place };
@@ -359,6 +377,12 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
       expect(r.gid, id).toBe(id);
       expect(r.gtext, id + '@glimmer').toBe(row[0]);
       expect(r.gplace, id + '@glimmer').toBe(row[1]);
+    } else if (id === 'hall1_holders' || id === 'tobin_crates') {
+      // DAY1_TRIAL1_FLOW: Keepers-only rows. A Glimmer save goes on to the Tour panel (hall1) or Rook's teaser instead.
+      expect(r.kid, id).toBe(id);
+      expect(r.ktext, id).toBe(row[0]);
+      expect(r.kplace, id).toBe(row[1]);
+      expect(r.gid, id).toBe(id === 'hall1_holders' ? 'hall1' : 'teaser');
     } else if (id === 'end') {
       expect(r.kid, id).toBe('hc_council');
       expect(r.gid, id).toBe('end');
@@ -377,12 +401,12 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
     for (const p of [row[1], row[3]].filter(Boolean)) expect(Array.from(p).length, id).toBeLessThanOrEqual(24);
   }
   expect(overrides).toBe(13);
-  // and the panel itself shows the side's text (keepers, then glimmer) for the orchard step
+  // and the panel itself shows the side's text (keepers, then glimmer). DAY1_TRIAL1_FLOW: before the pick that step is the crates.
   await page.evaluate(() => { PixelPets.setFlag('story.met_fen', true); PixelPets.setFlag('story.reached_fernbrook', true); PixelPets.setFlag('story.met_glimmerwell', true); PixelPets.showTab('walk'); });
-  await page.waitForFunction(() => { const b = document.querySelector('#questBtn'); return b && !b.hidden && window.PixelPets.quest.id === 'orchard'; });
+  await page.waitForFunction(() => { const b = document.querySelector('#questBtn'); return b && !b.hidden && window.PixelPets.quest.id === 'crates'; });
   await page.locator('#questBtn').tap();
-  expect(await page.locator('#questText').textContent()).toBe(COPY.orchard[0]);
-  expect(await page.locator('#questPlace').textContent()).toBe(COPY.orchard[1]);
+  expect(await page.locator('#questText').textContent()).toBe(COPY.crates[0]);
+  expect(await page.locator('#questPlace').textContent()).toBe(COPY.crates[1]);
   await shot(page, 'quest-panel-keepers');
   await page.keyboard.press('Escape');
   await page.evaluate(() => { PixelPets.setFlag('story.side_pick_done', true); PixelPets.setSide('glimmer'); });

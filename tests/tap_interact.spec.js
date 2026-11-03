@@ -23,8 +23,14 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // Hearthmoor Plaza (#196), Route 3 with its three side rooms and the Answerers (ARBITER_UNITS), and Brinewick
     // with Trial Hall #3 and its rooms (BRINEWICK v0.1) bring door 45, warp 93, sign 89, talk 669, scene 40,
     // trigger 34, board 7, trainer 25, shop 14 and wild 9.
-    door: 45, warp: 93, sign: 89, talk: 661, scene: 40, trigger: 34, board: 7,
-    trainer: 25, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
+    // FERNBROOK_HOMES (D1248): three home doors and their three mats, the lane sign, and 62 talk taps (six residents plus
+    // the props inside the three homes and on the south lane) add door 3, warp 3, sign 1 and talk 62.
+    // DAY1_TRIAL1_FLOW adds sign 6 (four contested Fernbrook signs, two held), talk 6 (three crates, Tobin's tally, Burrsnout,
+    // Juniper in the Lantern House), trainer 3 (the Trial Hall holders) and trigger 4 (Two Lights x3, Fen's west-road catch).
+    // PARTNER_DAY (#258): the bedroom and the hallway add warp 4 (bedroom door, two hallway doors, the stairs), trigger 2
+    // (Mom's good-luck spot, the not-dressed-yet step) and talk 12 (the house props, the morning Lizzy and Buddy, Maze).
+    door: 48, warp: 100, sign: 96, talk: 741, scene: 40, trigger: 40, board: 7,
+    trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
   expect(audit.reachGaps).toEqual([

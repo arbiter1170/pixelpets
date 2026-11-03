@@ -234,7 +234,8 @@ test('doors warp in and back, and the hall stays latched until the orchard is cl
   await boot(page);
   await page.evaluate(() => PixelPets.goto('fernbrook', 22, 6, 'up'));
   await page.keyboard.press('ArrowUp');
-  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).toContain('latched');
+  // DAY1_TRIAL1_FLOW: June's deny line while Day 1 (the crates) is not done (FPT §2.1).
+  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).toContain('Tobin could use a hand with his crates first');
   if (await page.evaluate(() => PixelPets.scene && !PixelPets.scene.full)) await page.keyboard.press('Space');
   await page.keyboard.press('Space');
   await expect.poll(() => page.evaluate(() => !PixelPets.scene)).toBe(true);
@@ -318,7 +319,8 @@ test('Amos rests the party and Fen starts the trial @w1', async ({ page }) => {
   await page.evaluate(() => PixelPets.goto('fb_lantern_in', 9, 12, 'right'));
   expect(await say(page)).toContain('5 Acorns');
 
-  await page.evaluate(() => { PixelPets.setFlag('story.heights_done', true); PixelPets.setSide('keepers'); PixelPets.goto('fb_hall_in', 7, 5, 'up'); });
+  // DAY1_TRIAL1_FLOW §8 (D1170): Fen takes the match once the three Hall holders are beaten.
+  await page.evaluate(() => { for (const id of ['h1_cadet', 'h1_challenger', 'h1_local']) PixelPets.setFlag('trainer.' + id, true); PixelPets.setFlag('story.heights_done', true); PixelPets.setSide('keepers'); PixelPets.goto('fb_hall_in', 7, 5, 'up'); });
   await page.keyboard.press('Space');
   await advanceSay(page);
   await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.text)).toContain('Win my Seal and your Walklings can grow higher than Lv 15.');
