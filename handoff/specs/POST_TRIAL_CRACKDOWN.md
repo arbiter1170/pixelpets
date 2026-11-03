@@ -406,7 +406,7 @@ About 7-9 working days in all. It can ship after #261 merges. It doesn't depend 
 Checked with walklings-decision-ids on Mon Nov 2, 2026, ~11:45 PM ET:
 - This PR already holds D1189-D1196 (TRIAL_HALL_FERNBROOK_MAP), and #261 holds through D1189.
 - No other branch or the design repo uses D1197 or higher.
-- **Reserved: D1197-D1209.** Next free when #263 merged: D1210. After Vincent's renumbering (Mon Nov 2, 2026, ~11:15 PM ET: Design D1210-D1242, plaza and homes D1243-D1252), **next free: D1253**.
+- **Reserved: D1197-D1209.** Next free when #263 merged: D1210. After Vincent's renumbering (Mon Nov 2, 2026, ~11:15 PM ET: Design D1210-D1242, plaza and homes D1243-D1252; design STORY_DECISIONS v0.65 reserves D1253-D1254, unused), **next free: D1255**.
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
