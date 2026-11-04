@@ -1006,6 +1006,12 @@
    "clash": "palette|uniform|km_split_vest",
    "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
    "fix": "As km_crew_wait (the same `km_crew` look, on a works hand)."
+  },
+  {
+   "check": "lookalike",
+   "clash": "hale|lookalike|hc_officeworker",
+   "todo": "Found when LOOK_LOCK (#328) met HIGH_CHARITY v0.4 (#317) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "The city's office worker look `hc_officeworker` shares Master Hale's short grey hair and coat colour; change one (city preview only while HC_CITY_V2 is false)."
   }
  ]
 }
