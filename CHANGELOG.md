@@ -14,6 +14,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: claude/route4, six slice commits; build in the PR.
 - Tests run and result (widths, checks): results in the PR.
 - Decisions made (colour + reasoning): D1850-D1876 and D1880-D1881 as settled. Engine notes (green): `tableOnly`, `spawnNear`, `idleMul` species fields; a `map:<id>` condition; a warp's `city` target; `chapterOf` counts `story.seal4` and `story.seal5`.
+- Shown species names are the PLACEHOLDER stage names only (Adderlet, Walladder, Zigzag; Reedling, Stalker, Boomer; Chick, Walker, Diver; Bearer, Potter, Cluster); the packets' seed codes (S8, S10, S1, S4) stay in comments and ids (coordinator, Nov 4).
 - Anything left unfinished: KILNMOUTH's east warps and Bram's Kilnmouth line wait on `km_road`; the `route4` music cue and the heron's night boom are asks of SCENE_MUSIC; prop and tile art are drafts from the packet's descriptions.
 
 ## 2026-11-03 23:23 ET: Build: the endings readers and the report skip (REPORTS_AND_ENDINGS v0.1.1 core E1; REPORT_FLAGS; D1620-D1629, D1720, D1725, D1726 B)

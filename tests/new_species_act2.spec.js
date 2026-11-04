@@ -1,6 +1,6 @@
 /* NEW SPECIES, Act 2 (design repo, private: ROUTE_TO_GOVERNOR v0.1.1 §7, D1855-D1858, D1862, D1871; KILNMOUTH v0.1.1 §4.4):
    four new lines appended to SPECIES in landing order: S8 wall adder `adder` (VOLT), S10 reed-heron `heron` (TIDE), S1
-   stream-walker `dipper` (TIDE), S4 jug wasp `jugwasp` (STONE). Names are PLACEHOLDER. S11 and S12 stay parked (not built).
+   stream-walker `dipper` (TIDE), S4 jug wasp `jugwasp` (STONE). Shown names are the PLACEHOLDER stage names only; the seed codes (S8...) stay in comments and ids. S11 and S12 stay parked (not built).
    N1-N8 of ROUTE_TO_GOVERNOR §10.3. Runs at 320, 375 and 390 (@w1 rows at 320 only); Modern controls; reduced motion where it
    matters; zero console errors; the save stays pixelpets.save.v2, v 2. */
 const { test, expect } = require('@playwright/test');
@@ -15,10 +15,10 @@ const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 // The SPECIES order on main when this branch was cut (indices are save-relevant: v2 keeps a position table).
 const MAIN_IDS = ['ember', 'tide', 'bloom', 'stone', 'volt', 'frost', 'gust', 'shade', 'beetle', 'mole', 'crab', 'moth', 'vane',
   'dormouse', 'byte', 'fetch', 'skink', 'otter', 'owl', 'snail', 'tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp'];
-const NEW = { adder: { type: 'VOLT', sig: 'zigzag_strike', names: ['S8 Adderlet', 'S8 Walladder', 'S8 Zigzag'], full: false },
-  heron: { type: 'TIDE', sig: 'reed_still', names: ['S10 Reedling', 'S10 Stalker', 'S10 Boomer'], full: true },
-  dipper: { type: 'TIDE', sig: 'dip_bob', names: ['S1 Chick', 'S1 Walker', 'S1 Diver'], full: false },
-  jugwasp: { type: 'STONE', sig: 'jug_toss', names: ['S4 Bearer', 'S4 Potter', 'S4 Cluster'], full: false } };
+const NEW = { adder: { type: 'VOLT', sig: 'zigzag_strike', names: ['Adderlet', 'Walladder', 'Zigzag'], full: false },
+  heron: { type: 'TIDE', sig: 'reed_still', names: ['Reedling', 'Stalker', 'Boomer'], full: true },
+  dipper: { type: 'TIDE', sig: 'dip_bob', names: ['Chick', 'Walker', 'Diver'], full: false },
+  jugwasp: { type: 'STONE', sig: 'jug_toss', names: ['Bearer', 'Potter', 'Cluster'], full: false } };
 const IDS = Object.keys(NEW);
 const ACT1_MAPS = ['proto', 'route1', 'fernbrook', 'route2', 'route2_glen', 'hw_cut', 'hw_rim', 'hw_falls', 'cobble_quarry', 'route3'];
 
@@ -53,6 +53,9 @@ test('N1 @w1: every index on main is kept; the four lines are appended with thre
   expect(r.ids.slice(25)).toEqual(IDS);
   expect(r.save).toEqual(r.ids);
   expect(r.parked).toEqual([true, true]);   // S11 and S12 stay parked (D1856)
+  // Shown names never carry a design seed code ("S8 "): every stage name of every line, as the battle, party, journal and
+  // befriend text read it.
+  expect(await page.evaluate(() => SPECIES.flatMap(sp => sp.stages.map(st => st.name)).filter(n => /^S\d+ /.test(n)))).toEqual([]);
   for (const l of r.lines) {
     expect(l.type, l.id).toBe(NEW[l.id].type);
     expect(l.names, l.id).toEqual(NEW[l.id].names);
@@ -222,10 +225,11 @@ test('N8: reduced motion: no new sprite animation, and a battle with a new line 
   await page.waitForFunction(() => PixelPets.battle.on && PixelPets.battle.state === 'CHOOSE', null, { timeout: 20000 });
   const r = await page.evaluate(() => {
     const vw = innerWidth, over = [...document.querySelectorAll('#ovBattle *')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > vw + 1 || b.left < -1); }).map(e => e.id || e.className);
-    return { over, name: (document.querySelector('#ovBattle').textContent || '').includes('S10 Boomer'), anim: !!SPECIES[SPX('heron')].anim };
+    return { over, name: (document.querySelector('#ovBattle').textContent || '').includes('Boomer'), shown: (document.querySelector('#btFoeName') || {}).textContent || '', anim: !!SPECIES[SPX('heron')].anim };
   });
   expect(r.over).toEqual([]);
   expect(r.name).toBe(true);
+  expect(r.shown).not.toMatch(/^S\d+ /);   // no design seed code in a shown name
   expect(r.anim).toBe(false);
   await page.evaluate(() => PixelPets.battle.close());
 });
