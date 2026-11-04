@@ -2,6 +2,34 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 13:20 ET: Look fixes: the main cast stops having lookalikes, and the Keepers stay in their colours (LOOK_LOCK D2273-D2278, D2350, WARDROBE_SHOP 4a)
+- What changed and why:
+  - Vincent, Wed Nov 4: "Look lock: all defaults". Every fix recolours the lookalike, never the main character. Each fixed clash leaves `data/look_lock.json` `exceptions`, so `tests/look_lock.spec.js` now enforces it.
+  - D2273: Associate Juniper wears her own key `juniper` (the Associate coat, soot trim and crimson bag, with long black hair). Her portrait and every Juniper on the maps wear it, including Brightgate's `bg_juniper_desk`, which already named the key before it existed. Tobin, the plain Associate and the others keep `associate`.
+  - D2274: Archivist Mo wears her own key `mo` (the Keeper clerk coat, a white bob and glasses). Clerk Wynn, the Cadet, the Keeper reader and the High Charity clerk keep `clerk`.
+  - D2275: the High Charity preview President wears `president` (the cardigan). `hc_president` is retired, kept defined and unworn.
+  - D2276: Dorian's two briefing copies wear `dorian`, and Imogen's wears `imogen`.
+  - D2277, the eleven recolours: Clerk Nia's hair red; parade supporter 5 a buzz cut; Pim's hoodie sky; the Quilt Stitcher's sweater teal; the Commander's hair black; Dr. Ivo in a white lab coat; the spare `regenx` look's hair grey; Mr. Gristle's coat dark; Brannoch's vest teal; the Diner Regular's hoodie green with a red buzz cut; supporter 4's hair orange.
+  - F6, the WARDROBE_SHOP 4a rows: Captain Lumen in High Charity wears `captain` (`petra` kept, unworn); Keeper Moss and Cadet Arlo wear Keeper green; Warden Teodor's trim is white; Watch Saffie wears the watch navy.
+  - D2278: Ken (`sm_ken`) and Sefton (`h1_cadet`) join the Keeper on-duty list. The Junior Bright wears its own Glimmer-set look, `junior_bright` (wine coat, soot trim, white buttons, the lanyard), instead of the `holder_glimmer_set` reference look.
+  - D2350, at the coordinator's direction after #328 met Brightgate on main: Brightgate's Hall 4 crew (`bg_hallcrew`: Rod Tender, Line Runner, Sky Watcher) shared Dad's short dark hair on a navy top, so the crew vest is teal. `tools/build_brightgate.py` and its output are changed. A rebuild today would revert 16 shipped Brightgate lines, so the output takes the same one-field edit; a check confirms the rebuild differs from it only in those 16 lines. `data/look_lock.json` has no exceptions left. `fen`'s `seen_as` says "light green", not "mint" (no_mint).
+  - Route 4's three Keepers named `keeper_officer`, which does not exist, so they drew as villagers. They now wear `officer` and are on the Keeper on-duty list.
+  - The spec gains (d): every look a map NPC, cast or castAt names must exist. The retired keys (`hc_president`, `petra`, `holder_glimmer_set`) must stay defined and unworn.
+  - D2273 keeps Juniper in the Associate coat, so her lock entry lists `shares_outfit: ["associate"]`. That waives only the same-outfit reason for `associate`; the hair, pixel and mark checks still run.
+- Files touched: `data/detail_zz_look_lock.json` (new: the three new looks and Juniper's speaker row), `data/civic.json`, `data/detail_signal.json`, `data/detail_zz_walk_beside.json`, `data/detail_zzz_fernbrook_plaza.json`, `data/detail_zzzz_route4.json`, `data/detail_people_looks.json`, `data/detail_zzz_fernbrook_homes.json`, `data/detail_zz_crackdown.json`, `data/heights.json`, `data/detail_lizzy.json`, `data/detail_zz_stores.json`, `data/detail_zz_market.json`, `game.js` (`regenx`; Juniper's default speaker row), `tools/build_brightgate.py` (Hall 4 crew) and `data/detail_zzzzz_brightgate.json`, `tools/build_highcharity.py` (Nia, Moss, Captain Lumen) and `data/highcharity.json` (re-run), `tools/hc_parade.py` and `tools/build_hc_city.py` (supporters 4 and 5, the President) and `data/hc_city_v2.json`/`.js` (re-run against design master's layout `91ef326`), `data/mapdata.js`, `data/look_lock.json`, `tests/look_lock.spec.js`, `tests/people_looks_28.spec.js`, `tests/fernbrook_plaza.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `index.html`, `version.json`, `handoff/shots/look_fixes/`.
+- Commit(s) + build id: `claude/look-fixes`, build 20261104-1316. #328 was merged in while it was still open; once it landed on main, `origin/main` (5052c15) was merged in too. Merge commits only.
+- Tests run and result (widths, checks): `npm run test:agent` (scans, build check and RTDB rules all pass) over 41 specs at 320, 375 and 390, with Modern controls, reduced motion and save v2 unchanged: **844 passed, 8 failed, 1 flaky, 28 skipped**. Every failure is one of three tests that fail the same way on clean main 5052c15: `glimmerwell_dark` "a lanyard accent clamps" (save-key compare), `maps_b4` "puddles and leaf litter" (Hearthmoor decals on paths) and `match_marker` T10. The look specs all pass: look_lock 13/13 (8 width skips by design), people_looks_28 15, look_keys 6, data_integrity 17, fernbrook_plaza 30, brightgate 54, no_mint 12, hc_parade 45, hc_city_v2 42. Zero console errors in the passing tests (trackErrors). An in-game walk-by at 390 and 320 (Mo, Juniper, the Route 4 Keepers, Arlo, Pim, the Junior Bright, Saffie) drew every new look with no console error. Wording, decisions, symlinks, gamejs_map and test-mistake scans pass, and the secret scan of the diff is clean.
+- Decisions made (colour + reasoning): D2273-D2278 as settled (all defaults). Green (engineer):
+  - the look choices the defaults left open: Juniper's long black cut, Mo's white bob with glasses, the Diner Regular's red buzz cut, and the Junior Bright's orange ponytail with white buttons (Sprites' round-2 junior sheet is not in the repo);
+  - Route 4's Keepers wear `officer`;
+  - Juniper's `shares_outfit`;
+  - spec check (d);
+  - `people_looks_28` lists the glen's Keeper Scout (ACT1_KEEPER_JOIN K5) as the same person. That test failed on main before this PR.
+- Anything left unfinished:
+  - D2350 is built on the default but stays an Open row until Vincent sees the crew sheet (`handoff/shots/look_fixes/bg_hallcrew_*.png`).
+  - `tools/build_brightgate.py` has 16 lines behind the shipped Brightgate copy (a catch-up gap that predates this PR).
+  - Design's WS-PALETTE (WARDROBE_SHOP 4a) still needs `sm_ken`, `h1_cadet` and the three Route 4 Keepers added to its Keeper list.
+
 ## 2026-11-04 09:10 ET: Build: Brightgate, slices 3-5: the city dressed and peopled, Hall 4, v0.2.1's gaps, perf (BRIGHTGATE_LAYOUT v0.2 and v0.2.1; D1484-D1489, D1492, D1494, D1498, D2005, D2092-D2106)
 - What changed and why:
   - **Slice 3, dressing and people:**
