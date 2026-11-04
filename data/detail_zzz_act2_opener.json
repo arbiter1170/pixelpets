@@ -5,7 +5,7 @@
   "note": "PLACEHOLDER copy (Story/June to replace; GOVERNOR_MEETING §4 and §6.1 lines, OPEN_DECISIONS rows D1469-D1475). Every line in this file is a placeholder.",
   "paths": ["scenes", "objPatch"]
  },
- "_route_hook": "GOVERNOR_MEETING §0 (settled): the Cadet takes the Lantern Coach to High Charity. A walkable route to the Governor is being designed separately (ROUTE_TO_GOVERNOR); when it lands, the posting's line 4 and the gov_meet quest row (quests.js) are the two places that name the coach.",
+ "_route_hook": "ROUTE_TO_GOVERNOR §6 (D1854, D1881, settled Nov 4, 2026): the first trip after the posting is on foot. The posting's line 4 is re-voiced to the walk; the quest rows gov_walk and gov_walk2 (quests.js) sit between gov_post and gov_meet; the coach hold, Porter Bram and Route 4 live in data/detail_zzzz_route4.json.",
  "flags": {
   "story.a2_called": "§4.1: Ilse's Act 2 Keeper1 call answered (the recall call writes it too: one call for a cover holder)",
   "story.gov_posted": "§4.2: the posting at the Lodge; opens the Governor's House door (D1473)",
@@ -37,7 +37,7 @@
    ["say", "Warden Ilse", "Sit, Cadet. Brinewick reached me before you did. Good work, and quiet work. I like both."],
    ["say", "Warden Ilse", "The Governor's office asked for a Cadet. One who can listen. I gave them you."],
    ["say", "Warden Ilse", "A civil posting. You answer to his office, and to me. Nobody else signs for you."],
-   ["say", "Warden Ilse", "Take the coach to High Charity. The Governor's House, on Charter Hill. They'll let you in now."],
+   ["say", "Warden Ilse", "Walk the coach road north to High Charity. The Governor's House, Charter Hill. They'll let you in."],
    ["say", "Warden Ilse", "And {name}? Come home after. Tell me what he asks. In person, not on the wire."],
    ["setFlag", "story.gov_posted", true]
   ],

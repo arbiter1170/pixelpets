@@ -930,6 +930,8 @@ const PPSound = (() => {
     startWanted();
     return true;
   }
+  // MAHOPAC_DREAMS §8 (MD-M2, MD-M6): a scene's silence. No loop is wanted until the next music() call; nothing new is played.
+  function hush(ms){ want = null; token++; if (trk) stopTrack(Math.max(0, ms != null ? ms : 400) / 1000); return true; }
   function pauseMusic(){ token++; if (trk) stopTrack(0.03); }
   function resumeMusic(){
     if (!want || !MUSIC_ON || muted || document.hidden || !ac) return;
@@ -964,7 +966,7 @@ const PPSound = (() => {
   return { play, setMuted, toggle: () => setMuted(!muted), get muted(){ return muted; }, get available(){ return !!AC; },
     get state(){ return ac ? ac.state : 'none'; }, get session(){ return { playThroughSilent: IOS_PLAY_THROUGH_SILENT, type: navigator.audioSession ? navigator.audioSession.type : null, loop: keep ? (keep.paused ? 'paused' : 'playing') : 'none', warmed }; }, get played(){ return played.slice(); },
     names: Object.keys(SFX).concat(Object.keys(STINGERS).map(k => 'stinger_' + k)), get stingers(){ return live.map(s => s.id); },
-    music, setMusic, pauseMusic, resumeMusic, musicCheck, musicSpec, musicIds: () => Object.keys(MUSIC),
+    music, hush, setMusic, pauseMusic, resumeMusic, musicCheck, musicSpec, musicIds: () => Object.keys(MUSIC),
     get musicOn(){ return MUSIC_ON; }, get musicTrack(){ return trk ? trk.id : null; }, get musicWant(){ return want; },
     get musicVol(){ return MUSIC_VOL; },
     get musicSwell(){ return trk && trk.swell ? Object.assign({}, trk.swell) : null; },   // KEEPER_ANTHEM M4: read-only, for tests

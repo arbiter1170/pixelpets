@@ -124,13 +124,27 @@
   }
   const switchCost = pts => Math.floor(clampPts(pts) / STANDING_CFG.switch.costDiv);
   // Chapter = Seals earned so far. story.seal3 counts when Brinewick writes it (D132). That chapter is not built yet.
-  const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3'].filter(k => !!(flags || {})[k]).length;
+  // ROUTE_TO_GOVERNOR / ACT2_PACING D1880: Seals 4 and 5 (story.seal4, story.seal5, written by Halls 4 and 5 when they land) count
+  // too, so the level cap rises to 41 and 44. No save has either flag today.
+  const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3', 'story.seal4', 'story.seal5'].filter(k => !!(flags || {})[k]).length;
   // The act number (D915, re-issued for seven acts as D977): derived, never stored. 1 plus one for each act start reached.
   // Only story.ep1_end is written today (the Episode 1 card); the others are written by the acts that build them.
   // Acts 3 and 4 also start from Seals held (5 and 7, D1329 count, tags never count), the same boundary as their flags.
   // Nothing writes story.act; a stored one is ignored here (game.js honours it only under ?debug=1). Save stays v2.
   const ACT_FLAGS = Object.freeze(['story.ep1_end', 'story.seal5', 'story.seal7', 'story.skyloom_done', 'story.climb_open', 'story.summit_open']);
   const ACT_SEALS = Object.freeze({ 'story.seal5': 5, 'story.seal7': 7 });
+  // MAHOPAC_DREAMS E1 (D1941): which moment the lens shows in Act 5, first match. Pure; reads flags only, writes nothing.
+  // The loyalist's door (also a loyalist who later switched), the switcher's lanyard, the newest kept report (rpt_6 down to
+  // rpt_1), the first letter told, the enrolment, and the starter morning for any save at all.
+  function lensMoment(flags){
+    const F = flags || {};
+    if (F['story.warden_cut']) return 'cut';
+    if (F['story.switched_a3']) return 'switch';
+    for (let i = 6; i >= 1; i--) if (F['story.rpt_' + i] === 'kept') return 'kept';
+    if (F['story.rpt_1'] === 'told') return 'told';
+    if (F['story.keeper_cadet']) return 'cadet';
+    return 'starter';
+  }
   function actOf(flags, sealsHeld){
     const F = flags || {}, n = Number(sealsHeld) || 0;
     return ACT_FLAGS.filter(k => !!F[k] || (ACT_SEALS[k] != null && n >= ACT_SEALS[k])).length + 1;
@@ -265,7 +279,7 @@
   }
 
   const api = { CFG: STANDING_CFG, SIDES, isSide, clampPts, tierOf, tierInfo, switchCost, chapterOf, canSwitch, fill, devCheck,
-    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf, reportsOpen, loyalistOpen,
+    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf, lensMoment, reportsOpen, loyalistOpen,
     RPT, ENDINGS, pathOf, trustOf, presOptions, ilseCanTurn, endingOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.STANDING_CFG = STANDING_CFG;

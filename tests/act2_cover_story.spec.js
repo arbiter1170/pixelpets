@@ -115,7 +115,7 @@ async function gateAndDrawer(page, pick, opts = {}) {
   await step(page, 'down');
   expect(await sceneId(page)).toBe('cv_mom_gate');
   const gate = await drive(page);
-  expect(says(gate)).toEqual(['There you are. Ilse kept you long enough. Walk me home before your coach?']);
+  expect(says(gate)).toEqual(['There you are. Ilse kept you long enough. Walk me home before your long walk?']);
   expect((await flags(page))['story.cv_mom_walk']).toBe(true);
   expect(await ids(page)).not.toContain('cv_mom_gate');   // she walked on ahead
   await goto(page, 'hm_home_in', 4, 6, 'up');
