@@ -273,6 +273,33 @@
     "y": 37
    },
    "zones": [],
+   "overlays": [
+    {
+     "id": "km_storm_cloud",
+     "scene": "km_storm",
+     "kind": "storm",
+     "rect": [
+      0,
+      0,
+      56,
+      12
+     ]
+    },
+    {
+     "id": "km_flat_cloud",
+     "when": [
+      "story.km_storm",
+      "!story.km_springs=warm"
+     ],
+     "kind": "flat",
+     "rect": [
+      18,
+      0,
+      37,
+      5
+     ]
+    }
+   ],
    "roofs": {
     "bath": {
      "x0": 8,
@@ -648,6 +675,18 @@
      "ox": -8
     },
     {
+     "kind": "prop",
+     "id": "km_permit",
+     "x": 27,
+     "y": 19,
+     "sprite": "km_permit",
+     "lines": {
+      "story.km_crew & !story.km_permit_seen": "@km_permit",
+      "story.km_permit_seen": "BY PERMIT OF HIGH CHARITY. Issued in default of the council.",
+      "else": "Hard hats only past the fence."
+     }
+    },
+    {
      "kind": "sign",
      "id": "km_fence_sign",
      "x": 29,
@@ -655,6 +694,18 @@
      "text": "Hard hats only past the fence.",
      "when": [
       "!story.slip_kilnmouth | story.permit_kilnmouth"
+     ]
+    },
+    {
+     "kind": "sign",
+     "id": "km_fence_slip",
+     "x": 29,
+     "y": 21,
+     "text": "LEASE UNDER REVIEW.",
+     "sprite": "km_slip",
+     "when": [
+      "story.slip_kilnmouth",
+      "!story.permit_kilnmouth"
      ]
     },
     {
@@ -670,6 +721,18 @@
      "x": 38,
      "y": 9,
      "sprite": "km_bent_post"
+    },
+    {
+     "kind": "trigger",
+     "id": "km_hill_t",
+     "x": 37,
+     "y": 9,
+     "r": 0,
+     "when": [
+      "story.km_storm",
+      "!story.wb_springs"
+     ],
+     "scene": "km_wb_springs"
     },
     {
      "kind": "sign",
@@ -882,6 +945,100 @@
     },
     {
      "kind": "npc",
+     "id": "km_dray",
+     "name": "Foreman Dray",
+     "x": 30,
+     "y": 22,
+     "facing": "left",
+     "lines": {
+      "story.km_permit_seen": "First one's in Brightgate. Never switched on. Ask them why ours was.",
+      "story.km_arrived & !story.km_pitch_f": "@km_pitch_f",
+      "story.km_pitch_f": "I grew up in that bathhouse. Give me the seat and the works will heat it again. Warm by spring.",
+      "else": "I grew up in that bathhouse."
+     },
+     "look": "km_foreman"
+    },
+    {
+     "kind": "npc",
+     "id": "km_garth",
+     "name": "Edwin Garth",
+     "x": 43,
+     "y": 20,
+     "facing": "down",
+     "lines": {
+      "story.km_arrived & !story.km_pitch_c": "@km_pitch_c",
+      "else": "Years in the watch. This town needs order before it needs warm water."
+     },
+     "look": "km_nominee"
+    },
+    {
+     "kind": "trigger",
+     "id": "km_pitch_f_t",
+     "x": 30,
+     "y": 22,
+     "r": 2,
+     "when": [
+      "story.km_arrived",
+      "!story.km_pitch_f"
+     ],
+     "scene": "km_pitch_f"
+    },
+    {
+     "kind": "trigger",
+     "id": "km_pitch_c_t",
+     "x": 43,
+     "y": 20,
+     "r": 2,
+     "when": [
+      "story.km_arrived",
+      "!story.km_pitch_c"
+     ],
+     "scene": "km_pitch_c"
+    },
+    {
+     "kind": "npc",
+     "id": "km_ask_yard",
+     "name": "Kiln Hand",
+     "x": 44,
+     "y": 35,
+     "facing": "left",
+     "lines": {
+      "story.km_arrived & !story.km_ask_yard": "@km_ask_yard",
+      "story.km_ask_yard": "Ask who keeps the springs clean when nobody pays them. That's who I'd vote for.",
+      "else": "One kiln of three is warm. The other two have soot on cold brick."
+     },
+     "look": "km_kilnhand"
+    },
+    {
+     "kind": "npc",
+     "id": "km_ask_market",
+     "name": "Market Seller",
+     "x": 12,
+     "y": 33,
+     "facing": "down",
+     "lines": {
+      "story.km_arrived & !story.km_ask_market": "@km_ask_market",
+      "story.km_ask_market": "The Bathkeeper. Kept the water warm for years and never asked a thing back.",
+      "else": "Coal's dear. Everyone's heating water by hand."
+     },
+     "look": "km_seller"
+    },
+    {
+     "kind": "npc",
+     "id": "km_ask_springs",
+     "name": "Bryony",
+     "x": 31,
+     "y": 28,
+     "facing": "left",
+     "lines": {
+      "story.km_arrived & !story.km_ask_springs": "@km_ask_springs",
+      "story.km_ask_springs": "If the town could vote tonight, it'd be the Bathkeeper. It can't. Curfew.",
+      "else": "It used to be under, that white ring. Mind the frost."
+     },
+     "look": "km_regular"
+    },
+    {
+     "kind": "npc",
      "id": "km_kid",
      "name": "Kilnmouth Kid",
      "x": 21,
@@ -892,6 +1049,88 @@
       "else": "Coats on in a spa town. Gran says that never used to happen."
      },
      "look": "km_kid"
+    },
+    {
+     "kind": "npc",
+     "id": "km_storm_kid_a",
+     "name": "Kilnmouth Kid",
+     "x": 16,
+     "y": 29,
+     "facing": "up",
+     "look": "km_kid",
+     "when": [
+      "!story.km_storm"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "km_storm_kid_b",
+     "name": "Kilnmouth Kid",
+     "x": 19,
+     "y": 29,
+     "facing": "up",
+     "look": "km_kid",
+     "when": [
+      "!story.km_storm"
+     ]
+    },
+    {
+     "kind": "trigger",
+     "id": "km_storm_t",
+     "x": 27,
+     "y": 28,
+     "r": 1,
+     "when": [
+      "story.km_arrived",
+      "!story.km_storm"
+     ],
+     "scene": "km_storm"
+    },
+    {
+     "kind": "npc",
+     "id": "km_crew_wait",
+     "name": "Tower Crew",
+     "x": 27,
+     "y": 21,
+     "facing": "down",
+     "lines": {
+      "else": "Hard hats only past the fence."
+     },
+     "look": "km_crew",
+     "when": [
+      "!story.km_storm"
+     ]
+    },
+    {
+     "kind": "trainer",
+     "id": "km_crew",
+     "x": 27,
+     "y": 21,
+     "when": [
+      "story.km_storm",
+      "!story.km_crew"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "km_crew_aside",
+     "name": "Tower Crew",
+     "x": 26,
+     "y": 22,
+     "facing": "right",
+     "lines": {
+      "else": "Go on, then. Mind the tower. It doesn't like visitors."
+     },
+     "look": "km_crew",
+     "when": [
+      "story.km_crew"
+     ]
+    },
+    {
+     "kind": "trainer",
+     "id": "km_yard",
+     "x": 48,
+     "y": 34
     }
    ]
   },
@@ -1519,6 +1758,8 @@
      "y": 3,
      "facing": "left",
      "lines": {
+      "story.km_assigned & !story.km_arrived": "@km_k1",
+      "story.km_arrived": "The seventh chair's been empty since the tower went up. Ask anyone why. Then ask me again.",
       "else": "Six chairs sit. Six hands. Every vote ends three and three, and the capital signs the rest."
      },
      "look": "km_reeve"
@@ -1772,6 +2013,55 @@
     "win": "Well driven, {player}. The gate is just up the hill.",
     "lose": "Rest at the Lantern House up top."
    }
+  },
+  "km_yard": {
+   "name": "PLACEHOLDER I",
+   "title": "Kiln Yard Holder",
+   "map": "kilnmouth",
+   "x": 48,
+   "y": 34,
+   "facing": "left",
+   "sight": 2,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "stone/1",
+     "level": 31
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "The yard is warm by the one kiln. Fancy a match while we stand in it?",
+    "win": "Hot work, {player}.",
+    "lose": "Stand by the kiln and warm up."
+   }
+  },
+  "km_crew": {
+   "name": "PLACEHOLDER J",
+   "title": "Tower Crew",
+   "map": "kilnmouth",
+   "x": 27,
+   "y": 21,
+   "facing": "down",
+   "sight": 1,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "volt/1",
+     "level": 31
+    },
+    {
+     "form": "moth/2",
+     "level": 32
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Cadet or not, that's company ground. Hard hats only.",
+    "win": "Fine. Go and look. It is only paper.",
+    "lose": "Off the common, Cadet."
+   },
+   "onWin": "km_crew_won"
   }
  },
  "scenes": {
@@ -1804,6 +2094,277 @@
    [
     "setFlag",
     "story.kr_s4_met",
+    true
+   ]
+  ],
+  "km_k1": [
+   [
+    "say",
+    "Reeve Agna",
+    "Six chairs sit. Six hands. Every vote ends three and three, and the capital signs the rest."
+   ],
+   [
+    "say",
+    "Reeve Agna",
+    "The seventh chair's been empty since the tower went up. Ask anyone why. Then ask me again."
+   ],
+   [
+    "setFlag",
+    "story.km_arrived",
+    true
+   ]
+  ],
+  "km_ask_yard": [
+   [
+    "say",
+    "Kiln Hand",
+    "Ask who keeps the springs clean when nobody pays them. That's who I'd vote for."
+   ],
+   [
+    "setFlag",
+    "story.km_ask_yard",
+    true
+   ],
+   [
+    "inc",
+    "story.km_names",
+    1
+   ],
+   [
+    "if",
+    "story.km_ask_yard & story.km_ask_market & story.km_ask_springs",
+    [
+     [
+      "say",
+      "",
+      "Three people, three ways of saying it. One name."
+     ]
+    ],
+    []
+   ]
+  ],
+  "km_ask_market": [
+   [
+    "say",
+    "Market Seller",
+    "The Bathkeeper. Kept the water warm for years and never asked a thing back."
+   ],
+   [
+    "setFlag",
+    "story.km_ask_market",
+    true
+   ],
+   [
+    "inc",
+    "story.km_names",
+    1
+   ],
+   [
+    "if",
+    "story.km_ask_yard & story.km_ask_market & story.km_ask_springs",
+    [
+     [
+      "say",
+      "",
+      "Three people, three ways of saying it. One name."
+     ]
+    ],
+    []
+   ]
+  ],
+  "km_ask_springs": [
+   [
+    "say",
+    "Bryony",
+    "If the town could vote tonight, it'd be the Bathkeeper. It can't. Curfew."
+   ],
+   [
+    "setFlag",
+    "story.km_ask_springs",
+    true
+   ],
+   [
+    "inc",
+    "story.km_names",
+    1
+   ],
+   [
+    "if",
+    "story.km_ask_yard & story.km_ask_market & story.km_ask_springs",
+    [
+     [
+      "say",
+      "",
+      "Three people, three ways of saying it. One name."
+     ]
+    ],
+    []
+   ]
+  ],
+  "km_pitch_f": [
+   [
+    "approach",
+    "km_dray"
+   ],
+   [
+    "say",
+    "Foreman Dray",
+    "I grew up in that bathhouse. Give me the seat and the works will heat it again. Warm by spring."
+   ],
+   [
+    "setFlag",
+    "story.km_pitch_f",
+    true
+   ]
+  ],
+  "km_pitch_c": [
+   [
+    "approach",
+    "km_garth"
+   ],
+   [
+    "say",
+    "Edwin Garth",
+    "Years in the watch. This town needs order before it needs warm water."
+   ],
+   [
+    "setFlag",
+    "story.km_pitch_c",
+    true
+   ]
+  ],
+  "km_storm": [
+   [
+    "sky",
+    "dusk"
+   ],
+   [
+    "say",
+    "",
+    "Dark cloud rolls in over the hills. Kids run for the bathhouse, laughing."
+   ],
+   [
+    "say",
+    "",
+    "Over the grey tower the cloud goes flat, like a hand pressed it. Not a drop falls."
+   ],
+   [
+    "say",
+    "Kilnmouth Kid",
+    "No storm again! The tower's the best thing that ever happened here."
+   ],
+   [
+    "if",
+    "chip:any",
+    [
+     [
+      "say",
+      "",
+      "{pet} turns to the tower before the cloud does. It waits until the sky is still."
+     ]
+    ],
+    []
+   ],
+   [
+    "setFlag",
+    "story.km_storm",
+    true
+   ]
+  ],
+  "km_crew_won": [
+   [
+    "setFlag",
+    "story.km_crew",
+    true
+   ]
+  ],
+  "km_permit": [
+   [
+    "say",
+    "",
+    "BY PERMIT OF HIGH CHARITY. Issued in default of the council."
+   ],
+   [
+    "say",
+    "",
+    "Below the stamp, smaller: FITTED BY THE LAMP WORKS, BRIGHTGATE."
+   ],
+   [
+    "say",
+    "",
+    "The spring gauge. Another notch down since you came."
+   ],
+   [
+    "say",
+    "",
+    "The tower's paper says the council never said yes. Nobody here has read it."
+   ],
+   [
+    "choice",
+    "What will you do with it?",
+    [
+     [
+      "Tell the bathhouse",
+      [
+       [
+        "setFlag",
+        "story.km_permit_to",
+        "town"
+       ],
+       [
+        "inc",
+        "story.sway_kilnmouth",
+        1
+       ]
+      ]
+     ],
+     [
+      "Keep it for the Warden",
+      [
+       [
+        "setFlag",
+        "story.km_permit_to",
+        "warden"
+       ],
+       [
+        "setFlag",
+        "story.slip_kilnmouth",
+        true
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.km_permit_seen",
+    true
+   ],
+   [
+    "setFlag",
+    "story.pres_hint_default",
+    true
+   ],
+   [
+    "setFlag",
+    "story.km_twin_lead",
+    true
+   ]
+  ],
+  "km_wb_springs": [
+   [
+    "say",
+    "",
+    "{pet} stops at the foot of the hill path and won't go on."
+   ],
+   [
+    "say",
+    "",
+    "You stop with it. Up the hill the cloud sits flat, and nothing moves."
+   ],
+   [
+    "setFlag",
+    "story.wb_springs",
     true
    ]
   ]
