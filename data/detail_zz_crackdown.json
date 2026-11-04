@@ -258,12 +258,27 @@
    [
     "say",
     "Commander",
-    "Glimmerwell staff will pack up and leave Fernbrook tonight."
+    "Glimmerwell. Your permit."
    ],
    [
     "say",
     "Associate Juniper",
-    "We have a permit! ...Fine. Fine! Glimmerwell is relocating."
+    "Right here. Signed in the capital, stamped and current."
+   ],
+   [
+    "say",
+    "",
+    "The Commander reads it under the tank's lamp, then hands it back."
+   ],
+   [
+    "say",
+    "Commander",
+    "Permit's in order. Your stand can stay. The square still closes."
+   ],
+   [
+    "say",
+    "Associate Juniper",
+    "A curfew's no good for business. We'll set up out on the east road tonight."
    ],
    [
     "say",
@@ -382,7 +397,56 @@
    [
     "say",
     "Associate Juniper",
-    "Brighter by nature! Brighter... somewhere else!"
+    "Brighter by nature! Find us on the east road, Fernbrook!"
+   ],
+   [
+    "walkAll",
+    [
+     [
+      "fbp_junior_bright",
+      25,
+      8
+     ],
+     [
+      "fbp_junior_bright_pet",
+      26,
+      8
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Junior Bright",
+    "You can't shut a Trial Hall! Glimmerwell would never lock a town indoors!"
+   ],
+   [
+    "say",
+    "Commander",
+    "Out after my order, and shouting at my Keepers. Take that one in."
+   ],
+   [
+    "walkTo",
+    "cd_off_b",
+    0,
+    8,
+    {
+     "with": "fbp_junior_bright",
+     "drop": true
+    }
+   ],
+   [
+    "walkTo",
+    "fbp_junior_bright_pet",
+    0,
+    8,
+    {
+     "drop": true
+    }
+   ],
+   [
+    "say",
+    "",
+    "A Keeper leads the Junior Bright away down the west road. Their Walkling trots close behind."
    ],
    [
     "say",
@@ -410,11 +474,6 @@
       "cd_off_a",
       15,
       7
-     ],
-     [
-      "cd_off_b",
-      15,
-      9
      ]
     ]
    ],
@@ -443,11 +502,6 @@
      [
       "cd_off_a",
       8,
-      8
-     ],
-     [
-      "cd_off_b",
-      9,
       8
      ]
     ]
@@ -798,7 +852,7 @@
    [
     "say",
     "Master Fen",
-    "I asked them for help with the crates. They sent boots. I won't forget it."
+    "I asked them for help with the Amberwild. They sent boots. I won't forget it."
    ],
    [
     "if",
@@ -962,9 +1016,9 @@
        "!story.side_pick_done"
       ],
       "lines": {
-       "else": "Curfew's lifted at the pick, holder. Not before."
+       "else": "The order stands until the pick."
       },
-      "_note": "POST_TRIAL_CRACKDOWN §5 (PLACEHOLDER)"
+      "_note": "POST_TRIAL_CRACKDOWN §5 (PLACEHOLDER); D1443: the curfew lifts at dawn, the order stands until the pick"
      },
      {
       "kind": "npc",
@@ -1098,5 +1152,20 @@
     "story.crackdown & !story.side_pick_done": "Curfew's posted, citizen. Dusk to dawn, and keep it quiet in between."
    }
   }
- }
+ },
+ "lineSwaps": [
+  {
+   "_note": "B-2 (D1431 card 15 follow-up): Fen's Glimmer-pick line keeps \"After last night,\" only after the crackdown night. This wraps the built line first (crackdown sorts before day1); day1's plain swap then wraps the fallback branch (game.js swapLine).",
+   "scene": "orchard@glimmer",
+   "when": "story.seal1 & story.crackdown",
+   "text": "Go on. Come to the Hall if you must. I'll stand for the orchard there.",
+   "to": [
+    [
+     "say",
+     "Master Fen",
+     "Go on, then. You won my Seal fairly. After last night, I can't say you're wrong."
+    ]
+   ]
+  }
+ ]
 }
