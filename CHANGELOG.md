@@ -2,6 +2,36 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 09:10 ET: Build: Brightgate, slices 3-5: the city dressed and peopled, Hall 4, v0.2.1's gaps, perf (BRIGHTGATE_LAYOUT v0.2 and v0.2.1; D1484-D1489, D1492, D1494, D1498, D2005, D2092-D2106)
+- What changed and why:
+  - **Slice 3, dressing and people:**
+    - Seven parked Courtesy Cruisers. Three Cruisers glide their east-west lanes, and a Sky Concierge crosses the Campus every 9 s. They use a new non-blocking `glide` object; reduced motion parks each at its west end.
+    - Courtesy staff beats, in pairs where the packet says so. No Keeper patrols (D1489). Every fixed anchor and the eight scheduled townsfolk. The Keeper slot stays empty (D1498).
+    - §11's hooks, with first-read flags `story.bg_insign`, `story.bg_crate` and `story.bg_vane`. The three flame lanterns stand on D1492's tiles, inert for the Dimlamp build.
+    - A wine ring on every planter lamp post: lit by day, one shared night pulse (D1494). No litter.
+    - The fleet's pieces, the Comfort Lamp, the hedge planter and the weathervane are copied mint-free (D2000, D2103).
+  - **Slice 4, Hall 4 (D1484, D2005):**
+    - The door opens from Act 2 onto the storm tower: three rod plinths round the idle coil. Each crew win lights its own rod (the crew's beaten flag; no new save key).
+    - Master Ada Coil stands under the dead rod and fights only after the crew (a trainer `crew` row). Her win gives `seal_brightgate` (Seal 4), `story.seal4` and the quiet tail (`story.ada_sky`).
+  - **v0.2.1 (§17), on the yellow and green defaults:**
+    - Hall 4's teams, lines and the bench rest by the door.
+    - Four optional talk-to-battle holders (Lv 31-33). No wild table; one one-shot Lv 32 dipper at the mill pond (`story.bg_dipper`).
+    - The Pavilion's lantern bowl, the pond sign and the shelter's timetable.
+    - The clerk's, the clock's and floor 2's guest lines; floor 2's first guest arrival (`story.bg_f2_guest`).
+    - The Bright Shuttle's legs (D2090, D2091, Vincent's red calls) are built as data behind `story.bg_shuttle_live`, which nothing sets. The bar at 32,38 stays until he rules. Kilnmouth's stop is handed over as data for the Kilnmouth build.
+  - **Slice 5, perf:**
+    - A profile of Gate Plaza showed `clock.js` re-reading the URL and sessionStorage on every `now()` call made by phase conditions. `debugOn()` now holds its answer for 500 ms.
+    - Walking each district at 390 now averages 18-26 ms per frame, inside the existing towns' 19-27 ms on the same box.
+- Files touched: `tools/build_brightgate.py`, `data/detail_zzzzz_brightgate.json`, `data/mapdata.js`, `game.js` (the `glide` kind, the Master's `crew` gate, Seal 4's art and name, `window.WART` under debug), `clock.js`, `sprites.js`, `battle_bg.js`, `quests.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/brightgate.spec.js`, `tests/interior_walls.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `handoff/shots/brightgate/`.
+- Commit(s) + build id: claude/brightgate slices 3-5. Slices 3 and 4 share one commit, since both live in the build tool's one output. Build id in the PR.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): as settled; v0.2.1's yellow and green rows on their defaults. Green engine notes: the `glide` object, a trainer `crew` row, the `debugOn` memo.
+- Anything left unfinished:
+  - The shuttle waits on D2090 and D2091.
+  - The ring's 2-tile hum needs a sound the game does not have; each post carries `hum: true` for it.
+  - The phase-2 rooms stay "Closed for now".
+  - Pia's art.
+
 ## 2026-11-04 02:55 ET: Build: Brightgate, slice 2: the HQ lobby and the lanyard gate, the review floor, the gala (BRIGHTGATE_LAYOUT v0.2; D1483, D1486, D1493, D2006-D2008)
 - What changed and why:
   - The Campus HQ door opens on `bg_hq_lobby` for every holder. The front desk with the Receptionist ("Visitors' hours end at five. It's five."), the lanyard rack with its empty hook and the INSIGN plaque on the public side, the clip tiles 2,5 and 2,6 and Dorian's Act 5 tile 5,9 kept free, Courtesy staff inside the gate.

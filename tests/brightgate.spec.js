@@ -9,7 +9,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 const CHUNKS = { brightgate: [64, 40, 32, 37], bg_campus: [64, 48, 32, 46], bg_works: [64, 48, 2, 20], bg_oldtown: [64, 40, 62, 20], bg_partner: [48, 48, 1, 32] };
-const ROOMS = ['bg_lantern_in', 'bg_store_in', 'bg_hq_lobby', 'bg_review_in', 'bg_gala_in'];
+const ROOMS = ['bg_lantern_in', 'bg_store_in', 'bg_hq_lobby', 'bg_review_in', 'bg_gala_in', 'bg_hall_in'];
 const RULE10 = { lantern: { door: [29, 34], marker: ['bg_lantern_sign', 28, 33, 'heal_lantern'] }, store: { door: [35, 34], marker: ['bg_store_board', 36, 33, 'acorn_board'] } };
 
 function save(extra) {
@@ -61,7 +61,7 @@ test('BG1 the five districts and the rooms load at this width, Glimmerwell held,
   }
   // rooms belong to the city: their outdoor is the district their door stands in (respawn, "where am I")
   const outs = await page.evaluate(ids => ids.map(id => window.WORLD[id].outdoor), ROOMS);
-  expect(outs).toEqual(['brightgate', 'brightgate', 'bg_campus', 'bg_campus', 'bg_campus']);
+  expect(outs).toEqual(['brightgate', 'brightgate', 'bg_campus', 'bg_campus', 'bg_campus', 'bg_oldtown']);
 });
 
 test('BG2 rule 10: a fresh arrival on 32,37 shows both doors and both markers with no scroll (D2001, D613, D615)', async ({ page }) => {
@@ -245,7 +245,14 @@ test('BG7 no mint anywhere in Brightgate: the arrival frame and every battle sce
     const L = PAL.l, rgb = [1, 3, 5].map(i => parseInt(L.slice(i, i + 2), 16)), out = {};
     const count = (c, W, H) => { const d = c.getContext('2d').getImageData(0, 0, W, H).data; let n = 0;
       for (let i = 0; i < d.length; i += 4) if (d[i] === rgb[0] && d[i + 1] === rgb[1] && d[i + 2] === rgb[2]) n++; return n; };
-    const cv = document.querySelector('#mapCanvas'); out.walk = count(cv, cv.width, cv.height);
+    // the arrival frame, less the holder's own tile and the one beside it: the tracked-quest cue (D436) is UI drawn in PAL.l
+    const cv = document.querySelector('#mapCanvas'), v = PixelPets.viewTiles(), me = PixelPets.state.world;
+    const g = cv.getContext('2d'), mx = Math.round((me.x - v.x) * 16) - 16, my = Math.round((me.y - v.y) * 16) - 16;
+    const d0 = g.getImageData(0, 0, cv.width, cv.height).data; let n0 = 0;
+    for (let i = 0; i < d0.length; i += 4) { const p = i / 4, x = p % cv.width, y = (p / cv.width) | 0;
+      if (x >= mx && x < mx + 64 && y >= my && y < my + 48) continue;
+      if (d0[i] === rgb[0] && d0[i + 1] === rgb[1] && d0[i + 2] === rgb[2]) n0++; }
+    out.walk = n0;
     for (const id of ids) for (const mode of ['day', 'night']) out[id + ' ' + mode] = count(PixelPets.battleSceneArt(id, 63, 83, mode), 63, 83);
     return out;
   }, Object.keys(CHUNKS).concat(ROOMS));
@@ -343,4 +350,222 @@ test('BG11 the HQ floors and the gala carry no chip, Tuning or implant word, and
   await settled(page, 'bg_campus');
   await page.evaluate(() => PixelPets.walkStep('up'));
   expect(await sayText(page)).toBe("By appointment. We'll call you.");
+});
+
+// §4.2-§4.5, §8 (D1488, D1489, D1492, D1494, D1498): the fleet, the staff and the tells. Art checks run on every sprite a
+// Brightgate map names, so a mint pixel anywhere in the city's dressing fails (D2000).
+test('BG12 the city is dressed: parked and gliding Cruisers, Concierges over the Campus only, Courtesy beats, the tells, no mint in any sprite @w1', async ({ page }) => {
+  test.setTimeout(90000);
+  await boot(page);
+  const r = await page.evaluate(() => {
+    const W = window.WORLD, ids = Object.keys(W).filter(id => id === 'brightgate' || id.indexOf('bg_') === 0);
+    const L = [1, 3, 5].map(i => parseInt(PAL.l.slice(i, i + 2), 16)), minty = [];
+    const sprites = new Set(); for (const id of ids) for (const o of W[id].objs) if (o.sprite) { sprites.add(o.sprite); sprites.add(o.sprite + '_l'); sprites.add(o.sprite + '_move'); sprites.add(o.sprite + '_move_l'); }
+    for (const k of sprites) for (const img of [].concat(WART[k] || [])) {
+      if (!img || !img.width) continue;
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, c.width, c.height).data;
+      for (let i = 0; i < d.length; i += 4) if (d[i + 3] && d[i] === L[0] && d[i + 1] === L[1] && d[i + 2] === L[2]) { minty.push(k); break; }
+    }
+    const of = (id, f) => W[id].objs.filter(f);
+    return {
+      minty: [...new Set(minty)],
+      parked: ids.map(id => of(id, o => /^bg_cs_/.test(o.id)).length),
+      keeperSlot: of('brightgate', o => o.x >= 44 && o.x <= 46 && o.y === 36).length,
+      glides: ids.map(id => of(id, o => o.kind === 'glide').map(o => [o.id, o.glide.x0, o.glide.x1, o.y])),
+      concierge: ids.filter(id => of(id, o => /concierge/.test(o.sprite || '')).length),
+      beats: ids.map(id => of(id, o => o.patrol).length),
+      keeperPatrols: ids.reduce((a, id) => a + of(id, o => o.patrol && /keeper|officer/i.test(o.look || '')).length, 0),
+      litter: ids.reduce((a, id) => a + of(id, o => /leaf_litter|puddle/.test(o.sprite || '')).length, 0),
+      lamps: ids.map(id => of(id, o => o.sprite === 'bg_lamp_ring').length),
+      lanterns: ['brightgate', 'bg_oldtown', 'bg_campus'].map(id => of(id, o => /^bg_flame_lantern_\d$/.test(o.id)).map(o => [o.x, o.y])[0]),
+      budget: ids.filter(id => W[id].kind !== 'interior').map(id => [W[id].objs.length, W[id].objs.filter(o => o.kind === 'npc').length]),
+    };
+  });
+  expect(r.minty, 'sprites with mint pixels').toEqual([]);
+  expect(r.parked.slice(0, 5)).toEqual([2, 3, 2, 0, 0]);   // Gate Plaza 2, Campus 3, Works 2 (§4.3), in WORLD order
+  expect(r.keeperSlot, 'the Keeper slot stays empty (D1498)').toBe(0);
+  const lanes = r.glides.flat().filter(g => /^bg_cr_/.test(g[0]));
+  expect(lanes.map(g => g.slice(1))).toEqual([[4, 26, 20], [4, 59, 23], [4, 26, 20]]);   // east-west, on the lane rows
+  expect(r.concierge).toEqual(['bg_campus']);
+  expect(r.keeperPatrols, 'no Keeper patrols in Brightgate (D1489)').toBe(0);
+  expect(r.beats.slice(0, 5).every(n => n >= 1)).toBe(true);
+  expect(r.litter).toBe(0);
+  expect(r.lamps.slice(0, 5).map(n => n > 0)).toEqual([true, true, true, false, true]);   // Old Wick keeps its flame lanterns: no ring posts (§4.2)
+  expect(r.lanterns).toEqual([[30, 25], [32, 27], [16, 16]]);   // D1492's three tiles
+  for (const [n, people] of r.budget) { expect(n).toBeLessThanOrEqual(240); expect(people).toBeLessThanOrEqual(24); }
+});
+
+test('BG13 a Cruiser glides its lane and parks at the west end under reduced motion; it never blocks; the plaque sets its first-read flag', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.goto('brightgate', 14, 21, 'up'));
+  await settled(page, 'brightgate');
+  const xs = [];
+  for (let i = 0; i < 4; i++) { xs.push(await page.evaluate(() => PixelPets.objPos('bg_cr_bg0_line').fx)); await page.waitForTimeout(700); }
+  expect(new Set(xs.map(x => x.toFixed(1))).size, 'it moves').toBeGreaterThan(1);
+  expect(await page.evaluate(() => PixelPets.findPath([{ x: 14, y: 19 }])), 'its lane stays walkable').toBeTruthy();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => [PixelPets.objPos('bg_cr_bg0_line').fx, PixelPets.objPos('bg_cr_bg0_line').moving])).toEqual([4, false]);
+  await page.evaluate(() => PixelPets.goto('bg_campus', 30, 19, 'up'));
+  await settled(page, 'bg_campus');
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  expect(await sayText(page)).toBe('Founded as INSIGN. Brighter by nature.');
+  await closeSay(page);
+  expect(await page.evaluate(() => PixelPets.state.flags['story.bg_insign'])).toBe(true);
+});
+
+// Hall 4 (§5.2, §7; D1484 Act 2, D2005 the storm tower). Teams are PLACEHOLDER (marked placeholderTeam) at the beat sheet's
+// levels until Design specs them; the room, the gating and the plinth lights are the build.
+// Plays the open scene (and any battle it opens) to its end. `wild` befriends a scene encounter; trainers are won.
+async function run(page, choices = []) {
+  const left = choices.slice(), says = [];
+  let won = false;
+  for (let i = 0; i < 400; i++) {
+    const st = await page.evaluate(() => {
+      const s = window.PixelPets.scene, b = window.PixelPets.battle;
+      return { scene: !!s, mode: s && s.mode, full: s && s.full, waiting: s && s.waiting, text: s && s.text,
+        battle: !!(b && b.on), panel: b && b.panel, kind: b && b.kind };
+    });
+    if (!st.scene && !st.battle) return says;
+    if (await page.locator('#btOk').isVisible().catch(() => false)) { await page.locator('#btOk').click(); await page.waitForTimeout(30); continue; }
+    if (st.battle) {
+      if (!won) {
+        if (st.panel !== 'acts' && st.panel !== 'end') {
+          if (await page.locator('#btMsg').isVisible().catch(() => false)) await page.locator('#btMsg').click();
+          await page.waitForTimeout(30); continue;
+        }
+        await page.evaluate(k => { PixelPets.battle.textMs = 0; if (k === 'wild') PixelPets.forceBefriend(); else PixelPets.winBattle(); }, st.kind);
+        won = true; await page.waitForTimeout(40); continue;
+      }
+      if (await page.locator('#btMsg').isVisible().catch(() => false)) await page.locator('#btMsg').click();
+      await page.waitForTimeout(30); continue;
+    }
+    won = false;
+    if (st.mode === 'choice' && st.full) {
+      await page.waitForFunction(() => window.PixelPets.optionsReady === true);
+      const label = left.shift();
+      if (!label) throw new Error('choice "' + st.text + '" but the test had no answer left');
+      await page.locator('#sbChoices button', { hasText: label }).first().click();
+      await page.waitForTimeout(30); continue;
+    }
+    if (st.mode === 'say' && st.waiting) {
+      if (!says.length || says[says.length - 1] !== st.text) says.push(st.text);
+      await page.keyboard.press('Space'); await page.waitForTimeout(25); continue;
+    }
+    await page.waitForTimeout(30);
+  }
+  throw new Error('scene did not finish');
+}
+
+async function talk(page, map, x, y, facing) {
+  await page.evaluate(([m, x, y, f]) => PixelPets.goto(m, x, y, f), [map, x, y, facing]);
+  await settled(page, map);
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => !!PixelPets.scene || (PixelPets.battle && PixelPets.battle.on));
+}
+const ACT2 = { 'story.act': 2 };
+test('BG14 Hall 4: shut before Act 2, the storm tower from Act 2, the crew before the Master, each win lights its rod, the dead rod stays dark', async ({ page }) => {
+  test.setTimeout(120000);
+  await boot(page, { 'story.act': 1 });
+  await page.evaluate(() => PixelPets.goto('bg_oldtown', 32, 15, 'up')); await settled(page, 'bg_oldtown');
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  expect(await sayText(page)).toBe('Closed for now.');
+  await closeSay(page);
+  await page.evaluate(() => PixelPets.setFlag('story.act', 2));
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  await settled(page, 'bg_hall_in');
+  expect(await page.evaluate(() => [PixelPets.state.world.x, PixelPets.state.world.y])).toEqual([7, 22]);
+  const rods = () => page.evaluate(() => PixelPets.mapObjs.filter(o => /^bg_(rod|dead_rod)/.test(o.id)).map(o => o.id + ':' + o.sprite).sort());
+  expect((await rods()).filter(r => r.endsWith(':bg_rod_lit'))).toEqual([]);
+  const trainers = await page.evaluate(() => ['h4_crew_a', 'h4_crew_b', 'h4_crew_c', 'hall4_master'].map(id => { const o = window.WORLD.bg_hall_in.objs.find(x => x.id === id); return [id, o.x, o.y]; }));
+  expect(trainers).toEqual([['h4_crew_a', 3, 12], ['h4_crew_b', 12, 12], ['h4_crew_c', 7, 7], ['hall4_master', 7, 2]]);
+  // the Master waits for the crew
+  await talk(page, 'bg_hall_in', 7, 3, 'up');
+  expect(await sayText(page)).toContain('Light the three rods first');
+  await closeSay(page);
+  // each crew win lights its own rod, and only that one
+  const lit = [];
+  for (const id of ['h4_crew_a', 'h4_crew_b', 'h4_crew_c']) {
+    await page.evaluate(id => PixelPets.forceTrainer(id), id);
+    await run(page);
+    lit.push(id);
+    const now = (await rods()).filter(r => r.endsWith(':bg_rod_lit')).map(r => r.split(':')[0].replace('bg_rod_lit_', ''));
+    expect(now.sort()).toEqual(lit.slice().sort());
+  }
+  expect((await rods()).filter(r => r.startsWith('bg_dead_rod'))).toEqual(['bg_dead_rod_7:bg_rod', 'bg_dead_rod_8:bg_rod']);
+  // the Master: the Seal to whoever wins, Seal 4 and the quiet tail
+  await talk(page, 'bg_hall_in', 7, 3, 'up');
+  const says = await run(page);
+  expect(says.join(' | ')).toContain("Storms aren't stopped, Cadet. They're moved.");
+  const after = await page.evaluate(() => ({ seal: !!PixelPets.state.seals.seal_brightgate, f4: PixelPets.state.flags['story.seal4'], sky: PixelPets.state.flags['story.ada_sky'], v: PixelPets.state.v }));
+  expect(after).toEqual({ seal: true, f4: true, sky: true, v: 2 });
+  expect((await rods()).filter(r => r.startsWith('bg_dead_rod')).every(r => r.endsWith(':bg_rod'))).toBe(true);
+});
+
+test('BG15 Hall 4 teams are v0.2.1 §17.2: two Walklings per crew at Lv 32-33, Ada 33-35, moves explicit, no TIDE or BLOOM move @w1', async ({ page }) => {
+  await boot(page, ACT2);
+  const t = await page.evaluate(() => { const T = MAPDATA.detail_zzzzz_brightgate.trainers;
+    return Object.fromEntries(['h4_crew_a', 'h4_crew_b', 'h4_crew_c', 'hall4_master'].map(id => [id, { n: T[id].team.length, lv: T[id].team.map(m => m.level),
+      moves: T[id].team.every(m => Array.isArray(m.moves) && m.moves.length === 4), sight: T[id].sight, crew: T[id].crew || null, seal: T[id].seal || null }])); });
+  for (const id of ['h4_crew_a', 'h4_crew_b', 'h4_crew_c']) { expect(t[id].n).toBe(2); expect(t[id].lv.every(l => l >= 32 && l <= 33)).toBe(true); expect(t[id].moves).toBe(true); expect(t[id].sight).toBe(8); }
+  expect(t.hall4_master.lv).toEqual([33, 34, 35]);
+  expect(t.hall4_master.crew).toEqual(['h4_crew_a', 'h4_crew_b', 'h4_crew_c']);
+  expect(t.hall4_master.seal).toBe('seal_brightgate');
+  // the Hall's foes load (an unknown form or move would drop the row at boot)
+  expect(await page.evaluate(() => ['h4_crew_a', 'h4_crew_b', 'h4_crew_c', 'hall4_master'].every(id => PixelPets.forceTrainer && window.WORLD.bg_hall_in.objs.some(o => o.id === id)))).toBe(true);
+});
+
+// v0.2.1 §17.3-§17.5 (D2092-D2106 on their defaults): four optional holders, one placed dipper and no wild table; the bench
+// rest; the missing lines; and the Bright Shuttle's data held inert behind story.bg_shuttle_live until D2090/D2091 are ruled.
+test('BG16 v0.2.1: holders talk to battle, no wild rolls, the dipper once, the bench rests, the shuttle stays inert @w1', async ({ page }) => {
+  test.setTimeout(90000);
+  await boot(page, ACT2);
+  const r = await page.evaluate(() => { const W = window.WORLD, T = MAPDATA.detail_zzzzz_brightgate.trainers;
+    const ids = ['brightgate', 'bg_campus', 'bg_works', 'bg_oldtown', 'bg_partner'];
+    return { holders: ids.map(id => W[id].objs.filter(o => o.kind === 'trainer').map(o => [o.id, o.x, o.y, T[o.id].sight])),
+      spawns: ids.map(id => W[id].spawns), wilds: ids.map(id => W[id].objs.filter(o => o.kind === 'wild').map(o => [o.id, o.x, o.y, o.form, o.level])),
+      shuttle: W.brightgate.objs.filter(o => /^bs_/.test(o.id)).map(o => [o.id, o.when]), hm: W.hearthmoor.objs.filter(o => /^(bs_|hs_)/.test(o.id)).map(o => o.id) }; });
+  expect(r.holders).toEqual([[['bg_h_board', 50, 27, 0]], [], [['bg_h_quay', 20, 36, 0]], [['bg_h_potter', 40, 32, 0]], [['bg_h_partner', 15, 39, 0]]]);
+  expect(r.spawns).toEqual([null, null, null, null, null]);
+  expect(r.wilds).toEqual([[], [], [], [['bg_wild_dipper', 17, 35, 'dipper/1', 32]], []]);
+  for (const [, when] of r.shuttle) expect(when).toContain('story.bg_shuttle_live');
+  expect(r.hm.sort()).toEqual(['bs_hearthmoor', 'hs_first_drop']);
+  // inert: the shuttle bar still stands at 32,38 and says no shuttle runs; Hearthmoor's mark is absent
+  await page.evaluate(() => PixelPets.goto('brightgate', 32, 37, 'down')); await settled(page, 'brightgate');
+  await page.evaluate(() => PixelPets.walkStep('down'));
+  expect(await sayText(page)).toContain('No shuttle runs from here yet');
+  await closeSay(page);
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 16, 10, 'up')); await settled(page, 'hearthmoor');
+  expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'bs_hearthmoor'))).toBe(false);
+  // the bench by Hall 4's door rests the team (the built rest step)
+  await page.evaluate(() => PixelPets.goto('bg_hall_in', 6, 22, 'left')); await settled(page, 'bg_hall_in');
+  await page.evaluate(() => PixelPets.walkStep('left'));
+  expect(await sayText(page)).toContain('You sit on the bench by the door.');
+  await closeSay(page);
+  // a district holder battles only on talk (sight 0): standing beside her starts nothing
+  await page.evaluate(() => PixelPets.goto('brightgate', 49, 27, 'right')); await settled(page, 'brightgate');
+  await page.waitForTimeout(600);
+  expect(await page.evaluate(() => !!(PixelPets.battle && PixelPets.battle.on))).toBe(false);
+});
+
+test('BG17 v0.2.1 lines: the clerk, the clock, and floor 2 as Rook\'s guest (§17.5)', async ({ page }) => {
+  await boot(page, { 'story.act': 3, 'story.a3_offer': true });
+  await page.evaluate(() => PixelPets.goto('bg_lantern_in', 6, 2, 'up')); await settled(page, 'bg_lantern_in');
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  expect(await sayText(page)).toBe('A wall clock that ticks. The only one in Brightgate that does.');
+  await closeSay(page);
+  await page.evaluate(() => PixelPets.goto('bg_review_in', 7, 12, 'up')); await settled(page, 'bg_review_in');
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  expect(await sayText(page)).toBe('Floor two. Rows of desks face one board. Every chair is pushed in.');
+  await closeSay(page);
+  expect(await page.evaluate(() => PixelPets.state.flags['story.bg_f2_guest'])).toBe(true);
+  await page.evaluate(() => PixelPets.goto('bg_review_in', 6, 1, 'up')); await settled(page, 'bg_review_in');
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  expect(await sayText(page)).toBe('The Outcomes Board. Every card is turned face down. Guests see the backs.');
+  await closeSay(page);
+  await page.evaluate(() => PixelPets.goto('bg_review_in', 13, 2, 'up')); await settled(page, 'bg_review_in');
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  expect(await sayText(page)).toBe('The stair is roped off. A card on the rope: Staff only. Have a bright day!');
+  await closeSay(page);
 });

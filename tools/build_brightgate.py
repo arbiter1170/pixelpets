@@ -61,6 +61,8 @@ RWALK = set('.=m')
 # ---------- PLACEHOLDER copy: the packet's §11 lines (Story signs them). say 110, toast 40. ----------
 HOOKS = {h['id']: h for c in L['chunks'] for h in c['hooks']}
 def hook(i): return HOOKS[i]['text']
+SWITCHED = 'story.switched_a3'
+RL = {r_['id']: r_['text'] for r_ in L.get('room_lines', [])}   # v0.2.1 §17.5's lines (PLACEHOLDER)
 TXT = {
     'residents': hook('bh_flats'),                         # "Residents only. Have a bright day!"
     'staff': hook('bh_annex'),                             # "Staff only. Have a bright day!"
@@ -151,7 +153,7 @@ class Chunk:
     def add(self, o, blocks=None):
         if o['id'] in self.ids or o['id'] in ALL_IDS: fail(f"{self.id}: duplicate id {o['id']}")
         self.ids.add(o['id']); ALL_IDS.add(o['id']); self.objs.append(o)
-        if blocks is None: blocks = o['kind'] in ('npc', 'sign', 'prop') and self.walk(o['x'], o['y'])
+        if blocks is None: blocks = o['kind'] in ('npc', 'sign', 'prop', 'trainer', 'wild') and self.walk(o['x'], o['y'])
         if blocks: self.block[(o['x'], o['y'])] = o['id']
         return o
     def free(self, x, y): return self.walk(x, y) and (x, y) not in self.block and (x, y) not in self.reserved
@@ -253,17 +255,18 @@ SHUT = {   # door id -> deny line; `need` names a flag nothing sets, the city pr
     'bg_flats_a': TXT['residents'], 'bg_flats_b': TXT['residents'], 'bg_welcome': TXT['closed'],
     'bg_gala': TXT['gala'], 'bg_glowcare': TXT['glowcare'],
     'bg_annex_a': TXT['staff'], 'bg_annex_b': TXT['staff'], 'bg_lampworks': TXT['works'], 'bg_fleetbay': TXT['fleet'],
-    'bg_census': TXT['closed'], 'bg_hall': TXT['closed'], 'bg_old_a': None, 'bg_old_b': None, 'bg_odell': TXT['closed'],
+    'bg_census': TXT['closed'], 'bg_old_a': None, 'bg_old_b': None, 'bg_odell': TXT['closed'],
     'bg_wickshop': TXT['wickshop'], 'bg_academy': TXT['academy'], 'bg_showhome': None,
 }
 for h in 'abcdefghij': SHUT['bg_home_' + h] = TXT['residents']
-ROOM_DOOR = {'bg_lantern': ('bg_lantern_in', 6, 12), 'bg_store': ('bg_store_in', 5, 7), 'bg_hq': ('bg_hq_lobby', 7, 14)}
+ROOM_DOOR = {'bg_lantern': ('bg_lantern_in', 6, 12), 'bg_store': ('bg_store_in', 5, 7), 'bg_hq': ('bg_hq_lobby', 7, 14), 'bg_hall': ('bg_hall_in', 7, 22)}
 for cid, c in CHUNKS.items():
     for d in c.src['doors']:
         did = d['id']
         o = {'kind': 'door', 'id': did, 'x': d['x'], 'y': d['y']}
         if did in ROOM_DOOR:
             rid, tx, ty = ROOM_DOOR[did]; o.update({'to': rid, 'tx': tx, 'ty': ty, 'facing': 'up'})
+            if did == 'bg_hall': o.update({'need': 'story.act>=2', 'deny': 'Closed for now.'})   # D1484: Act 2 (settled)
         elif did in SHUT:
             o['need'] = 'story.bg_no_room'
             if SHUT[did]: o['deny'] = SHUT[did]
@@ -351,6 +354,240 @@ for cid, c in CHUNKS.items():
         c.add({'kind': 'sign', 'id': f"bg_post_{m['id']}", 'x': spot[0], 'y': spot[1], 'sprite': 'signpost',
                'text': f"{DISTRICT[cid]} · This way: {TO_NAME[m['to']]}."})
 
+# ---------- slice 3: dressing and people (§3.4 props, §4.2-§4.5 the tells, §8.1 anchors, §8.2 schedules, §8.3 beats) ----------
+# The fleet's built lines (glimmer_fleet.js LINES, PLACEHOLDER D1346), read from the game file: the `split` voice, or the plain line.
+FLEET_SRC = open(os.path.join(ROOT, 'glimmer_fleet.js')).read()
+def fleet_line(key):
+    m = re.search(r"\n\s+" + key + r": (\{ split: \"((?:[^\"\\]|\\.)*)\"|\{ split: '((?:[^'\\]|\\.)*)'|'((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\")", FLEET_SRC)
+    if not m: fail('fleet line missing: ' + key); return ''
+    return next(v for v in m.groups()[1:] if v is not None).replace("\\'", "'")
+TXT.update({
+    'courtesy': hook('bh_courtesy'), 'insign': hook('bh_hq_plaque'),
+    'lamp': hook('bh_lamp'), 'board': hook('bh_board'), 'swap': hook('bh_swap'), 'switchover': hook('bh_switchover'),
+    'glow_sign': hook('bh_glowcare_sign'), 'crate': hook('bh_crate'), 'tower': hook('bh_tower'), 'retired': hook('bh_retired'),
+    'hall_sign': hook('bh_hall_sign'), 'odell': hook('bh_odell'), 'vane': hook('bh_vane'), 'seam': hook('bh_seam'), 'comfort': hook('bh_comfort'),
+    'greeter': 'Welcome to Brightgate! Have a bright day!',            # §8.1 (the greeter's line in the packet)
+    'waiting': 'Booked through next season.',                          # §8.1
+    'cruiser': fleet_line('cruiser'), 'swap_clerk': fleet_line('swap_clerk'), 'mast': fleet_line('mast'), 'mast_tech': fleet_line('mast_tech'),
+    'receptionist_gc': fleet_line('receptionist'), 'bay': fleet_line('bay_attendant'),
+    'dimlamp': "[PLACEHOLDER] The Dimlamp trail's lines are its own build's.",
+    'friend_board': '[PLACEHOLDER] BRIGHT BOARD. Top partners: [FRIEND 1], [FRIEND 2], [FRIEND 3], [FRIEND 4], [FRIEND 5], [FRIEND 6].',
+    'townsfolk': '[PLACEHOLDER] Have a bright day!',
+})
+SC = {}   # hooks with a first-read flag (§9: story.bg_insign, story.bg_crate, story.bg_vane): the line plays once with its flag, then repeats
+def hooked(cid, oid, x, y, sprite, line, flag=None, kind='prop', r=3, exact=False, **kw):
+    c = CHUNKS[cid]
+    spot = (x, y) if exact or not c.walk(x, y) else c.place_near(x, y, r=r)
+    if not spot: fail(f'{cid}: no tile for {oid} near {(x, y)}'); return None
+    if spot != (x, y): note(f'{cid}: {oid} wanted {(x, y)}, stands at {spot}')
+    o = {'kind': kind, 'id': oid, 'x': spot[0], 'y': spot[1], 'sprite': sprite}
+    if kind == 'sign': o['text'] = line
+    elif line: o['lines'] = {'else': line}
+    if flag:
+        SC[oid] = [['say', '', line], ['setFlag', flag, True]]
+        o['lines'] = {'!' + flag: '@' + oid, 'else': line}
+    o.update(kw)
+    return c.add(o, blocks=None if c.walk(*spot) else False)
+
+def body(cid, oid, name, look, x, y, facing='down', line=None, r=3, **kw):
+    c = CHUNKS[cid]
+    spot = (x, y) if c.safe_block(x, y) else c.place_near(x, y, r=r)
+    if not spot: fail(f'{cid}: no tile for {oid}'); return None
+    if spot != (x, y): note(f'{cid}: {oid} wanted {(x, y)}, stands at {spot}')
+    o = {'kind': 'npc', 'id': oid, 'name': name, 'look': look, 'x': spot[0], 'y': spot[1], 'facing': facing, 'still': True}
+    if line: o['lines'] = {'else': line}
+    o.update(kw)
+    return c.add(o)
+
+# Courtesy Cruiser stands (D1488): one parked Cruiser across each 3x1 bay; the Keeper slot stays empty (D1498).
+for cid, c in CHUNKS.items():
+    for p in c.src['posts']:
+        if p['kind'].startswith('Keeper'): continue
+        x0, y0, x1, y1 = p['bay']
+        west = 'west' in p.get('note', '')
+        c.add({'kind': 'prop', 'id': 'bg_' + p['id'], 'x': x0 + 1, 'y': y0, 'sprite': 'bg_cruiser_l' if west else 'bg_cruiser', 'oy': 6,
+               'name': 'a Courtesy Cruiser', 'lines': {'else': TXT['cruiser']}}, blocks=False)
+# Gliding Cruisers (§4.3) on their lanes, east-west, never blocking; reduced motion parks each at its west end.
+for cid, c in CHUNKS.items():
+    for pt in c.src['patrols']:
+        if pt['kind'] != 'cruiser': continue
+        (ax_, ay_), (bx_, by_) = pt['route'][0], pt['route'][1]
+        c.add({'kind': 'glide', 'id': 'bg_' + pt['id'], 'x': min(ax_, bx_), 'y': ay_, 'sprite': 'bg_cruiser', 'oy': 6,
+               'glide': {'x0': min(ax_, bx_), 'x1': max(ax_, bx_), 'speed': 3.2, 'pause': 1.4}}, blocks=False)
+# Sky Concierges over the Campus only (§4.4): one parked on the pad, one crossing every 9 s.
+CP = CHUNKS['bg_campus']
+pad = [(x, y) for y in range(CP.h) for x in range(CP.w) if CP.ch(x, y) == 'V']
+px_, py_ = sorted(pad)[len(pad) // 2]
+CP.add({'kind': 'prop', 'id': 'bg_concierge_parked', 'x': px_, 'y': py_, 'sprite': 'bg_concierge', 'name': 'a Sky Concierge', 'lines': {'else': '[PLACEHOLDER] A Sky Concierge, parked on its pad.'}}, blocks=None)
+CP.add({'kind': 'glide', 'id': 'bg_concierge_fly', 'x': 2, 'y': 12, 'sprite': 'bg_concierge_fly', 'oy': -24,
+        'glide': {'x0': 2, 'x1': 61, 'speed': 59 / 3.0, 'pause': 1.5}}, blocks=False)   # 3 s across, 1.5 s off each edge: one pass every 9 s
+# Courtesy staff beats (§8.3, D1489): foot patrols, a pair where the packet says pair (the second half a loop behind).
+for cid, c in CHUNKS.items():
+    for pt in c.src['patrols']:
+        if pt['kind'] != 'foot': continue
+        route = [list(p) for p in pt['route']]
+        swap = cid == 'bg_oldtown'
+        n = 2 if 'pair' in pt.get('note', '') else 1
+        for i in range(n):
+            start = 0 if i == 0 else len(route) // 2
+            x, y = route[start]
+            o = {'kind': 'npc', 'id': f"bg_{pt['id']}_{'ab'[i]}", 'name': 'Swap crew' if swap else 'Courtesy staff', 'look': 'bg_swapcrew' if swap else 'bg_courtesy',
+                 'x': x, 'y': y, 'facing': 'down', 'patrol': route, 'patrolStart': start,
+                 'lines': {'else': TXT['dimlamp'] if swap else TXT['courtesy']}}
+            if pt['when']: o['when'] = list(pt['when'])
+            c.add(o, blocks=False)
+# Fixed anchors (§8.1).
+ANCH = {a['id']: (cid, a['x'], a['y']) for cid, c in CH.items() for a in c['anchors']}
+for aid, name, look, line, kw in (
+        ('bg_swap_clerk', 'Swap Clerk', 'bg_swap_clerk', TXT['swap_clerk'], {}),
+        ('bg_shuttle_greeter', 'Courtesy greeter', 'bg_courtesy', TXT['greeter'], {}),
+        ('bg_mast_tech', 'Mast Tech', 'bg_mast_tech', TXT['mast_tech'], {}),
+        ('bg_glowcare_rec', 'Glow Care Receptionist', 'bg_receptionist', TXT['receptionist_gc'], {}),
+        ('bg_waiting_local', 'Waiting Local', 'bg_local', TXT['waiting'], {}),
+        ('bg_swap_foreman', 'Swap-crew foreman', 'bg_swapcrew', TXT['dimlamp'], {'when': ['phase:dusk']}),
+        ('bg_bay_attendant', 'Bay Attendant', 'bg_bay_attendant', TXT['bay'], {}),
+        ('bg_tower_crew', 'Calm Tower crew', 'bg_swapcrew', TXT['tower'], {}),
+        ('bg_odell', 'Lamplighter Odell', 'bg_odell', TXT['odell'], {'when': ['phase:dawn|phase:day']})):
+    cid, x, y = ANCH[aid]
+    body(cid, 'bg_lamplighter' if aid == 'bg_odell' else aid, name, look, x, y, 'down', line, **kw)   # bg_odell is the house door's id
+# Landmarks and hooks (§3.4, §4.5, §11). Props stand on their tile; a prop on a walk tile blocks and is checked like any blocker.
+LM = {l['id']: (cid, l['x'], l['y']) for cid, c in CH.items() for l in c['landmarks']}
+def L_(lid): return LM[lid]
+def lm(lid, oid, sprite, line=None, flag=None, **kw):
+    cid, x, y = L_(lid); return hooked(cid, oid, x, y, sprite, line, flag, **kw)
+lm('lm_shuttle_stop', 'bg_shelter', 'bg_shelter', None, exact=True)
+for i, lid in enumerate(('lm_flame_lantern_1', 'lm_flame_lantern_2', 'lm_flame_lantern_3')):   # D1492: tiles kept; the trail's states are its build's
+    lm(lid, f'bg_flame_lantern_{i + 1}', 'bg_flame_lantern', exact=True, name='an old flame lantern')
+lm('lm_bright_board', 'bg_bright_board', 'bg_bright_board', TXT['board'], exact=True)
+cid, x, y = L_('lm_bright_swap')   # Bright Swap, a 2x2 stall: the art across 56-57 x 26-27, the sign on its front-left cell
+GP.add({'kind': 'prop', 'id': 'bg_swap_stall', 'x': 57, 'y': 27, 'ox': -8, 'sprite': 'bg_swap_stall', 'name': 'Bright Swap', 'lines': {'else': TXT['swap']}})
+for (bx, by) in ((56, 26), (57, 26), (56, 27)): GP.add({'kind': 'prop', 'id': f'bg_swap_stall_{bx}_{by}', 'x': bx, 'y': by, 'sprite': 'bg_none'})
+lm('lm_relay_mast_c0', 'bg_relay_mast_c0', 'bg_relay_mast', TXT['mast'], exact=True)
+lm('lm_census_kiosk', 'bg_census_kiosk', 'census_tent', None, exact=True)
+lm('lm_switchover_board', 'bg_switchover', 'bg_switch_board', TXT['switchover'], exact=True)
+lm('lm_store_crates', 'bg_store_crates', 'bg_lantern_crate', None, exact=True)
+lm('lm_hq_plaque', 'bg_hq_plaque', 'bg_insign_plaque', TXT['insign'], 'story.bg_insign', exact=True)
+cid, x, y = L_('lm_hq_badge'); CHUNKS[cid].add({'kind': 'decal', 'id': 'bg_hq_badge', 'x': x, 'y': y, 'sprite': 'bg_badge'})   # the badge plate: art beside the door, never blocks
+cid, x, y = L_('lm_glowcare_badge'); CHUNKS[cid].add({'kind': 'decal', 'id': 'bg_glowcare_badge', 'x': x, 'y': y, 'sprite': 'bg_badge'})   # the badge plate: art beside the door, never blocks
+hooked('bg_campus', 'bg_glowcare_sign', 54, 19, 'gw_sign', TXT['glow_sign'], kind='sign', exact=True)
+lm('lm_relay_mast_c1', 'bg_relay_mast_c1', 'bg_relay_mast', TXT['mast'], exact=True)
+lm('lm_city_relay', 'bg_city_relay', 'bg_relay_mast', TXT['mast'], exact=True)
+lm('lm_pad_sign', 'bg_pad_sign', 'gw_sign', '[PLACEHOLDER] SKY CONCIERGE PAD.', kind='sign', exact=True)
+cid, x, y = L_('lm_pool_ring'); CHUNKS[cid].add({'kind': 'decal', 'id': 'bg_pool_ring', 'x': x, 'y': y, 'sprite': 'bg_pool_ring'})
+lm('lm_crate_bg2', 'bg_calm_crate', 'crate_stack', TXT['crate'], 'story.bg_crate', exact=True)
+for lid in ('lm_crates_b', 'lm_crates_c', 'lm_crates_d'): lm(lid, 'bg_' + lid[3:], 'crate_stack', None, exact=True)
+lm('lm_relay_yard_a', 'bg_relay_yard_a', 'bg_relay_mast', TXT['mast'], exact=True)
+lm('lm_relay_yard_b', 'bg_relay_yard_b', 'bg_relay_mast', TXT['mast'], exact=True)
+cid, x, y = L_('lm_fleet_badge'); CHUNKS[cid].add({'kind': 'decal', 'id': 'bg_fleet_badge', 'x': x, 'y': y, 'sprite': 'bg_badge'})   # the badge plate: art beside the door, never blocks
+lm('lm_rail_wagon', 'bg_rail_wagon', 'bg_wagon', None, exact=True, ox=8)
+lm('lm_retired_baskets', 'bg_retired', 'bg_baskets', TXT['retired'], exact=True)
+lm('lm_hall_sign', 'bg_hall_sign', 'signpost', TXT['hall_sign'], exact=True, kind='sign')
+cid, x, y = L_('lm_dead_vane'); CHUNKS[cid].add({'kind': 'decal', 'id': 'bg_dead_vane', 'x': x, 'y': y, 'sprite': 'bg_vane'})
+hooked('bg_oldtown', 'bg_vane_read', 33, 16, 'none', TXT['vane'], 'story.bg_vane', kind='prop', r=3, name='the weather vane')
+lm('lm_seam_post', 'bg_seam_post', 'bg_seam_post', TXT['seam'], exact=True)
+lm('lm_seam_scaffold', 'bg_seam_scaffold', 'bg_scaffold', None, exact=True)
+lm('lm_seam_crate', 'bg_seam_crate', 'crate_stack', None, exact=True)
+lm('lm_washing_a', 'bg_washing_a', 'bg_washing', None, exact=True)
+lm('lm_washing_b', 'bg_washing_b', 'bg_washing', None, exact=True)
+lm('lm_steps_a', 'bg_steps_a', 'stair_flight', None, exact=True)
+lm('lm_comfort_lamp_a', 'bg_comfort_a', 'bg_comfort_lamp', TXT['comfort'], exact=True)
+lm('lm_comfort_lamp_b', 'bg_comfort_b', 'bg_comfort_lamp', TXT['comfort'], exact=True)
+lm('lm_census_kiosk_c4', 'bg_census_kiosk_c4', 'census_tent', None, exact=True)
+lm('lm_calm_tower', 'bg_calm_tower_beacon', 'bg_none', None, exact=True)   # the tower stands on its roof-kit block; B26's art is Pia's
+# The ring on every lamp post (§4.2, D1494): on the planter kerbs every six tiles (solid tiles: no way is cut), and on the
+# walk's edge where there are no planters (the Works, the pool walk). By day the glass is lit; at night every lamp pulses on
+# one shared beat (one timer, §6.4); reduced motion holds the lit frame. The 2-tile hum needs a sound the game does not
+# have yet (SCENE_MUSIC / sfx ask): each post carries `hum: true` for it.
+for cid, c in CHUNKS.items():
+    k = 0
+    for y in range(1, c.h - 1):
+        for x in range(1, c.w - 1):
+            if k >= 26: break
+            on_kerb = c.ch(x, y) == 'J' and (x, y) not in c.block and (x % 6 == 0 if (c.ch(x - 1, y) == 'J' or c.ch(x + 1, y) == 'J') else y % 6 == 0)
+            edge = cid in ('bg_works', 'bg_campus') and c.ch(x, y) in 'dI' and (x + y) % 6 == 0 and any(c.ch(a, b) in 'wG' for a, b in nbrs(x, y, c.w, c.h))
+            if not on_kerb and not (edge and c.place_near(x, y, r=0) == (x, y)): continue
+            for nm, when in (('bg_lamp_ring', '!phase:night'), ('bg_lamp_ring_pulse', 'phase:night')):
+                c.add({'kind': 'prop', 'id': f'bg_lamp_{cid}_{k}_{nm[-5:]}', 'x': x, 'y': y, 'sprite': nm, 'when': [when], 'hum': True,
+                       'name': 'a lamp post', 'lines': {'else': TXT['lamp']}}, blocks=not on_kerb)
+            k += 1
+# Scheduled townsfolk (§8.2): one body per map its rows name, the rows on the first; last row off-map.
+LOOK_T = {'Staff commuter': 'bg_courtesy', 'Supporter A (wine vest)': 'bg_supporter', 'Supporter B (wine vest)': 'bg_supporter', 'Parent': 'bg_local',
+          'Child': 'bg_child', 'Census taker': 'bg_swapcrew', 'Old Wick elder': 'bg_elder', 'Works hand': 'bg_swapcrew'}
+for i, sc in enumerate(L['schedules']):
+    nm = sc['body'].replace(' (wine vest)', '')
+    rows = [{'when': r['when'] or '', 'map': r['map'], 'x': r['x'] or 0, 'y': r['y'] or 0, 'facing': r.get('facing'), 'place': r.get('place') or 'home (off the map)'} for r in sc['rows']]
+    rows[-1] = {'map': None, 'x': 0, 'y': 0, 'place': 'home (off the map)'}
+    maps = []
+    for r in sc['rows'][:-1]:
+        if r['map'] not in maps: maps.append(r['map'])
+    for j, mid in enumerate(maps):
+        r0 = next(r for r in sc['rows'] if r['map'] == mid)
+        c = CHUNKS[mid]
+        if not c.walk(r0['x'], r0['y']): fail(f"schedule {nm}: {mid} {r0['x']},{r0['y']} not walkable")
+        o = {'kind': 'npc', 'id': f'bg_sched_{i}_{j}', 'name': nm, 'look': LOOK_T[sc['body']], 'x': r0['x'], 'y': r0['y'], 'facing': r0.get('facing') or 'down',
+             'lines': {'else': TXT['townsfolk']}, 'still': True}   # stands at its row tile (no wander route over the big maps)
+        if j == 0: o['schedule'] = rows
+        c.add(o, blocks=False)
+
+# ---------- v0.2.1 (§17, D2090-D2106): holders, the one placed wild, the bowl, the pond sign, the timetable, the shuttle (inert) ----------
+DISTRICT_TRAINERS = {}
+for cid, c in CHUNKS.items():   # §17.3: four optional talk-to-battle holders (sight 0), off B5's line of travel
+    for hd in c.src.get('holders', []):
+        if not c.safe_block(hd['x'], hd['y']): fail(f"{cid}: holder {hd['id']} at {(hd['x'], hd['y'])} would block or is taken")
+        DISTRICT_TRAINERS[hd['id']] = {'name': hd['name'], 'title': 'Brightgate holder', 'map': cid, 'x': hd['x'], 'y': hd['y'], 'facing': hd['facing'],
+                                       'sight': hd['sight'], 'ai': hd['ai'], 'money': None, 'team': hd['team'], 'lines': hd['lines']}
+        c.add({'kind': 'trainer', 'id': hd['id'], 'x': hd['x'], 'y': hd['y'], 'look': 'bg_local'})
+    if c.src.get('wild_table') is not None: fail(f'{cid}: v0.2.1 says no wild table in Brightgate')
+    for pw in c.src.get('placed_wilds', []):   # §17.3: one dipper, one-shot (its own done flag, as Route 4's placed wilds)
+        if not c.safe_block(pw['x'], pw['y']): fail(f"{cid}: {pw['id']} would block or is taken")
+        c.add({'kind': 'wild', 'id': pw['id'], 'x': pw['x'], 'y': pw['y'], 'form': pw['form'], 'level': pw['level'], 'when': ['!story.bg_dipper'], 'scene': 'bg_dipper'})
+SC['bg_dipper'] = [['encounter', 'bg_wild_dipper'], ['setFlag', 'story.bg_dipper', True]]
+lm('lm_welcome_bowl', 'bg_welcome_bowl', 'bg_lantern_crate', hook('bh_welcome_bowl'), exact=True, name='a bowl of lanterns')
+lm('lm_pond_sign', 'bg_pond_sign', 'signpost', hook('bh_pond'), exact=True, kind='sign')
+for o in GP.objs:   # the shelter carries the timetable (two states, §17.1)
+    if o['id'] == 'bg_shelter': o['lines'] = {'story.km_council': hook('bh_timetable_b'), 'else': hook('bh_timetable')}; o['name'] = 'the shuttle shelter'
+
+# The Bright Shuttle (§17.1, D2090 and D2091 are Vincent's red calls, not yet ruled): every leg's data is here, behind
+# `story.bg_shuttle_live`, a flag nothing sets. Wiring it is one change: drop that term from SHUTTLE_ON once Vincent rules.
+LINK = L.get('link') or {}
+SHUTTLE_ON = 'story.bg_shuttle_live'
+LS = {s_['id']: s_ for s_ in LINK.get('stops', [])}
+SHUTTLE_TXT = {'bs_first_ride': 'The shuttle hums to a stop. Nobody asks for a ticket. Nobody asks your name, either.',
+               'hs_sign': 'BRIGHT SHUTTLE · Brightgate. Free, every hour. A Glimmerwell kindness. Have a bright day!',
+               'hs_first_drop': "The shuttle sets you down beside the Lantern Coach. Its driver waves at the porter. He doesn't wave back.",
+               'ks_sign': 'BRIGHT SHUTTLE · Brightgate. Free for partners and their guests. Step on the mark.',
+               'ks_att_first': 'The Lamp Works sends a shuttle for the tower crew. Guests ride free, Cadet. Have a bright day!',
+               'ks_att': 'One step to Brightgate. Mind the mark!'}   # §17.1 lines (PLACEHOLDER)
+if LS:
+    for o in GP.objs:
+        if o['id'] == 'bg_south': o['when'] = ['!' + SHUTTLE_ON]   # the bar stands until the shuttle runs
+    hx, hy = LS['bs_gate_home']['mark']
+    GP.add({'kind': 'warp', 'id': 'bs_gate_home', 'x': hx, 'y': hy, 'to': 'hearthmoor', 'tx': LS['bs_hearthmoor']['arrive'][0], 'ty': LS['bs_hearthmoor']['arrive'][1],
+            'facing': LS['bs_hearthmoor']['arrive_facing'], 'when': [SHUTTLE_ON, LS['bs_gate_home']['when']]}, blocks=False)
+    wx, wy = LS['bs_gate_works']['mark']
+    if not GP.walk(wx, wy): fail('brightgate: the works mark is not on a walk tile')
+    # the works line (33,38 -> Kilnmouth's yard) needs the Kilnmouth map, which this branch lacks: handed over with Kilnmouth's stop
+    WORKS_MARK = {'kind': 'warp', 'id': 'bs_gate_works', 'x': wx, 'y': wy, 'to': 'kilnmouth', 'tx': 52, 'ty': 16, 'facing': 'left',
+                  'when': [SHUTTLE_ON, LS['bs_gate_works']['when']], 'map': 'brightgate'}
+    GP.add({'kind': 'trigger', 'id': 'bs_first_ride', 'x': 32, 'y': 37, 'r': 0, 'when': [SHUTTLE_ON, '!story.bg_shuttle'], 'scene': 'bs_first_ride'}, blocks=False)
+    SC['bs_first_ride'] = [['say', '', SHUTTLE_TXT['bs_first_ride']], ['setFlag', 'story.bg_shuttle', True]]
+    SC['hs_first_drop'] = [['say', '', SHUTTLE_TXT['hs_first_drop']], ['setFlag', 'story.bg_shuttle_hm', True]]
+    hm = LS['bs_hearthmoor']
+    SLICE_PATCH = {'maps': {'hearthmoor': {'addObjs': [   # the Hearthmoor stop beside the Lantern Coach (tiles: the packet's default)
+        {'kind': 'warp', 'id': 'bs_hearthmoor', 'x': hm['mark'][0], 'y': hm['mark'][1], 'to': 'brightgate', 'tx': 32, 'ty': 37, 'facing': 'up', 'when': [SHUTTLE_ON, hm['when']]},
+        {'kind': 'trigger', 'id': 'hs_first_drop', 'x': hm['arrive'][0], 'y': hm['arrive'][1], 'r': 0, 'when': [SHUTTLE_ON, '!story.bg_shuttle_hm'], 'scene': 'hs_first_drop'}]}}}
+    # Kilnmouth's stop (works yard) is the KILNMOUTH build's map: its objects are handed over as data for that build to place.
+    ks = LS['bs_kilnmouth']
+    KILNMOUTH_STOP = {'_note': 'BRIGHTGATE_LAYOUT §17.1: for the Kilnmouth build to place on its works yard (objs) and on Gate Plaza (gate_works, once kilnmouth exists); inert behind ' + SHUTTLE_ON,
+                      'gate_works': WORKS_MARK,
+                      'objs': [{'kind': 'warp', 'id': 'bs_kilnmouth', 'x': ks['mark'][0], 'y': ks['mark'][1], 'to': 'brightgate', 'tx': 32, 'ty': 37, 'facing': 'up', 'when': [SHUTTLE_ON, ks['when']]},
+                               {'kind': 'sign', 'id': 'ks_sign', 'x': ks['sign'][0], 'y': ks['sign'][1], 'text': SHUTTLE_TXT['ks_sign'], 'when': [SHUTTLE_ON, ks['when']]},
+                               {'kind': 'npc', 'id': 'ks_attendant', 'name': 'Shuttle attendant', 'look': 'bg_courtesy', 'x': ks['attendant'][0], 'y': ks['attendant'][1],
+                                'facing': ks['attendant_facing'], 'still': True, 'when': [SHUTTLE_ON, ks['when']],
+                                'lines': {'!story.reached_brightgate': SHUTTLE_TXT['ks_att_first'], 'else': SHUTTLE_TXT['ks_att']}}]}
+else:
+    SLICE_PATCH, KILNMOUTH_STOP = {}, {}
+
 # ---------- final outdoor checks: every door and mouth reachable with every blocker standing; no one-wide choke ----------
 for cid, c in CHUNKS.items():
     blocked = frozenset(c.block)
@@ -435,7 +672,7 @@ for i, (x, y) in enumerate(beds): objs.append(P(f'bg_bed_{"abcdefghijkl"[i]}', x
 host = rp['anchors'][0]
 objs.append(N('bg_lantern_host', TXT['host_name'], 'bg_lantern_host', host['x'], host['y'], host['facing']))
 clock = rp['marks'][0]['cells'][0]
-objs.append(P('bg_lantern_clock', clock[0], clock[1], 'clock_face', name='a wall clock', lines={'else': TXT['clock']}))
+objs.append(P('bg_lantern_clock', clock[0], clock[1], 'clock_face', name='a wall clock', lines={'talked': RL['ck_repeat'], 'else': RL['ck_first']}))
 for y in range(len(raw)):
     for x in range(len(raw[0])):
         if raw[y][x] == 'L': objs.append(P('bg_lantern_lamp', x, y, 'bg_comfort_lamp', name='a Comfort Lamp', lines={'else': hook('bh_comfort')}))
@@ -453,7 +690,7 @@ g = ['#' * 11, '#' + 'W' * 9 + '#', '#' + '.' * 9 + '#', '#' + '.' * 9 + '#', '#
 door = DOORS['bg_store']
 objs = [{'kind': 'warp', 'id': 'bg_store_mat', 'x': 5, 'y': 8, 'to': 'brightgate', 'tx': door['x'], 'ty': door['y'], 'facing': 'down'},
         N('bg_store_clerk', TXT['store_clerk_name'], 'bg_store_clerk', 5, 2, 'down', shopTitle='BRIGHT MART',
-          lines={'else': TXT['store_clerk']}, shop=['heal_snack', 'hearty_snack', 'wake_tonic', 'befriend_treat', 'energy_sip', 'joy_crumb']),
+          lines={SWITCHED: RL['sc_staff'], 'talked': RL['sc_repeat'], 'else': RL['sc_first']}, shop=['heal_snack', 'hearty_snack', 'wake_tonic', 'befriend_treat', 'energy_sip', 'joy_crumb']),
         P('bg_store_counter_l', 4, 3, 'stall_counter', name='the counter'), P('bg_store_counter_r', 6, 3, 'stall_counter', name='the counter'),
         P('bg_store_acorn', 3, 1, 'acorn_board', name='the price board'),
         P('bg_store_crate_a', 1, 3, 'bg_lantern_crate', name='a crate of lanterns'), P('bg_store_crate_b', 9, 3, 'bg_lantern_crate', name='a crate of lanterns'),
@@ -463,6 +700,7 @@ room_check('bg_store_in', g, objs, (5, 7), {'mat': (5, 8), 'clerk_front': (5, 4)
 
 # ---------- slice 2: the HQ lobby and the lanyard gate (§5.3, D1483, D1493, D2006, D2008), the review floor (D2007), the gala (D1486) ----------
 SWITCHED = 'story.switched_a3'                                     # ACT3_SWITCH's flag (settled)
+RL = {r_['id']: r_['text'] for r_ in L.get('room_lines', [])}   # v0.2.1 §17.5's lines (PLACEHOLDER)
 GUEST = 'story.a3_offer & !story.switched_a3 & !story.solvane_met'   # D2008: an open offer, Rook's guest, floor 2 only
 GATE_SHUT = ['!' + SWITCHED, '!story.a3_offer | story.solvane_met']  # every holder but a switcher or an open-offer guest
 LANYARD = 'seal:seal_glim_1 | seal:seal_glim_2 | seal:seal_glim_3'    # D1521: an undercover Keeper's Glimmerwell lanyard
@@ -531,21 +769,27 @@ if (3, 1) in seen or (12, 1) in seen: fail('bg_hq_lobby: a lift is reachable wit
 rp = RP['bg_review_in']; g, raw = from_packet(rp)
 g = [r[:13] + ('E' if y == 1 else r[13]) + r[14:] for y, r in enumerate(g)]   # the stair to the wing shell
 objs = [{'kind': 'warp', 'id': 'bg_review_mat', 'x': 7, 'y': 13, 'to': 'bg_hq_lobby', 'tx': 3, 'ty': 2, 'facing': 'down'},
-        {'kind': 'sign', 'id': 'bg_review_stair', 'x': 13, 'y': 1, 'sprite': 'none', 'text': TXT['stair']}]
+        {'kind': 'prop', 'id': 'bg_review_stair', 'x': 13, 'y': 1, 'sprite': 'bg_none', 'name': 'the stair', 'lines': {SWITCHED: RL['f2_stair_staff'], 'else': RL['f2_stair']}},
+        {'kind': 'trigger', 'id': 'bg_f2_arrive', 'x': 7, 'y': 11, 'r': 0, 'when': ['!' + SWITCHED, '!story.bg_f2_guest'], 'scene': 'bg_f2_arrive'}]
+SC['bg_f2_arrive'] = [['say', '', RL['f2_arrive']], ['setFlag', 'story.bg_f2_guest', True]]
 mk = {m['id']: m for m in rp['marks']}
 for i, (x, y) in enumerate(mk['outcomes_board']['cells']):
-    objs.append(P(f'bg_outcomes_board_{i}', x, y, 'bg_outcomes_board', name='the Outcomes Board', lines={'else': TXT['board']}))
+    objs.append(P(f'bg_outcomes_board_{i}', x, y, 'bg_outcomes_board', name='the Outcomes Board', lines={SWITCHED: TXT['board'], 'else': RL['f2_board']}))
 one = {tuple(c) for c in mk['one_desk']['cells']}
 for y in range(len(raw)):
     for x in range(len(raw[0])):
         k = raw[y][x]
-        if k == 'w': objs.append(P(f'bg_review_wire_{x}', x, y, 'tv_set', name='a wire set'))
-        elif k in 'tD': objs.append(P(f'bg_review_desk_{x}_{y}', x, y, 'keep_desk', name='the one desk' if (x, y) in one else 'a desk'))
+        if k == 'w': objs.append(P(f'bg_review_wire_{x}', x, y, 'tv_set', name='a wire set', lines={'!' + SWITCHED: RL['f2_wire']}))
+        elif k in 'tD': objs.append(P(f'bg_review_desk_{x}_{y}', x, y, 'keep_desk', name='the one desk' if (x, y) in one else 'a desk',
+                                      **({'lines': {'!' + SWITCHED: RL['f2_desk']}} if (x, y) in one else {})))
         elif k == 'p': objs.append(P(f'bg_review_planter_{x}_{y}', x, y, 'bg_hedge_planter', name='a planter'))
 an = {a['id']: a for a in rp['anchors']}
 for aid, nm, look in (('bg_rook_review', 'Rook', 'rook'), ('bg_dorian_review', 'Dorian Pell', 'dorian'), ('bg_quinn_review', 'Associate Quinn', 'quinn')):
     a = an[aid]
-    objs.append(N(aid, nm, look, a['x'], a['y'], a['facing'], when=list(REVIEW_WHEN), lines={'else': TXT['wait_act3'] if nm != 'Dorian Pell' else TXT['wait_board']}))
+    guest = {'Dorian Pell': RL['f2_dorian'], 'Associate Quinn': RL['f2_quinn']}.get(nm)
+    ln = {'else': TXT['wait_act3'] if nm != 'Dorian Pell' else TXT['wait_board']}
+    if guest: ln = {SWITCHED: ln['else'], 'else': guest}
+    objs.append(N(aid, nm, look, a['x'], a['y'], a['facing'], when=list(REVIEW_WHEN), lines=ln))
 ROOMS['bg_review_in'] = room('bg_review_in', 'Brightgate HQ, floor 2', 'bg_hq', 'bg_campus', g, 'bg_review', objs, tuple(rp['arrival']))
 ring = {n for p in one for n in nbrs(*p, 16, 14)} - one
 if any((o['x'], o['y']) in ring for o in objs if o['kind'] == 'npc'): fail('bg_review_in: a body stands at the one desk (D2007)')
@@ -563,15 +807,106 @@ ROOMS['bg_gala_in'] = room('bg_gala_in', 'Gala Hall', 'bg_gala', 'bg_campus', g,
 room_check('bg_gala_in', g, objs, tuple(rp['arrival']), {'mat': (7, 17), 'host_side': (8, 3)})
 for rid in ('bg_hq_lobby', 'bg_review_in', 'bg_gala_in'): ROOMS[rid]['wall'] = {'windows': []}
 
+# ---------- slice 4: Hall 4, the Brightgate Trial Hall (VOLT), the storm tower (§5.2, §7, D1484, D2005) ----------
+# Three rod plinths round an idle coil, one crew on each; each crew win lights its plinth's rod (the rod reads that crew's built
+# beaten flag, trainer.<id>; no new save key); Master Ada Coil on the top dais under the dead rod, which never lights. Crew before
+# the Master (the trainer's `crew` row). The Seal is given to whoever wins (SETTLED). Teams, lines and the bench rest are v0.2.1 §17.2.
+HALL_WHEN = 'story.act>=2'   # D1484 (settled, Act 2)
+TXT.update({
+    'h4a': 'Volt rule one: go first or get hit first. Pick.',                 # ACT2_BEAT_SHEET_v3 §7.7 h4a (SETTLED lines)
+    'h4b': 'Losing the race? Swap out. A fresh start is still a start.',      # h4b
+    'h4c': 'Behind? A good type edge wins from behind. Show me.',             # h4c
+    'ada_tail': "Storms aren't stopped, Cadet. They're moved.",               # H4's quiet tail (beat sheet v3, SETTLED)
+    'ada_crew': '[PLACEHOLDER] Light the three rods first.',
+    'rod_dark': '[PLACEHOLDER] A lightning rod on its plinth. Unlit.',
+    'rod_lit': '[PLACEHOLDER] The rod is lit. A honey spark sits at its tip.',
+    'dead_rod': '[PLACEHOLDER] The sky\'s rod. It has not lit in years.',
+    'coil': '[PLACEHOLDER] A great coil, idle and cold.',
+    'hall_closed': 'Closed for now.',
+})
+rp = RP['bg_hall_in']; g, raw = from_packet(rp)
+g = [''.join('=' if raw[y][x] == 'd' else ch for x, ch in enumerate(r)) for y, r in enumerate(g)]   # the daises (walk)
+door = DOORS['bg_hall']
+objs = [{'kind': 'warp', 'id': 'bg_hall_mat', 'x': rp['mat'][0], 'y': rp['mat'][1], 'to': 'bg_oldtown', 'tx': door['x'], 'ty': door['y'], 'facing': 'down'}]
+dead = {tuple(c) for c in rp['dead_rod']}
+plin = {tuple(p['rod']): p['crew'] for p in rp['plinths']}
+for y in range(len(raw)):
+    for x in range(len(raw[0])):
+        k = raw[y][x]
+        if k == 'r' and (x, y) in dead: objs.append(P(f'bg_dead_rod_{x}', x, y, 'bg_rod', name="the sky's rod", lines={'else': TXT['dead_rod']}))
+        elif k == 'r' and (x, y) in plin:
+            crew = plin[(x, y)]
+            objs.append(P(f'bg_rod_{crew}', x, y, 'bg_rod', name='a rod plinth', when=['!trainer.' + crew], lines={'else': TXT['rod_dark']}))
+            objs.append(P(f'bg_rod_lit_{crew}', x, y, 'bg_rod_lit', name='a lit rod', when=['trainer.' + crew], lines={'else': TXT['rod_lit']}))
+        elif k == 'r': objs.append(P(f'bg_rod_top_{x}_{y}', x, y, 'bg_rod', name='a rod'))   # the north plinth's second rod cell
+        elif k == 'c':
+            edge = any(raw[b][a] != 'c' for a, b in nbrs(x, y, 16, 24))
+            objs.append(P(f'bg_coil_{x}_{y}', x, y, 'bg_coil', name='the idle coil', **({'lines': {'else': TXT['coil']}} if edge else {})))
+        elif k == 'v': objs.append(P(f'bg_vane_stand_{x}', x, y, 'bg_vane', name='the old vane'))
+        elif k == 's': objs.append(P(f'bg_hall_bench_{x}', x, y, 'keep_bench', name='a bench'))
+TRAINERS_OUT = {}
+TEAMS = rp.get('teams')   # v0.2.1 §17.2 (D2093-D2095, settling on their defaults): the specced rows, moves explicit
+if not TEAMS: fail('bg_hall_in: the layout has no teams (BRIGHTGATE_LAYOUT v0.2.1 §17.2)')
+for c in rp['crew']:
+    t = TEAMS[c['id']]
+    TRAINERS_OUT[c['id']] = {'name': t['name'], 'title': t['title'], 'map': 'bg_hall_in', 'x': c['x'], 'y': c['y'], 'facing': c['facing'],
+                             'sight': t['sight'], 'ai': t['ai'], 'money': None, 'team': t['team'], 'lines': t['lines']}
+    objs.append({'kind': 'trainer', 'id': c['id'], 'x': c['x'], 'y': c['y'], 'look': 'bg_hallcrew'})
+m = rp['master']; t = TEAMS['hall4_master']
+TRAINERS_OUT['hall4_master'] = {'name': t['name'], 'title': t['title'], 'map': 'bg_hall_in', 'x': m['x'], 'y': m['y'], 'facing': m['facing'],
+                                'sight': t['sight'], 'ai': t['ai'], 'hall': True, 'seal': 'seal_brightgate', 'items': t.get('items', {}), 'onWin': t['onWin'],
+                                'money': None, 'crew': [c['id'] for c in rp['crew']], 'team': t['team'], 'lines': dict(t['lines'], crew=TXT['ada_crew'])}
+objs.append({'kind': 'trainer', 'id': 'hall4_master', 'x': m['x'], 'y': m['y'], 'look': 'bg_ada'})
+# the bench rest (§17.2): the benches by the mat run the built rest step, free
+BR = rp.get('bench_rest') or {}
+SC['bg_bench_rest'] = [['say', '', BR.get('tap', '')], ['rest']]
+for o in objs:
+    # the inner bench of each pair is the one a holder can reach (the vane stands close the outer ones)
+    if o['id'].startswith('bg_hall_bench_') and [o['x'], o['y']] in BR.get('cells', []) and o['x'] in (5, 10): o['lines'] = {'else': '@bg_bench_rest'}
+SC['seal4'] = [['say', 'Master Ada Coil', TXT['ada_tail']], ['setFlag', 'story.ada_sky', True], ['setFlag', 'story.seal4', True]]
+ROOMS['bg_hall_in'] = room('bg_hall_in', 'Brightgate Trial Hall', 'bg_hall', 'bg_oldtown', g, 'bg_hall', objs, tuple(rp['arrival']), music='hall',
+                           wall={'windows': []})
+for c in rp['crew']:   # each crew stands on the dais beside its rod (the packet's checker), and its rod is a neighbour
+    rod = next(tuple(p['rod']) for p in rp['plinths'] if p['crew'] == c['id'])
+    if g[c['y']][c['x']] != '=' or abs(rod[0] - c['x']) + abs(rod[1] - c['y']) != 1: fail(f"bg_hall_in: {c['id']} is not on its dais beside its rod")
+if (m['x'], m['y'] - 1) not in dead: fail('bg_hall_in: the Master is not under the dead rod')
+room_check('bg_hall_in', g, objs + [dict(o, kind='npc') for o in objs if o['kind'] == 'trainer'], tuple(rp['arrival']),
+           {'mat': tuple(rp['mat']), 'master_front': (m['x'], m['y'] + 1), **{c['id']: (c['x'] + {'right': 1, 'left': -1, 'down': 0}[c['facing']], c['y'] + (1 if c['facing'] == 'down' else 0)) for c in rp['crew']}},
+           walk=RWALK | {'='}, open_gates=True)
+seen = reach(g, tuple(rp['arrival']), frozenset((o['x'], o['y']) for o in objs if o['kind'] in ('prop', 'trainer') and not o.get('when')), walk=RWALK | {'='})
+from collections import deque
+def steps(a, b):
+    q, d = deque([a]), {a: 0}
+    while q:
+        u = q.popleft()
+        for n in nbrs(*u, 16, 24):
+            if n in seen and n not in d: d[n] = d[u] + 1; q.append(n)
+    return d.get(b)
+print('bg_hall_in door to the Master\'s front tile:', steps(tuple(rp['arrival']), (m['x'], m['y'] + 1)), 'steps (packet: 23 from the mat)')
+
 # ---------- looks (PLACEHOLDER bodies; palette lock for Glimmerwell figures: white, soot, wine, crimson accent under 10%) ----------
 LOOKS = {
     'bg_lantern_host': {'skin': '3', 'hair': 'bun', 'hairCol': 'd', 'outfit': 'jacket', 'outfitCol': 'w', 'accent': 'N'},   # §3.5: a civilian in a white jacket with soot trim
     'bg_store_clerk': {'skin': '2', 'hair': 'short', 'hairCol': 'k', 'outfit': 'apron', 'outfitCol': 'V', 'accent': 'w'},
     'bg_receptionist': {'skin': '2', 'hair': 'bob', 'hairCol': 'k', 'outfit': 'jacket', 'outfitCol': 'w', 'accent': 'N'},     # the fleet's built Receptionist look
     'bg_courtesy': {'skin': '4', 'hair': 'short', 'hairCol': 'd', 'outfit': 'jacket', 'outfitCol': 'w', 'accent': 'V'},       # B28: white top, soot trim, wine band
+    'bg_swap_clerk': {'skin': '5', 'hair': 'short', 'hairCol': 'o', 'outfit': 'apron', 'outfitCol': 'V', 'accent': 'w'},      # the fleet's built roles
+    'bg_mast_tech': {'skin': '3', 'hair': 'buzz', 'hairCol': 'n', 'outfit': 'overalls', 'outfitCol': 'h', 'accent': 'N', 'accessory': 'goggles'},
+    'bg_bay_attendant': {'skin': '1', 'hair': 'pony', 'hairCol': 'y', 'outfit': 'vest', 'outfitCol': 'w', 'accent': 's'},
+    'bg_swapcrew': {'skin': '6', 'hair': 'buzz', 'hairCol': 'k', 'outfit': 'overalls', 'outfitCol': 'N', 'accent': 'y'},
+    'bg_supporter': {'skin': '2', 'hair': 'curls', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'w'},          # wine vests (D1434)
+    'bg_local': {'skin': '3', 'hair': 'bob', 'hairCol': 'd', 'outfit': 'cardigan', 'outfitCol': 'h', 'accent': 'w'},
+    'bg_child': {'skin': '3', 'hair': 'pony', 'hairCol': 'd', 'outfit': 'overalls', 'outfitCol': 'b', 'accent': 'y'},
+    'bg_elder': {'skin': '4', 'hair': 'bun', 'hairCol': 'w', 'outfit': 'cardigan', 'outfitCol': 'G', 'accent': 'o'},
+    'bg_ada': {'skin': '4', 'hair': 'bun', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'n', 'accent': 'y'},              # B31: neutral (D1437), storm coat
+    'bg_hallcrew': {'skin': '2', 'hair': 'short', 'hairCol': 'd', 'outfit': 'vest', 'outfitCol': 'n', 'accent': 'y'},
+    'bg_odell': {'skin': '5', 'hair': 'short', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'F', 'accent': 'o'},           # B29: civilian, warm shadow, flame
 }
-CAST = [{'name': TXT['host_name'], 'faction': 'none', 'base': 50}]
-for nm in (TXT['store_clerk_name'], 'Receptionist', 'Courtesy staff', 'Gala host'):
+CAST = [{'name': nm, 'faction': 'none', 'base': 50} for nm in (TXT['host_name'], 'Waiting Local', 'Lamplighter Odell', 'Parent', 'Child', 'Old Wick elder',
+                                                              'Ada Coil', 'Master Ada Coil', 'Rod Tender', 'Line Runner', 'Sky Watcher',
+                                                              'Quarter Chaser', 'Quay Hand', 'Jug Maker', 'Model Partner', 'Shuttle attendant')]   # Hall Masters are neutral (D1437)
+for nm in (TXT['store_clerk_name'], 'Receptionist', 'Courtesy staff', 'Gala host', 'Courtesy greeter', 'Swap Clerk', 'Mast Tech', 'Glow Care Receptionist',
+           'Bay Attendant', 'Calm Tower crew', 'Swap crew', 'Swap-crew foreman', 'Staff commuter', 'Supporter A', 'Supporter B', 'Census taker', 'Works hand'):
     CAST.append({'name': nm, 'faction': 'glimmer', 'base': 50, 'rankFlag': 'BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story'})
 
 # ---------- text checks (walklings-wording-check, CHIP_SECRECY, D1446, D1434) ----------
@@ -593,6 +928,9 @@ for m in list(CHUNKS.values()):
     for o in m.objs: walk_text({k: o.get(k) for k in ('text', 'lines', 'deny', 'name')}, f'{m.id}:{o["id"]}', o['kind'] == 'sign')
 for rid, r in ROOMS.items():
     for o in r['objs']: walk_text({k: o.get(k) for k in ('text', 'lines', 'deny', 'name')}, f'{rid}:{o["id"]}', o['kind'] == 'sign')
+for tid, row in TRAINERS_OUT.items(): walk_text(row['lines'], 'trainer ' + tid)
+for sid, steps in SC.items(): walk_text([st[2] for st in steps if st and st[0] == 'say'], 'scene ' + sid)
+walk_text([KILNMOUTH_STOP.get('objs', []), SLICE_PATCH], 'shuttle', True)
 for cid in CHUNKS:
     for name, r in roofs[cid].items():
         for k in ('roof', 'wall', 'door', 'win'):
@@ -615,8 +953,17 @@ out = {
     'tiles': TILES,
     'maps': MAPS,
     'looks': LOOKS,
+    'speakers': {'Master Ada Coil': 'bg_ada'},
     'cast': CAST,
-    'flags': {'story.reached_brightgate': 'set on the first arrival on Gate Plaza (beat sheet §9; ?debug=1 places in this build)'},
+    'scenes': SC,
+    'trainers': dict(TRAINERS_OUT, **DISTRICT_TRAINERS),
+    'slicePatch': SLICE_PATCH,
+    '_shuttle': {'state': 'inert: D2090 and D2091 wait for Vincent; ' + 'story.bg_shuttle_live' + ' gates every leg', 'kilnmouth_stop': KILNMOUTH_STOP},
+    'flags': {'story.reached_brightgate': 'set on the first arrival on Gate Plaza (beat sheet §9; ?debug=1 places in this build)',
+              'story.bg_dipper': 'the mill pond dipper, after the encounter (any result)', 'story.bg_shuttle': 'the first shuttle ride (inert until D2090)',
+              'story.bg_shuttle_hm': 'the first shuttle drop at Hearthmoor (inert until D2091)', 'story.bg_f2_guest': 'floor 2, first arrival as a guest',
+              'story.seal4': 'Hall 4 won (Master Ada Coil, onWin seal4)', 'story.ada_sky': "H4's quiet tail played (beat sheet v3)",
+              'story.bg_insign': 'the HQ plaque, first read (§9)', 'story.bg_crate': 'the CALM TOWER crate, first read', 'story.bg_vane': 'the dead vane, first read'},
 }
 for n in notes: print('note:', n)
 if fails:

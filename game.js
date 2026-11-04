@@ -4809,7 +4809,7 @@ function battleTrack(kind, trainerId){
   if (kind === 'wild') return WILD_TRACKS[wildTune % WILD_TRACKS.length];
   const base = trainerMusicId(trainerId);
   if (kind === 'trainer' && RIVAL_IDS.indexOf(base) >= 0) return 'rival';
-  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale' || base === 'hall3_marisol')) return 'trial';
+  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale' || base === 'hall3_marisol' || base === 'hall4_master')) return 'trial';
   if (kind === 'trainer' && trainerFaction(base) === 'glimmer' && side() !== 'glimmer')
     return (S && S.flags['music.glimmer_fought']) ? 'glimmer_battle' : 'glimmer_first';
   return 'battle';
@@ -4988,7 +4988,20 @@ function present(o){
 }
 // A pushed dream prop that was left mid-circuit (reload, resume) starts where it stopped, not back at its first tile.
 const rollSpot = o => { const st = +S.flags[o.rollFlag] || 0, c = o.circuit[st % o.circuit.length]; return st && c ? { x: c[0], y: c[1] } : o; };
+// BRIGHTGATE_LAYOUT §4.3 (D1488): a `glide` object (a Courtesy Cruiser, a Sky Concierge) runs its lane x0..x1 on row y and back,
+// `speed` tiles a second with `pause` seconds at each end, on the shared clock. It never blocks, never talks, and reduced
+// motion parks it at its west end. Drawn on the y-sorted layer.
+function glidePos(o){
+  const gl = o.glide || {}, x0 = gl.x0 != null ? gl.x0 : o.x, x1 = gl.x1 != null ? gl.x1 : o.x, sp = gl.speed || 3.2, pa = gl.pause != null ? gl.pause : 1.4;
+  if (prefersReduced() || x1 === x0) return { x: o.x, y: o.y, fx: x0, fy: o.y, moving: false, facing: 'right' };
+  const d = Math.abs(x1 - x0) / sp, cyc = 2 * (d + pa), p = (now() / 1000) % cyc;
+  if (p < pa) return { x: o.x, y: o.y, fx: x0, fy: o.y, moving: false, facing: 'right' };
+  if (p < pa + d) return { x: o.x, y: o.y, fx: x0 + (x1 - x0) * (p - pa) / d, fy: o.y, moving: true, facing: 'right' };
+  if (p < 2 * pa + d) return { x: o.x, y: o.y, fx: x1, fy: o.y, moving: false, facing: 'left' };
+  return { x: o.x, y: o.y, fx: x1 + (x0 - x1) * (p - 2 * pa - d) / d, fy: o.y, moving: true, facing: 'left' };
+}
 function objPos(o){
+  if (o && o.kind === 'glide') return glidePos(o);
   const sched = schedPos(o);
   if (sched) { const P = mapRT.pos[o.id]; return P && P.sk === sched.x + ',' + sched.y ? P : sched; }   // NPC_LIFE: a walk around this row's tile
   return mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
@@ -8614,7 +8627,7 @@ function propCullMargin(o){ const a = WART[o.sprite]; const w = a ? (a.width || 
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   const wide = o.ox ? 48 : 0;   // a 64 px tank or 32 px car drawn across its bay: cull by its full width
-  const wm = Math.max(wide, o.kind === 'prop' ? propCullMargin(o) : 0);   // E4 (D1204): wide art (a 64 px tank, a 96 px beam) keeps drawing past the edge
+  const wm = Math.max(wide, o.kind === 'prop' || o.kind === 'glide' ? propCullMargin(o) : 0);   // E4 (D1204): wide art (a 64 px tank, a 96 px beam) keeps drawing past the edge
   if (X < -26 - wm || Y < -24 - wide || X > VW + 10 + wm || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
@@ -8637,6 +8650,10 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   else if (o.kind === 'prop') {
     let key = propArtKey(o); if (q.moving && WART[key + '_move']) key += '_move';   // E3 (D1204): a moving prop shows its `_move` frames
     const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X + (o.ox || 0), Y + (o.oy || 0));   // ox/oy: wide art across its bay (a parked car or tank)
+  }
+  else if (o.kind === 'glide') {   // BRIGHTGATE_LAYOUT: a gliding vehicle; `_move` frames while it moves, `_l` facing west
+    const k = o.sprite + (q.moving && WART[o.sprite + '_move'] ? '_move' : '') + (q.facing === 'left' ? '_l' : ''), a = WART[k] || WART[o.sprite];
+    if (a) drawArt(g, artFrame(a, t), X + (o.ox || 0), Y + (o.oy || 0));
   }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') {
@@ -9299,6 +9316,9 @@ function interact(o){
   if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) { noteContact(objName(o)); npcReact(o, null, 'hop', REACT_HOP_MS); } }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
+    // BRIGHTGATE_LAYOUT §5.2: a Master whose row names a `crew` waits until each of them is beaten (Hall 4; Fen keeps hallCrewDone).
+    if (!S.flags['trainer.' + o.id] && t && Array.isArray(t.crew) && t.crew.some(c => TRAINERS[c] && !S.flags['trainer.' + c]))
+      return runSteps([['say', t.name, (t.lines && t.lines.crew) || 'Beat my crew first.']], ctx);
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
     if (o.id === 'rc_tobin' && S.flags['story.gb_hollis_told'] && !S.flags['story.gb_tobin']) {
       return runSteps([
@@ -16540,7 +16560,14 @@ SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL
 // SEALS_BOTH_PATHS §4.6 (D1327): on the Glimmer path the Seal card shows Glimmerwell's cord clipped to the Seal. The overlay
 // reads side(), not the save's tags: the Hall-win card shows before onWin writes the tag. SEAL_CORD holds Pia's 16x16 overlays
 // (design §8, '.' = transparent); until they land the slots are null and the card draws the plain Seal.
-const SEAL_CORD_TIER = Object.freeze({ seal_fernbrook: 1, seal_cobblecrest: 2, seal_brinewick: 3 });   // Halls 4-8 add rows
+const SEAL_CORD_TIER = Object.freeze({ seal_fernbrook: 1, seal_cobblecrest: 2, seal_brinewick: 3, seal_brightgate: 4 });   // Halls 4-8 add rows
+// BRIGHTGATE_LAYOUT §5.2 (Hall 4, VOLT): Seal 4 is `seal_brightgate`. PLACEHOLDER art (a honey bolt in a navy ring) until
+// ICONS_SEALS draws Seal 4; PAL keys only, no mint.
+SEAL_ART.seal_brightgate = [
+  '.....nnnnnn.....', '...nnyyyyyynn...', '..nyybbbbbbyyn..', '.nybbbbbyybbbyn.', '.nybbbbyyybbbyn.', 'nybbbbyyybbbbbyn',
+  'nybbbyyyyyyybbyn', 'nybbbbbbyyybbbyn', 'nybbbbbyyybbbbyn', 'nybbbbyyybbbbbyn', 'nybbbyyybbbbbbyn', '.nybbyybbbbbbyn.',
+  '.nybbybbbbbbbyn.', '..nyybbbbbbyyn..', '...nnyyyyyynn...', '.....nnnnnn.....',
+];
 const SEAL_CORD = [null, null, null];   // PLACEHOLDER: Pia's SEAL_CORD_1-3 (design SEALS_BOTH_PATHS §8)
 function sealCardGrid(id){
   const base = SEAL_ART[id] || SEAL_ART.seal_fernbrook;
@@ -16567,7 +16594,7 @@ async function presentFieldSeal(id){
   $('#btSeal').hidden = true; ov.classList.remove('seal-only'); ov.hidden = true;
   if (!battle.on) setPanel('busy');
 }
-const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard', seal_brinewick: 'Brinewick Seal', seal_glim_3: 'Bright Tier 3 Lanyard' };
+const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard', seal_brinewick: 'Brinewick Seal', seal_glim_3: 'Bright Tier 3 Lanyard', seal_brightgate: 'Brightgate Seal' };
 const sealName = id => SEAL_NAMES[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal';
 
 /* --- learning moves (§3): after RESULTS, after evolving, and the §3.4 sheet --- */
@@ -18416,6 +18443,7 @@ const DEBUG_TRAINER_GATES = [
   ['story.seal2', 'hall2_hale'],
   ['story.brine_dorian', 'bw_dorian'],
   ['story.seal3', 'hall3_marisol'],
+  ['story.seal4', 'hall4_master'],   // BRIGHTGATE_LAYOUT: Hall 4
 ];
 function debugWhy(reason){
   return {
@@ -20573,7 +20601,7 @@ function boot(){
   window.setAura = setAura;
   window.ownsLook = ownsLook;
   window.lookChoices = lookChoices;
-  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; window.WORLD = WORLD; }
+  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; window.WORLD = WORLD; window.WART = WART; }   // WART: BRIGHTGATE_LAYOUT's no-mint sprite test (debug only)
   window.fillWalklingExtras = fillWalklingExtras;
 }
 // P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()
