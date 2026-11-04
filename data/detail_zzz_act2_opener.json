@@ -33,6 +33,7 @@
    ], "Warden Ilse"]
   ],
   "a2_posting": [
+   ["music", "ledger"],
    ["say", "Warden Ilse", "Sit, Cadet. Brinewick reached me before you did. Good work, and quiet work. I like both."],
    ["say", "Warden Ilse", "The Governor's office asked for a Cadet. One who can listen. I gave them you."],
    ["say", "Warden Ilse", "A civil posting. You answer to his office, and to me. Nobody else signs for you."],

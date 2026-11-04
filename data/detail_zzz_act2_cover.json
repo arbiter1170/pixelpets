@@ -41,6 +41,7 @@
  },
  "scenes": {
   "cv_mom_gate": [
+   ["music", "hearth"],
    ["if", "story.cover=glimmer | seal:seal_glim_1", [
     ["say", "Mom", "There you are. Ilse kept you long enough. Walk me home before your coach?"],
     ["walkTo", "cv_mom_gate", 3, 6, {"drop": true}],
@@ -54,11 +55,13 @@
    ["if", "story.cover=glimmer | seal:seal_glim_1", [
     ["setFlag", "story.cv_mom_walk", true]
    ], [
+    ["music", "hearth"],
     ["say", "Mom", "A Keeper pin. Look at you. Sit down before supper goes cold."],
     ["setFlag", "story.cv_mom", "quiet"]
    ]]
   ],
   "cv_mom_supper": [
+   ["music", "hearth"],
    ["say", "", "You put the company lanyards in the drawer. Not on your coat, Ilse said."],
    ["say", "Mom", "Is that a Glimmerwell lanyard? Three of them?"],
    ["say", "Mom", "Hattie showed me a Ribbit post. You, on the Brinewick quay, in their colours."],

@@ -2,6 +2,17 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 02:32 ET: Build: scene music on the Act 2 opener: the posting on `ledger`, Mom's supper on `hearth` (SCENE_MUSIC v0.1 slices 4-5; D1890-D1909)
+- What changed and why:
+  - Vincent settled SCENE_MUSIC v0.1 on every default (D1890-D1909, Wed Nov 4, 2026). The Act 2 cues ride with the Act 2 opener (D1908): Ilse's posting plays `ledger` from her first line (C10); the Governor meeting keeps the capital's own loop, no step (C11); Mom's supper plays `hearth` (C12) at her first line at the Lodge gate, at the pin variant's one line, and again when the supper talk opens in your room. The walk home between them is the holder's own walk, so the town loop plays there; the scene's end puts the room's loop back (built).
+  - `sfx.js` carries the same SCENE_MUSIC block as the main build PR (claude/scene-music-cues), byte for byte and at the same place, so the two merge cleanly: the spec's §4.1 loops `curfew`, `president`, `ledger`, `dawn`, `hearth`, `sweet`, `storm`, `hush` and the stingers `stinger_ink` and `stinger_call`. No engine change (D1909).
+  - Mahopac lens (#314, based here): its `MUSIC_FALLBACK` (`hearth` to the room loop, `ledger` to `dream`, `hush` to `PPSound.hush`) only applies to an id missing from `musicIds()`; with these loops in, its `["music", "hearth" | "ledger" | "hush"]` steps resolve to the real loops.
+- Files touched: `sfx.js`, `data/detail_zzz_act2_opener.json`, `data/detail_zzz_act2_cover.json`, `data/mapdata.js` (regenerated), `tools/GAMEJS_MAP.txt` (regenerated), `tests/scene_music_act2.spec.js` (new), `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: claude/scene-music-act2 (base claude/act2-opener), build 20261104-0232.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1900 (C10-C12) as written. Green (engineer): the build splits Mom's supper into the gate line, the player's own walk and the talk in your room, so `hearth` starts at the gate (m1) and again at the talk instead of being held over a scene warp; this branch has no warp hold (it is on main), and none is needed.
+- Anything left unfinished: the other Act 2 cues (the storm, the sittings, Ilse's ask, the two curfews) wait for their scenes' builds.
+
 ## 2026-11-03 23:23 ET: Build: the endings readers and the report skip (REPORTS_AND_ENDINGS v0.1.1 core E1; REPORT_FLAGS; D1620-D1629, D1720, D1725, D1726 B)
 - What changed and why:
   - `standing.js`: the pure readers `pathOf`, `trustOf`, `presOptions`, `ilseCanTurn`, `endingOf` (§3.3), the fixed report list `RPT` (`story.rpt_1`-`_6`, told / kept; D1720: never a prefix scan, so `story.rpt_gov` and `story.rpt_old_seen` stay guards) and the eight ending ids `ENDINGS`. Nothing is stored; no ending scene is built. R6 is now a letter after the third sitting (D1726 B); the readers only count the flag, so the timing changes nothing here.
