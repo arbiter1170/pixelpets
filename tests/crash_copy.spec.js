@@ -7,7 +7,10 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 async function openSettings(page) {
-  await page.locator('#settingsBtn').click();
+  // Modern (the default) opens Settings from the dock's gear; Arcade from the header gear.
+  const gear = page.locator('#gearFloat');
+  if (await gear.isVisible()) await gear.click();
+  else await page.locator('#settingsBtn').click();
   await expect(page.locator('#ovSettings')).toBeVisible();
 }
 

@@ -5,7 +5,7 @@
    Both now wait for a safe point. Every reload also leaves a breadcrumb (pp_reload -> pp_reload_last) shown in Settings.
    See tests/README.md. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -81,7 +81,7 @@ test('reloads leave a breadcrumb that Settings shows', async ({ page, context },
   last = await page.evaluate(() => JSON.parse(localStorage.getItem('pp_reload_last')));
   expect(last[last.length - 1]).toMatchObject({ reason: 'unknown', battleOn: true });
   // Settings shows the newest entry, small, on one line that fits (320 included).
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   const row = page.locator('#setReload');
   await expect(row).toBeVisible();
   await expect(row).toHaveText(/^Last reload: unknown, \d{1,2}:\d{2}\s?[AP]M, in battle$/);

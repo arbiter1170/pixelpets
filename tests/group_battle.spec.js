@@ -117,12 +117,12 @@ test('one turn: you hit the aim, then both foes swing', async ({ page }) => {
   expect(foeLines.length).toBeGreaterThanOrEqual(2);
 });
 
-test('the last lab fight brings Cal in beside you', async ({ page }) => {
+test('the last lab fight brings Jory (was Cal, NAMES_PASS G8) in beside you', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   await openGroup(page, 'rx_quinn');
   await expect(page.locator('#btAllyRow')).toBeVisible();
-  await expect(page.locator('#btAllyName')).toContainText("Cal's");
+  await expect(page.locator('#btAllyName')).toContainText("Jory's");
   const before = await page.evaluate(() => PixelPets.battle.foes.map((f) => f.hp));
   expect((await playTurn(page)).state).toBe('CHOOSE');
   const after = await page.evaluate(() => ({
@@ -130,7 +130,7 @@ test('the last lab fight brings Cal in beside you', async ({ page }) => {
     ally: PixelPets.battle.ally.hp,
     log: PixelPets.battle.log,
   }));
-  expect(after.log.some((line) => line.includes("Cal's") && line.includes('Bump'))).toBe(true);
+  expect(after.log.some((line) => line.includes("Jory's") && line.includes('Bump'))).toBe(true);
   expect(after.ally).toBeGreaterThan(0);
   expect(after.foes.some((hp, i) => hp < before[i])).toBe(true);
 });

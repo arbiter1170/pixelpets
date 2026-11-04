@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { SHOTS, starterSave, installSave, trackErrors, gotoGame, boxesOverlap } = require('./helpers');
+const { SHOTS, starterSave, installSave, trackErrors, gotoGame, boxesOverlap, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -193,7 +193,7 @@ test('settings can save a copy, and cancel does not wipe the game', async ({ pag
   await installSave(page.context(), save, { quietDay: true });
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets.state && window.PixelPets.state.party[0]);
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#setCopy')).toBeVisible();
   await expect(page.locator('#setRead')).toBeVisible();
   await expect(page.locator('#setBuild')).toBeInViewport();
