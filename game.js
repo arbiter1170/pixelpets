@@ -106,6 +106,11 @@ if (HC_V2_ON) {   // the city's room skins and battle backdrops exist only while
   if (typeof HC_CITY_SKINS !== 'undefined') { Object.assign(SKINS, HC_CITY_SKINS); Object.assign(HOUSE_SKINS, HC_CITY_SKINS); }
   if (window.BattleBG && BattleBG.enableCity) BattleBG.enableCity();
 }
+// HC_PARADE PLACEHOLDER balloons (city only): the crowd's clap on cue (E8) and the Officer's raised hand.
+if (HC_V2_ON && typeof GLYPH !== 'undefined') {
+  if (!GLYPH.emote_clap) GLYPH.emote_clap = ['.kkkkkkk.', 'kwwwwwwwk', 'kwywwwywk', 'kwwy.ywwk', 'kw3wkw3wk', 'kw33w33wk', 'kw33w33wk', 'kww3w3wwk', 'kwwwwwwwk', '.kwkkkkk.', '.kk......'];
+  if (!GLYPH.emote_hand) GLYPH.emote_hand = ['.kkkkkkk.', 'kwwwwwwwk', 'kw3w3w3wk', 'kw3w3w3wk', 'kw33333wk', 'kw3333wwk', 'kww333wwk', 'kww333wwk', 'kwwwwwwwk', '.kwkkkkk.', '.kk......'];
+}
 function writeDebugPref(on){ try { if (on) sessionStorage.setItem(DEBUG_KEY, '1'); else sessionStorage.removeItem(DEBUG_KEY); } catch(e) {} }
 function syncDebugQuery(on){
   try {
@@ -4983,6 +4988,7 @@ function needMet(need){
 }
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
 function present(o){
+  if (o._cutHide) return false;   // HC_PARADE: a scene's ["hide"] step keeps this body off the map until the scene ends
   if (o.cutGone) return false;   // a real map NPC a scene walked off a map edge (`walkTo ... {drop: true}`), until the scene ends
   if (o.when && !o.when.every(c => cond(c, false, String(c).indexOf('away:') >= 0 ? o : undefined))) return false;
   if (!schedHere(o)) return false;
@@ -4998,7 +5004,7 @@ function objPos(o){
   return mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
 }
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
-const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
+const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind] && !o.fly);   // HC_PARADE E7: a flyer never blocks
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
 // Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; that skin's walk table wins over TILE_DEF.
 // House skins use the same lookup (SKINS). A map with no skin keeps the shared tile table.
@@ -6644,6 +6650,17 @@ function checkArriveTriggers(){
   }
   return false;
 }
+// HC_PARADE E10 (D1369): a trigger with `load: true` plays when its map loads (a boot or an arrival) while its `when` holds and the
+// holder stands within `r` (Part 2 of the parade, or the next street battle, after the app closed on Charter Hill).
+function checkLoadTriggers(){
+  if (!S || !CUR || scene || fade.busy || (battle && battle.on)) return false;
+  const x = S.world.x, y = S.world.y;
+  for (const o of CUR.objs) {
+    if (o.kind !== 'trigger' || !o.load || !present(o) || Math.abs(o.x - x) + Math.abs(o.y - y) > (o.r || 0)) continue;
+    mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
+  }
+  return false;
+}
 // WEIR_HUT D1598: a trigger may name a scene another build fills in (chi_hut_first -> chi_meet). Until that scene exists the
 // trigger is a stub: it never fires, never stops the walk and writes nothing.
 const sceneBuilt = o => !o.scene || !!sceneSteps(o.scene);
@@ -7265,6 +7282,10 @@ function arriveAt(at){
   try { syncPlaceYield(true); } catch (e) {}
   try { noteMhcRestRoom(); } catch (e) {}
   try { sideBarArrive(); } catch (e) {}   // SIDE_BADGE: who holds the town or route you just walked into
+  if (CUR.objs.some(o => o.load)) {   // HC_PARADE E10: once the warp's fade has cleared, a `load` trigger on this map may play
+    const mid = CUR.id, tryLoad = n => { if (!CUR || CUR.id !== mid || scene) return; if (fade.busy && n < 40) { setTimeout(() => tryLoad(n + 1), 60); return; } checkLoadTriggers(); };
+    setTimeout(() => tryLoad(0), 0);
+  }
 }
 // DAY1_TRIAL1_FLOW: a door's `deny` may be keyed like npc lines ({ cond: line, else: line }); the first true key wins.
 function denyLine(dr){
@@ -7848,7 +7869,7 @@ function drawMap(t){
   tickGlides();
   // y-sorted so objects, creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
   const ents = wild.list.map(w => ({ y: w.fy, draw: () => drawWild(g, w, cx, cy, VW, VH, t) }));
-  for (const o of CUR.objs) if (present(o) && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
+  for (const o of CUR.objs) if (present(o) && !o.fly && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
     const q = objPos(o); ents.push({ y: (q.fy != null ? q.fy : q.y) - 0.02, draw: () => drawObj(g, o, cx, cy, VW, VH, t) });
   }
   if (auraMapOk() && p && p.aura) auraFrame(p.aura, t, 0); else { auraLive = 0; auraDrawn = 0; }
@@ -7862,6 +7883,7 @@ function drawMap(t){
   const fleetOn = !!(window.PPFleet && PPFleet.live(CUR.id));
   if (fleetOn) { PPFleet.drawGround(g, cx, cy, VW, VH, t); PPFleet.mapEnts(g, cx, cy, VW, VH, t).forEach(e => ents.push(e)); }
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
+  drawFlyers(g, cx, cy, VW, VH, t);           // HC_PARADE E7: the flying layer, over people and roofs
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
   if (fleetOn) PPFleet.drawAir(g, cx, cy, VW, VH, t);
   drawHqGlow(g, cx, cy);
@@ -8619,6 +8641,18 @@ function propArtKey(o){
   return o && o.sprite;
 }
 function propCullMargin(o){ const a = WART[o.sprite]; const w = a ? (a.width || (a[0] && a[0].width) || TS) : TS; return Math.max(0, (w - TS) / 2); }
+/* HC_PARADE E7 (D1369): a prop with `fly: true` (a Keeper rotor craft) draws after people and roofs, `alt` px above its cell,
+   and its `shadow` sprite sits on the ground cell below. It never blocks (BLOCK_KINDS skip it). Reduced motion holds frame 0. */
+function drawFlyers(g, cx, cy, VW, VH, t){
+  for (const o of CUR.objs) {
+    if (!o.fly || !present(o)) continue;
+    const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
+    if (X < -48 || X > VW + 48 || Y < -48 || Y > VH + 48) continue;
+    const sh = o.shadow && WART[o.shadow]; if (sh) g.drawImage(sh, X + 8 - sh.width / 2, Y + 14 - sh.height / 2);
+    let key = o.sprite; if (q.moving && WART[key + '_move']) key += '_move';
+    const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y - (o.alt != null ? o.alt : 24));
+  }
+}
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   const wide = o.ox ? 48 : 0;   // a 64 px tank or 32 px car drawn across its bay: cull by its full width
@@ -9564,7 +9598,8 @@ const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', m
   mom_wake: [{ id: 'mom_up', name: 'Mom', look: 'mom', map: 'hm_home_up' }] };   // PARTNER_DAY: Mom lives downstairs now
 // Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the holder).
 const CAST_AT_LOOK = { rook_walk: { name: 'Rook', look: 'rook' }, rook_walk_in: { name: 'Rook', look: 'rook' } };
-for (const k of DETAIL_KEYS) for (const [id, c] of Object.entries(MD[k].castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;   // POST_TRIAL_CRACKDOWN: data casts ({ name, look } or { sprite })
+for (const k of DETAIL_KEYS) for (const [id, c] of Object.entries(MD[k].castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;
+if (HC_V2_ON) for (const [id, c] of Object.entries(window.PP_HC_V2.castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;   // HC_PARADE casts (city only)   // POST_TRIAL_CRACKDOWN: data casts ({ name, look } or { sprite })
 function castOnSay(who, text){
   const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
   for (const c of cast) {
@@ -9653,7 +9688,28 @@ async function walkCast(paths){
 }
 // INTRO_CUTSCENE (D801-D809): scene staging. A walk or wait hides the text box but keeps the tap layer: the first tap
 // doubles the pace, the second ends the beat (D808). Casts and prop swaps last until the scene ends (cutReset).
-const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [], gone: [] };
+const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [], gone: [], cam: null, camEase: null };
+/* HC_PARADE (owner's direction, Tue Nov 3, 2026): ["camera", id] makes the view follow a scene actor (the President's car, then
+   the President) instead of the holder; ["camera", null] hands it back. A switch eases over 400 ms; reduced motion and SKIP cut.
+   The scene's end always returns the view to the holder (cutReset). */
+function cutCamPoint(){
+  let x = walk.fx, y = walk.fy;
+  const o = cutRT.cam && CUR ? CUR.objs.find(q => q.id === cutRT.cam) : null;
+  if (o) { const q = objPos(o); x = q.fx != null ? q.fx : q.x; y = q.fy != null ? q.fy : q.y; }
+  const e = cutRT.camEase;
+  if (e) {
+    const k = Math.min(1, (now() - e.t0) / 400);
+    if (k >= 1 || prefersReduced()) cutRT.camEase = null;
+    else { const m = 1 - (1 - k) * (1 - k); x = e.x + (x - e.x) * m; y = e.y + (y - e.y) * m; }
+  }
+  return { x, y };
+}
+function cutCamera(sc, id){
+  const p = cutCamPoint();
+  cutRT.camEase = cutFast(sc) ? null : { x: p.x, y: p.y, t0: now() };
+  cutRT.cam = id || null;
+  if (sc) (sc.camLog = sc.camLog || []).push(cutRT.cam);   // for the debug probe (hcParade)
+}
 function cutFast(sc){ return !!(sc && sc.skip) || signalCastFast(); }
 function cutVar(sc, v){
   if (typeof v !== 'string' || v[0] !== '$') return v;
@@ -9688,7 +9744,7 @@ function cutCastAt(sc, id, x, y, facing){
   if (!CUR || CUR.objs.some(o => o.id === id)) return;
   const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || CAST_AT_LOOK[id] || { id, name: '', look: 'villager' };
   if (c.sprite) {   // E1 (D1204): a cast entry with a sprite places a prop (a Keeper tank, its beam), not a person
-    pushCast({ kind: 'prop', id, sprite: c.sprite, x, y, cast: true });
+    pushCast(Object.assign({ kind: 'prop', id, sprite: c.sprite, x, y, cast: true }, c.fly ? { fly: true, shadow: c.shadow, alt: c.alt } : {}));
     mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' }; return;
   }
   pushCast(Object.assign({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true }, c.pet ? { pet: c.pet } : {}));
@@ -9698,13 +9754,73 @@ function cutProp(sc, id, sprite){
   const o = id && CUR && CUR.objs.find(q => q.id === id); if (!o || !sprite) return;
   cutRT.props.push({ o, sprite: o.sprite }); o.sprite = sprite;
 }
+function cutHide(what){
+  if (!CUR) return;
+  const ids = Array.isArray(what) ? new Set(what) : null;
+  const hit = o => ids ? ids.has(o.id) : (o.kind === 'npc' || o.kind === 'trainer' || (o.kind === 'prop' && /^hc_tank/.test(o.sprite || '')));
+  cutRT.hidden = cutRT.hidden || [];
+  for (const o of CUR.objs) if (!o.cast && !o._cutHide && hit(o)) { o._cutHide = true; cutRT.hidden.push(o); }
+}
+/* HC_PARADE §5 (D1359 the forced battles, D1360 the loss rule, D1361 the pick). ["hcFight", n, spec]: battle n of the street
+   battles. The ally and the two foes are picked at random from the side's pools (spec.pools[side].ally / .foe: cast ids on the
+   map), never the same actor twice in the series (scene.hcUsed). The ally fights beside the holder (TRAINERS ally, Bump only:
+   allyAct); the two foes take the field together (a group battle), level-matched to the lead within 1. A win sets
+   story.hc_sf_<n> and the foes are led off; a loss ends nothing: the ally's line, the team restored, the same battle again, no
+   Acorns lost and no flag set (the rematch mark is cleared). Picks are not saved: a reload picks again. Solo only (D1364). */
+let hcRng = Math.random;
+async function hcFight(sc, n, spec){
+  const flag = 'story.hc_sf_' + n; if (!spec || flagOf(flag, true)) return;
+  const sd = side() === 'glimmer' ? 'glimmer' : 'keepers', P = (spec.pools || {})[sd]; if (!P) return;
+  const used = sc.hcUsed = sc.hcUsed || new Set();
+  const live = id => CUR.objs.some(o => o.id === id && present(o));
+  const pick = (ids, k) => { const pool = (ids || []).filter(id => !used.has(id) && live(id)), out = [];
+    while (out.length < k && pool.length) out.push(pool.splice(Math.floor(hcRng() * pool.length), 1)[0]);
+    out.forEach(id => used.add(id)); return out; };
+  const [ally] = pick(P.ally, 1), foes = pick(P.foe, 2);
+  if (!ally || foes.length < 2) { console.warn('hcFight: pool too small for battle ' + n); return; }
+  sc.hcLast = { ally, foes };
+  const me = { x: S.world.x, y: S.world.y }, st = (spec.stage || {})[sd] || spec.stage || {};
+  const allyObj = CUR.objs.find(o => o.id === ally), home = allyObj ? Object.assign({}, objPos(allyObj)) : null;
+  const at = (d, i) => ({ x: me.x + d[i][0], y: me.y + d[i][1] });
+  const aAt = at(st.ally || [[-1, 0]], 0), fA = at(st.foe || [[-1, -2], [1, -2]], 0), fB = at(st.foe || [[-1, -2], [1, -2]], 1);
+  const G = { ghost: true };
+  await Promise.all([cutWalkTo(sc, ally, aAt.x, aAt.y, G), cutWalkTo(sc, foes[0], fA.x, fA.y, G), cutWalkTo(sc, foes[1], fB.x, fB.y, G)]);
+  if (!scene) return;
+  const allyName = P.allyName || 'Ally', lead = leadPet(), lv = Math.max(2, lead ? levelOf(lead) : 5);
+  if (P.call) await sayBox(allyName, expand(P.call));
+  if (!scene) return;
+  const team = (P.team || ['mole/1']), r = () => team[Math.floor(hcRng() * team.length)];
+  const tid = 'hc_sf_' + n, aid = 'hc_sf_ally';
+  TRAINERS[aid] = { name: allyName, team: [{ form: (P.allyTeam || team)[0], level: lv }], money: 0 };
+  TRAINERS[tid] = { name: P.foeName || 'Foe', group: true, ally: aid, faction: sd === 'keepers' ? 'glimmer' : 'keepers',
+    team: [{ form: r(), level: Math.max(2, lv + (hcRng() < 0.5 ? 0 : -1)) }, { form: r(), level: Math.max(2, lv + (hcRng() < 0.5 ? 0 : 1)) }],
+    lines: Object.assign({}, P.lines || {}) };
+  for (;;) {
+    commitPending(); save();
+    $('#ovScene').hidden = true;
+    const res = await new Promise(resolve => { if (!openBattle({ kind: 'trainer', trainerId: tid, mapIntro: true, onEnd: resolve })) resolve(null); });
+    if (!scene) return;
+    $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
+    if (res == null) throw ABORT;
+    if (res === 'win') break;
+    delete S.flags['rematch.' + trainerMusicId(tid)]; delete S.flags['rematch.' + tid];
+    S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); updateHUD(); save();   // D1360: the team is restored, nothing lost
+    await sayBox(allyName, expand(spec.again || 'Get up. Again.'));
+    if (!scene) return;
+  }
+  sc.view.flags[flag] = true; pend(() => { S.flags[flag] = true; }); commitPending(); save();
+  const off = spec.off || [-12, 0];
+  await Promise.all(foes.map((id, i) => { const q = CUR.objs.find(o => o.id === id); const p0 = q ? objPos(q) : me;
+    return cutWalkTo(sc, id, p0.x + off[0], p0.y + off[1] + i, { line: true, drop: true }); }));
+  if (scene && home) await cutWalkTo(sc, ally, home.x, home.y, G);   // the ally steps back into the line; the next pick comes forward
+}
 // Shortest 4-way path to (x, y), as pathBeside's BFS: walls and blockers stop it, the walker and its `with` do not.
-function cutPath(from, to, selfId, withId){
+function cutPath(from, to, selfId, withId, ghost){
   const free = (x, y) => {
     if (x === to.x && y === to.y) return !solidTile(x, y);
     if (selfId !== 'player' && x === S.world.x && y === S.world.y) return false;
     if (solidTile(x, y)) return false;
-    const b = blockerAt(x, y); return !b || b.id === selfId || b.id === withId;
+    const b = blockerAt(x, y); return !b || b.id === selfId || b.id === withId || (ghost && !!b.cast);   // HC_PARADE: a staging walk may pass other scene actors
   };
   const key = (x, y) => y * 64 + x, prev = new Map([[key(from.x, from.y), null]]), q = [[from.x, from.y]];
   while (q.length) {
@@ -9718,13 +9834,20 @@ function cutPath(from, to, selfId, withId){
   while (c && !(c[0] === from.x && c[1] === from.y)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); }
   return out;
 }
+// HC_PARADE: `{line: true}` walks a straight lane (x first, then y) through other walkers and kerbs: a parade column, a flyer.
+function cutLine(from, to){
+  const out = []; let x = from.x, y = from.y;
+  while (x !== to.x) { x += Math.sign(to.x - x); out.push({ x, y }); }
+  while (y !== to.y) { y += Math.sign(to.y - y); out.push({ x, y }); }
+  return out;
+}
 async function cutWalkTo(sc, who, x, y, opts){
   if (typeof x === 'string' || Array.isArray(x)) { opts = y; const t = Array.isArray(x) ? x : cutVar(sc, x); if (!t) return; x = t[0]; y = t[1]; }
   opts = opts && typeof opts === 'object' ? opts : {};
   fxStop();   // settle a cast's hop-in first (castPartner), or its settle() would snap the walker back mid-walk
   const isP = who === 'player', o = isP ? null : CUR.objs.find(q => q.id === who);
   if (!isP && !o) return;
-  const from = isP ? { x: S.world.x, y: S.world.y } : objPos(o), path = cutPath(from, { x, y }, who, opts.with);
+  const from = isP ? { x: S.world.x, y: S.world.y } : objPos(o), path = opts.line ? cutLine(from, { x, y }) : cutPath(from, { x, y }, who, opts.with, !!opts.ghost);
   if (!path) { console.warn('walkTo: no path for ' + who); return; }
   const mate = opts.with ? CUR.objs.find(q => q.id === opts.with) : null, fast = cutFast(sc);
   if (!fast) cutHold(true);
@@ -9755,8 +9878,9 @@ function cutStepPlayer(p, ms){            // the frame loop skips updateWalk whi
   })());
 }
 function cutReset(sc){
-  cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
+  cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true); cutRT.cam = null; cutRT.camEase = null;
   for (const p of cutRT.props) p.o.sprite = p.sprite; cutRT.props = [];
+  for (const o of cutRT.hidden || []) delete o._cutHide; cutRT.hidden = [];
   for (const o of cutRT.gone) delete o.cutGone; cutRT.gone = [];
   const box = $('#sbox'); if (box) box.hidden = false;
 }
@@ -9810,7 +9934,8 @@ async function execStep(st){
         if (!scene) return;
       }
       const box = c && typeof c === 'object' ? c.box : null;
-      await sayBox(a, tx, box); return;
+      sbFaceOff = !!(c && typeof c === 'object' && c.face === false);   // HC_PARADE D1356: The President speaks with no portrait
+      try { await sayBox(a, tx, box); } finally { sbFaceOff = false; } return;
     }
     case 'choice': {
       sc.skip = false;
@@ -10044,6 +10169,13 @@ async function execStep(st){
     case 'wait': { if (!cutFast(sc)) await cutWait(a | 0); return; }
     case 'curtain': { cutCurtain(a === 'on', cutFast(sc)); return; }
     case 'castAt': { cutCastAt(sc, a, b, c, d); return; }
+    // HC_PARADE: ["hide", "people" | [ids]] keeps the map's own people (and parked tanks) off the map until the scene ends.
+    case 'hide': { cutHide(a); return; }
+    case 'camera': { cutCamera(sc, a); return; }
+    // HC_PARADE E8 (D1369): ["emoteAll", [ids], glyph, ms] shows one emote on every listed actor in the same frame (the clap).
+    case 'emoteAll': { if (sc.skip) return; for (const id of a || []) sceneEmote(id, b, (c | 0) || 1200); return; }
+    // HC_PARADE §5 (D1359-D1361): a street battle with an ally and two foes picked at random; a loss restarts it.
+    case 'hcFight': { sc.skip = false; await hcFight(sc, a, b); return; }
     case 'prop': { cutProp(sc, cutVar(sc, a), b); return; }
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
@@ -10225,11 +10357,12 @@ async function sceneEncounter(id){
 const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['story.starter_line']] || t.counterTeam.ember)) || [];
 
 /* --- the bottom text box (#ovScene) --- */
+let sbFaceOff = false;   // HC_PARADE D1356: a say step with {face: false} keeps the small frame empty
 function sbRender(who, text, box, asHolder){
   // INTRO_CUTSCENE D800: a scene with a portraits table shows the speaker's own sprite at 4x; the holder speaks on narrator prompts.
   const pt = scene && PORTRAIT_FOR[scene.id], pk = pt ? (asHolder ? pt.$player : pt[who]) || null : null;
   if (asHolder && pk) who = curName(true) || DEFAULT_PLAYER_NAME;
-  const key = who && LOOK_OF_NAME[who];
+  const key = who && !sbFaceOff && LOOK_OF_NAME[who];
   const look = key ? npcLook({ look: key, name: who }) : null;
   $('#sbWho').textContent = shownName(who) || ''; $('#sbWho').hidden = !who;
   $('#sbText').textContent = text; $('#sbText').classList.toggle('narr', !who);
@@ -10450,7 +10583,8 @@ function syncWalkCam(t){
   const c = $('#mapCanvas'); if (!c || !c.width || !walk) return;
   tickCamBias(t == null ? performance.now() : t);
   // Follow the keeper's drawn (whole-pixel) spot, so an odd canvas size can't make the keeper wobble 1 px against the screen.
-  const VW = c.width, VH = c.height, px_ = Math.round(walk.fx * TS), py_ = Math.round(walk.fy * TS);
+  const cp = scene && (cutRT.cam || cutRT.camEase) ? cutCamPoint() : null;   // HC_PARADE: a scene's ["camera", id] follows that actor
+  const VW = c.width, VH = c.height, px_ = Math.round((cp ? cp.x : walk.fx) * TS), py_ = Math.round((cp ? cp.y : walk.fy) * TS);
   const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
   const prevY = walk.cam.y;
   // Clamp to the band above the partner strip. Centre in the open band under the area chip, so a north
@@ -19866,6 +20000,7 @@ function boot(){
   applyControls();
   if (S && S.flags['story.tut_care'] === 'armed') careDoorLand();
   scheduleTutorial(false);
+  if (CUR && CUR.objs.some(o => o.load)) setTimeout(() => checkLoadTriggers(), late);   // HC_PARADE E10: resume on map load
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   PPSound.setMusic(S.settings.music !== false);
@@ -20336,6 +20471,19 @@ function boot(){
   api.weekKey = ms => weekKey(ms);
   api.charityCheck = () => highCharityDevCheck();
   // HIGH_CHARITY_LAYOUT phase 1 (debug only): is the city on, its chunks and counts, its check, and the PLACEHOLDER art list.
+  // HC_PARADE probe (debug only): who is on the map right now, tanks in view, hidden bodies, the last street-battle pick.
+  // hcParadeRng(seq) replaces the pick's Math.random with a fixed list (tests); hcParadeRng() restores it.
+  api.hcParade = () => {
+    if (!DEBUG || !CUR) return null;
+    const c = $('#mapCanvas'), vx0 = walk.cam.x / TS, vy0 = walk.cam.y / TS, vx1 = vx0 + c.width / TS, vy1 = vy0 + c.height / TS;
+    const live = CUR.objs.filter(o => present(o));
+    const inView = o => { const q = objPos(o), x = q.fx != null ? q.fx : q.x, y = q.fy != null ? q.fy : q.y; return x + 2 >= vx0 && x - 2 <= vx1 && y + 1 >= vy0 && y <= vy1 + 1; };
+    return { map: CUR.id, scene: scene ? scene.id : null, battle: !!battle.on, battleId: battle.id, cam: cutRT.cam, camLog: scene && scene.camLog ? scene.camLog.slice() : [], people: live.filter(o => o.kind === 'npc' || o.kind === 'trainer').length,
+      tanksInView: live.filter(o => o.kind === 'prop' && /tank_(cmd_)?[rl]$|^hc_tank/.test(o.sprite || '') && inView(o)).length,
+      hidden: CUR.objs.filter(o => o._cutHide).length, cast: live.filter(o => o.cast).map(o => { const q = objPos(o); return { id: o.id, x: q.fx != null ? q.fx : q.x, y: q.fy != null ? q.fy : q.y, sprite: o.sprite || null, fly: !!o.fly }; }),
+      last: scene && scene.hcLast ? JSON.parse(JSON.stringify(scene.hcLast)) : null, used: scene && scene.hcUsed ? [...scene.hcUsed] : [] };
+  };
+  api.hcParadeRng = seq => { if (!DEBUG) return; if (!Array.isArray(seq)) { hcRng = Math.random; return; } let i = 0; hcRng = () => seq[i++ % seq.length]; };
   api.hcCity = () => DEBUG ? { on: HC_V2_ON, preview: HC_PREVIEW, ship: HC_CITY_V2, chunks: HC_V2_ON ? HC_CHUNKS.map(id => ({ id, w: WORLD[id].w, h: WORLD[id].h,
     objs: WORLD[id].objs.length, people: WORLD[id].objs.filter(o => o.kind === 'npc').length,
     tanks: WORLD[id].objs.filter(o => /^hc_tank/.test(o.sprite || '')).length, cars: WORLD[id].objs.filter(o => /^hc_car/.test(o.sprite || '')).length })) : [],
