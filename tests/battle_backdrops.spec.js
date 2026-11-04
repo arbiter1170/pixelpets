@@ -13,6 +13,7 @@ const BATTLE_MAPS = ['route1', 'hearthmoor', 'fernbrook', 'proto', 'route2', 'ro
 async function boot(page, search = '?debug=1') {
   const s = starterSave();
   s.settings.tips = false;
+  s.settings.controls = 'modern';   // Vincent (Nov 4): QA plays in Modern controls; helpers.js still seeds arcade
   s.flags['story.tutorial_done'] = true;
   s.flags['story.phone_got'] = true;
   await installSave(page.context(), s, { quietDay: true });
