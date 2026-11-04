@@ -13,7 +13,7 @@ When:    (D1430) the first arrival keeps hc_gate (Keeper Moss's welcome) exactly
          nothing sets it yet and the parade is unreachable (only the debug Act 5 places and tests set it).
 Flags:   story.hc_parade_square (1.8, saved by the warp), story.hc_sf_1..3 (each street battle won), story.hc_parade_seen and
          story.hc_greeted (the end); story.hc_gov_met is read, never written here. All CHAIN rows (D1365); save v2, no new field.
-Words:   every line is PLACEHOLDER until Story signs it (the packet's §4 lines verbatim). Speaker "The President" (D1366).
+Words:   the speech, the re-stage and the two hook lines are Story's (STORY_LINES D2130, D2131); the rest stay PLACEHOLDER. Speaker "The President" (D1366).
 Sound:   the anthem cues (KEEPER_ANTHEM, D1357) are not built: the `music` steps name them and play nothing (an unknown id is a
          no-op), so the city's own loop keeps playing. The grey-box hum (D1371) is not built either. No new sound.
 """
@@ -181,20 +181,20 @@ def part2_speech():
     S += [['walkTo', 'pr_c2_7', 27, 30], ['walkTo', 'pr_line_2', 31, 29],
           ['say', N_GUARD, 'Citizen. Back.'], ['walkTo', 'pr_c2_7', 27, 31], ['walkTo', 'pr_line_2', 30, 28],
           ['music', 'anthem_dark'], ['wait', 600]]
-    # 2.6 the speech (§4, PLACEHOLDER until Story signs it; D1358). No portrait (D1356).
+    # 2.6 the speech (§4; Story's words, D2130). No portrait (D1356).
     for line in SPEECH: S.append(['say', 'The President', line, {'face': False}])
     if True:   # 2.7 the clap on the raised hand
         S += [['emote', 'pr_off_a', 'emote_hand', 900], ['wait', 250], ['emoteAll', P2_CIV, 'emote_clap', 1100], ['wait', 1100]]
     S += [['camera', None], ['walkTo', 'pr_pres', *COURT_DOOR, {'drop': True}]]                                  # he goes back in before the battles (owner); the guards stay
     return S
 
-SPEECH = [   # HC_PARADE v0.3.1 §4 S1-S7 (D1424, D1428, D1438): every line PLACEHOLDER until Story signs it; no draft line
-    "Citizens. You asked for order. Today you will see it.",                                        # S1
+SPEECH = [   # HC_PARADE v0.3.1 §4 S1-S7 (D1424, D1428, D1438), Story's words (STORY_LINES D2130): S2 and S7 signed as built
+    "Citizens of High Charity. You were afraid, and you asked me for order. Today you will see it.",                                        # S1
     "From today, a Keeper stands on every road and at every Hall. Look up, and you will see us.",   # S2 (D1428: replaces the draft line)
-    "Picking Day is closed to civilians. No civilian may pick a Walkling.",                          # S3 PLACEHOLDER pending D1429 (Story)
-    "Our schools will teach again from the first page. Every lesson will serve the lantern.",       # S4
-    "Anyone who stands with Glimmerwell in the street will be fined or jailed.",                     # S5
-    "And to those who stand with them today: we see you.",                                          # S6
+    "Picking Day has run since the Great War. From today, it is closed to civilians, until order returns.",                          # S3 (D1429 settled)
+    "Our schools will begin again at the first page. Every lesson will serve the lantern.",       # S4
+    "Stand with Glimmerwell in our streets, and you will be fined. Stand there again, and you will be jailed.",                     # S5
+    "And to those in wine vests among us today: we see you.",                                          # S6
     "Keepers. Into the crowd.",                                                                     # S7
 ]
 GUARDS2 = [f'pr_line_{k}' for k in range(1, 5)] + [f'pr_guard_{k}' for k in range(1, 5)]
@@ -211,7 +211,7 @@ FIGHT = {   # §5 (D1360, D1361): the pools, labels and the PLACEHOLDER team poo
     },
     'stage': {'keepers': {'ally': [[1, 0]], 'foe': [[0, 1], [1, 1]]}, 'glimmer': {'ally': [[1, 0]], 'foe': [[0, -1], [1, -1]]}},
 }
-RESTAGE = '[PLACEHOLDER] Muster Road is still packed. The guards push in again.'
+RESTAGE = 'Muster Road is still packed. The guards push into the crowd again.'   # D2131
 BETWEEN = {'keepers': ['Another one. Left side!', 'Hold the line!'], 'glimmer': ["They're boxing us in!", 'This way!']}
 
 def part3():
@@ -221,12 +221,12 @@ def part3():
                   [['say', N_GUARD, BETWEEN['keepers'][n - 2]]] if n > 1 else []])
         S.append(['hcFight', n, FIGHT])
     keepers_end = [['walkTo', 'pr_off_a', 27, 30],
-                   ['say', N_OFF_A, '[PLACEHOLDER: Officer A thanks the holder and hands off to the next Keeper quest (D1363).]'],
+                   ['say', N_OFF_A, "Street's clear. You held the line, holder. Keep your Keeper1 close."],   # D2131 (HOOK, D1363)
                    ['if', '!story.hc_invite', [['say', N_OFF_A, "The Event Hall booths stay covered until Ilse's letter arrives."]]]]
     glimmer_end = [['say', N_SUPP, 'Not here. Run!'],
                    ['walkTo', 'player', 12, 34, {'line': True}], ['curtain', 'on'],
                    ['warp', 'hc_waterfront', *QUAY_NORTH, 'down'], ['curtain', 'off'],
-                   ['say', '', '[PLACEHOLDER: the hook for the next Glimmer quest (D1362).]'],
+                   ['say', '', 'Nobody followed you down. Up on the hill, the bells ring again.'],   # D2131 (HOOK, D1362)
                    ['if', '!story.hc_invite', [['say', '', "The Event Hall booths stay covered until Ilse's letter arrives."]]]]
     S.append(['if', 'story.side=glimmer', glimmer_end, keepers_end])
     S += [['setFlag', 'story.hc_parade_seen', True], ['setFlag', 'story.hc_greeted', True]]

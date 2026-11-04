@@ -86,22 +86,22 @@ art holds frame 0; emotes still show. SKIP still stops at each battle.
 | 2.7 | | Officer A's hand; the crowd claps | `emoteAll` | auto |
 | 2.8 | | **He goes back into the Court before the battles** (owner's direction); the view eases back to the holder; the guards stay | `camera null`, walk, drop | auto |
 | 3.1-3.3 | | Three street battles (between them, the packet's line endings); Keepers path: a guard leads the first beaten supporter away after each (D1442) | `hcFight 1..3` | battle |
-| 3 end K | | Officer A walks up; thanks and hand-off (PLACEHOLDER HOOK, D1363); Moss's letter line if `!story.hc_invite` | | tap |
-| 3 end G | | "Not here. Run!"; the holder runs west along row 34; curtain; Lantern Quay north edge (22,1); HOOK (PLACEHOLDER, D1362); the letter line | `warp hc_waterfront` | tap |
+| 3 end K | | Officer A walks up; thanks and hand-off (HOOK, D1363; line D2131); Moss's letter line if `!story.hc_invite` | | tap |
+| 3 end G | | "Not here. Run!"; the holder runs west along row 34; curtain; Lantern Quay north edge (22,1); HOOK (D1362; line D2131); the letter line | `warp hc_waterfront` | tap |
 | end | | `story.hc_parade_seen`, `story.hc_greeted` | | |
-| resume | hc_civic | `hc_parade_hill` alone: the stage, then the speech if no battle is won yet, else the one-line re-stage (PLACEHOLDER) and the next battle | E10 | |
+| resume | hc_civic | `hc_parade_hill` alone: the stage, then the speech if no battle is won yet, else the one-line re-stage (D2131) and the next battle | E10 | |
 
-**The speech (§4 v0.3.1; D1424, D1428, D1438).** Every line PLACEHOLDER until Story signs it. The speech promises force against
+**The speech (§4 v0.3.1; D1424, D1428, D1438).** Story's words (STORY_LINES D2130, Nov 4, 2026; S2 and S7 signed as built). The speech promises force against
 people; no line touches Glimmerwell's business (D1424). The draft line is dropped (D1428).
 
 | # | Line |
 |---|---|
-| S1 | "Citizens. You asked for order. Today you will see it." |
+| S1 | "Citizens of High Charity. You were afraid, and you asked me for order. Today you will see it." |
 | S2 | "From today, a Keeper stands on every road and at every Hall. Look up, and you will see us." |
-| S3 | "Picking Day is closed to civilians. No civilian may pick a Walkling." (PLACEHOLDER pending D1429: Story picks the canon term) |
-| S4 | "Our schools will teach again from the first page. Every lesson will serve the lantern." |
-| S5 | "Anyone who stands with Glimmerwell in the street will be fined or jailed." |
-| S6 | "And to those who stand with them today: we see you." |
+| S3 | "Picking Day has run since the Great War. From today, it is closed to civilians, until order returns." (D1429) |
+| S4 | "Our schools will begin again at the first page. Every lesson will serve the lantern." |
+| S5 | "Stand with Glimmerwell in our streets, and you will be fined. Stand there again, and you will be jailed." |
+| S6 | "And to those in wine vests among us today: we see you." |
 | S7 | "Keepers. Into the crowd." |
 
 **Budgets (§9, T7).** Square: 2 Officers + 7 civilians + one wave (8 marchers or 4 guards) = 17 people at most; the parked tanks
@@ -182,11 +182,10 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
 | Keeper tanks, beam, cordon | crackdown draft art (`keeper_tank_*`, `lantern_cordon`) | reused, as §8 says |
 | Music `anthem_march`, `anthem_dark` | `music` steps | KEEPER_ANTHEM (D1375-D1384) is not built; the steps name the cues and play nothing; the city loop keeps playing. No new sound (rule 3) |
 | Grey-box hum on each speech line | not built | red, D1371 (HC phase 1) |
-| Every line | `tools/hc_parade.py` | the packet's §2-§5 lines verbatim, PLACEHOLDER until Story signs them (D1358); the speech is v0.3.1 §4 S1-S7 |
-| S3 "Picking Day" | `SPEECH[2]` | PLACEHOLDER pending D1429 (Story) |
+| Every line but the speech and the D2131 lines | `tools/hc_parade.py` | the packet's §2-§5 lines verbatim, PLACEHOLDER until Story signs them (D1358); the speech is Story's S1-S7 (D2130) |
 | The Governor-met flag | `story.hc_gov_met` (`GOV_MET` in `tools/hc_parade.py`; D1370) | replaces §0's PLACEHOLDER `story.gov_met`; the Act 2 Governor scene sets it, not built |
 | Officer A / Officer B | cast labels | FRIEND SLOT names (§7) |
-| The re-stage line, the two HOOK lines, Officer A's thanks | `RESTAGE`, Part 3 ends | written as `[PLACEHOLDER: ...]` (the packet gives no words) |
+| The re-stage line, the two HOOK lines, Officer A's thanks | `RESTAGE`, Part 3 ends | Story's (D2131): "Muster Road is still packed. The guards push into the crowd again.", "Street's clear. You held the line, holder. Keep your Keeper1 close.", "Nobody followed you down. Up on the hill, the bells ring again." The HOOKs promise nothing (D1362, D1363) |
 | Street-battle teams | `FIGHT.pools[side].team` | Story and Design (§5, open); level-matched within 1 |
 
 ## Open, for the Chief of Staff

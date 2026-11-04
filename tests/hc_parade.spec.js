@@ -15,16 +15,20 @@ test.setTimeout(150000);
 
 const DATA = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'hc_city_v2.json'), 'utf8'));
 const FLAGS = ['story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen', 'story.hc_greeted'];
-// HC_PARADE v0.3.1 §4 S1-S7 (D1424, D1428, D1438), PLACEHOLDER until Story signs them; S3 waits on D1429.
+// HC_PARADE v0.3.1 §4 S1-S7 (D1424, D1428, D1438), Story's words (STORY_LINES D2130, Nov 4, 2026; S2 and S7 signed as built).
 const SPEECH = [
-  'Citizens. You asked for order. Today you will see it.',
+  'Citizens of High Charity. You were afraid, and you asked me for order. Today you will see it.',
   'From today, a Keeper stands on every road and at every Hall. Look up, and you will see us.',
-  'Picking Day is closed to civilians. No civilian may pick a Walkling.',
-  'Our schools will teach again from the first page. Every lesson will serve the lantern.',
-  'Anyone who stands with Glimmerwell in the street will be fined or jailed.',
-  'And to those who stand with them today: we see you.',
+  'Picking Day has run since the Great War. From today, it is closed to civilians, until order returns.',
+  'Our schools will begin again at the first page. Every lesson will serve the lantern.',
+  'Stand with Glimmerwell in our streets, and you will be fined. Stand there again, and you will be jailed.',
+  'And to those in wine vests among us today: we see you.',
   'Keepers. Into the crowd.',
 ];
+// STORY_LINES D2131: the re-stage after a reload and the two HOOK lines (they promise nothing, D1362, D1363).
+const RESTAGE = 'Muster Road is still packed. The guards push into the crowd again.';
+const HOOK_KEEPERS = "Street's clear. You held the line, holder. Keep your Keeper1 close.";
+const HOOK_GLIMMER = 'Nobody followed you down. Up on the hill, the bells ring again.';
 
 function save(opts = {}) {
   const s = starterSave();
@@ -146,6 +150,7 @@ for (const side of ['keepers', 'glimmer']) {
     expect(seen.lines.filter(l => /^The President: /.test(l))).toEqual(SPEECH.map(l => 'The President: ' + l));   // v0.3.1 §4 S1-S7
     expect(seen.lines.some(l => /\bdraft\b/i.test(l))).toBe(false);                                              // D1428: no draft line
     expect(lineOf(seen, side === 'glimmer' ? /You're with us\? Then stand with me\./ : /Holder\. With me\./)).toBeTruthy();
+    expect(seen.lines.some(l => l.endsWith(': ' + (side === 'glimmer' ? HOOK_GLIMMER : HOOK_KEEPERS)))).toBe(true);   // D2131
     // T3: all five flags and story.hc_greeted; the exit per path; control back
     for (const f of FLAGS) expect(seen.end.flags[f], f).toBe(true);
     expect(seen.end.scene).toBe(false);
@@ -229,7 +234,7 @@ test('T5c: between battles the one-line re-stage plays, then battle 2', async ({
   await walkToHill(page);
   await waitScene(page, 'hc_parade_hill');
   const seen = await playThrough(page, { reduced: true });
-  expect(seen.lines[0]).toMatch(/PLACEHOLDER\] Muster Road is still packed/);
+  expect(seen.lines[0].endsWith(': ' + RESTAGE), seen.lines[0]).toBe(true);   // D2131
   expect(seen.lines.some(l => /^The President: /.test(l))).toBe(false);
   expect(seen.battles.length).toBe(2);
   for (const f of FLAGS) expect(seen.end.flags[f], f).toBe(true);
@@ -280,6 +285,10 @@ test('T11: every parade line passes the wording rules and fits 110', async () =>
   const said = []; const walk2 = n => { if (!Array.isArray(n)) return; if (n[0] === 'say' && n[1] === 'The President') said.push(n[2]); n.forEach(walk2); };
   walk2(DATA.scenes.hc_parade_hill);
   expect(said).toEqual(SPEECH);
+  // D2131: the re-stage and the two HOOK lines are Story's; no bracketed PLACEHOLDER is left in the parade's player lines.
+  const hill = JSON.stringify(DATA.scenes.hc_parade_hill);
+  for (const l of [RESTAGE, HOOK_KEEPERS, HOOK_GLIMMER]) expect(hill).toContain(JSON.stringify(l));
+  expect(hill).not.toContain('[PLACEHOLDER');
   expect(JSON.stringify(DATA.scenes)).not.toMatch(/\bdraft\b|answer the roll|crossed every line/i);
   expect(said.join(' ')).not.toMatch(/\b(permit|stall|ban|shut|close[sd]? (?:its|their) )/i);
   expect(JSON.stringify(DATA)).not.toMatch(/\bgun|rifle|cannon|turret\b/i);
