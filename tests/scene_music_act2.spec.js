@@ -88,6 +88,8 @@ const busCalls = (page, from = 0) => page.evaluate((from) => {
 }, from);
 const mark = page => page.evaluate(() => window.__spy.targets.length);
 const want = page => page.evaluate(() => PPSound.musicWant);
+// a line is on screen, fully typed and waiting for the tap (so a Space press answers it, even on a slow machine)
+const lineShows = (page, text) => expect.poll(() => page.evaluate(() => !!PixelPets.scene && PixelPets.scene.mode === 'say' && PixelPets.scene.waiting && PixelPets.scene.full && PixelPets.scene.text)).toBe(text);
 const calls = page => page.evaluate(() => window.__music.map(c => c[0]));
 // Plays the open scene to its end: lines, choices (from `picks`, else the first) and auto beats. Returns [[text, musicWant], ...].
 async function drive(page, picks = [], ms = 60000) {
@@ -200,7 +202,7 @@ test.describe('SCENE_MUSIC slices 4-5 on the Act 2 opener: the posting and Mom\'
     await boot(page);
     await soundOn(page);
     await page.evaluate(() => PixelPets.runSteps([['music', 'hearth'], ['say', 'Mom', 'One.'], ['music', 'hush'], ['say', 'Mom', 'Two.'], ['say', 'Mom', 'Three.']]));
-    await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text)).toBe('One.');
+    await lineShows(page, 'One.');
     await expect.poll(() => page.evaluate(() => PPSound.musicTrack)).toBe('hearth');
     for (const id of ['stinger_ink', 'stinger_call']) {
       const m0 = await mark(page);
@@ -209,7 +211,7 @@ test.describe('SCENE_MUSIC slices 4-5 on the Act 2 opener: the posting and Mom\'
       await page.waitForTimeout(1700);
     }
     await page.keyboard.press('Space');
-    await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text)).toBe('Two.');
+    await lineShows(page, 'Two.');
     await expect.poll(() => page.evaluate(() => [PPSound.musicWant, PPSound.musicTrack])).toEqual(['hush', 'hush']);
     await page.waitForTimeout(500);
     const n = await page.evaluate(() => window.__spy.osc);
@@ -224,7 +226,7 @@ test.describe('SCENE_MUSIC slices 4-5 on the Act 2 opener: the posting and Mom\'
   test('T5 T6: Music OFF stops the cue and makes no node; Music ON brings it back; the volume row is the bus level; Sound OFF is silent', async ({ page }) => {
     await boot(page);   // Sound OFF (the stored mute)
     await page.evaluate(() => PixelPets.runSteps([['music', 'ledger'], ['say', 'Warden Ilse', 'Sit, Cadet.'], ['say', 'Warden Ilse', 'Good work.']]));
-    await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text)).toBe('Sit, Cadet.');
+    await lineShows(page, 'Sit, Cadet.');
     expect(await page.evaluate(() => [PPSound.musicWant, PPSound.musicTrack, window.__spy.osc])).toEqual(['ledger', null, 0]);
     await page.evaluate(() => PPSound.setMuted(false));
     await expect.poll(() => page.evaluate(() => PPSound.musicTrack)).toBe('ledger');
