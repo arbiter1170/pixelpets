@@ -3906,8 +3906,8 @@ function applyMapPatch(W, patch){
 // DAY1_TRIAL1_FLOW (Vincent, Nov 2, 2026): small edits to existing objects by id, on whatever map holds them, after every
 // overlay (so a verbatim design object and an object another overlay moves are patched alike; a missing id is skipped).
 // { id: { when: [...] (replace), whenAdd: [...], linesBefore: { anchorKey, add: { key: line } }, linesFirst: {...},
-//         scheduleFirst: [rows], shopAdd: [ids], linesSet: { key: line } } }. linesBefore without its anchor lands before
-// `else`. linesSet re-voices a line the object already has, in place (D1434); a key the object lacks is skipped.
+//         scheduleFirst: [rows], shopAdd: [ids], linesSet: { key: line }, after: sceneId, chatterFirst: {...} } }. linesBefore
+// without its anchor lands before `else`. linesSet re-voices a line the object already has, in place (D1434); a key the object lacks is skipped.
 function applyObjPatch(W, patch){
   for (const [id, pt] of Object.entries(patch || {})) {
     if (id[0] === '_') continue;
@@ -3926,6 +3926,10 @@ function applyObjPatch(W, patch){
         o.lines = out;
       }
       if (P.linesSet && o.lines) for (const [k, v] of Object.entries(P.linesSet)) if (k in o.lines) o.lines[k] = v;
+      // LORE_DISCOVERY (D2291): `after` runs a scene behind the object's plain line (Mom's tips pattern) and leaves its lines
+      // untouched; `chatterFirst` puts keyed walk-by lines ahead of the object's own (as linesFirst does for lines).
+      if (P.after && !o.after) o.after = P.after;
+      if (P.chatterFirst) o.chatter = Object.assign({}, P.chatterFirst, o.chatter || {});
       if (P.scheduleFirst && Array.isArray(o.schedule)) o.schedule = P.scheduleFirst.concat(o.schedule);
       if (P.shopAdd && Array.isArray(o.shop)) for (const it of P.shopAdd) if (o.shop.indexOf(it) < 0) o.shop.push(it);
       // POST_TRIAL_CRACKDOWN (D1224): a door can be shut by a cond on top of its `need`, with keyed deny lines put first.
@@ -6723,6 +6727,10 @@ function oldSaveMoveDue(){   // the toast on the first free moment
   oldMoveToast = false; toast(OLD_MOVE_TOAST);
 }
 const HOST_NOTES = [].concat(...DETAIL_KEYS.map(k => MD[k].hostNotes || [])).filter(n => n && n.scene && n.line);
+// LORE_DISCOVERY (D2286, yellow, default on): Journal notes. A detail file's `journalNotes` rows ({ id, flag, line }) show under the
+// WALKLING JOURNAL grid once their story flag is set, oldest file first; the list is hidden while empty. Read only: nothing is saved.
+const JOURNAL_NOTES_ON = true;
+const JOURNAL_NOTES = [].concat(...DETAIL_KEYS.map(k => MD[k].journalNotes || [])).filter(n => n && n.id && n.flag && n.line);
 const hostNoteDue = () => HOST_NOTES.find(n => SCENES[n.scene] && (n.when || []).every(w => cond(w, false))) || null;
 const STORY_CALLS = [].concat(...DETAIL_KEYS.map(k => MD[k].calls || [])).filter(c => c && c.scene);
 function checkCalls(){
@@ -18408,7 +18416,16 @@ function renderCollection(){
     list.append(wrap);
   }
   renderDexGrid();
+  renderJournalNotes();
   updateBoardCare();
+}
+function renderJournalNotes(){
+  const ul = $('#journalNotes'), head = $('#notesHead'); if (!ul || !head) return;
+  const got = JOURNAL_NOTES_ON && S && S.flags ? JOURNAL_NOTES.filter(n => S.flags[n.flag]) : [];
+  ul.innerHTML = '';
+  for (const n of got) { const li = document.createElement('li'); li.dataset.note = n.id; li.textContent = n.line; ul.append(li); }
+  $('#notesCount').textContent = got.length ? '(' + got.length + ')' : '';
+  ul.hidden = head.hidden = !got.length;
 }
 function renderDexGrid(){
   const dex = $('#dexGrid'); freeCanvases(dex.querySelectorAll('canvas')); dex.innerHTML = '';

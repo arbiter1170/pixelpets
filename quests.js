@@ -44,6 +44,7 @@
     'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
     'story.mom_mah_ask', 'story.mom_mahopac', 'story.lens_note',   // MAHOPAC_DREAMS §9: Mom's walk north (the warp), her answer at the lens, Ilse's note
+    'story.lizzy_war', 'story.mo_shelf_arbiter', 'story.mo_shelf_five', 'story.mo_shelf_war',   // LORE_DISCOVERY (D2281): the lesson heard (its choice), Mo's shelf reads (Journal notes)
     'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
@@ -520,6 +521,16 @@
       { id: 'lens_moment', label: 'The lens at Mahopac', when: ['story.lens_note', '!story.climb_open'], done: ['story.lens_seen'],
         text: 'Warden Ilse is waiting at the lens in Mahopac.', place: 'Breckenridge Observatory',
         target: { map: 'mahopac_obs', x: 3, y: 2 } },
+    ],
+    // LORE_DISCOVERY slice 1 (D2284): Lizzy's homework after her optional lesson (story.lizzy_war, at the Schoolhouse or at 5B):
+    // the plaza plaque, then back to Lizzy wherever she is (the npc field moves the marker with her). PLACEHOLDER copy.
+    [
+      { id: 'lz_history', label: "Lizzy's homework", when: ['story.lizzy_war'], done: ['story.lizzy_war_plaque'],
+        text: 'Read the plaque under the lantern statue in Hearthmoor Plaza.', place: 'Hearthmoor Plaza',
+        target: { map: 'hm_plaza', x: 12, y: 12 } },
+      { id: 'lz_history_back', when: ['story.lizzy_war_plaque'], done: ['story.lizzy_war_done'],
+        npc: 'Lizzy', text: 'Tell Lizzy who the next holder is.', place: 'Ms. Lizzy, Hearthmoor',
+        target: { map: 'hm_school_in', x: 10, y: 3 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();
