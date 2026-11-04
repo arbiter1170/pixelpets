@@ -1184,6 +1184,55 @@ const MOVES = {
       "stat": "atk",
       "stages": 1
     }
+  },
+  // ROUTE_TO_GOVERNOR §7.4 (D1858) and KILNMOUTH §4.4: the four new signatures (30-35 power, one stat stage).
+  "zigzag_strike": {
+    "name": "Zigzag Strike",
+    "type": "VOLT",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -1
+    }
+  },
+  "reed_still": {
+    "name": "Reed Still",
+    "type": "TIDE",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": 1
+    }
+  },
+  "dip_bob": {
+    "name": "Dip Bob",
+    "type": "TIDE",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 1
+    }
+  },
+  "jug_toss": {
+    "name": "Jug Toss",
+    "type": "STONE",
+    "power": 35,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -1
+    }
   }
 };
 
@@ -1747,7 +1796,20 @@ const LEARNSETS = {
   "cordhound/2": [[0,"grid_howl"], [27,"full_tilt"]],
   "humwisp/0": [[1,"hum_flicker"], [1,"zap_tap"], [1,"gloom_poke"], [9,"screen_glow"], [12,"arc_bolt"], [15,"dusk_fang"], [18,"neon_burst"], [20,"gloam_swipe"], [25,"eclipse_rush"], [30,"static_lunge"]],
   "humwisp/1": [[0,"cradle_pulse"], [22,"nightfall"]],
-  "humwisp/2": [[0,"deep_hum"], [27,"full_tilt"]]
+  "humwisp/2": [[0,"deep_hum"], [27,"full_tilt"]],
+  // ROUTE_TO_GOVERNOR §7.2 and KILNMOUTH §4.4: the Hushwater learnset shape; the new signature first at Lv 1.
+  "adder/0": [[1, "zigzag_strike"], [1, "zap_tap"], [1, "neon_flash"], [9, "gravel_skid"], [12, "arc_bolt"], [15, "brace_rock"], [18, "dusk_fang"], [20, "neon_burst"], [25, "scree_slide"], [30, "gloam_swipe"]],
+  "adder/1": [[0, "whisker_spark"], [22, "boulder_drop"]],
+  "adder/2": [[0, "static_lunge"], [27, "full_tilt"]],
+  "heron/0": [[1, "reed_still"], [1, "ripple_jab"], [1, "mist_veil"], [9, "brook_bop"], [12, "undertow"], [15, "puff_shot"], [18, "tidepool_rest"], [20, "breaker_wave"], [25, "gale_slice"], [30, "kite_swoop"]],
+  "heron/1": [[0, "puddle_stomp"], [22, "pinwheel_peck"]],
+  "heron/2": [[0, "riptide_howl"], [27, "full_tilt"]],
+  "dipper/0": [[1, "dip_bob"], [1, "ripple_jab"], [1, "mist_veil"], [9, "brook_bop"], [12, "undertow"], [15, "puff_shot"], [18, "tidepool_rest"], [20, "breaker_wave"], [25, "frost_nip"], [30, "kite_swoop"]],
+  "dipper/1": [[0, "puddle_stomp"], [22, "sleet_pelt"]],
+  "dipper/2": [[0, "riptide_howl"], [27, "full_tilt"]],
+  "jugwasp/0": [[1, "jug_toss"], [1, "pebble_flick"], [1, "brace_rock"], [9, "dandelion_dart"], [12, "gravel_skid"], [15, "puff_shot"], [18, "boulder_drop"], [20, "gale_slice"], [25, "scree_slide"], [30, "whetstone"]],
+  "jugwasp/1": [[0, "kite_swoop"], [22, "quarry_crash"]],
+  "jugwasp/2": [[0, "summit_slam"], [27, "full_tilt"]]
 };
 
 const TRAINERS = {
@@ -1894,7 +1956,11 @@ const SIGNATURES = {
   "dimlamp": "dim_glow",
   "filecrow": "file_peck",
   "cordhound": "cord_nip",
-  "humwisp": "hum_flicker"
+  "humwisp": "hum_flicker",
+  "adder": "zigzag_strike",
+  "heron": "reed_still",
+  "dipper": "dip_bob",
+  "jugwasp": "jug_toss"
 };
 function defaultMoves(formId, L){
   const line = String(formId).split('/')[0], sig = SIGNATURES[line], all = learnset(formId);

@@ -17,7 +17,7 @@ const PPSave = (() => {
   // HUSHWATER B2 (D347, D357): skink, otter, owl, snail are appended. Save stays pixelpets.save.v2, v: 2.
   // ARBITER_UNITS (D837-D847): tallybat, dimlamp, filecrow, cordhound, humwisp are appended (25 lines, 75 form ids). They are
   // boss lines, kept out of the journal grid with the npcOnly line, so the journal still counts 57.
-  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch', 'skink', 'otter', 'owl', 'snail', 'tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
+  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch', 'skink', 'otter', 'owl', 'snail', 'tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp', 'adder', 'heron', 'dipper', 'jugwasp']);   // + ROUTE_TO_GOVERNOR / KILNMOUTH (Act 2)
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
   // MAPS_SLICE §10 / INTERIORS §5 / ACT1_ROUTE2 §0.2 / COBBLECREST mapdata: ids and sizes from data/mapdata.js.

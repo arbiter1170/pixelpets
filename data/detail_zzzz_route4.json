@@ -1,0 +1,1393 @@
+{
+ "spec": "ROUTE_TO_GOVERNOR v0.1.1 (design repo, private; D1850-D1879, D1880-D1884 settled Wed Nov 4, 2026): Route 4, the walk to the Governor.",
+ "_about": "Ours, not a design copy. Route 4 (route4, the downs to the fork), the river road (route4_reeds) and the withy beds (route4_withy); Hearthmoor's coach-road gap; the holders, scenes and spawn tables. Named zzzz so it applies after every other overlay (the act2 files and the plaza's Hearthmoor rows). Charter Hill's north mouth is built by tools/build_hc_city.py.",
+ "_placeholders": {
+  "note": "PLACEHOLDER copy (Story/June to replace; ROUTE_TO_GOVERNOR §5 and §6 lines, D1857, D1860). Every line, sign, holder name and map label in this file is a placeholder.",
+  "paths": [
+   "maps",
+   "scenes",
+   "trainers",
+   "objPatch"
+  ]
+ },
+ "_kilnmouth": "KILNMOUTH lands later: its build adds the fork's east warps r4_east_n/c/s (23, 1-3) -> km_road (1, 24-26), when story.km_assigned; until a build has km_road the bars stand (map:km_road) and the Kilnmouth lines stay quiet.",
+ "tiles": {
+  "y": {
+   "name": "reeds",
+   "walk": true,
+   "roam": true
+  },
+  "h": {
+   "name": "drystone wall",
+   "walk": false
+  },
+  "l": {
+   "name": "mown lawn",
+   "walk": true,
+   "roam": false
+  }
+ },
+ "maps": {
+  "route4": {
+   "name": "Route 4",
+   "backdrop": "route",
+   "music": "route4",
+   "w": 24,
+   "h": 28,
+   "spawns": "route4",
+   "respawn": null,
+   "safe": {
+    "x": 6,
+    "y": 25
+   },
+   "variants": true,
+   "zones": [
+    {
+     "x": 1,
+     "y": 8,
+     "w": 6,
+     "h": 4
+    },
+    {
+     "x": 1,
+     "y": 13,
+     "w": 8,
+     "h": 2
+    },
+    {
+     "x": 12,
+     "y": 13,
+     "w": 10,
+     "h": 4
+    },
+    {
+     "x": 1,
+     "y": 23,
+     "w": 4,
+     "h": 4
+    },
+    {
+     "x": 13,
+     "y": 24,
+     "w": 8,
+     "h": 3
+    }
+   ],
+   "grid": [
+    "TTTTTTTTTTTTKKKKKKKKKKKT",
+    "TgggggggggggKKKKKKKKKKgg",
+    "TggfggfgggggggggKKKppppp",
+    "TgggggggTgggggggppppgggg",
+    "TggggggggggggppppggggggT",
+    "TgfgggppppppppgggggggggT",
+    "gggppppgggppgggggggggggT",
+    "ppppggggggppgghhhhhhhTTT",
+    "gyyyyyygggppgghggRRRhTTT",
+    "TysssssgggppgggggHHHhTTT",
+    "TswwwwygggppgghfgggghTTT",
+    "TssssssgggppgghhhhhhhTTT",
+    "ThhhhhhhhhppgggggggggTTT",
+    "TggtttttggpphttttttttggT",
+    "TtttttttggpphtttttttttgT",
+    "TgghhgpppppphtttttttttgT",
+    "ThhhggpppppphttttttttggT",
+    "TTTgggppgggggggggggfgggT",
+    "TTTgggppgggggggggggggggT",
+    "TsssssBBsgggggggsssssssT",
+    "TwwwwwBBwssssssswwwwwwwT",
+    "TwwwwwBBwwwwwwwwwwwwwwwT",
+    "TsssssBBswwwwwwwsssssssT",
+    "TgtttgppgssshhhhgggggggT",
+    "TttttgpphhhhhgggtttttggT",
+    "TttttgppgggggttttttttggT",
+    "TtttggppgfgggttttttttggT",
+    "TTTTTpppTTTTTTTTTTTTTTTT"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "r4_south_w",
+     "x": 5,
+     "y": 27,
+     "to": "hearthmoor",
+     "tx": 18,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "r4_south",
+     "x": 6,
+     "y": 27,
+     "to": "hearthmoor",
+     "tx": 18,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "r4_south_e",
+     "x": 7,
+     "y": 27,
+     "to": "hearthmoor",
+     "tx": 19,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "sign",
+     "id": "r4_sign_in",
+     "x": 8,
+     "y": 26,
+     "text": "ROUTE 4 · The coach road north. High Charity by the west fork."
+    },
+    {
+     "kind": "sign",
+     "id": "r4_sign_adder",
+     "x": 8,
+     "y": 24,
+     "text": "Adders bask on these walls. Their backs are marked like lightning."
+    },
+    {
+     "kind": "wild",
+     "id": "r4_adder_first",
+     "x": 10,
+     "y": 25,
+     "form": "adder/0",
+     "level": 27,
+     "when": [
+      "!story.r4_adder_met"
+     ],
+     "scene": "r4_adder_first"
+    },
+    {
+     "kind": "prop",
+     "id": "r4_milestone",
+     "x": 5,
+     "y": 17,
+     "sprite": "milestone",
+     "lines": {
+      "else": "An old coach-road milestone. HIGH CHARITY 6. HEARTHMOOR 2."
+     }
+    },
+    {
+     "kind": "pickup",
+     "id": "r4_snack",
+     "x": 1,
+     "y": 15,
+     "item": "heal_snack",
+     "n": 1
+    },
+    {
+     "kind": "prop",
+     "id": "r4_permit_board",
+     "x": 9,
+     "y": 9,
+     "sprite": "notice_board",
+     "lines": {
+      "else": "ROADS AND COACHES. Resurfaced by permit. Please keep to the road."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "r4_trough",
+     "x": 16,
+     "y": 9,
+     "sprite": "water_trough",
+     "scene": "r4_rest"
+    },
+    {
+     "kind": "npc",
+     "id": "r4_keeper",
+     "name": "Road Keeper",
+     "look": "keeper_officer",
+     "x": 13,
+     "y": 8,
+     "facing": "left",
+     "lines": {
+      "story.gov_posted & !story.hc_gov_met": "Cadet. The Governor's business? West fork, down to the river road.",
+      "story.km_assigned & !story.km_arrived & map:km_road": "Kilnmouth? East fork, up into the hills. Mind the clay, Cadet.",
+      "else": "Rest in the fold if you need it. The coach does not stop here."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "r4_finger_post",
+     "x": 9,
+     "y": 4,
+     "sprite": "finger_post",
+     "lines": {
+      "else": "HIGH CHARITY, west and down. KILNMOUTH, east and up. HEARTHMOOR, south."
+     }
+    },
+    {
+     "kind": "trigger",
+     "id": "r4_fork_seen",
+     "x": 10,
+     "y": 5,
+     "r": 2,
+     "when": [
+      "!story.r4_fork"
+     ],
+     "scene": "r4_fork"
+    },
+    {
+     "kind": "warp",
+     "id": "r4_west_n",
+     "x": 0,
+     "y": 6,
+     "to": "route4_reeds",
+     "tx": 30,
+     "ty": 3,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "r4_west_c",
+     "x": 0,
+     "y": 7,
+     "to": "route4_reeds",
+     "tx": 30,
+     "ty": 4,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "r4_west_s",
+     "x": 0,
+     "y": 8,
+     "to": "route4_reeds",
+     "tx": 30,
+     "ty": 5,
+     "facing": "left"
+    },
+    {
+     "kind": "prop",
+     "id": "r4_east_bar_n",
+     "x": 22,
+     "y": 1,
+     "sprite": "road_bar",
+     "when": [
+      "!story.km_assigned | !map:km_road"
+     ],
+     "lines": {
+      "else": "The east road. Keepers let walkers through with orders."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "r4_east_bar_c",
+     "x": 22,
+     "y": 2,
+     "sprite": "road_bar",
+     "when": [
+      "!story.km_assigned | !map:km_road"
+     ],
+     "lines": {
+      "else": "The east road. Keepers let walkers through with orders."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "r4_east_bar_s",
+     "x": 22,
+     "y": 3,
+     "sprite": "road_bar",
+     "when": [
+      "!story.km_assigned | !map:km_road"
+     ],
+     "lines": {
+      "else": "The east road. Keepers let walkers through with orders."
+     }
+    },
+    {
+     "kind": "trainer",
+     "id": "r4_rambler",
+     "x": 12,
+     "y": 12
+    }
+   ]
+  },
+  "route4_reeds": {
+   "name": "Route 4",
+   "district": "THE RIVER ROAD",
+   "backdrop": "route",
+   "music": "route4",
+   "w": 32,
+   "h": 24,
+   "spawns": "route4_reeds",
+   "respawn": null,
+   "safe": {
+    "x": 30,
+    "y": 4
+   },
+   "variants": true,
+   "zones": [
+    {
+     "x": 12,
+     "y": 5,
+     "w": 9,
+     "h": 9
+    },
+    {
+     "x": 12,
+     "y": 17,
+     "w": 12,
+     "h": 1
+    },
+    {
+     "x": 1,
+     "y": 20,
+     "w": 30,
+     "h": 3
+    },
+    {
+     "x": 29,
+     "y": 6,
+     "w": 2,
+     "h": 12
+    }
+   ],
+   "grid": [
+    "TTTTTTTTTTTTTTTTTTTTTwwwTTTTTTTT",
+    "TgggfgggggggggggggggswwwhggRRRRT",
+    "TgggggggggggggggggggswwwhggHHHHT",
+    "TTTTTTTTTTggggggggggswwwhhhggggg",
+    "TppppppppppppppppppppBBBpppppppp",
+    "Tlplllllllggggggggggywwwhhhppggg",
+    "TlpllTllTlgggttttttgywwwhggppggT",
+    "TlplllllllgggttttttgswwwhggppttT",
+    "llplllllllgggtttfttgswwwhggppttT",
+    "llplllllllgggttttttgswwwhggppttT",
+    "ppppppppppppgttttttgywwwhggppttT",
+    "llllllllllppggggggggswwwhggppttT",
+    "lllllTllllppggggggggswwwhggppttT",
+    "TPPPPPPPPsppyssyysysswwwhggppttT",
+    "wwwwwwwwwwBBwwwwwwwwwwwwsggppttT",
+    "wwwwwwwwwwBBwwwwwwwwwwwwsggppttT",
+    "wwwwwwwwwwBBwwwwwwwwwwwwsggppttT",
+    "TPPPPPPPPsppsyysssyysssysggppggT",
+    "TgggggggggppgggggggggggggggppgfT",
+    "TgggggggggpppppppppppppppppppggT",
+    "TgtttttttggggttttgpppgtttttttggT",
+    "TgtttttttggggttttgpppgttttfttggT",
+    "TgtttttttggggttttgpppgtttttttggT",
+    "TTTTTTTTTTTTTTTTTTpppTTTTTTTTTTT"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "r4r_east_n",
+     "x": 31,
+     "y": 3,
+     "to": "route4",
+     "tx": 1,
+     "ty": 6,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_east_c",
+     "x": 31,
+     "y": 4,
+     "to": "route4",
+     "tx": 1,
+     "ty": 7,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_east_s",
+     "x": 31,
+     "y": 5,
+     "to": "route4",
+     "tx": 1,
+     "ty": 8,
+     "facing": "right"
+    },
+    {
+     "kind": "sign",
+     "id": "r4r_sign_in",
+     "x": 29,
+     "y": 5,
+     "text": "THE RIVER ROAD · High Charity, downstream. Towpath closed: Keepers only."
+    },
+    {
+     "kind": "prop",
+     "id": "r4r_towpath_bar",
+     "x": 25,
+     "y": 4,
+     "sprite": "road_bar",
+     "when": [
+      "!story.hc_gov_met"
+     ],
+     "lines": {
+      "else": "CANAL TOWPATH. Keepers' business. Closed to walkers."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "r4r_lock_keeper",
+     "name": "Lock Keeper",
+     "look": "keeper_officer",
+     "x": 29,
+     "y": 3,
+     "facing": "down",
+     "lines": {
+      "story.hc_gov_met": "Governor's business, Cadet. The towpath's yours. Mind the lock.",
+      "else": "Towpath is closed, holder. The road goes round by the stone bridge."
+     }
+    },
+    {
+     "kind": "sign",
+     "id": "r4r_sign_heron",
+     "x": 23,
+     "y": 18,
+     "text": "Reed-herons stand bill-up and still. You pass three before you see one."
+    },
+    {
+     "kind": "wild",
+     "id": "r4_heron_first",
+     "x": 21,
+     "y": 17,
+     "form": "heron/0",
+     "level": 28,
+     "when": [
+      "!story.r4_heron_met"
+     ],
+     "scene": "r4_heron_first"
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_withy_w",
+     "x": 18,
+     "y": 23,
+     "to": "route4_withy",
+     "tx": 11,
+     "ty": 1,
+     "facing": "down",
+     "setFlag": "story.reached_withy"
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_withy_c",
+     "x": 19,
+     "y": 23,
+     "to": "route4_withy",
+     "tx": 12,
+     "ty": 1,
+     "facing": "down",
+     "setFlag": "story.reached_withy"
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_withy_e",
+     "x": 20,
+     "y": 23,
+     "to": "route4_withy",
+     "tx": 13,
+     "ty": 1,
+     "facing": "down",
+     "setFlag": "story.reached_withy"
+    },
+    {
+     "kind": "sign",
+     "id": "r4r_sign_withy",
+     "x": 21,
+     "y": 20,
+     "text": "THE WITHY BEDS · Willow, reeds, a pond. Something by the water."
+    },
+    {
+     "kind": "pickup",
+     "id": "r4r_treat",
+     "x": 29,
+     "y": 15,
+     "item": "befriend_treat",
+     "n": 1
+    },
+    {
+     "kind": "prop",
+     "id": "r4r_roofs_a",
+     "x": 3,
+     "y": 1,
+     "sprite": "capital_roofs",
+     "lines": {
+      "else": "High Charity's roofs, over the hedge. Lanterns on every one."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "r4r_roofs_b",
+     "x": 7,
+     "y": 1,
+     "sprite": "capital_spire",
+     "lines": {
+      "else": "The Governor's House flag, over the hedge."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "r4r_bin",
+     "x": 6,
+     "y": 12,
+     "sprite": "bin_tipped",
+     "lines": {
+      "else": "A bin, tipped over in the night. Its rubbish is sorted into neat little piles."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "r4r_poster",
+     "x": 7,
+     "y": 9,
+     "sprite": "notice_board",
+     "lines": {
+      "else": "PICKING DAY. Every name in the draw. Good luck to all."
+     }
+    },
+    {
+     "kind": "sign",
+     "id": "r4r_sign_verge",
+     "x": 9,
+     "y": 11,
+     "text": "HIGH CHARITY · Charter Hill gate. Please keep off the verge."
+    },
+    {
+     "kind": "npc",
+     "id": "r4r_gate_keeper",
+     "name": "Gate Keeper",
+     "look": "keeper_officer",
+     "x": 3,
+     "y": 9,
+     "facing": "right",
+     "lines": {
+      "story.hc_gov_met & !story.hc_parade_seen": "Out you go, Cadet. Walkers come in by coach till further orders.",
+      "story.gov_posted & !story.hc_gov_met": "Cadet. The Governor's House is just inside. Straight on.",
+      "else": "Charter Hill gate. Wipe your boots, holder."
+     }
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_gate_0",
+     "x": 0,
+     "y": 8,
+     "to": "highcharity",
+     "tx": 32,
+     "ty": 37,
+     "facing": "up",
+     "when": [
+      "!story.hc_gov_met | story.hc_parade_seen"
+     ],
+     "setFlag": "story.r4_walked",
+     "city": {
+      "to": "hc_civic",
+      "tx": 46,
+      "ty": 1,
+      "facing": "down"
+     }
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_gate_1",
+     "x": 0,
+     "y": 9,
+     "to": "highcharity",
+     "tx": 32,
+     "ty": 37,
+     "facing": "up",
+     "when": [
+      "!story.hc_gov_met | story.hc_parade_seen"
+     ],
+     "setFlag": "story.r4_walked",
+     "city": {
+      "to": "hc_civic",
+      "tx": 47,
+      "ty": 1,
+      "facing": "down"
+     }
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_gate_2",
+     "x": 0,
+     "y": 10,
+     "to": "highcharity",
+     "tx": 32,
+     "ty": 37,
+     "facing": "up",
+     "when": [
+      "!story.hc_gov_met | story.hc_parade_seen"
+     ],
+     "setFlag": "story.r4_walked",
+     "city": {
+      "to": "hc_civic",
+      "tx": 48,
+      "ty": 1,
+      "facing": "down"
+     }
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_gate_3",
+     "x": 0,
+     "y": 11,
+     "to": "highcharity",
+     "tx": 32,
+     "ty": 37,
+     "facing": "up",
+     "when": [
+      "!story.hc_gov_met | story.hc_parade_seen"
+     ],
+     "setFlag": "story.r4_walked",
+     "city": {
+      "to": "hc_civic",
+      "tx": 49,
+      "ty": 1,
+      "facing": "down"
+     }
+    },
+    {
+     "kind": "warp",
+     "id": "r4r_gate_4",
+     "x": 0,
+     "y": 12,
+     "to": "highcharity",
+     "tx": 32,
+     "ty": 37,
+     "facing": "up",
+     "when": [
+      "!story.hc_gov_met | story.hc_parade_seen"
+     ],
+     "setFlag": "story.r4_walked",
+     "city": {
+      "to": "hc_civic",
+      "tx": 50,
+      "ty": 1,
+      "facing": "down"
+     }
+    },
+    {
+     "kind": "trigger",
+     "id": "r4r_gate_shut_0",
+     "x": 0,
+     "y": 8,
+     "r": 0,
+     "when": [
+      "story.hc_gov_met",
+      "!story.hc_parade_seen"
+     ],
+     "scene": "r4_gate_shut"
+    },
+    {
+     "kind": "trigger",
+     "id": "r4r_gate_shut_1",
+     "x": 0,
+     "y": 9,
+     "r": 0,
+     "when": [
+      "story.hc_gov_met",
+      "!story.hc_parade_seen"
+     ],
+     "scene": "r4_gate_shut"
+    },
+    {
+     "kind": "trigger",
+     "id": "r4r_gate_shut_2",
+     "x": 0,
+     "y": 10,
+     "r": 0,
+     "when": [
+      "story.hc_gov_met",
+      "!story.hc_parade_seen"
+     ],
+     "scene": "r4_gate_shut"
+    },
+    {
+     "kind": "trigger",
+     "id": "r4r_gate_shut_3",
+     "x": 0,
+     "y": 11,
+     "r": 0,
+     "when": [
+      "story.hc_gov_met",
+      "!story.hc_parade_seen"
+     ],
+     "scene": "r4_gate_shut"
+    },
+    {
+     "kind": "trigger",
+     "id": "r4r_gate_shut_4",
+     "x": 0,
+     "y": 12,
+     "r": 0,
+     "when": [
+      "story.hc_gov_met",
+      "!story.hc_parade_seen"
+     ],
+     "scene": "r4_gate_shut"
+    },
+    {
+     "kind": "prop",
+     "id": "r4r_arch_n",
+     "x": 1,
+     "y": 7,
+     "sprite": "gate_arch_post"
+    },
+    {
+     "kind": "prop",
+     "id": "r4r_arch_s",
+     "x": 1,
+     "y": 13,
+     "sprite": "gate_arch_post"
+    },
+    {
+     "kind": "trainer",
+     "id": "r4_reed_watcher",
+     "x": 9,
+     "y": 17
+    }
+   ]
+  },
+  "route4_withy": {
+   "name": "The Withy Beds",
+   "backdrop": "meadow",
+   "music": "route4",
+   "w": 24,
+   "h": 20,
+   "spawns": "route4_withy",
+   "respawn": null,
+   "safe": {
+    "x": 12,
+    "y": 2
+   },
+   "variants": true,
+   "zones": [
+    {
+     "x": 1,
+     "y": 1,
+     "w": 22,
+     "h": 18
+    }
+   ],
+   "grid": [
+    "TTTTTTTTTTTpppTTTTTTTTTT",
+    "TgggggggggggpggggggggggT",
+    "TgTTTgggggggpggTTTgggggT",
+    "TgTTTggfggggpggTTtttttgT",
+    "TgggggggggggpggTTtttttgT",
+    "TgyyyyyyyyyypggggggggggT",
+    "TgyyyyyyyyyypggggggTTTgT",
+    "TggssssssssgpggggggTTTgT",
+    "TggswwwwwwsgpggggggTTTgT",
+    "TggswwwwwwsgppppppgggggT",
+    "TggswwwwwwsggggggggggggT",
+    "TggswwwwwwsgggggggggfggT",
+    "TggswwwwwwsgggyyyyyygggT",
+    "TggssssssssgggyyyyyygggT",
+    "TgyyyyyyyyyyggyyyyyygggT",
+    "TgyyyyyyyyyyggyyyyyygggT",
+    "TgggggggggggggTTgggggggT",
+    "TggggggggfggggTTgggggggT",
+    "TggggggggggggggggggggggT",
+    "TTTTTTTTTTTTTTTTTTTTTTTT"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "wy_north_0",
+     "x": 11,
+     "y": 0,
+     "to": "route4_reeds",
+     "tx": 18,
+     "ty": 22,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "wy_north_1",
+     "x": 12,
+     "y": 0,
+     "to": "route4_reeds",
+     "tx": 19,
+     "ty": 22,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "wy_north_2",
+     "x": 13,
+     "y": 0,
+     "to": "route4_reeds",
+     "tx": 20,
+     "ty": 22,
+     "facing": "up"
+    },
+    {
+     "kind": "sign",
+     "id": "wy_sign",
+     "x": 13,
+     "y": 6,
+     "text": "THE WITHY BEDS · Three reeds by the pond. There were two this morning."
+    },
+    {
+     "kind": "prop",
+     "id": "wy_reed_a",
+     "x": 3,
+     "y": 9,
+     "sprite": "reed_clump",
+     "lines": {
+      "else": "A clump of reeds. Just reeds."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "wy_reed_b",
+     "x": 10,
+     "y": 11,
+     "sprite": "reed_clump",
+     "lines": {
+      "else": "A clump of reeds. Probably just reeds."
+     }
+    },
+    {
+     "kind": "wild",
+     "id": "r4_heron_three",
+     "x": 7,
+     "y": 7,
+     "form": "heron/1",
+     "level": 30,
+     "when": [
+      "!story.r4_heron_three"
+     ],
+     "scene": "r4_heron_three"
+    },
+    {
+     "kind": "prop",
+     "id": "wy_bundle",
+     "x": 18,
+     "y": 10,
+     "sprite": "withy_bundle",
+     "lines": {
+      "else": "Willow rods, cut and bundled to dry."
+     }
+    },
+    {
+     "kind": "pickup",
+     "id": "wy_treat",
+     "x": 20,
+     "y": 16,
+     "item": "befriend_treat",
+     "n": 2
+    },
+    {
+     "kind": "pickup",
+     "id": "wy_snack",
+     "x": 3,
+     "y": 4,
+     "item": "heal_snack",
+     "n": 1
+    },
+    {
+     "kind": "trainer",
+     "id": "r4_weaver",
+     "x": 15,
+     "y": 9
+    }
+   ]
+  }
+ },
+ "trainers": {
+  "r4_rambler": {
+   "name": "PLACEHOLDER A",
+   "title": "Rambler",
+   "map": "route4",
+   "x": 12,
+   "y": 12,
+   "facing": "left",
+   "sight": 2,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "gust/1",
+     "level": 27,
+     "moves": [
+      "puff_pirouette",
+      "boulder_drop",
+      "stoke_up",
+      "kite_swoop"
+     ]
+    },
+    {
+     "form": "adder/1",
+     "level": 28,
+     "moves": [
+      "zigzag_strike",
+      "boulder_drop",
+      "scree_slide",
+      "whisker_spark"
+     ]
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Walking to the capital? Me too. Slowly. Let's warm up first!",
+    "win": "Adders come out on the walls before a storm, {player}. Mind your step.",
+    "lose": "Long road. Rest at the fork and try again."
+   }
+  },
+  "r4_reed_watcher": {
+   "name": "PLACEHOLDER B",
+   "title": "Reed Watcher",
+   "map": "route4_reeds",
+   "x": 9,
+   "y": 17,
+   "facing": "right",
+   "sight": 2,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "crab/1",
+     "level": 28,
+     "moves": [
+      "clink_pinch",
+      "boulder_drop",
+      "stoke_up",
+      "shard_pinch"
+     ]
+    },
+    {
+     "form": "otter/1",
+     "level": 28,
+     "moves": [
+      "spray_slide",
+      "puddle_stomp",
+      "undertow",
+      "flurry_fluff"
+     ]
+    },
+    {
+     "form": "heron/1",
+     "level": 29,
+     "moves": [
+      "reed_still",
+      "pinwheel_peck",
+      "gale_slice",
+      "puddle_stomp"
+     ]
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Shh. I have been watching one reed for an hour. It just blinked.",
+    "win": "You walked right past a heron, {player}. Everyone does.",
+    "lose": "Stand still a while. The river will wait."
+   }
+  },
+  "r4_weaver": {
+   "name": "PLACEHOLDER C",
+   "title": "Basket Weaver",
+   "map": "route4_withy",
+   "x": 15,
+   "y": 9,
+   "facing": "left",
+   "sight": 3,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "dormouse/1",
+     "level": 29,
+     "moves": [
+      "doze_drift",
+      "sleet_pelt",
+      "mist_veil",
+      "lullaby_hum"
+     ]
+    },
+    {
+     "form": "snail/1",
+     "level": 29,
+     "moves": [
+      "lichen_lob",
+      "scree_slide",
+      "mist_veil",
+      "boulder_drop"
+     ]
+    },
+    {
+     "form": "beetle/2",
+     "level": 29,
+     "moves": [
+      "pomme_bonk",
+      "full_tilt",
+      "shell_roll",
+      "windfall"
+     ]
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Nobody comes down here. Sit, or battle. Battle, then.",
+    "win": "Good hands, {player}. Willow likes good hands.",
+    "lose": "Too quick. Weaving teaches slow."
+   }
+  }
+ },
+ "scenes": {
+  "r4_adder_first": [
+   [
+    "say",
+    "",
+    "A grey snake is basking on the wall. Its back is marked with a yellow zigzag."
+   ],
+   [
+    "encounter",
+    "r4_adder_first"
+   ],
+   [
+    "setFlag",
+    "story.r4_adder_met",
+    true
+   ]
+  ],
+  "r4_heron_three": [
+   [
+    "say",
+    "",
+    "Three reeds stand by the pond. One of them turns its head to look at you."
+   ],
+   [
+    "encounter",
+    "r4_heron_three"
+   ],
+   [
+    "setFlag",
+    "story.r4_heron_three",
+    true
+   ]
+  ],
+  "r4_gate_shut": [
+   [
+    "say",
+    "Gate Keeper",
+    "Walkers come in by coach today, Cadet. Orders. The coach still runs."
+   ]
+  ],
+  "r4_heron_first": [
+   [
+    "say",
+    "",
+    "One of the reeds turns its head. It was a heron all along."
+   ],
+   [
+    "encounter",
+    "r4_heron_first"
+   ],
+   [
+    "setFlag",
+    "story.r4_heron_met",
+    true
+   ]
+  ],
+  "r4_fork": [
+   [
+    "say",
+    "",
+    "The coach road forks. West, the river and the capital. East, the hills."
+   ],
+   [
+    "setFlag",
+    "story.r4_fork",
+    true
+   ]
+  ],
+  "r4_rest": [
+   [
+    "say",
+    "",
+    "A stone trough of cold water, and a bench under the coach shelter."
+   ],
+   [
+    "choice",
+    "Rest here a while?",
+    [
+     [
+      "Rest a while",
+      [
+       [
+        "rest"
+       ],
+       [
+        "say",
+        "",
+        "Your team drinks and dozes in the shelter. Everyone is rested."
+       ]
+      ]
+     ],
+     [
+      "Not now",
+      [
+       [
+        "say",
+        "",
+        "You keep walking."
+       ]
+      ]
+     ]
+    ]
+   ]
+  ],
+  "r4_walk_in": [
+   [
+    "setFlag",
+    "story.hc_arrived",
+    true
+   ],
+   [
+    "if",
+    "!story.hc_greeted",
+    [
+     [
+      "run",
+      "hc_gate"
+     ]
+    ],
+    []
+   ]
+  ]
+ },
+ "spawnTables": {
+  "_note": "Rows [speciesId, baseWeight, minLv, maxLv] for SPAWNS (game.js); a row whose species is not in SPECIES is skipped until the species build lands. Authored maps: no 8% any-species roll.",
+  "route4": {
+   "stage2": 0.15,
+   "table": [
+    [
+     "adder",
+     22,
+     27,
+     30
+    ],
+    [
+     "gust",
+     14,
+     27,
+     30
+    ],
+    [
+     "mole",
+     12,
+     27,
+     29
+    ],
+    [
+     "stone",
+     10,
+     27,
+     30
+    ],
+    [
+     "dormouse",
+     8,
+     27,
+     30
+    ],
+    [
+     "moth",
+     8,
+     27,
+     29
+    ],
+    [
+     "vane",
+     6,
+     28,
+     30
+    ]
+   ]
+  },
+  "route4_reeds": {
+   "stage2": 0.15,
+   "table": [
+    [
+     "heron",
+     22,
+     27,
+     30
+    ],
+    [
+     "crab",
+     14,
+     27,
+     30
+    ],
+    [
+     "otter",
+     12,
+     27,
+     30
+    ],
+    [
+     "moth",
+     10,
+     27,
+     29
+    ],
+    [
+     "owl",
+     8,
+     27,
+     30
+    ],
+    [
+     "snail",
+     8,
+     27,
+     30
+    ],
+    [
+     "adder",
+     5,
+     27,
+     29
+    ]
+   ]
+  },
+  "route4_withy": {
+   "stage2": 0.25,
+   "table": [
+    [
+     "heron",
+     20,
+     28,
+     31
+    ],
+    [
+     "otter",
+     12,
+     28,
+     31
+    ],
+    [
+     "dormouse",
+     10,
+     28,
+     31
+    ],
+    [
+     "beetle",
+     10,
+     28,
+     31
+    ],
+    [
+     "snail",
+     8,
+     28,
+     31
+    ],
+    [
+     "owl",
+     8,
+     28,
+     31
+    ]
+   ]
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "hearthmoor": {
+    "gridRows": {
+     "0": "TTTTTTTTpppTTTTTTTppTTTT",
+     "1": "TTTTTTTTpppTTTTgggppTTTT",
+     "2": "TgRRRRggpppgRRRRRRpRRRRT",
+     "3": "TgRRRRgggpggRRRRRRpRRRRT",
+     "4": "ppHHHHgggpggRRRRRRpHHHHT",
+     "5": "ppgpgggggpggHHHHHHpgpggT",
+     "6": "ppppgggggpgggggpggpgpggT",
+     "7": "TggpggppppgggfgpggpgpggT"
+    },
+    "addObjs": [
+     {
+      "kind": "warp",
+      "id": "hm_coach_road_w",
+      "x": 18,
+      "y": 0,
+      "to": "route4",
+      "tx": 6,
+      "ty": 26,
+      "facing": "up",
+      "when": [
+       "story.gov_posted | story.hc_gov_met"
+      ],
+      "setFlag": "story.reached_route4"
+     },
+     {
+      "kind": "warp",
+      "id": "hm_coach_road_e",
+      "x": 19,
+      "y": 0,
+      "to": "route4",
+      "tx": 7,
+      "ty": 26,
+      "facing": "up",
+      "when": [
+       "story.gov_posted | story.hc_gov_met"
+      ],
+      "setFlag": "story.reached_route4"
+     },
+     {
+      "kind": "prop",
+      "id": "hm_coach_road_bar_w",
+      "x": 18,
+      "y": 1,
+      "sprite": "road_bar",
+      "when": [
+       "!story.gov_posted",
+       "!story.hc_gov_met"
+      ],
+      "lines": {
+       "else": "COACH ROAD. Coaches only. Walkers by Keeper pass."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "hm_coach_road_bar_e",
+      "x": 19,
+      "y": 1,
+      "sprite": "road_bar",
+      "when": [
+       "!story.gov_posted",
+       "!story.hc_gov_met"
+      ],
+      "lines": {
+       "else": "COACH ROAD. Coaches only. Walkers by Keeper pass."
+      }
+     }
+    ]
+   }
+  }
+ },
+ "flags": {
+  "story.reached_route4": "NOT_STEPS: Hearthmoor coach-road warp (region map visited)",
+  "story.r4_adder_met": "NOT_STEPS: r4_adder_first, after the encounter (any result)",
+  "story.r4_heron_three": "NOT_STEPS: r4_heron_three, the withy beds' placed Stalker, after the encounter",
+  "story.r4_heron_met": "NOT_STEPS: r4_heron_first, after the encounter (any result)",
+  "story.r4_fork": "CHAIN: r4_fork (first time at the fork; shows the Kilnmouth tab)",
+  "story.reached_withy": "NOT_STEPS: the withy beds warp",
+  "story.r4_walked": "CHAIN: the Charter Hill gate warps (arrived in the capital on foot)"
+ },
+ "objPatch": {
+  "_note": "The coach turns away the first Act 2 trip after the posting (D1854, D1881); from the meeting on it runs as built.",
+  "hm_to_hc": {
+   "whenAdd": [
+    "!story.gov_posted | story.r4_walked | story.hc_gov_met"
+   ]
+  },
+  "hm_bram": {
+   "linesFirst": {
+    "story.gov_posted & !story.r4_walked & !story.hc_gov_met": "Not this trip, Cadet. Governor's orders: you walk the coach road north.",
+    "story.km_assigned & !story.km_council & map:km_road": "No coach to Kilnmouth yet, Cadet. The coach road north, then east at the fork."
+   }
+  }
+ }
+}
