@@ -10,6 +10,52 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): green; a test-only fix that keeps the Cobblecrest check whole and stops it reaching other towns. No new D or Q id.
 - Anything left unfinished: none.
 
+## 2026-11-03 13:06 ET: Build: the Keeper anthem, "Every Roof a Lantern" (KEEPER_ANTHEM v0.2.1, D1375-D1384, D1419-D1423)
+- What changed and why:
+  - D1375, D1377, D1421 (settled by Vincent; design `specs/KEEPER_ANTHEM.md` v0.2.1, master 52f62a2): three new loops in `sfx.js` `MUSIC`, pasted from the spec literal (§3), all one original melody, synthesised at runtime, no audio file:
+    - `anthem_march`: B-flat major, 120 bpm, 16 bars, 32 s; square lead in octaves, oom-pah bass, snare-led march kit; it swells from far off.
+    - `anthem_dark`: the same tune in B-flat minor, 64 bpm, 60 s; one triangle voice over a held drone that grinds under the last cadence.
+    - `anthem_hall`: the march's tune and bass, B-flat major, 80 bpm, 48 s; one soft voice for indoors.
+  - D1381 engine (M1-M4, `sfx.js`): a voice `double` (octaves), a voice `gate` (the drone rings past its slot), a per-track `swell` (a gain and a lowpass in front of the track's own bus, only on a fresh `music()` that is not `near`; the shared bus, the Music volume, the stinger duck and the fade act after it), `musicCheck()` / `musicSpec()` know the new fields, and a read-only `PPSound.musicSwell` for tests. Every other loop plays exactly as before.
+  - D1381 scene hooks (M6-M8, `game.js`): `["music", id, { fadeOut, fadeIn, minDelay, near, keep }]` (plain `["music", id]` is 180 / 140 ms as before); a `keep` cue plays on through a scene `warp` (not under SKIP, D1384); `cueFactionMusic()` skips a scene that opens with its own `music` step.
+  - D1420, D1422, D1423 (M10-M11): with the city on (`HC_CITY_V2`, still false; preview `?debug=1&hccity=2`), Sky-Dock Command and the Keeper Barracks play `anthem_hall` day and night on either side, and each has one framed-sheet sign: "[PLACEHOLDER] A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem." (D1419). `applyHcCity()` reads a new `roomPatch` key; `tools/build_hc_city.py` writes it. `data/highcharity.json` is unchanged, so with the city off both rooms keep `charity`.
+  - The parade (`hc_parade`, PR #286) is untouched: its `music` steps now find `anthem_march` and `anthem_dark`.
+  - Previews: `handoff/audio/keeper_anthem/{anthem_march,anthem_dark,anthem_hall}.wav`, one loop each, rendered from the game's own `sfx.js` by `tools/render_music.js` (an OfflineAudioContext in headless Chromium), with `report.json` comparing them to Design's reference renders.
+- Files touched:
+  - code and data: `sfx.js`, `game.js`, `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tools/GAMEJS_MAP.txt`, `tools/render_music.js` (new, dev only);
+  - tests: `tests/keeper_anthem.spec.js` (new), `tests/README.md`;
+  - previews: `handoff/audio/keeper_anthem/` (new), `handoff/shots/keeper_anthem/` (new; both rooms at 390 and 320);
+  - docs: `CHANGELOG.md`, `OPEN_DECISIONS.md` (D1419-D1423 reserved, next free D1424), `archive/DECISIONS_SETTLED.md` (D1375-D1384, D1419-D1423), plus the build stamp.
+- Commit(s) + build id: claude/keeper-anthem-build, build 20261103-1258, restamped 20261103-2208 after merging main (a6a3732). Built from design `master` 52f62a2 (KEEPER_ANTHEM v0.2.1).
+- Tests run and result (widths, checks): `tests/keeper_anthem.spec.js` (T1-T22) with the music, city, Brinewick and iOS specs at 320, 375 and 390: 177 passed, 0 failed; the full suite in the PR. Zero console errors. Save `v` 2, no new key. Design `node specs/keeper_anthem_render.js --no-wav` PASS; the in-game data equals the spec literal.
+- Decisions made (colour + reasoning):
+  - All fifteen rows are built as settled. No new decision id.
+  - Green (engineer): the swell's two nodes are disconnected with the bus when a track stops (Safari keeps connected nodes); the sheet uses the default sign art (no new art, D1423).
+- Anything left unfinished:
+  - Vincent hears the cues and sees the sheet previews before this merges (DRAFT).
+  - T22: at 320 and 375 the room draws at 2x, so the sheet's tile is 32 px, like every map tile there; it also opens from the 44 px TALK button. At 390 the tile is 48 px.
+  - The parade's own option steps (`keep`, the 2.5 fades, `near` on a reload) are #286's to add; the cues play there as plain steps today.
+  - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (firebase-tools ignores NO_PROXY).
+## 2026-11-03 19:59 ET: Old-name fold runs once per save, so an unfavourite or a trust drop sticks
+- What changed and why:
+  - QA (Nov 3, 2026): `normalizeV2` copied each old name in `FOLD_KEYS` (Ash, Fen, Hale, Tobin, Hollis, Quinn, Imogen, Marisol) to its ranked key in `phoneBook.met`, `phoneBook.fav` and `rep` on every load while the new key was absent. Play deletes the new key (unfavourite; trust back at base is stored sparse), and the old key stays on disk, so the next load put the removed mark back (an old `rep.Fen = 60` dropped to 50 came back as 60; an unfavourited Cadet Sefton came back on).
+  - `save.js` now writes an additive `flags['fold.<old name>'] = true` the first time it folds a name that has an old key, and skips that name after. Old keys are never deleted; a save holding both keys keeps the new key; a fresh save gets no marks; `normalizeV2` stays idempotent. A save that folded before this fix has no mark yet, so it folds once more on its next load and then never again. Save stays `pixelpets.save.v2`, `v` 2.
+  - `FOLD_KEYS` stays a hand-kept copy of `rep.js` `REP_CANON` (no load-order change); a new test checks the two match.
+- Files touched: `save.js`, `tests/name_fold.spec.js` (new), `tests/README.md`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`, build stamp (`index.html`, `version.json`).
+- Commit(s) + build id: claude/fix-name-fold-refill, build 20261103-1959, restamped 20261103-2158 after merging main with #305.
+- Tests run and result (widths, checks): `tests/name_fold.spec.js` at 320, 375 and 390: 9 passed; its unfavourite and trust-drop tests fail on main without the `save.js` change (fav back to true; trust 60, expected 50). With `npc_ranks`, `side_badge`, `day1_save_kinds`, `reputation`, `save_copy` and `loop_save_sw`: 153 passed, 0 failed, zero console errors (run with `npx playwright test --workers=1`; `npm run test:agent` could not run in the cloud sandbox, no npm network).
+- Decisions made (colour + reasoning): green (engineer): the fold mark lives in `flags` (already free-form and additive) instead of a new top-level field; it is set only when an old key exists so new saves stay clean.
+## 2026-11-03 19:56 ET: Debug previews never reach the cloud save; ?hall2=1 needs debug to stick
+- What changed and why:
+  - QA pass (Nov 3): the High Charity city preview and the Glimmerwell preview lot already held the local save, but the cloud hook in `game.js` (`getState`) ignored both, so a signed-in `?debug=1` tester could upload preview state (for example the Act 5 checkpoint) and a second device would adopt it. New `previewActive()` (the city preview, the open lot, or `world.map` `gw_preview`) is now used by `save()`, by the cloud `getState` hook (null while a preview is open) and by the cloud `busy` hook (no compare, so no adopt reload, under a preview). `cloud.js` already treats a null state as "nothing to upload"; it is unchanged.
+  - `?hall2=1` was stored in sessionStorage even without debug, so a later `?debug=1` in the same tab turned the contested Hall on unasked. The key is now only written or cleared with debug on, and a debug-off load clears it, as `readHcCityPref` does.
+  - `HC_STREET_SOLID_BAYS` / `HC_TANK_POSTS` / `HC_GOV_HOUSE` left as they are (votes pending).
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `tests/cloud_stub.js` (new), `tests/hc_city_v2.spec.js`, `tests/glimmer_fleet.spec.js`, `tests/trial_hall_contested.spec.js`, `tests/README.md`, `CHANGELOG.md`, build stamp.
+- Commit(s) + build id: claude/fix-preview-cloud-hole, build 20261103-1956.
+- Tests run and result (widths, checks): the three new checks fail on main and pass with the fix; `cloud_link`, `cloud_off`, `glimmer_fleet`, `hc_city_v2`, `hc_court_move` and `trial_hall_contested` at 320, 375 and 390: 122 passed, 16 skipped (tagged @slow / single-width), 0 failed, no retries; zero console errors. The cloud checks run the real `cloud.js` on `?cloud=block` with the Firebase SDK stubbed; nothing signs in or writes to `walklings-4cc89`. Scans: wording, decisions, symlinks, gamejs_map, test_mistakes PASS. Save unchanged (`pixelpets.save.v2`, `v` 2, no new field).
+- Decisions made (colour + reasoning): green (engineer): the cloud `busy` hook also counts a preview, so a cloud compare cannot adopt and reload mid-preview (a null state would otherwise read as "no game yet").
+- Anything left unfinished: none.
+
 ## 2026-11-03 17:05 ET: No more mint for Glimmerwell: text and art go wine (B-12; D1087, D1448)
 - What changed and why:
   - D1087 (Vincent, Tue Nov 3, 2026, SETTLED): "no more mint color" for Glimmerwell, anywhere; wine replaces it. PR #294 already moved the vests. This sweeps what was left.
