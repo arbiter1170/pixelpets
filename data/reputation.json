@@ -987,6 +987,132 @@
       "faction": "none",
       "base": 50,
       "note": "ROUTE_TO_GOVERNOR §5.5: the Basket Weaver in the withy beds. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER D",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2 (D1838): the Clay Digger on Claybank Road. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER E",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2: the Ford Walker on Claybank Road. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER F",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2: the Hill Carter on Claybank Road. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER G",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2: the Kiln Hand walking home in the rain (B10). Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER H",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2: the Night Fisher (B10). Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER I",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 (D1838, D1986): the optional kiln-yard holder. Name and team PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER J",
+      "faction": "glimmer",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 (B4): the Tower Crew holder at the fence gate. Name PLACEHOLDER."
+    },
+    {
+      "name": "Foreman Dray",
+      "faction": "glimmer",
+      "base": 50,
+      "note": "CAB §3.2 (NAMES_PASS D1751): the works foreman, a wine work vest; K3 pitch."
+    },
+    {
+      "name": "Edwin Garth",
+      "faction": "keepers",
+      "base": 50,
+      "note": "CAB §3.2 (NAMES_PASS D1750): the Commander's nominee, a retired Keeper, no rank shown; K3 pitch."
+    },
+    {
+      "name": "Reeve Agna",
+      "faction": "none",
+      "base": 50,
+      "note": "CAB §3.2 (NAMES_PASS D1748): the Reeve of Kilnmouth; K1, K7."
+    },
+    {
+      "name": "Bathkeeper Orla",
+      "faction": "none",
+      "base": 50,
+      "note": "CAB §3.2 (NAMES_PASS D1749): keeps the springs' bathhouse; the town's name."
+    },
+    {
+      "name": "Bryony",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH D1830: the springs regular (name PLACEHOLDER until the name check); K2."
+    },
+    {
+      "name": "Kiln Hand",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 K2: the kiln-yard asker. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Market Seller",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 K2: the market asker. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Kilnmouth Kid",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 B4: the kids in coats. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Tower Crew",
+      "faction": "glimmer",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 B4: the crew at the fence gate (the battle is PLACEHOLDER J). Role name PLACEHOLDER."
+    },
+    {
+      "name": "Works Hand",
+      "faction": "glimmer",
+      "base": 50,
+      "note": "KILNMOUTH §5.5: the split hold, a wine vest at the works gate. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Keeper Patrol",
+      "faction": "keepers",
+      "base": 50,
+      "note": "KILNMOUTH §5.5: the curfew pair on Gate Street and the Keeper hold. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Shopkeeper",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §6 (D1825): Kiln Row Provisions. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Kiln Crew",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §6: Hall 5 crew bodies (their battles wait on the Hall 5 build). Role name PLACEHOLDER."
+    },
+    {
+      "name": "Master Tobias Hearn",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §6 (NAMES_PASS D1746): Hall 5 Master, neutral; the battle waits on the Hall 5 build."
     }
   ],
   "tiers": [
