@@ -2306,7 +2306,7 @@
 9-607  const PPSave
 
 # sfx.js
-8-828  const PPSound
+8-844  const PPSound
 
 # sprites.js
 13-37  const PAL
