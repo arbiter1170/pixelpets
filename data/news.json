@@ -4910,6 +4910,88 @@
     "faction.glimmerwell",
     "thing.sanctuary_crates"
    ]
+  },
+  {
+   "id": "nw-fernbrook-curfew",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "!story.side_pick_done"
+   ],
+   "lead": 30,
+   "headline": "Fernbrook under curfew",
+   "body": [
+    "A Keeper Commander closed the Fernbrook square at dusk. Residents sheltered in the Lantern House overnight.",
+    "Dusk to dawn, by order of High Charity. Officers stay posted until further notice. The Trial Hall is shut."
+   ],
+   "lore": [
+    "place.fernbrook",
+    "faction.keepers",
+    "term.lantern_house"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-curfew-lifted",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "story.side_pick_done"
+   ],
+   "lead": 20,
+   "headline": "Curfew lifted in Fernbrook",
+   "body": [
+    "The officers are gone from the square, and the stalls are open again.",
+    "The Trial Hall stays shut by order of High Charity. Master Fen has written to the Warden."
+   ],
+   "lore": [
+    "place.fernbrook",
+    "faction.keepers",
+    "term.trial_hall"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-seals-paused",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown"
+   ],
+   "lead": 25,
+   "headline": "No new Seals in Fernbrook until further notice",
+   "body": [
+    "The President spoke on the wire last night: no new Seals will be given in Fernbrook for now.",
+    "Seals already earned stand as they were. 'A Seal is not for sale,' he said."
+   ],
+   "lore": [
+    "term.seal",
+    "event.seal1",
+    "place.bloom_trial_hall"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-hall-shut",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.hall1_shut",
+    "!story.side_pick_done"
+   ],
+   "headline": "Fernbrook Trial Hall: still shut",
+   "body": [
+    "A Keeper cordon stands at the Trial Hall door. Master Fen has written to the Warden.",
+    "No date has been given for the Hall to reopen."
+   ],
+   "lore": [
+    "place.bloom_trial_hall",
+    "person.master_fen",
+    "faction.keepers"
+   ]
   }
  ],
  "voices": [
