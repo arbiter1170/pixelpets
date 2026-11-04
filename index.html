@@ -96,7 +96,7 @@
         <div id="fcTL" class="fc-col fc-tl"></div>
         <div id="fcTop" class="fc-top"></div>
         <div id="fcClock" class="fc-clock"></div>
-        <div id="fcAcorns" class="fc-acorns hdr-acorns" aria-label="0 Acorns"><b id="fcAcornN" aria-hidden="true">0</b></div>
+        <button id="fcAcorns" class="fc-acorns hdr-acorns" type="button" aria-label="0 Acorns. Open your book."><b id="fcAcornN" aria-hidden="true">0</b><i class="fc-caret" aria-hidden="true"></i></button>
         <div id="fcTR" class="fc-col fc-tr"><button id="gearFloat" class="dpc fbtn icon-only" type="button" aria-label="Settings" title="Settings"><canvas id="gearFloatIcon" class="ico-hud" data-nav="gear" width="8" height="8" aria-hidden="true"></canvas></button></div>
         <div id="joyRing" class="joy" aria-hidden="true" hidden><i id="joyKnob" class="joy-knob"></i></div>
         <div id="fcTip" class="fc-tip"></div>
@@ -393,6 +393,23 @@
       <button id="shopClose" class="shop-x" type="button" aria-label="Close">X</button>
     </div>
     <div id="shopList" class="shop-list" role="listbox" aria-label="Shelf"></div>
+  </div>
+</div>
+
+<!-- The Acorn Account (BANK_AND_HOMES D2221): the Acorns chip opens this sheet. BOOK and LEDGER now; JARS shows with the open
+     book (coming soon); EXCHANGE shows only once the stock app is built (its own gate). -->
+<div id="ovBank" class="overlay bank" hidden>
+  <div class="bank-sheet" role="dialog" aria-modal="true" aria-labelledby="bankTitle">
+    <div class="bank-head">
+      <div class="bank-copy">
+        <div class="bank-who"><canvas id="bankMark" width="12" height="12" aria-hidden="true"></canvas><span id="bankTitle">YOUR ACORNS</span></div>
+        <div id="bankPrompt" class="bank-prompt">Counted and kept.</div>
+      </div>
+      <div class="bank-pill" aria-label="Acorns in your bag"><canvas id="bankAcorn" width="8" height="8" aria-hidden="true"></canvas><b id="bankMoney">0</b></div>
+      <button id="bankClose" class="bank-x" type="button" aria-label="Close">X</button>
+    </div>
+    <div id="bankTabs" class="bank-tabs" role="tablist" aria-label="Your book"></div>
+    <div id="bankPage" class="bank-page" role="tabpanel"></div>
   </div>
 </div>
 
@@ -799,6 +816,7 @@
 <script src="quests.js?v=20261104-1138"></script>
 <script src="standing.js?v=20261104-1138"></script>
 <script src="rep.js?v=20261104-1138"></script>
+<script src="bank.js?v=20261104-1138"></script>
 <script src="save.js?v=20261104-1138"></script>
 <script src="clock.js?v=20261104-1138"></script>
 <script src="env.js?v=20261104-1138"></script>

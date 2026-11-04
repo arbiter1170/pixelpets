@@ -17,6 +17,7 @@ const SHELL = [
   './quests.js',
   './standing.js',
   './rep.js',
+  './bank.js',
   './save.js',
   './env.js',
   './sfx.js',
