@@ -84,7 +84,7 @@
         {
           "id": "hm_mint_vest",
           "when": ["story.side=glimmer"],
-          "text": "A mint vest was seen on the street. The paper here is still Keeper paper."
+          "text": "A wine vest was seen on the street. The paper here is still Keeper paper."
         }
       ]
     },
@@ -151,7 +151,7 @@
         {
           "id": "cc_hale_note_bright",
           "when": ["story.quarry_bought", "!story.seal2"],
-          "text": "Hale's door has a bright chalk note about the quarry meeting. Mint pens provided."
+          "text": "Hale's door has a bright chalk note about the quarry meeting. Company pens provided."
         }
       ]
     },

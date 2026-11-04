@@ -1,0 +1,42 @@
+{
+ "spec": "D1087 (Vincent, Tue Nov 3, 2026, build card B-12)",
+ "_about": "Ours, not a design copy. D1087: no more mint colour for Glimmerwell; wine replaces it. cobblecrest.json and act1_route2.json stay verbatim (AGENTS rule 8), so their Glimmerwell 'mint' lines and the two 'cord' lines (D1448: lanyard) are re-voiced at runtime here, the way detail_zz_day1.json re-voices interiors.json. The bunting and lamp wording matches design branch claude/b12-no-mint. Nothing is written to the save.",
+ "lineSwaps": [
+  {
+   "scene": "quarry_buyout",
+   "when": "else",
+   "text": "A crowd fills the quarry floor. Mint-and-white bunting flaps over a little stage.",
+   "to": [["say", "", "A crowd fills the quarry floor. Wine-and-white bunting flaps over a little stage."]]
+  },
+  {
+   "scene": "glimmer2",
+   "when": "else",
+   "text": "A soft mint glow pulses at the top of the side path.",
+   "to": [["say", "", "A soft wine-red glow pulses at the top of the side path."]]
+  },
+  {
+   "scene": "lead_intro",
+   "when": "else",
+   "text": "Mint lamps hum on tall stands. Walklings doze under them, their colours washed out.",
+   "to": [["say", "", "Wine-red lamps hum on tall stands. Walklings doze under them, their colours washed out."]]
+  },
+  {
+   "scene": "teaser",
+   "when": "else",
+   "text": "So. Being late on partner day. The jingle. The mint sticker. That was all one thing.",
+   "to": [["say", "Rook", "So. Being late on partner day. The jingle. The wine sticker. That was all one thing."]]
+  }
+ ],
+ "objPatch": {
+  "_note": "game.js applyObjPatch, after every overlay. linesSet replaces only a key the object already has.",
+  "q_stage_l": {
+   "linesSet": {"else": "Bunting in Glimmerwell wine and white. It smells like new paint."}
+  },
+  "cc_miner": {
+   "linesSet": {"story.seal2": "Hale says your lanyard's from the company, not him. His floor's still open, patient as stone."}
+  },
+  "tobin_gate": {
+   "linesSet": {"story.seal2": "A Tier 2 lanyard, huh? Doesn't open this gate, sorry. Nothing does. Have a bright day!"}
+  }
+ }
+}
