@@ -18,7 +18,7 @@ npm test
 PP_URL=https://arbiter1170.github.io/pixelpets/ npm test
 ```
 
-When `PP_URL` is set, the config does not start a server. `PP_PORT` changes the local port.
+When `PP_URL` is set, the config does not start a server. The config adds a trailing slash, and specs navigate with `./` (`gotoGame`, `page.goto('./?debug=1')`, `request.get('./sw.js')`), never `/`: a leading slash goes to the domain root and drops the live site's `/pixelpets/` path. `PP_PORT` changes the local port.
 
 **Line endings.** `.gitattributes` stores and checks out every text file with LF (`* text=auto eol=lf`) and marks images, fonts and MIDI `binary`, so a Windows clone with `core.autocrlf=true` matches Linux. `handoff/maps/AUDIT.csv` was committed with CRLF and is marked `-text`, so it stays byte-for-byte. Specs that splice `game.js` (`intro_cutscene`, `people_looks_28`, `partner_day`) or split a repo file into lines (`handset_dark`) also accept `\r\n`, for clones made before `.gitattributes`.
 
