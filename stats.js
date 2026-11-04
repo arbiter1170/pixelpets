@@ -51,6 +51,11 @@ const BASE_STATS = {               // key = form id "<speciesId>/<stage>" (save 
   'filecrow/0': { hp: 51, atk: 48, def: 54, spd: 39 }, 'filecrow/1': { hp: 68, atk: 64, def: 72, spd: 52 }, 'filecrow/2': { hp: 85, atk: 80, def: 90, spd: 65 },
   'cordhound/0': { hp: 36, atk: 60, def: 33, spd: 63 }, 'cordhound/1': { hp: 48, atk: 80, def: 44, spd: 84 }, 'cordhound/2': { hp: 60, atk: 100, def: 55, spd: 105 },
   'humwisp/0': { hp: 33, atk: 72, def: 30, spd: 57 }, 'humwisp/1': { hp: 44, atk: 96, def: 40, spd: 76 }, 'humwisp/2': { hp: 55, atk: 120, def: 50, spd: 95 },
+  // ROUTE_TO_GOVERNOR §7.2 (D1855) and KILNMOUTH §4.4: totals 192 / 256 / 320; stages 1-2 = final x 0.6 / 0.8, largest remainder.
+  'adder/0': { hp: 45, atk: 57, def: 45, spd: 45 }, 'adder/1': { hp: 60, atk: 76, def: 60, spd: 60 }, 'adder/2': { hp: 75, atk: 95, def: 75, spd: 75 },
+  'heron/0': { hp: 45, atk: 54, def: 36, spd: 57 }, 'heron/1': { hp: 60, atk: 72, def: 48, spd: 76 }, 'heron/2': { hp: 75, atk: 90, def: 60, spd: 95 },
+  'dipper/0': { hp: 48, atk: 45, def: 42, spd: 57 }, 'dipper/1': { hp: 64, atk: 60, def: 56, spd: 76 }, 'dipper/2': { hp: 80, atk: 75, def: 70, spd: 95 },
+  'jugwasp/0': { hp: 42, atk: 54, def: 57, spd: 39 }, 'jugwasp/1': { hp: 56, atk: 72, def: 76, spd: 52 }, 'jugwasp/2': { hp: 70, atk: 90, def: 95, spd: 65 },
 };
 const STAT_RULES = {
   LEVEL_CAP: 50, STARTER_LEVEL: 5, MIGRATED_LEVEL_MIN: 5, MIGRATED_LEVEL_MAX: 10,

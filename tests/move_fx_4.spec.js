@@ -109,8 +109,8 @@ test('T2 D934: every move in the game has a row', async ({ page }) => {
     return { n: all.length, missing: all.filter((m) => !mvMoveRow(m)), rows: Object.keys(MV_MOVE).length };
   });
   expect(r.missing).toEqual([]);
-  expect(r.n).toBe(122);
-  expect(r.rows).toBe(122);
+  expect(r.n).toBe(126);   // 122 plus the four Act 2 signatures (ROUTE_TO_GOVERNOR D1858, KILNMOUTH)
+  expect(r.rows).toBe(126);
 });
 
 for (const [mid, shape] of [['kiln_rush', 'flicker'], ['undertow', 'skim'], ['thorn_lash', 'hop'], ['boulder_drop', 'tumble'], ['arc_bolt', 'zig'],

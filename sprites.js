@@ -402,6 +402,30 @@ const SPECIES = [
       '.......a','......aa','.....aaa','...d.aaa','..daaaaa','..aaaaaa','.daaaaaa','.aaaaiea',
       '.aaaaeea','.aaaccbb','..aaccbb','..daaaaa','...aaaaa','...daaa.','..c..c.c','....c..c']}
   ]},
+  // ROUTE_TO_GOVERNOR v0.1.1 §7 (D1855, D1857, D1862) and KILNMOUTH v0.1.1 §4.4 (indices 25-28, appended in landing order).
+  // Names are PLACEHOLDER. tableOnly: wild only on an authored spawn table (never the any-species roll or a habitat pick).
+  // spawnNear: a tile char the line prefers to spawn beside (the adder basks by drystone walls, D1871); idleMul stretches
+  // the wild's idle between steps (the heron stands still, D1871). The heron's stages are full 16-column profiles.
+  { id:'adder', habitat:{meadow:4, hot:4, storm:3, mountain:3}, tiles:'grass', tableOnly:true, spawnNear:'h', type:'VOLT', blurb:"A wall adder. Its zigzag back looks like a lightning mark.", stages:[
+    { name:"S8 Adderlet", col:{a:PAL.h,b:PAL.y,c:PAL.m,d:PAL.r,x:PAL.d}, half:['........','........','........','........','........','......aa','.....aaa','....aiea','....aeea','.....aad','......ab','....abab','..aababa','.abaabab','.caaaaaa','..cccccc']},
+    { name:"S8 Walladder", col:{a:PAL.m,b:PAL.y,c:PAL.d,d:PAL.r,x:PAL.k}, half:['........','........','......aa','.....aaa','....aaaa','....aiea','....aeea','.....aad','......ab','......ba','......ab','...aabaa','..abaaba','.abaabab','caaaaaaa','.ccccccc']},
+    { name:"S8 Zigzag", col:{a:PAL.m,b:PAL.y,c:PAL.d,d:PAL.r,x:PAL.w}, half:['....x..x','....b.bb','....aaaa','...aaaaa','...aaiea','...aaeea','...baaaa','....aaad','.....aab','.....aba','..aabaab','.aabaaba','abaabaab','baabaaba','caaaaaaa','cccccccc']}
+  ]},
+  { id:'heron', habitat:{water:6, rain:3, fog:3, night:3}, tiles:'shore', tableOnly:true, idleMul:3, type:'TIDE', blurb:"A striped reed-heron. It stands so still it becomes a reed.", stages:[
+    { name:"S10 Reedling", grid:['................','................','................','.......F........','.......G........','......GGG.......','......GkG.......','......GGGt......','.......GGtt.....','......GwGttt....','.....GwwGttt....','.....GwwGGtt....','......GwGGt.....','.......GGG......','.......F.F......','.......F.F......']},
+    { name:"S10 Stalker", grid:['.......F........','.......G........','.......G........','......GGG.......','......GkGt......','......GGGt......','.......GF.......','.......FG.......','.......GF.......','.......FGt......','......GwGtt.....','.....GwwGttt....','.....GwwGGttt...','......GwGGtt....','.......GGG......','.......F.F......']},
+    { name:"S10 Boomer", grid:['.......F........','.......G........','.......G.tt.....','......GGGtt.....','......GkGGt.....','......GGGG......','......GwFG......','.....GwwGF......','.....GwFGG......','.....GGFGGt.....','......GGGGtt....','.....tGGGGttt...','....ttGGGGGttt..','.....ttGGGGtt...','.......G..G.....','.......F..F.....']}
+  ]},
+  { id:'dipper', habitat:{water:6, cold:4, rain:2}, tiles:'shore', tableOnly:true, type:'TIDE', blurb:"Walks the stream bed. Hunches when the water runs cold.", stages:[
+    { name:"S1 Chick", col:{a:PAL.m,b:PAL.w,c:PAL.d,d:PAL.y,x:PAL.k}, half:['........','........','........','........','.....aaa','....aaaa','...aaaaa','...aeiaa','...aaaaa','.ccaaabb','c.caabbb','..caabbb','...caabb','....aaaa','......d.','.....dd.']},
+    { name:"S1 Walker", col:{a:PAL.m,b:PAL.w,c:PAL.d,d:PAL.y,x:PAL.k}, half:['........','........','.....aaa','....aaaa','...aaaaa','...aeiaa','...aaaax','..aaaaab','.caaaabb','ccaaabbb','ccaaabbb','.caaaabb','..caaaaa','...aaaaa','.....d..','....dd..']},
+    { name:"S1 Diver", col:{a:PAL.m,b:PAL.w,c:PAL.n,d:PAL.y,x:PAL.k}, half:['......c.','.....cc.','....aaaa','...aaaaa','..aaaaaa','..aaeiaa','..aaaaax','.aaaaaab','ccaaaabb','cccaabbb','cccaabbb','.ccaaabb','..caaaaa','...aaaaa','....d...','...dd...']}
+  ]},
+  { id:'jugwasp', habitat:{mountain:4, hot:3, meadow:2}, tiles:'grass', tableOnly:true, type:'STONE', blurb:"Shapes tiny clay jugs on warm banks. Carries one always.", stages:[
+    { name:"S4 Bearer", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['........','........','...x....','....x...','.....aaa','....aeia','.bb..aaa','bbbb..xa','.bb..aaa','....aaxa','....aaaa','.....aax','......cc','.....ccc','.....ccc','......dd']},
+    { name:"S4 Potter", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['........','..x.....','...x....','....xaaa','....aaaa','...aaeia','bbb..aaa','bbbb..xa','.bbb.aaa','.b..aaxa','...aaaaa','....aaax','.....ccc','....cccc','....cccc','.....ddd']},
+    { name:"S4 Cluster", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['.x......','..x.....','...xaaaa','...aaaaa','...aaeia','bb..aaaa','bbbb..xa','bbbb.aaa','.bb.aaxa','...aaaaa','....aaax','.cc..ccc','cccccccc','cccccccc','.dd.dddd','........']}
+  ]},
 ];
 
 // HUSHWATER B0: one fallback stage for a species id this client does not know.

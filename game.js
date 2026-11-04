@@ -10907,7 +10907,9 @@ const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow
 // npcOnly species (the fetch line): weight 0 everywhere. A keeper cannot meet one, so it is not in the journal either.
 const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
 const wildSpecies = sp => !sp.labOnly && !sp.npcOnly;
-const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && wildSpecies(SPECIES[i]));
+// tableOnly species (ROUTE_TO_GOVERNOR §7.1, D1862: the Act 2 lines) are wild only on an authored spawn table that names them:
+// never in the 8% any-species roll and never in a habitat pick, so they cannot turn up on an Act 1 map.
+const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && !SPECIES[i].tableOnly && wildSpecies(SPECIES[i]));
 // CREATURES_SLICE §3: authored spawn tables, rows [speciesId, baseWeight, minLv, maxLv]. Effective weight = base x (1 + 0.25 x the
 // species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
 const SPAWNS = {
@@ -10923,7 +10925,7 @@ const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] ||
 function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
 const starterMult = sp => !sp.starter ? 1 : (S.flags && S.flags['story.seal1']) ? 0.2 : 0;
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => wildSpecies(sp) && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => wildSpecies(sp) && !sp.tableOnly && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
 const anyWeights = () => SPECIES.map((sp, i) => ANY_POOL.includes(i) ? starterMult(sp) : 0);
 function spawnOdds(tags = envTags(), key = spawnKey()){   // expected spawn probability per species for these tags on this map's table
   const t = SPAWNS[key];
@@ -10983,22 +10985,27 @@ function wildAt(x, y, except){ return wild.list.find(w => w !== except && ((w.x 
 const playerOn = (x, y) => (S.world.x === x && S.world.y === y) || (walk.to && walk.from.x === x && walk.from.y === y);
 function spawnSpot(sp){
   const pref = { grass: (x, y) => MAP[y][x] === 't', shore: (x, y) => nextTo(x, y, 'w'), woods: (x, y) => nextTo(x, y, 'T') }[SPECIES[sp].tiles || 'grass'];
+  // ROUTE_TO_GOVERNOR E8 (D1871): `spawnNear` (the adder: 'h', a drystone wall) is tried first; then the line's tiles, then tall grass.
+  const near = SPECIES[sp].spawnNear, wall = [];
   const best = [], ok = [];
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) {
     if (!roamable(x, y) || wildAt(x, y) || Math.abs(x - S.world.x) + Math.abs(y - S.world.y) < 3 || (fol.x === x && fol.y === y)) continue;
     if (MW > 24 && Math.abs(x - S.world.x) + Math.abs(y - S.world.y) > 10) continue;      // wide maps: within 10 tiles of you (§4)
+    if (near && nextTo(x, y, near)) wall.push([x, y]);
     if (pref(x, y)) best.push([x, y]); else if (MAP[y][x] === 't') ok.push([x, y]);
   }
-  const list = best.length ? best : ok;
+  const list = wall.length ? wall : best.length ? best : ok;
   return list.length ? list[Math.random() * list.length | 0] : null;
 }
+// ROUTE_TO_GOVERNOR E8 (D1871): a line's `idleMul` stretches its idle between steps (the reed-heron stands still: 3).
+const wildIdle = sp => rnd(WILD_IDLE_MS) * ((SPECIES[sp] && SPECIES[sp].idleMul) || 1);
 function spawnWild(sp, stage, at){
   if (sp == null) sp = pickSpecies();
   if (stage == null) stage = pickStage();
   const spot = at || spawnSpot(sp); if (!spot) return null;
   const c = wild.clock;
   const w = { id: ++wild.seq, sp, stage, lv: wildLv(sp, stage), x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
-    born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + rnd(WILD_IDLE_MS), phase: Math.random() * 3000, shyUntil: 0 };
+    born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + wildIdle(sp), phase: Math.random() * 3000, shyUntil: 0 };
   wild.list.push(w); return w;
 }
 // One nearby wild on Hearthmoor after Rook's first battle, until it is met or the keeper already has a second friend.
@@ -11031,7 +11038,7 @@ function updateWild(dt){
     if (w.to) {
       const k = clamp((c - w.t0) / WILD_STEP_MS, 0, 1);
       w.fx = w.from.x + (w.to.x - w.from.x) * k; w.fy = w.from.y + (w.to.y - w.from.y) * k;
-      if (k >= 1) { w.fx = w.x; w.fy = w.y; w.to = null; w.idleUntil = c + rnd(WILD_IDLE_MS); }
+      if (k >= 1) { w.fx = w.x; w.fy = w.y; w.to = null; w.idleUntil = c + wildIdle(w.sp); }
       continue;
     }
     const chased = wild.chase === w.id;
