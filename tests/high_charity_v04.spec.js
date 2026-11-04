@@ -91,9 +91,11 @@ test('§13.1: the layout checker passes over the merged game WORLD for all five 
       return aps;
     }
     // Scheduled townsfolk: every row tile on this map counts as a body (any row may be the live one).
-    const schedTiles = {};
-    for (const m of Object.values(WORLD)) for (const o of (m && m.objs) || []) for (const row of (o && o.kind === 'npc' && o.schedule) || [])
+    const schedTiles = {}, schedNames = new Set();
+    for (const m of Object.values(WORLD)) for (const o of (m && m.objs) || []) for (const row of (o && o.kind === 'npc' && o.schedule) || []) {
+      schedNames.add(o.name);
       if (row.map) (schedTiles[row.map] = schedTiles[row.map] || []).push([row.x, row.y, o.id]);
+    }
     for (const id of ['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college']) {
       const m = WORLD[id];
       if (m.w > 64 || m.h > 48) bad.push(id + ': over the 64x48 cap');
@@ -102,7 +104,7 @@ test('§13.1: the layout checker passes over the merged game WORLD for all five 
       const block = new Map(), targets = new Map();
       for (const o of m.objs) {
         if (!o) continue;
-        const stands = (o.kind === 'npc' && !o.patrol && !o.schedule) || o.kind === 'sign' || o.kind === 'prop';
+        const stands = (o.kind === 'npc' && !o.patrol && !schedNames.has(o.name)) || o.kind === 'sign' || o.kind === 'prop';   // a scheduled body counts by its rows
         if (stands && walkCh(m, o.x, o.y)) block.set(key(o.x, o.y), o.id);
         if (o.kind === 'door') {
           targets.set('door:' + o.id, [o.x, o.y]);
@@ -168,6 +170,35 @@ test('§13.1: the layout checker passes over the merged game WORLD for all five 
   expect(r.inGame).toEqual([]);
   expect(r.report.map(x => x.id)).toEqual(CHUNKS);
   for (const x of r.report) expect(x.objs, x.id).toBeLessThanOrEqual(240);
+});
+
+test('§8.2 scheduled townsfolk: each body stands on its row\'s map and tile by phase, goes home after, and shows its label', async ({ page }) => {
+  test.setTimeout(90000);
+  await boot(page);
+  const rows = {};
+  for (const m of Object.values(DATA.maps)) for (const o of m.objs) if (o.schedule) rows[o.name] = { id: o.id, rows: o.schedule };
+  expect(Object.keys(rows).sort()).toEqual(['Child', 'Dockhand B', 'Exchange Clerk', 'Office worker', 'Old holder', 'Parent', 'Shopper', 'Student A', 'Student B']);
+  const at = { dawn: ['tue', 6, 0], day: ['tue', 11, 0], dusk: ['tue', 19, 0], night: ['tue', 23, 30] };
+  for (const [phase, t] of Object.entries(at)) {
+    await page.evaluate(t => { PixelPets.clock.freeze(true); PixelPets.clock.set(...t); }, t);
+    for (const [name, r] of Object.entries(rows)) {
+      const want = r.rows.find(row => !row.when || row.when.split('|').includes('phase:' + phase));
+      const got = await page.evaluate(n => PixelPets.npcSpot(n), name);
+      const tag = name + ' at ' + phase;
+      if (!want.map) { expect(got && got.map ? got.map : null, tag).toBeNull(); continue; }
+      expect(got && [got.map, got.x, got.y], tag).toEqual([want.map, want.x, want.y]);
+    }
+  }
+  // a body is drawn only on its live row's map: Student A at dusk is on the Square, not the Quad
+  await page.evaluate(() => PixelPets.clock.set('tue', 19, 0));
+  const a = DATA.maps.highcharity.objs.find(o => o.name === 'Student A');
+  await page.evaluate(([x, y]) => PixelPets.goto('highcharity', x, y + 1, 'up'), [a.x, a.y]);
+  await settle(page);
+  expect(await page.evaluate(id => (PixelPets.objPos(id) || {}).present, a.id)).toBe(true);
+  await page.evaluate(() => PixelPets.goto('hc_college', 34, 22, 'up'));
+  await settle(page);
+  expect(await page.evaluate(() => (PixelPets.objPos('hc_student_a') || {}).present)).toBe(false);
+  expect(await page.evaluate(() => [PixelPets.shownName('Student A'), PixelPets.shownName('Dockhand B'), PixelPets.shownName('Exchange Clerk')])).toEqual(['Student', 'Dockhand', 'Clerk']);
 });
 
 test('rule 9: rooms with no approved preview are held (not in WORLD); floor 1\'s stair still goes to floor 3; the built rooms stand', async ({ page }) => {
@@ -244,7 +275,7 @@ test('the coach lands on 32,37 facing north and sets hc_arrived; the region map 
 });
 
 test('Charter Hill gates: the north mouth always lets you out; walkers are turned back inward from the Governor meeting until the parade', async ({ page }) => {
-  test.setTimeout(60000);
+  test.setTimeout(150000);   // three boots and four warps; slow on a shared box
   const outs = DATA.maps.hc_civic.objs.filter(o => o.kind === 'warp' && /^m_c1_n_\d$/.test(o.id));
   expect(outs.length).toBe(5);
   for (const o of outs) expect(o.when, o.id).toBeUndefined();   // ROUTE_TO_GOVERNOR D1853: always open outward

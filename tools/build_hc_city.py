@@ -95,7 +95,14 @@ TXT = {
     'boarded': "Boarded up.",                                   # PLACEHOLDER (Store Row d, the Glimmerwell named slot)
     'fish': "The stalls are packed away for now.",              # PLACEHOLDER
     'gallery': "[PLACEHOLDER] The gallery stair is roped off for now.",
+    'news_bill': 'A Block News bill. BLOCK NEWS · Who. Where. What changed.',
     'apt_b': None,                                              # kept text
+    # §8.2 scheduled townsfolk: the layout gives roles, not lines; Story writes them (PLACEHOLDER)
+    'sch_student': "[PLACEHOLDER: a College student's line; Story writes it.]",
+    'sch_clerk': "[PLACEHOLDER: the Exchange clerk's line; Story writes it.]",
+    'sch_dockhand': "[PLACEHOLDER: the pier dockhand's line; Story writes it.]",
+    'sch_shopper': "[PLACEHOLDER: the shopper's line; Story writes it.]",
+    'sch_office': "[PLACEHOLDER: the office worker's line; Story writes it.]",
 }
 # District signposts one tile inside each mouth (names are placeholders until Story's name check, D1277).
 DISTRICT = {'highcharity': 'LANTERN SQUARE', 'hc_civic': 'CHARTER HILL', 'hc_exchange': 'EXCHANGE QUARTER',
@@ -113,6 +120,12 @@ LOOKS = {
     'hc_governor':  {'skin': '4', 'hair': 'short', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y'},
     'hc_president': {'skin': '3', 'hair': 'short', 'hairCol': 'w', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y', 'accessory': 'sash'},   # PLACEHOLDER (LH-2 bust is open)
     'hc_aide':      {'skin': '2', 'hair': 'bun', 'hairCol': 'd', 'outfit': 'jacket', 'outfitCol': 'g', 'accent': 'w'},
+    # §8.2 scheduled townsfolk (PLACEHOLDER looks from the kit's parts)
+    'hc_student_a': {'skin': '3', 'hair': 'curls', 'hairCol': 'd', 'outfit': 'sweater', 'outfitCol': 'r', 'accent': 'w', 'accessory': 'glasses'},
+    'hc_student_b': {'skin': '5', 'hair': 'pony', 'hairCol': 'k', 'outfit': 'cardigan', 'outfitCol': 'b', 'accent': 'y'},
+    'hc_clerk_x':   {'skin': '1', 'hair': 'short', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'm', 'accent': 'w'},
+    'hc_shopper':   {'skin': '6', 'hair': 'bob', 'hairCol': 'd', 'outfit': 'raincoat', 'outfitCol': 't', 'accent': 'y'},
+    'hc_officeworker': {'skin': '2', 'hair': 'short', 'hairCol': 'h', 'outfit': 'jacket', 'outfitCol': 'm', 'accent': 'w'},
 }
 SPEAKERS = {'Child': 'hc_child', 'Parent': 'hc_parent', 'Old holder': 'hc_oldholder', 'Dockhand': 'hc_dockhand',
             'Editor': 'hc_editor', 'Keeper reader': 'clerk', 'The President': 'hc_president', 'Aide': 'hc_aide',
@@ -563,9 +576,61 @@ prop('highcharity', 'hc_trial_notice', 14, 29, 'slab_sign', r=0, lines={'else': 
 SC['hc2_board'] = [['say', '', TXT['hb3_board']], ['setFlag', 'story.hc_board', True]]
 prop('highcharity', 'hc_kindness', 21, 26, 'hc_kindness_board', r=0, scene='hc2_board', lines={'else': TXT['hb3_board']}, name='the Kindness Board')
 SC['hc2_noon'] = [['say', 'Child', TXT['hb1_child']], ['say', 'Parent', TXT['hb1_parent']], ['setFlag', 'story.hc_noon', True]]
-npc('highcharity', 'hc_child', 'Child', 'hc_child', 14, 25, facing='up', scene='hc2_noon', lines={'else': TXT['hb1_child']}, still=True)
-c0 = CHUNKS['highcharity']; ch_ = [o for o in c0.objs if o['id'] == 'hc_child'][0]
-npc('highcharity', 'hc_parent', 'Parent', 'hc_parent', ch_['x'] + 1, ch_['y'], facing='up', r=2, scene='hc2_noon', lines={'else': TXT['hb1_parent']}, still=True)
+# §8.2 scheduled townsfolk (phase 2): schedule rows {when, map, x, y, facing, state, place}, first match wins, the last row
+# (map null) is the fallback, so a body is off the map at home outside its rows. Each row's tile is checked like any blocker
+# (never a door, mouth, patrol leg, parade stand, road or anchor; place_near nudges a spec tile that is solid or taken, and the
+# build notes it). The row's map holds one body per map (same name; the first carries the rows; game.js wireSchedules joins
+# them by name). Names are the layout's placeholder roles (D1277: Story names people); the key stays unique and the shown label
+# drops the letter (NAMES_PASS D1744's rule). Lines without a §11 sample are marked PLACEHOLDER.
+SCHED_LABEL = {}
+def sched(oid, name, look, rows, label=None, **kw):
+    out, bodies = [], {}
+    for r in rows:
+        if r[1] is None: out.append({'map': None, 'x': 0, 'y': 0, 'state': 'home', 'place': 'home (off the map)'}); continue
+        when, mid, x, y, facing, state, place = r
+        c = CHUNKS[mid]; spot = c.place_near(x, y, r=4, need_tap=True)
+        if not spot: fail(f'{mid}: no tile for {oid} near {(x, y)}'); continue
+        if spot != (x, y): note(f'{mid}: {oid} ({place}) wanted {(x, y)}, stands at {spot}')
+        c.block[spot] = oid
+        out.append({'when': when, 'map': mid, 'x': spot[0], 'y': spot[1], 'facing': facing, 'state': state, 'place': place})
+        bodies.setdefault(mid, (spot, facing))
+    if out[-1]['map'] is not None: fail(f'{oid}: schedule has no fallback row')
+    for i, (mid, (spot, facing)) in enumerate(bodies.items()):
+        o = dict({'kind': 'npc', 'id': oid if i == 0 else f'{oid}_{mid.replace("hc_", "")}', 'name': name, 'look': look,
+                  'x': spot[0], 'y': spot[1], 'facing': facing, 'still': True}, **kw)
+        if i == 0: o['schedule'] = out
+        CHUNKS[mid].add(o, blocks=False)
+    if label: SCHED_LABEL[name] = label
+
+SQ, CO, EX, WF_, CV = 'highcharity', 'hc_college', 'hc_exchange', 'hc_waterfront', 'hc_civic'
+HOME = (None, None)
+sched('hc_child', 'Child', 'hc_child', [('phase:day', SQ, 14, 25, 'up', 'idle', 'under the noon lanterns'),
+                                        ('phase:dusk', CO, 30, 35, 'down', 'play', 'the kite field'), HOME],
+      scene='hc2_noon', lines={'else': TXT['hb1_child']})
+sched('hc_parent', 'Parent', 'hc_parent', [('phase:day', SQ, 15, 25, 'up', 'idle', 'under the noon lanterns'),
+                                           ('phase:dusk', CO, 31, 35, 'down', 'play', 'the kite field'), HOME],
+      scene='hc2_noon', lines={'else': TXT['hb1_parent']})
+sched('hc_oldholder', 'Old holder', 'hc_oldholder', [('phase:day', CO, 16, 40, 'right', 'idle', 'Charity Park bench'),
+                                                      ('phase:dusk|phase:night', SQ, 24, 14, 'down', 'idle', 'the Lantern Steps'), HOME],
+      scene='hc2_gran', lines={'else': TXT['hb8_gran']})
+sched('hc_student_a', 'Student A', 'hc_student_a', [('phase:day', CO, 34, 20, 'down', 'study', 'the Quad'),
+                                                     ('phase:dusk', SQ, 16, 27, 'right', 'idle', 'Lantern Square'), HOME],
+      label='Student', lines={'else': TXT['sch_student']})
+sched('hc_student_b', 'Student B', 'hc_student_b', [('phase:day', CO, 30, 12, 'up', 'study', 'College steps'),
+                                                     ('phase:dusk', CO, 36, 37, 'down', 'idle', 'the bandstand'), HOME],
+      label='Student', lines={'else': TXT['sch_student']})
+sched('hc_clerk_x', 'Exchange Clerk', 'hc_clerk_x', [('phase:dawn', SQ, 36, 36, 'up', 'walk', 'the coach stop'),
+                                                      ('phase:day', EX, 27, 14, 'down', 'work', 'the Exchange steps'),
+                                                      ('phase:dusk', SQ, 20, 25, 'down', 'idle', 'Lantern Square bench'), HOME],
+      label='Clerk', lines={'else': TXT['sch_clerk']})
+sched('hc_dockhand_b', 'Dockhand B', 'hc_dockhand', [('phase:dawn|phase:day', WF_, 12, 28, 'left', 'work', 'the middle pier'),
+                                                      ('phase:dusk', WF_, 33, 33, 'up', 'idle', 'the fish market'), HOME],
+      label='Dockhand', lines={'else': TXT['sch_dockhand']})
+sched('hc_shopper', 'Shopper', 'hc_shopper', [('phase:day', EX, 33, 33, 'down', 'shop', 'Store Row'),
+                                              ('phase:dusk', SQ, 46, 28, 'up', 'shop', 'Lantern Market'), HOME],
+      lines={'else': TXT['sch_shopper']})
+sched('hc_officeworker', 'Office worker', 'hc_officeworker', [('phase:day', CV, 26, 17, 'down', 'work', "the Governor's steps"), HOME],
+      lines={'else': TXT['sch_office']})
 npc('highcharity', 'hc_resident', 'Resident', 'hc_resident', 44, 29, facing='down', lines={'else': TXT['hb4_poor']}, still=True)
 prop('highcharity', 'hc2_statue', 52, 25, 'lm_statue')
 prop('highcharity', 'hc2_fountain', 24, 30, 'fountain_small')
@@ -597,7 +662,7 @@ for i, (x, y) in enumerate([(14, 22), (50, 30), (28, 40), (40, 40)]): prop('hc_c
 prop('hc_exchange', 'hc2_counting_statue', 32, 40, 'lm_statue', r=4)
 for i, x in enumerate((24, 30, 36)): prop('hc_exchange', f'hc2_cafe_{i}', x, 33, 'cafe_table', r=2)
 prop('hc_exchange', 'hc2_bike', 15, 34, 'bike', r=2)
-prop('hc_exchange', 'hc2_news_poster', 50, 16, 'poster_stand', r=3, lines={'else': 'A Block News bill. BLOCK NEWS · Who. Where. What changed.'})
+prop('hc_exchange', 'hc2_news_poster', 50, 16, 'poster_stand', r=3, lines={'else': TXT['news_bill']})
 
 # Lantern Quay: rope coils and nets on the piers, the moored ferry spot noted for phase 2.
 for i, (x, y) in enumerate([(12, 26), (12, 30), (12, 34)]): prop('hc_waterfront', f'hc2_rope_{i}', x, y, 'rope_coil', r=5)
@@ -606,7 +671,6 @@ SC['hc2_gran'] = [['say', 'Old holder', TXT['hb8_gran']], ['setFlag', 'story.hc_
 
 # College Green: the Quad clock statue, the park, the old holder's bench (HB8, day tile as a fixed anchor in phase 1).
 prop('hc_college', 'hc2_college_clock', 36, 24, 'lm_statue', r=2)
-npc('hc_college', 'hc_oldholder', 'Old holder', 'hc_oldholder', 16, 40, facing='right', scene='hc2_gran', lines={'else': TXT['hb8_gran']}, still=True)
 for i, (x, y) in enumerate([(15, 40), (30, 36), (38, 30)]): prop('hc_college', f'hc2_park_bench_{i}', x, y, 'bench_long', r=2)
 for i, (x, y) in enumerate([(5, 26), (20, 30), (42, 42), (6, 44)]): prop('hc_college', f'hc2_park_tree_{i}', x, y, 'lm_big_tree', r=3)
 
@@ -887,7 +951,8 @@ for sid in SC:
 KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk'}
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
-CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
+CAST = [dict({'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50}, **({'label': SCHED_LABEL[n]} if n in SCHED_LABEL else {}))
+        for n in names]
 for e in CAST:   # NPC_RANKS: a Keeper cast entry needs a rank, a pending proposal or a flag; the city's ranks are Story's to set
     if e['faction'] == 'keepers': e['rankFlag'] = 'D1374: city cast, ranks PLACEHOLDER until Story'
 
