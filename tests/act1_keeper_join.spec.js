@@ -245,7 +245,9 @@ test.describe('ACT1_KEEPER_JOIN: Vincent Chi in the weir hut (K4)', () => {
     expect(picks).toEqual(['The ledger', 'The lamps', 'The list', "That's all"]);
     expect(said(lines, /^Six Seals, held by permit\./)).toBe(true);
     expect(said(lines, /one story: the Seals, the lamps, the tanks\.$/)).toBe(true);
-    expect(lines[lines.length - 1][1]).toBe("Go home by the orchard. Fen's crates are still at the gate.");
+    // WALK_BESIDE D1970: Jacob Chi's one-step run (the old lantern) follows the built report's last line.
+    expect(lines[lines.length - 3][1]).toBe("Go home by the orchard. Fen's crates are still at the gate.");
+    expect(lines.slice(-2).map(l => l[1])).toEqual(['Jacob Chi lifts the cloth off the old lantern on the shelf.', 'Scouts learned the long version once. Nobody asks for it now.']);
     for (const l of lines) expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110);
     const f = await flags(page);
     expect(f['story.chi_done']).toBe(true);

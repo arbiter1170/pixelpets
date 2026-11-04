@@ -5,7 +5,7 @@
    2. Each look-only card now shows at most once: story.tut_moves_seen (additive flag) keeps the furthest card seen.
    3. A look-only hole keeps its real size: the HP ring hugs the bar, not a 44 px box over the rows around it. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -101,7 +101,7 @@ test('B-T3 part 2 seen once is not played again', async ({ page }) => {
 
 test('B-T4 Settings replay starts again at F1', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'done', 'story.tut_moves_seen': 7 }));
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setTutorial').click();
   await page.locator('#shList .sh-item', { hasText: 'Moves and types' }).click();
   await page.locator('#setClose').click();

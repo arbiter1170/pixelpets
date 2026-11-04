@@ -2,6 +2,19 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Wed Nov 4, 2026: Vincent approves animated pixel sprites in battle (SPRITE_ANIM, recorded by Claude Code)
+
+Relayed by the coordinator: D2070 yes as previewed, D2071 yes (drawn leans); the yellows settle on their defaults. Built in #321.
+
+- **D2070 (Wed Nov 4, 2026, red, SETTLED by Vincent):** battle Walklings take pose frames (breathe, wind-up, strike, flinch, happy) in their own letters and PAL, inside today's lunge, squash and knock (`sprite_anim.js`).
+- **D2071 (Wed Nov 4, 2026, red, SETTLED by Vincent):** asymmetric frames: the three leans are `full` 16-column letter grids.
+- **D2072 (Wed Nov 4, 2026, yellow, SETTLED on the default):** the hit frame is a flinch only (duck 1 px, lean away 1 px, eyes squeezed shut); never hurt.
+- **D2073 (Wed Nov 4, 2026, yellow, SETTLED on the default):** timings: idle 500/500 ms, today's blink, foe 250/1170 ms behind; wind-up 0-80 ms; strike to contact + stop; flinch max(170, stop + knock) ms; happy with the hearts.
+- **D2074 (Wed Nov 4, 2026, yellow, SETTLED on the default):** FULL drops the whole-sprite 1 px bob (the breathe replaces it); CALM and OFF keep it.
+- **D2075 (Wed Nov 4, 2026, yellow, SETTLED on the default):** CALM and reduced motion: today's idle plus held strike, flinch and happy; OFF is today's sprite exactly.
+- **D2076 (Wed Nov 4, 2026, yellow, SETTLED on the default):** the happy frame ships on the befriend hearts (FULL and CALM).
+- **D2077-D2079 (Wed Nov 4, 2026, green, SETTLED):** code shape (`sprite_anim.js`, `saPose`, `saSet`), the generator and hand rows, the build and test plan.
+
 ## Tue Nov 3, 2026: Vincent approves the Lantern House and the President's look (recorded by Claude Code)
 
 Vincent, in the Claude Code session that built the crackdown: "Approved, president has a preview/look that is seen on the TV during his broadcast moment. Build his character based off that."

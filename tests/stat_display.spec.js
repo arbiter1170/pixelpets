@@ -10,7 +10,8 @@ const RECTS = {
 };
 const SEL = { strip: '#statStrip', nrgL: '.ss-nrg-l', nrgB: '.ss-nrg-b', nrgV: '.ss-nrg-v', growL: '.ss-grow-l', growB: '.ss-grow-b', growV: '.ss-grow-v', ex: '.ss-ex' };
 async function boot(page, extra = {}, settings = {}) {
-  const s = starterSave(); Object.assign(s.party[0], { energy: 72, xp: 140 }, extra); Object.assign(s.settings, settings); s.steps = 340;
+  // Arcade opt-in: the walk-screen stat strip is an Arcade HUD row. A test that checks Modern passes controls: 'modern'.
+  const s = starterSave(); Object.assign(s.party[0], { energy: 72, xp: 140 }, extra); Object.assign(s.settings, { controls: 'arcade' }, settings); s.steps = 340;
   const pinToday = s.party[0].ex && s.party[0].ex.d === 'TODAY';
   if (pinToday) s.party[0].ex.d = 'PENDING';
   await installSave(page.context(), s, { quietDay: true });

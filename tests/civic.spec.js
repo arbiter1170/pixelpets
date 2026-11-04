@@ -155,7 +155,7 @@ test('stairs down do not drop you inside the stair sign @w1', async ({ page }) =
 test('town officers answer by pledge @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hearthmoor', 8, 12, 'up'); });
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await expect(page.locator('#scr-walk')).toHaveClass(/active/);   // Modern: no tab row; the walk screen is up
   const citizen = await sayFacing(page);
   expect(citizen).toContain('Citizen');
   expect(citizen).not.toContain('mint');

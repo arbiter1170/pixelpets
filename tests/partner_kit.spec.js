@@ -1,7 +1,7 @@
 /* Partner tab: STATS and KIT above FEED, no BAG, adornments sit on every Walkling. Save stays v2. */
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, showScreen } = require('./helpers');
 
 function saveShot(page, name) {
   const w = page.viewportSize().width;
@@ -54,7 +54,7 @@ test('STATS and KIT sit above FEED, and the partner tab has no bag', async ({ pa
   expect(lay.text).toBe('GEAR');
   await saveShot(page, 'partner');
 
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await showScreen(page, 'walk');
   await expect(page.locator('#walkBagBtn')).toBeVisible();
   await page.locator('#walkBagBtn').click();
   await expect(page.locator('#ovBag')).toBeVisible();

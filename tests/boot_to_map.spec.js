@@ -3,7 +3,7 @@
    Nothing about the screen is saved; the save stays pixelpets.save.v2, v 2. A player with no Walklings keeps the
    existing boot branch (walk screen, tabs locked, "Ilse is waiting inside."). See tests/README.md. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -59,15 +59,16 @@ test('a player with Walklings boots onto the map, and a refresh from the PARTNER
   await page.evaluate(() => PixelPets.showTab('pet'));
   await page.evaluate(() => location.reload()); await page.waitForTimeout(300); await ready(page);
   expectMap(await where(page), 'script reload');
-  await page.goto('/?b=boot.20991231-0000', { waitUntil: 'commit' }); await ready(page);
+  await page.goto('./?b=boot.20991231-0000', { waitUntil: 'commit' }); await ready(page);
   expectMap(await where(page), 'boot-retry URL');
 });
 
 test('a reload with an overlay open on the PARTNER screen lands on the map with no overlay', async ({ page }) => {
-  await seedOnce(page.context(), starterSave());
+  const s = starterSave(); s.settings.controls = 'arcade';   // Arcade opt-in: only Arcade's header gear opens Settings on PARTNER
+  await seedOnce(page.context(), s);
   await gotoGame(page); await ready(page);
   await page.evaluate(() => PixelPets.showTab('pet'));
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#ovSettings')).toBeVisible();
   await page.reload({ waitUntil: 'commit' }); await ready(page);
   expectMap(await where(page), 'reload with Settings open');
