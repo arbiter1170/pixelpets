@@ -12,6 +12,7 @@ const PPNet = (() => {
     drawFx() {},
     renderFriends() {},
     coopOn() { return false; },
+    live() { return false; },
     coop: null,
     debug() { return null; },
   });
@@ -344,6 +345,8 @@ const PPNet = (() => {
   }
   // Both halves: the client half (on unless ?coop=0) and /config/coop/on === true.
   function coopOn(){ return COOP_CFG.on === true && coopFlag === true; }
+  // WALK_BESIDE R1: a play-together session is connected (the link is up and this holder is in a room).
+  function live(){ return link === 'up' && inRoom(); }
   function onForeground(){
     if (!db || !rtdb || document.hidden || !me) return;
     const bounce = !placed.ref && link === 'up';
@@ -1708,7 +1711,7 @@ const PPNet = (() => {
   coop.renderStrip = renderStrip;
 
   const api = Object.freeze({
-    enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, coopOn, coop, debug, syncLook,
+    enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, coopOn, live, coop, debug, syncLook,
   });
   window.PPNet = api;
   return api;
