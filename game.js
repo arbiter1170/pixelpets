@@ -4054,7 +4054,8 @@ if (HALL2_ON) {
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 // Glimmerwell is the company faction. A Keeper hears them as the dark side: first meeting and their battles use the sinister loops.
-const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers', bw_dorian: 'glimmer', hall3_marisol: 'keepers' };
+// Hall Masters (Fen, Hale, Marisol) are neutral, faction `none`, as in data/reputation.json (D1437); their battles keep the trial loop.
+const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'none', hall2_hale: 'none', bw_dorian: 'glimmer', hall3_marisol: 'none' };
 for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
@@ -20286,6 +20287,7 @@ function boot(){
   };
   api.musicIds = () => PPSound.musicIds();
   api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
+  api.trainerFaction = id => trainerFaction(id);   // debug/tests: the battle faction table's side for a holder (D1437: Hall Masters are 'none')
   api.wildTracks = () => WILD_TRACKS.slice();
   api.npcLine = id => id === 'amos' ? lanternGreet('Keeper Amos') : (objById(id) ? linesFor(objById(id)) : null);
   api.loyaltyLine = id => loyaltyBagLine(id);
