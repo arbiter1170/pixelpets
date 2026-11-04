@@ -8,7 +8,8 @@ trackErrors(test, expect);
 // Every map where a battle can start in normal play: wild spawns, holders, story and boss encounters, group battles.
 const BATTLE_MAPS = ['route1', 'hearthmoor', 'fernbrook', 'proto', 'route2', 'route2_glen', 'cobble_quarry', 'hw_rim', 'hw_cut',
   'hw_falls', 'route3', 'brinewick', 'cc_hall_in', 'fb_hall_in', 'bw_hall_in', 'hc_arena_in', 'rx_f1', 'rx_f2', 'rx_f3', 'rx_f4',
-  'sm_yard', 'sm_hold', 'sm_den', 'r3_sanctuary', 'r3_ledger', 'r3_relay', 'bw_depot_in'];
+  'sm_yard', 'sm_hold', 'sm_den', 'r3_sanctuary', 'r3_ledger', 'r3_relay', 'bw_depot_in',
+  'route4', 'route4_reeds', 'route4_withy'];   // ROUTE_TO_GOVERNOR §9.1 (D1875)
 
 async function boot(page, search = '?debug=1') {
   const s = starterSave();
