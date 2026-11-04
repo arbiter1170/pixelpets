@@ -181,7 +181,7 @@
     // ACT1_KEEPER_JOIN §6 (D1551): the Wickerglen investigation. Every row is noImply: the investigation walks Route 2 and
     // meets Imogen early (story.reached_route2, story.met_census, story.met_lead), and those later rows would otherwise imply these.
     { id: 'chi_meet', when: ['story.warden_met', '!story.side_pick_done'], done: ['story.chi_met'], noImply: true,
-      text: "Find Vincent Chi, past the fallen trunk at Wickerglen's east edge.", place: "Wickerglen, east edge",
+      text: "Find Jacob Chi, past the fallen trunk at Wickerglen's east edge.", place: "Wickerglen, east edge",
       target: { map: 'route2_glen', x: 22, y: 4 } },
     { id: 'chi_shifts', when: ['story.chi_met', '!story.side_pick_done'], done: ['story.shift_g', 'story.shift_k'], noImply: true,
       text: 'Work a day with Imogen\'s lamp crew and a dusk watch with the Keeper Scout.', place: 'Wickerglen',
@@ -189,7 +189,7 @@
     // The hut is WEIR_HUT's room (hw_weir_hut_in, through Wickerglen's east edge and Hushwater).
     { id: 'chi_report', when: ['story.shift_g', 'story.shift_k', '!story.side_pick_done'], done: ['story.chi_done'], noImply: true,
       npc: 'Vincent Chi', npcIds: ['chi_hut'],
-      text: 'Tell Vincent Chi what you saw.', place: 'The weir hut',
+      text: 'Tell Jacob Chi what you saw.', place: 'The weir hut',
       target: { map: 'hw_weir_hut_in', x: 3, y: 3 } },
     // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
     // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.

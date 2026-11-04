@@ -122,7 +122,7 @@ test.describe('ACT1_KEEPER_JOIN: Ilse sends the holder to Vincent Chi (K3)', () 
     expect(lines.slice(-3).map(l => l[1])).toEqual([
       "Fen wrote to me before they shut her door. Walklings walking off at night, near Wickerglen.",
       "Glimmerwell's tents are shut to a Warden. I know someone who walks where I can't.",   // D1700
-      "Vincent Chi. No phone, no side. Past the fallen trunk at Wickerglen's east edge. Say I sent you.",
+      "Jacob Chi. No phone, no side. Past the fallen trunk at Wickerglen's east edge. Say I sent you.",
     ]);
     for (const l of lines) expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110);
     const f = await flags(page);
