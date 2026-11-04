@@ -21,6 +21,60 @@ Every row was settled by Vincent on its default (v0.1.1 for D1375-D1384, v0.2.1 
 - **D1421 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** The indoor arrangement is a third cue, `anthem_hall` (B-flat major, 80 bpm, 16 bars, 48 s; one soft triangle lead, the march's bass as a slow tread, soft kick; the same melody), on today's engine.
 - **D1422 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** In the rooms: the same cue day and night; Glimmer saves hear it too; leaving plays the outdoor loop; stingers duck it; Sound OFF, Music OFF and the volume row as for any loop; no save field.
 - **D1423 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** One framed-sheet `sign` in each anthem room names the anthem, PLACEHOLDER until Story signs; the optional Keeper line is Story's to place; engine M10-M11 (`roomPatch`).
+
+## Tue Nov 3, 2026, 8:38 AM ET: Vincent approves RENDEZVOUS_VINCENT's defaults (recorded by Claude Code)
+
+Vincent chose "Approve all defaults" for `handoff/specs/RENDEZVOUS_VINCENT.md` §7. D1396 (the umbrella: build the quest) stays open until it is built.
+
+- **D1397 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Shape: two trial shifts (§2 A) Default taken: yes.
+- **D1398 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Vincent's canon: Glimmerwell field agent, unaligned in Act 1, no Keeper1, Walkling "a beat late", old channel to Ilse Default taken: yes.
+- **D1399 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** NPC name "Vincent" (owner's pick, matches his first name); registry check; surname later Default taken: keep.
+- **D1400 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Meeting place: Route 1 stream bank (built tiles) Default taken: yes.
+- **D1401 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Keeper secret: a district call-up roll from High Charity, no copies to Wardens; never the Seal trade Default taken: yes.
+- **D1402 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Glimmerwell secret: buy-back ledger, the "beat late" Walkling, the "Partners only" door; no chip named Default taken: yes.
+- **D1403 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Pick stays built at 9,10; trigger adds `story.rdv_done \| !story.crackdown`; amends D1141, D1142, D1175 Default taken: yes.
+- **D1404 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 8:38 AM ET):** Ilse's call: new call card (one tap; no new sound, no vibration, so no iPhone audio red); Amos fallback Default taken: yes.
+- **D1405 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 8:38 AM ET):** Townsfolk return by day once `story.ilse_called` (D1200); posts and notice stand until the pick Default taken: yes.
+- **D1406 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 8:38 AM ET):** Shifts in either order; the night shift is curtain time, never the real clock Default taken: yes.
+- **D1407 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:38 AM ET):** Should the rendezvous move `story.fen_lean`? (amends D1228) Default taken: no.
+- **D1408 (Tue Nov 3, 2026, yellow, SETTLED by Vincent, 8:38 AM ET):** Shift choices `inc` the D1146 counters; flavour only Default taken: yes.
+- **D1409 (Tue Nov 3, 2026, green, SETTLED by Vincent, 8:38 AM ET):** Flags, rows and save guards as §5 Default taken: yes.
+- **D1410 (Tue Nov 3, 2026, green, SETTLED by Vincent, 8:38 AM ET):** About 60 text boxes; tests as §8 Default taken: yes.
+
+## Tue Nov 3, 2026, 8:07 AM ET: Vincent's ruling on Fen's pacing (recorded by Claude Code)
+
+- **D1128 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:07 AM ET):** yes, as the research recommends (`D1128_fen_pacing_research`, three Hall holders now stand before Fen): (1) **keep** the bench XP share, 50%; (2) **keep Fen at 12/13/14** and run the Fen test after the share is built (one clean run of the new flow, 12 tries, pass at 6 or more wins); only if it fails, drop one level (11/12/13); (3) the hint moves from the Hall door to **Fen's challenge**, shown when the lead is **below Lv 12**, and suggests a second Walkling; it never blocks; (4) **drop** the payout change: Fen still pays 420 Acorns. Vincent: "Yes, the research I agree, go ahead and build it"
+
+## Tue Nov 3, 2026, 8:05 AM ET: Vincent's rulings on the curfew and what follows the crackdown (recorded by Claude Code)
+
+- **D1200 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:05 AM ET):** the Fernbrook curfew runs through dawn (dusk to dawn, ending at the dawn release, as reworded by D1222 and D1231). Vincent: "The curfew is good to run through dawn."
+- **D1395 (Tue Nov 3, 2026, red, SETTLED by Vincent, 8:05 AM ET):** the pick does not follow straight on from the crackdown. When the crackdown ends, Warden Ilse (the starting Warden, Hearthmoor) phones the holder to come home and debrief. She is distraught at the President's actions, and she sends the holder on a new quest that starts the pick (D1396, to be scoped). Vincent: "The pick should not occur right when the crackdown ends. When the crackdown ends, the player should actually get a phone call from the starting warden to return home to debrief over what's happened. And the starting warden is basically distraught at the president's actions and sends the player on a different quest that needs to be scoped, which would start the picking process, deciding between the two factions. I'm just not exactly sure what that quest should be, but essentially the warden from the starting location wants the player to rendezvous with an unaligned NPC known as Vincent. I'm not exactly sure where Vincent would align. But he is a Glimmerwell agent. That disagrees with some of the things Glimmerwell is doing, hints at the microchipping process, but also disagrees with the Keeper's move to martial order. We would need to scope out this quest and what Vincent and the player do, but there should be a sense of going undercover to see the secrets that both factions are holding."
+
+## Tue Nov 3, 2026, 7:52 AM ET: Vincent's rulings on the open red rows (recorded by Claude Code)
+
+Vincent answered the open red list in the Claude Code session that built the contested Trial Hall. His words are quoted with each ruling (dictation slips fixed: "Lauren" is "lore", "Fern book" is "Fernbrook"). Still open after this: D1044, D971, D1000, D1087, D1159 (on #277). Parked, not settled: D1160 and D1319 (`handoff/backlog/REVISIT_LATER.md`).
+
+- **D1248 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: the three south-lane homes deploy (rule 9 previews approved). Vincent: "The Fernbrook homes are good to go"
+- **D1250 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: Fernbrook grows south to 32x32 (exception to D81, settles with D1248). Vincent: "The Fernbrook homes are good to go"
+- **D1198 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** rank Commander as the default; his name stays PLACEHOLDER until Story fills it. Vincent: "Everything that's names are OK to leave for now, we can fill in placeholders later"
+- **D1199 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** A, the town's voice: a Seal gives the holder a say in that town. **Added by Vincent:** the lore implies many people have contested for the Seals and lost, so collecting towns one by one feels like an accomplishment. It sits alongside the settled Seals canon (D1211 SEALS-B, D1212 SEALS-C), not in place of it. Vincent: "The seals unlock the town's voice, it should be implied in the lore that many people have contested for the seals and lost, giving the player a sense of accomplishment as he slowly collects the towns"
+- **D1201 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes, the default (world news and NPC reaction only; it never blocks the holder or removes a Seal). **Added by Vincent:** it needs a significant amount of lore and dialogue: NEWS reactions, Ribbit (social) reactions, and NPCs in basically every Keeper town react to it on their next interaction when no priority quest line would fire. Vincent: "The seal ban needs a significant amount of lore and dialogue written up for it, yes, there should be news reactions, social media reactions, NPC's should react to it in basically every town on the keepers. Next interaction if there is no priority quest dialogue that would be firing."
+- **D1202 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes, the default: shape as §10a; "Keeper tank" in narration (PLACEHOLDER). Vincent: "For the tank look go with the default that was spec"
+- **D1203 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET; AMENDED 8:05 AM ET):** yes, option A: leave at first light. **Amended at 8:05 AM ET: the pick no longer happens at dawn (D1395).** Was: the pick stays at `fb_side_pick` at dawn; Amos's pitch moves inside and Juniper's to the east road. Vincent: "First light is fine"
+- **D1173 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** a Trial does not move a town while the holder is undecided; Fernbrook does not move until the holder makes the actual pick (as D1171). Vincent: "A trial should not necessarily move a town in one direction or another, not while the player is undecided so Fernbrook, for example, shouldn't move until the player makes an actual pick"
+- **D1140 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: re-arm holders that old saves left stuck. Vincent: "Yes, re arm holders"
+- **D1034 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** discarded for now: no Marks are built. Vincent: "RPG marks can be discarded for now"
+- **D1035 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** discarded for now with D1034. Vincent: "RPG marks can be discarded for now"
+- **D1038 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** discarded for now with D1034. Vincent: "RPG marks can be discarded for now"
+- **D1040 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** discarded for now with D1034. Vincent: "RPG marks can be discarded for now"
+- **D1317 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** yes: Fernbrook's Hall Stone room. Rule 9 still applies to the build: Design packet and previews first. Vincent: "Hallstone room is approved"
+- **D1322 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** no status effects before Episode 1 (the default). Vincent: "No status effect from before episode one"
+- **D1020 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed: superseded by #258 PARTNER_DAY (Vincent's new opening, previews approved Mon Nov 2, 9:41 PM ET), which replaced INTRO_OPENING_RULINGS' Option B. Vincent: "I thought that was all approved."
+- **D1021 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed with D1020 (#258). Vincent: "I thought that was all approved."
+- **D1022 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed with D1020 (#258). Vincent: "I thought that was all approved."
+- **D1023 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed with D1020 (#258). Vincent: "I thought that was all approved."
+- **D1029 (Tue Nov 3, 2026, red, SETTLED by Vincent, 7:52 AM ET):** closed with D1020 (#258). Vincent: "I thought that was all approved."
+
 ## Tue Nov 3, 2026, late evening ET: Vincent settles WEIR_HUT v0.1 (all defaults; recorded by Claude Code in the build)
 
 Design `specs/WEIR_HUT.md` v0.1.1 (design master). Vincent saw the previews (rule 9: yes) and took every default. Built in branch `claude/weir-hut-build` (`tests/weir_hut.spec.js`).
