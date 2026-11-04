@@ -2,6 +2,16 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 02:29 ET: Build: scene music, the SCENE_MUSIC loops and stingers, and the Act 1 cues for the scenes on main (SCENE_MUSIC v0.1 slices 2-3; D1890-D1909)
+- What changed and why:
+  - Vincent settled SCENE_MUSIC v0.1 on every default (D1890-D1909, Wed Nov 4, 2026). `sfx.js` gains the spec's §4.1 literal, copied exactly: the loops `curfew`, `president`, `ledger`, `dawn`, `hearth`, `sweet`, `storm` and the silence `hush` (one bar of rests, D1903) in `MUSIC`, and `stinger_ink` and `stinger_call` in `STINGERS` (D1904). The Weir Hut's `weir` stays PR #309's. No engine change: the built `music` step, `trackFor`, the stinger player and duck, the Settings rows and the iPhone audio path are as they were (D1909).
+  - The Act 1 cues for scenes on main, each one plain `["music", id]` step in the scene's own data (D1899): the crackdown night plays `curfew` from the first tank, held over the warp into the Lantern House and repeated at the top of the Lantern House scene for the resume trigger (C1, C2); the wire set's broadcast plays `president` and goes back to `curfew` after the last line (C3); the dawn line plays `dawn` with the slow fade (C4); Ilse's debrief (C5) and the recall (C9) play `ledger` from her first line; the enrolment plays `anthem_hall` at the lanyard (C8, widens D1420 to this one scene cue). Each scene's end puts the map loop back (built).
+- Files touched: `sfx.js`, `data/detail_zz_crackdown.json`, `data/detail_zz_keeper_join.json`, `data/mapdata.js` (regenerated), `tools/GAMEJS_MAP.txt` (regenerated), `tests/scene_music.spec.js` (new), `tests/keeper_anthem.spec.js` (T3 leaves the scene loops to the new spec), `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: claude/scene-music-cues, build 20261104-0229.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1890-D1909 settled by Vincent, built as written. Green (engineer): `curfew` is repeated at the top of the Lantern House scene so a save that resumes there (the built resume trigger) also hears it; on the carried path the repeat changes nothing. Three comments in the pasted literal were cut to musical labels (the data is unchanged).
+- Anything left unfinished: Act 2 cues ride with the Act 2 opener (a second PR on its branch). The other loops (`sweet`, `storm`) and the stingers have no scene step yet; each scene's own build adds its step (D1908).
+
 ## 2026-11-04 03:30 ET: Placeholder names pass: display-only renames (NAMES_PASS; D1730-D1769)
 - What changed and why:
   - Vincent settled the placeholder-names pass (D1730-D1769, every row on its default except D1730: the Weir Hut NPC is shown as **Jacob Chi**). A rename is display only (D1768): the cast `label`, or `rank` + `given` for a ranked Keeper, in `data/reputation.json`, plus every player line that said the old name. Raw speaker names, NPC ids, cast keys, `S.rep` and phone-book keys, flags and save keys do not change, so old saves load and show the new names with no fold.
