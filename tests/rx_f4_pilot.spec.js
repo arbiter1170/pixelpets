@@ -166,7 +166,7 @@ test('QA 5 / QA 6: every talkable shows its line; the staff door says its line a
     [6, 4, 'up', 'The hum was here before you.'], [9, 7, 'up', 'A side screen.'], [4, 18, 'down', 'THE ARBITER.'], [2, 3, 'up', 'A mint sprout under glass'], [3, 3, 'up', 'A mint sprout under glass'],
     [11, 6, 'right', 'Cold storage.'], [2, 10, 'left', 'Rows of readings.'], [3, 13, 'up', 'Tools in outlines'], [4, 13, 'up', 'Tools in outlines'],
     [5, 3, 'up', 'The tank hums.'], [8, 3, 'up', 'The tank hums.'], [10, 9, 'down', 'The tank hums.'], [11, 9, 'down', 'The tank hums.'], [10, 13, 'up', 'The tank hums.'], [11, 13, 'up', 'The tank hums.'],
-    [1, 16, 'up', 'Sample racks.'], [12, 16, 'up', 'Sample racks.'], [5, 18, 'up', 'The scanner glows mint'], [8, 18, 'up', 'The scanner glows mint'],
+    [1, 16, 'up', 'Sample racks.'], [12, 16, 'up', 'Sample racks.'], [5, 18, 'up', 'The scanner glows softly'], [8, 18, 'up', 'The scanner glows softly'],
     [12, 4, 'up', 'Staff only. The keypad blinks red.'],
   ];
   for (const [x, y, f, line] of cases) {

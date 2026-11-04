@@ -442,8 +442,8 @@
    "replies": [
     {
      "name": "Square regular",
-     "handle": "mintwatch",
-     "text": "The lanyard is very mint. The crates are very quiet."
+     "handle": "lanyardwatch",
+     "text": "The lanyard is very bright. The crates are very quiet."
     }
    ]
   },
@@ -4344,7 +4344,7 @@
     },
     {
      "name": "Wine vest",
-     "handle": "mintcondition",
+     "handle": "freshvest",
      "text": "Someone read the minutes back slowly. It still wasn't saying hello."
     }
    ],
