@@ -2,6 +2,18 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 03:45 ET: Prop library v0.1: 129 original props as art only (PROP_LIBRARY; D2036-D2043)
+- What changed and why:
+  - Vincent asked for much denser rooms and town squares. Design's PROP_LIBRARY v0.1 sets a density standard and draws a first library of original props; this PR lands the art only, so later room builds (Kilnmouth, Brightgate, High Charity) can place them. No map places any of them yet, so nothing a player sees changes.
+  - `sprites.js`: `PROP_LIBRARY_ART` (copied verbatim from design `specs/prop_library.json`): 90 interior props (home, civic, Keeper, Glimmerwell, workshop and kiln, shop, Lantern House, indoor plants, wall hangings) and 39 town props (market stalls, lamps by look, benches, planters, a fountain, two statues, carts and crates, a waterfront kit, roof and facade overlays, ground decals). `PAL` keys only; no new colours; no mint on Glimmerwell pieces.
+  - `addExteriorArt` registers each prop under its id and a multi-cell prop also as `<id>_0..n` 16x16 slices (left to right, top to bottom), so a room places one slice per blocking cell. A `tile` piece (jetty planks, bank steps) is also offered as a tile. Existing art names are never replaced.
+  - `tools/assetlib.py`: the converter palette gains `V`, `N` and `Q` (already in `PAL`), so Glimmerwell art round-trips through `png2grid.py`.
+- Files touched: `sprites.js`, `tools/assetlib.py`, `tests/prop_library.spec.js` (new), `tests/README.md`, `handoff/shots/prop_library/contact_1x.png`, `handoff/shots/prop_library/contact_4x.png`, `index.html` + `version.json` (build stamp), `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/prop-library, build 20261104-0300. Design: `claude/prop-library` (PROP_LIBRARY v0.1).
+- Tests run and result (widths, checks): see the PR body (`tests/prop_library.spec.js` at 320, 375 and 390 in Modern, plus the specs covering `sprites.js` art registration and the converters).
+- Decisions made (colour + reasoning): D2036 (yellow, art only), D2037 (yellow, placement convention), D2041-D2043 (green: id prefixes, outline convention, converter keys) built on their defaults. The density standard (D2030, D2031) and the room previews (D2032-D2035) are red and wait for Vincent; nothing here builds them.
+- Anything left unfinished: placing the props in rooms is each room build's job, after Vincent's yes on its previews (rule 9).
+
 ## 2026-11-04 03:30 ET: Placeholder names pass: display-only renames (NAMES_PASS; D1730-D1769)
 - What changed and why:
   - Vincent settled the placeholder-names pass (D1730-D1769, every row on its default except D1730: the Weir Hut NPC is shown as **Jacob Chi**). A rename is display only (D1768): the cast `label`, or `rank` + `given` for a ranked Keeper, in `data/reputation.json`, plus every player line that said the old name. Raw speaker names, NPC ids, cast keys, `S.rep` and phone-book keys, flags and save keys do not change, so old saves load and show the new names with no fold.

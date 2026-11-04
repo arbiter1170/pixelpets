@@ -2368,9 +2368,10 @@
 3354-3422  function addCrackdownArt
 3423-3479  const HC_CITY_ART
 3480-3536  const HC_PLACEHOLDER_ART
-3537-3569  const WEIR_HUT_ART
-3570-3608  function addExteriorArt
-3609-3609  const OUTDOOR_SKIN
+3537-3572  const WEIR_HUT_ART
+3573-3703  const PROP_LIBRARY_ART
+3704-3753  function addExteriorArt
+3754-3754  const OUTDOOR_SKIN
 
 # stats.js
 9-10  const EVO_XP
