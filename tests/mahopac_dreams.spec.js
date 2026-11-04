@@ -376,3 +376,204 @@ test.describe('MD lines: the D1921 scan and the line limits (T5, T11)', () => {
     for (const t of Object.values(nora.chatter)) expect(len(t), t).toBeLessThanOrEqual(40);
   });
 });
+
+// ---- MD-3: the lens moment (§3, D1940-D1943, D1950) ----
+const OBS = { map: 'mahopac_obs', x: 4, y: 5, facing: 'up' };
+const LENS = Object.assign({}, ACT5, { 'story.lens_note': true });
+const LM1 = 'Warden Ilse waits by the lens with a small book. Not the Lodge ledger. Her other one.';
+const LM2 = {
+  study: 'You told me the shape of a dream once. I said: if Pipkit dreams again, tell me.',
+  woke: 'Your mother says Pipkit dreamed here once. You never told me the shape.',
+  none: "They say this lens remembers. I'd like to see what it keeps of you.",
+};
+const LM3 = 'Let Pipkit look first.';
+const LM4 = 'Pipkit leans into the glass first. Its shape flickers, watching, the way it always watches you.';
+const LM5 = 'The glass blooms. Not a childhood room. Something Pipkit saw, right at your side.';
+const MOMENT = {
+  cut: ['The Cabinet Room door. A Commander. Your own voice: I answer to the Commander now.', 'He told me you said it. I wanted to see your face when you did.'],
+  switch: ["Brightgate's lobby. Juniper clips your old lanyard back on. You hold still for it.", "They told me you went to them. I wondered if you'd flinch. You held still."],
+  switchNew: ["Brightgate's lobby. Juniper clips a new lanyard on your coat. You hold still for it.", "They told me you went to them. I wondered if you'd flinch. You held still."],
+  kept: ['Your report to Ilse. You give her all of it but one line. The lens shows that line too.', "So that's the line. I'd rather have it late than never."],
+  told: ["Your first letter to Ilse, at a Host's counter after Hall 2. Every line goes in.", "Word for word, the letter I got. I never doubted it. It's good to see it whole."],
+  cadet: ['The Lodge, the night she made you her Cadet. Your own face, saying yes.', "I've only seen that from my side of the desk. You looked surer than I felt."],
+  starter: ["The Lodge, your first morning. Ilse holds out a small Walkling. It's Pipkit.", "Your name went in my ledger that morning. Here's the morning itself."],
+};
+const LM5b = "Ilse opens the small book on the sill. Tucked inside: the Commander's order. Its top line is blank.";
+const LM6 = { paper: "Under it, the Governor's paper you brought her. The one they read from.", copy: "Under it, Lizzy's school order. Its top line is blank too." };
+const LM7 = "She writes the shape in, in ink, beside them. One pass. She doesn't strike anything.";
+const LM8 = "That goes in my other book. Not the Court's.";
+const LM9 = 'The lens dims. It remembers you, and it lets you leave.';
+// Saves for each path. Report flags are lines only; `cut` and `switch` never need a report.
+const PATH = {
+  cut: { 'story.warden_cut': true },
+  cutSwitched: { 'story.warden_cut': true, 'story.switched_a3': true, 'story.ilse_p0': true },
+  switch: { 'story.switched_a3': true, 'story.ilse_p0': true },
+  switchNew: { 'story.switched_a3': true, 'story.ilse_p0': true, 'story.cover': null },
+  kept: { 'story.rpt_4': 'kept', 'story.rpt_6': 'told' },
+  told: {},
+  cadet: { 'story.rpt_1': null, 'story.rpt_2': null, 'story.rpt_3': null },
+  starter: { 'story.rpt_1': null, 'story.rpt_2': null, 'story.rpt_3': null, 'story.keeper_cadet': null, 'story.cover': null, 'story.side_pick_done': null, 'story.ilse_call_old': true },
+};
+// Talk to Ilse, tap the lens, tap the sill (Modern taps); returns the three parts' lines.
+async function lensRun(page, opts = {}) {
+  await goto(page, 'mahopac_obs', 4, 5, 'up');
+  expect(await ids(page)).toEqual(expect.arrayContaining(['lens_ilse', 'obs_sill', 'obs_scope']));
+  if (opts.tap) await tapTile(page, 3, 2); else await page.evaluate(() => PixelPets.talkTo('lens_ilse'));
+  await expect.poll(() => sceneId(page), { timeout: 15000 }).toBe('lens_step');
+  const a = says(await drive(page));
+  if (opts.tap) await tapTile(page, 4, 2); else await page.evaluate(() => PixelPets.talkTo('obs_scope'));
+  await expect.poll(() => sceneId(page), { timeout: 15000 }).toBe('lens_step');
+  let hush = null;
+  const b = says(await drive(page, [], 90000, async sc => {
+    if (sc.text === LM5) hush = await page.evaluate(() => ({ cue: PixelPets.scene.music, want: PPSound.musicWant }));
+    if (opts.shotAt && sc.text === LM5) await shot(page, opts.shotAt);
+  }));
+  if (opts.beforeSill) await opts.beforeSill();
+  if (opts.tap) await tapTile(page, 6, 2); else await page.evaluate(() => PixelPets.talkTo('obs_sill'));
+  await expect.poll(() => sceneId(page), { timeout: 15000 }).toBe('lens_step');
+  const c = says(await drive(page));
+  return { a, b, c, hush };
+}
+
+test.describe('MD-3: the lens moment (D1940-D1943, D1950)', () => {
+  test('T6: the note comes once at a Host after the Ledger Night and the Spire; never before, never after Act 6 @w1', async ({ page }) => {
+    test.setTimeout(120000);
+    const host = { map: 'hm_lantern_in', x: 4, y: 5, facing: 'up' };
+    await boot(page, save(Object.assign({}, ACT5, { 'lantern.guide_heard': true }), host));
+    const NOTE = 'A note from Warden Ilse: The lens at Mahopac. Bring Pipkit. Come when you can.';
+    const firstLine = async () => {   // the Host's first line, then the scene is closed (the guide's own lines are not this packet's)
+      await page.evaluate(() => PixelPets.talkTo('hm_lantern_host'));
+      await expect.poll(() => page.evaluate(() => !!(PixelPets.scene && PixelPets.scene.full)), { timeout: 10000 }).toBe(true);
+      const t = await page.evaluate(() => PixelPets.scene.text);
+      await page.evaluate(() => PixelPets.endScene());
+      return t;
+    };
+    for (const [k, v] of [['story.solvane_met', null], ['story.ilse_ledger', null], ['story.climb_open', true], ['story.switched_a3', true]]) {
+      const was = (await flags(page))[k];
+      await page.evaluate(([k, v]) => PixelPets.setFlag(k, v), [k, v]);
+      expect(await firstLine(), k).not.toBe(NOTE);
+      expect((await flags(page))['story.lens_note'], k).toBeUndefined();
+      await page.evaluate(([k, v]) => PixelPets.setFlag(k, v === undefined ? null : v), [k, was]);
+    }
+    await page.evaluate(() => { PixelPets.setFlag('story.switched_a3', true); PixelPets.setFlag('story.ilse_p0', true); });   // G: after the bring-in order
+    await page.evaluate(() => PixelPets.talkTo('hm_lantern_host'));
+    expect(says(await drive(page))).toEqual([NOTE]);
+    expect((await stored(page)).flags['story.lens_note']).toBe(true);
+    const side = await page.evaluate(() => PPQuests.sideActive(PixelPets.state).map(e => e.chain || e.id));
+    expect(side).toContain('lens_moment');
+    expect(await page.evaluate(() => PixelPets.questCheck)).toEqual([]);
+    expect(await firstLine()).not.toBe(NOTE);   // once
+  });
+
+  test('T6 (DA1): the north trail opens on the note for an old save that skipped Mahopac @w1', async ({ page }) => {
+    const OLDSKIP = Object.fromEntries(Object.entries(LENS).filter(([k]) => !/mom_|mahopac|dream_/.test(k)));
+    await boot(page, save(OLDSKIP, { map: 'hearthmoor', x: 9, y: 4, facing: 'up' }));
+    expect(await ids(page)).toContain('hm_north_open');
+    expect(await ids(page)).not.toContain('hm_north_closed');
+    await page.evaluate(() => PixelPets.walkStep('up'));
+    await page.waitForTimeout(400);
+    await page.evaluate(() => PixelPets.walkStep('up'));
+    await page.waitForFunction(() => PixelPets.mapInfo.id === 'mahopac' && !PixelPets.fading, null, { timeout: 10000 });
+    await page.evaluate(() => PixelPets.setFlag('story.lens_note', null));
+    await goto(page, 'hearthmoor', 9, 4, 'up');
+    expect(await ids(page)).toContain('hm_north_closed');
+  });
+
+  test('T7: With the Warden, newest kept: Ilse, the lens, the sill; the moment once; Modern taps; the silence', async ({ page }) => {
+    test.setTimeout(150000);
+    await boot(page, save(Object.assign({}, LENS, PATH.kept, { 'story.ilse_paper': 'given' }), OBS), { reduce: page.viewportSize().width === 375 });
+    const r = await lensRun(page, { tap: true, shotAt: 'mahopac-lens' });
+    expect(r.a).toEqual([LM1, LM2.study, LM3]);
+    expect(r.b).toEqual([LM4, LM5].concat(MOMENT.kept));
+    expect(r.c).toEqual([LM5b, LM6.paper, LM7, LM8, LM9]);
+    expect(r.hush).toEqual({ cue: 'hush', want: null });
+    const st = await stored(page);
+    expect(st.v).toBe(2);
+    expect(st.flags['story.lens_seen']).toBe('kept');
+    expect(await ids(page)).not.toContain('lens_ilse');
+    expect(await ids(page)).not.toContain('obs_sill');
+    await page.evaluate(() => PixelPets.talkTo('obs_scope'));
+    expect(says(await drive(page))).toEqual(['The lens is quiet. It keeps what it saw, exactly.']);
+    expect(await page.evaluate(() => PPQuests.sideActive(PixelPets.state).map(e => e.chain || e.id))).not.toContain('lens_moment');
+    expect(await noOverflow(page)).toBe(true);
+    expect(await page.evaluate(() => PixelPets.questCheck)).toEqual([]);
+  });
+
+  for (const [p, want, extra, lm2, lm6] of [
+    ['cut', 'cut', {}, 'study', null],
+    ['cutSwitched', 'cut', {}, 'study', null],
+    ['switch', 'switch', { 'story.dream_study': null }, 'woke', null],
+    ['switchNew', 'switch', {}, 'study', null],
+    ['told', 'told', { 'story.ilse_copy_seen': true }, 'study', 'copy'],
+    ['cadet', 'cadet', { 'story.ilse_copy_seen': true, 'story.ilse_paper': 'given' }, 'study', 'paper'],
+    ['starter', 'starter', { 'story.dream_woke': null, 'story.dream_study': null }, 'none', null],
+  ]) {
+    test(`T7: ${p}: the moment is ${want}; LM2 and LM6 follow their flags @w1`, async ({ page }) => {
+      test.setTimeout(120000);
+      await boot(page, save(Object.assign({}, LENS, PATH[p], extra), OBS));
+      const r = await lensRun(page);
+      expect(r.a).toEqual([LM1, LM2[lm2], LM3]);
+      expect(r.b).toEqual([LM4, LM5].concat(MOMENT[p === 'cutSwitched' ? 'cut' : p]));
+      expect(r.c.slice(0, 1)).toEqual([LM5b]);
+      expect(r.c.includes(LM6.paper)).toBe(lm6 === 'paper');
+      expect(r.c.includes(LM6.copy)).toBe(lm6 === 'copy');
+      expect(r.c.slice(-1)).toEqual([LM9]);
+      expect((await stored(page)).flags['story.lens_seen']).toBe(want);
+    });
+  }
+
+  test('T7: closed mid-moment: nothing written; the replay shows the same moment @w1', async ({ page }) => {
+    test.setTimeout(120000);
+    await boot(page, save(Object.assign({}, LENS, PATH.switch), OBS), { once: true });
+    await page.evaluate(() => PixelPets.talkTo('lens_ilse'));
+    await drive(page);
+    await page.evaluate(() => PixelPets.talkTo('obs_scope'));
+    await expect.poll(async () => { const t = await page.evaluate(() => PixelPets.scene && PixelPets.scene.text); if (t !== LM5) await page.keyboard.press('Space'); return t; }, { timeout: 20000 }).toBe(LM5);
+    await page.reload({ waitUntil: 'commit' });
+    await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && PixelPets.state);
+    await page.evaluate(() => PixelPets.showTab('walk'));
+    expect((await flags(page))['story.lens_seen']).toBeUndefined();
+    const r = await lensRun(page);
+    expect(r.a[0]).toBe(LM1);   // the visit's marks are gone: Ilse opens again
+    expect(r.b).toEqual([LM4, LM5].concat(MOMENT.switch));
+    expect((await stored(page)).flags['story.lens_seen']).toBe('switch');
+  });
+
+  test('T8: nothing else moves; T12: the debug places land in debug only @w1', async ({ page }) => {
+    test.setTimeout(120000);
+    const reads = () => page.evaluate(() => {
+      const F = PixelPets.state.flags, S = PPStanding;
+      return { act: S.actOf(F, 3), reports: S.reportsOpen ? S.reportsOpen(F) : null, loyal: S.loyalistOpen ? S.loyalistOpen(F) : null,
+        lens: S.lensMoment(F), quest: PixelPets.quest.id, side: F['story.side'] || null };
+    });
+    await boot(page, save(Object.assign({}, LENS, PATH.kept), OBS));
+    const before = await reads();
+    await page.evaluate(() => { PixelPets.setFlag('story.lens_seen', 'kept'); PixelPets.setFlag('story.mom_mahopac', 'told'); PixelPets.setFlag('story.mom_mah_ask', true); });
+    expect(await reads()).toEqual(before);
+    await page.evaluate(() => { PixelPets.setFlag('story.lens_seen', null); PixelPets.setFlag('story.mom_mahopac', null); PixelPets.setFlag('story.mom_mah_ask', null); });
+    const ids2 = (await page.evaluate(() => PixelPets.checkpoints())).map(c => c.id);
+    for (const id of ['md_mom_offer', 'md_lens_kept', 'md_lens_switch', 'md_lens_cut']) expect(ids2, id).toContain(id);
+    for (const [id, want] of [['md_lens_kept', 'kept'], ['md_lens_switch', 'switch'], ['md_lens_cut', 'cut']]) {
+      expect((await page.evaluate(i => PixelPets.checkpoint(i), id)).ok, id).toBe(true);
+      expect(await page.evaluate(() => PixelPets.mapInfo.id)).toBe('mahopac_obs');
+      expect(await ids(page)).toContain('lens_ilse');
+      expect(await page.evaluate(() => PPStanding.lensMoment(PixelPets.state.flags))).toBe(want);
+    }
+    await page.evaluate(() => PixelPets.setFlag('story.seal5', null));   // places only add flags: back to before Seal 5
+    expect((await page.evaluate(() => PixelPets.checkpoint('md_mom_offer'))).ok).toBe(true);
+    expect(await page.evaluate(() => PixelPets.mapInfo.id)).toBe('hm_home_in');
+    await page.evaluate(() => PixelPets.talkTo('mom'));
+    await expect.poll(() => sceneId(page)).toMatch(/^(mom_lens_offer|cv_mom_snack)$/);
+    if (await sceneId(page) === 'cv_mom_snack') { await drive(page); await page.evaluate(() => PixelPets.talkTo('mom')); }   // the day's snack first
+    expect(await sceneId(page)).toBe('mom_lens_offer');
+    await drive(page, ['Not today']);
+    const ctx = await page.context().browser().newContext({ viewport: page.viewportSize() });
+    const plain = await ctx.newPage();
+    await installSave(ctx, save(POSTED), { quietDay: true });
+    await gotoGame(plain, '');
+    expect(await plain.evaluate(() => PixelPets.debug)).toBeFalsy();
+    expect(await plain.evaluate(() => typeof PixelPets.checkpoint === 'function' ? PixelPets.checkpoint('md_lens_kept') : undefined)).toBeFalsy();
+    expect(await plain.evaluate(() => PixelPets.state && PixelPets.state.flags['story.lens_note'])).toBeFalsy();
+    await ctx.close();
+  });
+});

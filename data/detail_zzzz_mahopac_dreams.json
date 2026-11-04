@@ -5,8 +5,22 @@
     "note": "PLACEHOLDER copy (Story/June to replace; MAHOPAC_DREAMS §3-§5; OPEN_DECISIONS D1940-D1959). Every line in this file and every line MAHOPAC_DREAMS adds to data/mahopac.json is a placeholder.",
     "paths": ["objPatch", "hostNotes"]
   },
+  "hostNotes": [
+    {
+      "_note": "§3.1 (D1940, D1923): after the Ledger Night and the Spire, once, at any Lantern House Host; on the switcher path only after the bring-in order (story.ilse_p0). Closed at Act 6.",
+      "when": ["story.ilse_ledger", "story.solvane_met", "!story.climb_open", "!story.lens_note", "!story.switched_a3 | story.ilse_p0"],
+      "line": "A note from Warden Ilse: The lens at Mahopac. Bring {pet}. Come when you can.",
+      "scene": "lens_note"
+    }
+  ],
   "objPatch": {
-    "_note": "§4.2 (D1944): Mom's offer comes first on her home tap from Seal 4 to Seal 5 (the daily snack still plays first when due); her repeat after the walk replaces Supper's for the rest of Act 2.",
+    "_note": "DA1 (D1950): the north trail also opens on Ilse's note, for an old save that skipped Mahopac (no story.mom_sent); wayup's copies of the warp and signs are the ones that stand. §4.2 (D1944): Mom's offer comes first on her home tap from Seal 4 to Seal 5 (the daily snack still plays first when due); her repeat after the walk replaces Supper's for the rest of Act 2.",
+    "hm_north": {"need": "story.mom_sent | story.lens_note"},
+    "hm_north_w": {"need": "story.mom_sent | story.lens_note"},
+    "hm_north_e": {"need": "story.mom_sent | story.lens_note"},
+    "hm_north_closed": {"when": ["!story.mom_sent", "!story.lens_note"]},
+    "hm_north_open": {"when": ["story.mom_sent | story.lens_note"]},
+    "hm_north_wait": {"when": ["!story.mom_sent", "!story.lens_note"]},
     "mom": {
       "linesFirst": {"story.cv_mom & story.dream_woke & story.seal4 & !story.seal5 & !story.mom_mah_ask": "@mom_lens_offer"},
       "linesBefore": {"anchorKey": "story.cv_mom=told", "add": {
