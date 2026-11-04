@@ -23,8 +23,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - the look choices the defaults left open: Juniper's long black cut, Mo's white bob with glasses, the Diner Regular's red buzz cut, and the Junior Bright's orange ponytail with white buttons (Sprites' round-2 junior sheet is not in the repo);
   - Route 4's Keepers wear `officer`;
   - Juniper's `shares_outfit`;
-  - spec check (d);
-  - `people_looks_28` lists the glen's Keeper Scout (ACT1_KEEPER_JOIN K5) as the same person. That test failed on main before this PR.
+  - spec check (d).
 - Anything left unfinished:
   - D2350 is built on the default but stays an Open row until Vincent sees the crew sheet (`handoff/shots/look_fixes/bg_hallcrew_*.png`).
   - `tools/build_brightgate.py` has 16 lines behind the shipped Brightgate copy (a catch-up gap that predates this PR).
