@@ -2,6 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 09:28 ET: Build: Lizzy's optional history lesson, the homework row, Archivist Mo's shelf menu, three chatter lines and Journal notes (LORE_DISCOVERY v0.1 slice 1; D2280-D2296)
+- What changed and why:
+  - Vincent's history-discovery rulings asked for a packet, then the first slice (data only where possible). Everything new is in `data/detail_zz_lore_slice1.json` unless named. Every line is PLACEHOLDER until Story signs it.
+  - Lizzy's lesson (`lz_war`, D2280): after `story.lizzy_class`, on a weekday in school hours, talking to Lizzy at the Schoolhouse plays one optional lesson (eight boxes, one choice: ask someone old, or read the old books). Once only: the choice writes `story.lizzy_war` (`ask` / `read`). The key sits after every built key, so the class, the 5B leak hand-off and the leak ask keep their order. It never auto-plays.
+  - Evening fallback (`lz_war_home`, D2287): the same lesson, short, at Lizzy's desk in 5B every evening (19-22). The Schoolhouse chalkboard (D2283) points to the weekday class and to 5B while she is away, then shows the lesson's board.
+  - Homework (D2284, D2285): a side chain `lz_history` in `quests.js` points to the plaza plaque, then back to Lizzy wherever she is (Schoolhouse, 5B, the diner, the court). The return gives a gold star sticker (one Joy Crumb), a Journal note and closes the row.
+  - Archivist Mo (D2288, D2289): after his ordinary line, a Keeper (tier 1 or more, not Glimmerwell) gets a talk menu: the Arbiter page (his built lines, plus the five after `story.ans_open`), the war shelf (three new lines), Not now. Each read returns to the menu; each first read adds a Journal note. His line keys are untouched, so a later key placed before `standing.keepers>=1` keeps its place.
+  - Chatter (D2290): Pip and Tilly (at their desks and on the court) while the homework is open, and Host Della after the lesson. No flags.
+  - Journal notes (D2286, yellow): a text list "JOURNAL NOTES" under the WALKLING JOURNAL grid, hidden while empty, built from overlay `journalNotes` rows (`JOURNAL_NOTES_ON` in `game.js`).
+  - Engine (D2291): `applyObjPatch` reads two more keys, `after` (a scene behind the plain line, Mom's pattern) and `chatterFirst`.
+  - Save: `pixelpets.save.v2`, `v` 2. New flags are additive `story.*` keys (`story.lizzy_war`, `story.lizzy_war_plaque`, `story.lizzy_war_done`, `story.mo_shelf_arbiter`, `story.mo_shelf_five`, `story.mo_shelf_war`). Nothing is written at load.
+- Files touched: `data/detail_zz_lore_slice1.json` (new), `data/mapdata.js` (generated), `game.js`, `quests.js`, `index.html`, `style.css`, `version.json`, `tools/GAMEJS_MAP.txt` (generated), `tests/lore_slice_1.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md` (row D2280-D2296; next free D2340), `handoff/shots/lore_slice_1/` (before and after at 390 and 320), `CHANGELOG.md`.
+- Commit(s) + build id: claude/lore-slice-1, build 20261104-0928 (merged origin/main 86731567 first).
+- Tests run and result (widths, checks): `tests/lore_slice_1.spec.js` 33 passed at 320, 375 and 390 (Modern controls, reduced motion, zero console errors). Re-runs and the scan results are in the PR.
+- Decisions made (colour + reasoning): D2280-D2290 and D2293-D2295 yellow, built on the packet's defaults; D2291 and D2296 green; D2292 (a partner stopping at old places) red, not built.
+- Anything left unfinished: Story's sign-off on every line; D2292 waits for Vincent; the later slices (lines asked of other packets) wait for their builds.
+
 ## 2026-11-04 04:32 ET: Build: scene music on the Act 2 opener: the posting on `ledger`, Mom's supper on `hearth` (SCENE_MUSIC v0.1 slices 4-5; D1890-D1909)
 - What changed and why:
   - Vincent settled SCENE_MUSIC v0.1 on every default (D1890-D1909, Wed Nov 4, 2026). The Act 2 cues ride with the Act 2 opener (D1908): Ilse's posting plays `ledger` from her first line (C10); the Governor meeting keeps the capital's own loop, no step (C11); Mom's supper plays `hearth` (C12) at her first line at the Lodge gate, at the pin variant's one line, and again when the supper talk opens in your room. The walk home between them is the holder's own walk, so the town loop plays there; the scene's end puts the room's loop back (built).
