@@ -468,7 +468,7 @@ test.describe('SCENE_MUSIC slices 2-3: the scene loops and the Act 1 cues', () =
     expect(await want(page)).toBe('town_glimmer');   // a lanyard save hears the Glimmerwell town loop until the recall
     const lines = await runAtLodge(page, 'recall');
     expect(at(lines, /Take it off/)).toBe('ledger');
-    expect(at(lines, /capital is waiting/)).toBe('ledger');
+    expect(at(lines, /Something came for you/)).toBe('ledger');   // Ilse's last recall line since #322 (9e leads into the posting)
     const back = await page.evaluate(() => PixelPets.mapTrack(PixelPets.state.world.map));
     expect(await want(page)).toBe(back);
     expect(await page.evaluate(() => window.__music.map(c => c[0]))).toEqual(['ledger', back]);
