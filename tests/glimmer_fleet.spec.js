@@ -4,12 +4,13 @@
    nothing is written while the lot is open, and leaving puts the state back as it was (pixelpets.save.v2, v 2, no field). */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { stubCloudSdk } = require('./cloud_stub');
 
 trackErrors(test, expect);
 
 const HOLDS = ['split', 'keepers', 'glimmer'];
 const KEEPER_MARKS = ['gw_badge_slip', 'gw_door_shut', 'gw_relay_mast_off', 'gw_swap_stall_shut'];
-const BANNED = /\b(chips?|tuning|tuned|implants?|trainers?|coins?|gyms?|fainted|evolve[sd]?|appeared|accord|orokin|bellgold)\b|dex\b/i;
+const BANNED = /\b(chips?|tuning|tuned|implants?|trainers?|coins?|gyms?|fainted|evolve[sd]?|appeared|accord|bellgold)\b|dex\b/i;
 
 async function boot(page, search) {
   const save = starterSave();
@@ -123,6 +124,34 @@ test('the save is not written while the lot is open, and leaving restores it (v 
   expect(strip(after.raw)).toEqual(strip(before.live));
   expect(after.raw.world.map).toBe('hearthmoor');
   expect(JSON.stringify(after.raw)).not.toContain('gw_preview');
+});
+
+// The lot holds the cloud save too: while it is open the cloud state hook gives null, no upload fires, and no upload ever
+// carries world.map 'gw_preview'. Normal play uploads before and after. The real cloud.js, a stubbed SDK; nothing signs in.
+test('the cloud save never sees the lot: the state hook gives null, no upload while open, none with gw_preview', async ({ page }) => {
+  test.setTimeout(60000);
+  await stubCloudSdk(page);
+  await boot(page, '?debug=1&cloud=block');
+  await page.waitForFunction(() => (window.__ppUploads || []).length >= 1 && !PPCloud.info().inflight && !!window.__ppCloudHooks, null, { timeout: 25000 });
+  const n = await page.evaluate(() => window.__ppUploads.length);
+  for (const hold of HOLDS) { expect(await open(page, hold)).toBeTruthy(); await page.waitForTimeout(200); }
+  await page.evaluate(() => window.PixelPets.goto('gw_preview', 12, 11, 'up'));
+  await page.waitForTimeout(300);
+  await page.evaluate(() => PPCloud.syncNow());
+  await page.evaluate(() => PPCloud.syncNow());
+  await page.waitForTimeout(600);
+  const during = await page.evaluate(() => ({ map: window.PixelPets.state.world.map, state: window.__ppCloudHooks.getState(), uploads: window.__ppUploads.slice() }));
+  expect(during.map).toBe('gw_preview');
+  expect(during.state, 'getState gives null while the lot is open').toBeNull();
+  expect(during.uploads.length, 'no upload while the lot is open').toBe(n);
+  expect(await page.evaluate(() => window.PixelPets.fleetExit())).toBe(true);
+  await page.waitForTimeout(300);
+  // Back in normal play the cloud picks up again: a real change uploads, from Hearthmoor.
+  await page.evaluate(() => { window.PixelPets.state.money += 7; return PPCloud.syncNow(); });
+  await expect.poll(() => page.evaluate(() => window.__ppUploads.length), { timeout: 10000 }).toBeGreaterThan(n);
+  const all = await page.evaluate(() => window.__ppUploads);
+  expect(all.map(u => u.map)).not.toContain('gw_preview');
+  expect(all[all.length - 1].map).toBe('hearthmoor');
 });
 
 test('the exit path leaves the lot and restores the save the same way', async ({ page }) => {

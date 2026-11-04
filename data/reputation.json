@@ -361,14 +361,14 @@
     },
     {
       "name": "Master Fen",
-      "faction": "keepers",
+      "faction": "none",
       "base": 50,
       "rank": "Master",
       "given": "Fen"
     },
     {
       "name": "Master Hale",
-      "faction": "keepers",
+      "faction": "none",
       "base": 50,
       "rank": "Master",
       "given": "Hale"
@@ -816,7 +816,7 @@
     },
     {
       "name": "Master Marisol",
-      "faction": "keepers",
+      "faction": "none",
       "base": 50,
       "rank": "Master",
       "given": "Marisol"
@@ -862,6 +862,11 @@
       "base": 50,
       "rank": "Field Lead",
       "given": "Imogen"
+    },
+    {
+      "name": "Vincent Chi",
+      "faction": "none",
+      "base": 50
     }
   ],
   "tiers": [
@@ -1091,6 +1096,7 @@
     "fields": "rank: shown before given (\"Master\" + \"Fen\"). given: the bare name. duty: a job that is not a rank (KEEPER_RANKS D893), shown on the contact card. rankFlag: the D id asking whether this NPC is Keeper or Glimmerwell at all; shown as today. rankWhen: a named game condition (game.js RANK_WHEN) that must hold for the rank to show civilian: host or shop; a civilian never carries a rank",
     "display": "game.js shownName(): rank + ' ' + given when the entry has a rank (and rankWhen holds), else label, else the raw name. Keys (S.rep, S.phoneBook, contactKey) stay the raw speaker name",
     "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays",
+    "masters": "D1437: Hall Masters (Fen, Hale, Marisol) are neutral: faction none, off the Keeper ladder. Master is their Hall title, still shown first (Master Fen).",
     "pending": {
       "Constable": {
         "propose": "Constable",

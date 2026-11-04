@@ -275,7 +275,8 @@ test('the rest choice names the Acorns it takes, on the bed and at the door', as
 });
 
 test('the switch tip is not offered', async ({ page }) => {
-  const s = save({ 'story.rc_climax': true, 'story.act': 5 });
+  // Act 5 from the act flags (D915), not a stored story.act
+  const s = save({ 'story.rc_climax': true, 'story.ep1_end': true, 'story.seal5': true, 'story.seal7': true, 'story.skyloom_done': true });
   s.settings.tips = true;
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), s, { quietDay: true });
@@ -472,7 +473,9 @@ test('dead copy and the Heights lines stay where the sign-off put them', async (
   expect(mom.lines['!story.dream_study']).toBe('Tell Warden Ilse what you dreamed. She gave you your Walkling.');
   const heights = fs.readFileSync(path.join(__dirname, '..', 'data/heights.json'), 'utf8');
   expect(heights).toContain('Glimmerwell calls it ancient, and will not say why it was built. RegenX never knew.');
-  expect(heights).toContain('The Arbiter sits in a cradle in the top bay: an alien device of unknown origin.'); // D1158 v0.64: _lore.arbiter (author note, not player text)
+  expect(heights).toContain('The Arbiter sits in a cradle in the top bay: a device of unknown origin.'); // D1158 v0.64: _lore.arbiter (author note, not player text)
+  expect(heights).toContain('nobody in the world knows where it came from');   // public-lore scrub: the origin stays in the private design repo
+  expect(heights).not.toMatch(/\balien\b/i);
   await boot(page);
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
@@ -491,7 +494,7 @@ test('Rook asks twice as a competitor, not a rival (ROOK_KEEPERS_REENTRY sign-of
 test("Fen's Glimmer-pick result line is doubt, not disapproval (C14, STORY_DECISIONS v0.64)", async ({ page }) => {
   const day1 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data/detail_zz_day1.json'), 'utf8'));
   const swap = day1.lineSwaps.find((s) => s.scene === 'orchard@glimmer' && s.when === 'story.seal1' && /Come to the Hall if you must/.test(s.text));
-  const line = "Go on, then. You won my Seal fairly. After last night, I can't say you're wrong.";
+  const line = "Go on, then. You won my Seal fairly. I can't say you're wrong.";   // "After last night," returns with the crackdown (PR #288)
   expect(swap.to).toEqual([['say', 'Master Fen', line]]);
   expect(line.length).toBeLessThanOrEqual(110);
   expect(JSON.stringify(day1)).not.toContain('I hope you remember how.');
