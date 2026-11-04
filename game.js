@@ -3916,6 +3916,7 @@ function applyObjPatch(W, patch){
       const P = JSON.parse(JSON.stringify(pt));
       if (P.when) o.when = P.when;
       if (P.whenAdd) o.when = [].concat(o.when || [], P.whenAdd);
+      if (P.need) o.need = P.need;   // MAHOPAC_DREAMS DA1: a warp's key, on whichever overlay's copy of it stands
       if (P.linesFirst) o.lines = Object.assign({}, P.linesFirst, o.lines || {});
       if (P.linesBefore && o.lines) {
         const out = {}, anchor = P.linesBefore.anchorKey in o.lines ? P.linesBefore.anchorKey : 'else';
@@ -4968,6 +4969,10 @@ function cond(c, live, o){
   else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;
   else if (c.startsWith('map:')) v = !!WORLD[c.slice(4)];   // ROUTE_TO_GOVERNOR: a map this build has (Kilnmouth's road lands later)   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
+  // MAHOPAC_DREAMS: `talked:<id>` is a runtime mark for this map visit (a talk, or a scene's ["mark", id]); never saved.
+  else if (c.startsWith('talked:')) v = mapRT.talked.has(c.slice(7));
+  // MAHOPAC_DREAMS E1 (D1941): `lens:<moment>` asks PPStanding.lensMoment, the lens's first match, on the flags as the scene sees them.
+  else if (c.startsWith('lens:')) v = PPStanding.lensMoment(live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags) === c.slice(5);
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
   else if (c === 'enrol:ask') v = ENROL_CHOICE === 'ask';   // ACT1_KEEPER_JOIN D1562: the enrolment's pin-or-lanyard question
@@ -5528,7 +5533,9 @@ function liveContactSpot(name){
   return person.spots.find(s => present(s.o)) || null;
 }
 function whereNow(name){
-  if (name === 'Mom' || name === 'Dad') return wherePack('home', 'home', 'fixed');
+  // MAHOPAC_DREAMS G2 (D1949, D1921): Dad shows no place line (he is only ever met in the Mahopac dreams); Mom stays at home.
+  if (name === 'Dad') return null;
+  if (name === 'Mom') return wherePack('home', 'home', 'fixed');
   // DAY1_TRIAL1_FLOW (D1166): after her go-home talk Fen is away with the Keeper authorities until Lizzy's class is done.
   if (name === 'Master Fen' && S && S.flags['story.fen_sent_home'] && !S.flags['story.lizzy_class']) return wherePack('work', 'away on Keeper business', 'story');
   // POST_TRIAL_CRACKDOWN §7.2: under the curfew order (the crackdown until the pick) people are where the curfew put them.
@@ -9587,7 +9594,7 @@ function endScene(){
     else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
-  if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
+  if (cue && !(battle && battle.on) && (PPSound.musicWant === cue || (cue === 'hush' && !PPSound.musicWant))) {
     const back = trackFor(CUR); if (back && back !== cue) PPSound.music(back, { fadeOut: 400, fadeIn: 500 });
   }
   scheduleTutorial(true);
@@ -9634,9 +9641,14 @@ function expand(text){
   const p = viewPet(), sp = p ? SPECIES[spi(p)] : null, v = scene ? scene.vars : {};
   const line = (v && v.line) || flagOf('story.starter_line', true), rv = COUNTER[line] && SPECIES[SP_INDEX[COUNTER[line]]];
   const vals = { name: curName(true) || DEFAULT_PLAYER_NAME, player: curName(true) || DEFAULT_PLAYER_NAME, pet: viewPetName(), chip: chipLabel(), species: p ? nameOf(spi(p), p.stage) : '',
-    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '' };
-  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType)\}/g, (m, k) => vals[k]);
+    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '',
+    date: cardDate() };
+  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType|date)\}/g, (m, k) => vals[k]);
 }
+// MAHOPAC_DREAMS E3 (D1946): `{date}` is the device's date when the line shows, short month and day in capitals ("NOV 4"),
+// for the Mahopac epilogue card. Nothing is stored.
+const CARD_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+function cardDate(d){ d = d || new Date(); return CARD_MONTHS[d.getMonth()] + ' ' + d.getDate(); }
 function chipLabel(){
   const list = chippedPets();
   if (list.length) return petName(list[0]);
@@ -9923,6 +9935,17 @@ async function readWalk(dir){
   await walkCast([{ id: 'gb_read_pet', steps: steps }]);
   if (dir === 'back') dropCastIds(['gb_read_pet']);
 }
+// MAHOPAC_DREAMS §8: SCENE_MUSIC (design, draft) names cues that have no loop yet. A built loop id plays as built; `hearth`
+// falls back to the room's own loop, `ledger` to `dream`, and `hush` to silence (a 900 ms fade) for the rest of the scene.
+// Any other unknown id does nothing, as before.
+const MUSIC_FALLBACK = { hearth: 'room', ledger: 'dream', hush: null };
+function musicStepId(a){
+  const ids = PPSound.musicIds();
+  if (ids.includes(a) || !(a in MUSIC_FALLBACK)) return a;
+  const f = MUSIC_FALLBACK[a];
+  if (f === 'room') return trackFor(CUR);
+  return f && ids.includes(f) ? f : null;
+}
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene; if (k === 'priceOn') { document.body.classList.add('price-on'); return; }
   switch (k) {
@@ -10152,6 +10175,7 @@ async function execStep(st){
     }
     case 'rest': if (atLantern()) await bedTuck(sc); sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
+    case 'mark': { if (a) mapRT.talked.add(String(a)); return; }   // MAHOPAC_DREAMS: a runtime mark for this map visit (talked:<id>)
     case 'keepPlace': sc.deferRespawn = false; return;   // this scene walks the holder to the Lantern House itself (ROOK_LANTERN_WALK)
     // The guide teaches the Lantern House once: its "Lanterns" unlock card would repeat the same lesson right after the rest.
     case 'lanternGuide': { const g = lanternGuideHere(); if (g) await execSteps(lanternGuideSteps(g, true)); if (S) S.flags['story.unlock_lantern'] = true; return; }
@@ -10207,8 +10231,17 @@ async function execStep(st){
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
     // KEEPER_ANTHEM M6 (D1381): ["music", id, { fadeOut, fadeIn, minDelay, near, keep }]; plain ["music", id] is 180 / 140 ms as before.
     // `near` starts a swelling cue at full; `keep` holds this cue over a scene warp (M7).
-    case 'music': { if (a && !sc.skip) { const o = (b && typeof b === 'object') ? b : {}; sc.musicCue = a; sc.keepMusic = !!o.keep;
-      try { PPSound.music(a, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near }); } catch (e) {} } return; }
+    // MAHOPAC_DREAMS §8: SCENE_MUSIC's proposed cues fall back (musicStepId) until their loops exist; a real loop always wins.
+    case 'music': {
+      if (!a || sc.skip) return;
+      const o = (b && typeof b === 'object') ? b : {}, id = musicStepId(a);
+      sc.musicCue = id || 'hush'; sc.keepMusic = !!o.keep;
+      try {
+        if (id) PPSound.music(id, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near });
+        else PPSound.hush(900);
+      } catch (e) {}
+      return;
+    }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
       if (a === 'open') openReveal(sc);
@@ -18532,6 +18565,25 @@ const DEBUG_EXTRAS = {
       flags: A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.gov_told=told', 'story.shift_g']) },
   });
 }
+// MAHOPAC_DREAMS E4: four places for Mom's walk and the lens (Seal 4, Seal 5, the Ledger Night and the Spire are later builds,
+// so these places seed their flags). Debug only, like every place here.
+{
+  const MD_A2 = ['story.intro_seen', 'story.starter_received', 'story.reached_route1', 'story.reached_fernbrook', 'story.met_fen', 'story.mom_met',
+    'story.mom_chore', 'story.mom_sent', 'story.reached_mahopac', 'story.dream_started', 'story.dream_toy', 'story.dream_party', 'story.dream_dad',
+    'story.dream_woke', 'story.dream_study', 'story.seal1', 'story.crackdown', 'story.post_trial_done', 'story.warden_called', 'story.warden_met',
+    'story.phone_got', 'story.chi_done', 'story.orchard_cleared', 'story.ilse_call2', 'story.keeper_cadet', 'story.cover=glimmer', 'story.side=keepers',
+    'story.side_pick_done', 'story.seal2', 'story.seal3', 'story.route3_open', 'story.ep1_end', 'story.ilse_call3', 'story.a2_called',
+    'story.cover_done', 'story.rpt_1=told', 'story.rpt_2=told', 'story.rpt_3=told', 'story.hc_council_done', 'story.gov_posted',
+    'story.cv_mom_walk', 'story.cv_mom=told', 'story.seal4'];
+  const MD_A5 = MD_A2.concat(['story.seal5', 'story.ilse_ledger', 'story.solvane_met', 'story.lens_note']);
+  const obs = { map: 'mahopac_obs', x: 4, y: 5, facing: 'up' };
+  Object.assign(DEBUG_EXTRAS, {
+    md_mom_offer: { place: "Mahopac: Mom's offer (after Seal 4)", text: 'Tap Mom at home: walk north.', map: 'hm_home_in', x: 5, y: 6, facing: 'up', flags: MD_A2 },
+    md_lens_kept: Object.assign({ place: 'Mahopac: lens, W kept', text: 'Ilse at the lens; a kept report.', flags: MD_A5.concat(['story.rpt_4=kept']) }, obs),
+    md_lens_switch: Object.assign({ place: 'Mahopac: lens, switcher', text: "Ilse at the lens; Juniper's clip.", flags: MD_A5.concat(['story.switched_a3', 'story.ilse_p0']) }, obs),
+    md_lens_cut: Object.assign({ place: 'Mahopac: lens, loyalist', text: 'Ilse at the lens; the Cabinet Room door.', flags: MD_A5.concat(['story.warden_cut']) }, obs),
+  });
+}
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
 if (HC_V2_ON) {
   const HC_F = ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'];
@@ -20373,7 +20425,7 @@ function boot(){
     band: (() => { const c = $('#mapCanvas'), b = c && c.height ? outdoorViewBand(c.height) : null; return b && { topPad: b.topPad, hudPad: b.hudPad, VHe: b.VHe, mid: b.mid, head: b.head, padL: b.padL, padR: b.padR }; })(),
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
-    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });
+    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom', music: scene.musicCue || null }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows

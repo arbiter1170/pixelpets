@@ -43,6 +43,7 @@
     'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
     'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
+    'story.mom_mah_ask', 'story.mom_mahopac', 'story.lens_note',   // MAHOPAC_DREAMS §9: Mom's walk north (the warp), her answer at the lens, Ilse's note
     'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
@@ -509,6 +510,13 @@
       { id: 'gov_report', label: 'How it went', when: ['story.hc_gov_met', '!story.switched_a3', '!story.warden_cut'], done: ['story.rpt_gov'],
         text: 'Warden Ilse would like to hear how it went.', place: 'Hearthmoor, the Lodge',
         npc: 'Warden Ilse', target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    ],
+    // MAHOPAC_DREAMS §3.1 (D1950): the lens moment, Act 5. Opened by Ilse's note at a Lantern House Host; never on the main row;
+    // it closes at story.climb_open (Act 6). The label is ours (the packet gives none; PLACEHOLDER).
+    [
+      { id: 'lens_moment', label: 'The lens at Mahopac', when: ['story.lens_note', '!story.climb_open'], done: ['story.lens_seen'],
+        text: 'Warden Ilse is waiting at the lens in Mahopac.', place: 'Breckenridge Observatory',
+        target: { map: 'mahopac_obs', x: 3, y: 2 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();
