@@ -96,7 +96,10 @@ test('the three floors are 14x22, old ids stay, and the stair landings match @w1
 });
 
 test('each floor is walkable, under the floor cap, and its accent is its own', async ({ page }) => {
-  await boot(page, labSave());
+  // Arcade opt-in: the canvas checks (the floor's whole width, scrolling on its height) measure the Arcade map window;
+  // Modern's full-screen map is taller than a 22-row floor at 390 (tests/maps_b1.spec.js E1 covers the Modern camera).
+  const s = labSave(); s.settings.controls = 'arcade';
+  await boot(page, s);
   const r = await page.evaluate(() => {
     const out = {};
     for (const id of ['rx_f1', 'rx_f2', 'rx_f3']) {
