@@ -2417,12 +2417,13 @@
 3414-3482  function addCrackdownArt
 3483-3539  const HC_CITY_ART
 3540-3596  const HC_PLACEHOLDER_ART
-3597-3631  const WEIR_HUT_ART
-3632-3655  const ROUTE4_ART
-3656-3699  const BRIGHTGATE_ART
-3700-3774  function addExteriorArt
-3775-3877  function addHcParadeArt
-3878-3878  const OUTDOOR_SKIN
+3597-3632  const WEIR_HUT_ART
+3633-3765  const PROP_LIBRARY_ART
+3766-3789  const ROUTE4_ART
+3790-3833  const BRIGHTGATE_ART
+3834-3919  function addExteriorArt
+3920-4022  function addHcParadeArt
+4023-4023  const OUTDOOR_SKIN
 
 # stats.js
 9-10  const EVO_XP
