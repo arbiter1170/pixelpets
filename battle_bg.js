@@ -403,9 +403,37 @@ function frame(bg, t){ return bg && bg.btAlt && bg.btAlt.width && Math.floor(t /
 
 // HIGH_CHARITY_LAYOUT phase 1: the four new chunks and the new rooms. game.js calls enableCity() only while the city is
 // on (HC_CITY_V2 or ?debug=1&hccity=2), so every scene here always has its map in WORLD.
+// HIGH_CHARITY_LAYOUT v0.4 (BATTLE_BACKDROPS_ACT2 §4, its proposed tune): each chunk draws its own scene in its district's
+// colours (layout §3.1), so no two city maps share one. Each draws its landmark as a flat block on the far layer (above the
+// horizon, where the Walklings' boxes never reach; S.house slid it off the right edge at 63 px): the Square the Muster Hall,
+// the one dark roof with no lantern (layout §5.2); Charter Hill the Keeper High Court; the Exchange Block News House. PAL only.
+const HC_SQUARE = OUT.highcharity;
+function hcFinials(S, list){ list.forEach(([x, , tall]) => S.P('y', x + 3, S.hz - 8 - 8 * (tall || 1) - 2, 2, 2)); }
+function hcBlock(S, x, roof, wall, w = 16){ S.P(roof, x, S.hz - 20, w, 8); S.P('k', x, S.hz - 21, w, 1); S.P(wall, x, S.hz - 12, w, 12); S.P('k', x + (w >> 1) - 2, S.hz - 8, 4, 8); }
 const HC_OUT = {
-  hc_civic(S){ OUT.highcharity(S); },
-  hc_exchange(S){ OUT.highcharity(S); },
+  highcharity(S){
+    HC_SQUARE(S); hcFinials(S, [[0, 1, 2], [9, 2, 3], [26, 1, 2]]);
+    hcBlock(S, Math.min(S.W - 18, 38), 'd', 'F');
+  },
+  hc_civic(S){                                        // Charter Hill: pale stone, the Governor's House columns, Keeper green banners
+    sky(S); FAR.roofs(S, [[2, 4, 2]]); hcFinials(S, [[2, 4, 2]]); hcBlock(S, Math.min(S.W - 18, 40), 'h', 'w');
+    for (let x = Math.min(S.W - 18, 40) + 2; x < Math.min(S.W - 18, 40) + 15; x += 4) S.P('h', x, S.hz - 11, 1, 11);   // the Court's columns
+    for (let x = 6; x < 32; x += 6) S.P('w', x, S.hz - 14, 2, 14);
+    [10, 22].forEach(x => S.P('J', x, S.hz - 22, 3, 7));
+    S.ground('P', 4); S.band('C', 18, 16, 1, 0, S.W);
+    S.deco(() => {
+      S.art('banner_keeper', 10, S.hz + 14) || S.art('flag_pole', 10, S.hz + 14) || S.art('lamp_post', 10, S.hz + 14);
+    });
+  },
+  hc_exchange(S){                                     // the Exchange Quarter: slate blocks, brass trim, the boulevard and its bays
+    sky(S); FAR.roofs(S, [[0, 2, 3], [14, 3, 2]]); hcFinials(S, [[0, 2, 3], [14, 3, 2]]);
+    [[0, 16], [14, 24]].forEach(([x, w]) => S.P('y', x, S.hz - 9, w, 1));
+    hcBlock(S, Math.min(S.W - 18, 42), 'm', 'h'); S.P('d', Math.min(S.W - 18, 42) + 12, S.hz - 30, 1, 10);   // Block News House and its wire mast
+    S.ground('P', 6); S.band('U', 10, 8, 0.5, 0, S.W); S.band('C', 18, 16, 1, 0, S.W);
+    S.deco(() => {
+      S.art('poster_stand', 12, S.hz + 14) || S.art('lamp_post', 12, S.hz + 14);
+    });
+  },
   hc_waterfront(S){ sky(S); FAR.roofs(S, [[0, 1, 2], [20, 2, 3]]); S.ground('D', 2); S.band('w', 22, 10, 1, 0, S.W);
     S.deco(() => { S.art('rope_coil', 10, S.hz + 14) || S.art('lamp_post', 10, S.hz + 14); }); },
   hc_college(S){ sky(S); FAR.roofs(S, [[4, 2, 3]]); S.ground('g', 5); S.band('P', 20, 8, 0.5, 0, S.W);

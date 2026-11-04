@@ -371,6 +371,49 @@ test('the save is unchanged: walking three chunks and two rooms writes nothing; 
   expect(JSON.parse(after).v).toBe(2);
 });
 
+test('battle backdrops with the city on: every city map has its own scene, PAL only, no two alike, props clear of the Walklings', async ({ page }) => {
+  test.setTimeout(120000);
+  await boot(page);
+  const r = await page.evaluate(() => {
+    const ids = PixelPets.battleSceneIds(), city = ids.filter(id => /^(highcharity|hc_)/.test(id));
+    const pal = new Set(Object.values(PAL).map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)).join(',')));
+    const out = { city, missing: ['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college', 'hc_lantern_in', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_3'].filter(id => !ids.includes(id)),
+      offPal: [], dupes: [], clear: [] };
+    for (const [W, H] of [[61, 100], [60, 83], [63, 83], [61, 45], [56, 70], [70, 110]]) for (const mode of ['day', 'night', 'day-dull']) {
+      const seen = new Map();
+      for (const id of ids) {
+        const c = PixelPets.battleSceneArt(id, W, H, mode), d = c.getContext('2d').getImageData(0, 0, W, H).data;
+        let bad = 0, h = 2166136261;
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i + 3] !== 255 || !pal.has(d[i] + ',' + d[i + 1] + ',' + d[i + 2])) bad++;
+          h = Math.imul(h ^ (d[i] * 65536 + d[i + 1] * 256 + d[i + 2]), 16777619);
+        }
+        const isCity = city.includes(id);
+        if (bad && isCity) out.offPal.push(id + ' ' + W + 'x' + H + ' ' + mode + ': ' + bad);
+        if (seen.has(h) && (isCity || city.includes(seen.get(h)))) out.dupes.push(id + ' = ' + seen.get(h) + ' ' + W + 'x' + H + ' ' + mode);
+        if (!seen.has(h)) seen.set(h, id);
+        if (mode !== 'day' || !isCity) continue;
+        const deco = PixelPets.battleSceneArt(id, W, H, mode, 'deco'), dd = deco.getContext('2d').getImageData(0, 0, W, H).data;
+        for (const [bx, by, bw, bh] of BattleBG.boxes(W, H, BattleBG.scenes[id].group)) {
+          let hit = 0;
+          for (let y = Math.max(0, by); y < Math.min(H, by + bh); y++) for (let x = Math.max(0, bx); x < Math.min(W, bx + bw); x++) if (dd[(y * W + x) * 4 + 3]) hit++;
+          if (hit) out.clear.push(id + ' ' + W + 'x' + H + ': ' + hit + ' px');
+        }
+      }
+    }
+    return out;
+  });
+  expect(r.missing).toEqual([]);
+  expect(r.offPal).toEqual([]);
+  expect(r.dupes).toEqual([]);
+  expect(r.clear).toEqual([]);
+  // a battle on Charter Hill opens on Charter Hill's own scene
+  await page.evaluate(() => { PixelPets.goto('hc_civic', 32, 40, 'up'); PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0; PixelPets.healTeam(); return PixelPets.forceBattle('tide/0', 5); });
+  await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE');
+  expect(await page.evaluate(() => PixelPets.battleScene.id)).toBe('hc_civic');
+  await page.evaluate(() => PixelPets.battle.close());
+});
+
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
   test('every chunk and every built room draws with reduced motion on; zero console errors', async ({ page }) => {
