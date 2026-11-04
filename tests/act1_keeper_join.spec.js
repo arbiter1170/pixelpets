@@ -92,7 +92,9 @@ async function drive(page, picks = [], onLine = null, ms = 120000) {
       await page.waitForTimeout(40); continue;
     }
     if (sc.mode === 'say' && sc.waiting) {
-      if (!sc.full) { await page.keyboard.press('Space'); await page.waitForTimeout(30); continue; }
+      // Let the line finish typing (text speed fast) rather than tapping: under load a tap sent while the line types can land
+      // after it is full and skip it unread.
+      if (!sc.full) { await page.waitForTimeout(30); continue; }
       const key = sc.who + '|' + sc.text;
       if (key !== last) { lines.push([sc.who || '', sc.text]); last = key; if (onLine) await onLine(sc.text, sc.who || ''); }
       await page.keyboard.press('Space'); await page.waitForTimeout(30); continue;
