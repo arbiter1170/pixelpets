@@ -1,0 +1,145 @@
+{
+ "spec": "ACT2_COVER_STORY v0.1.1 (design repo, private; D1680-D1699): the slices that play in Act 2's opening. Mom's 'Supper' (C-M, §2.3) after the posting, with her repeats, the daily snack (D1696) and the pin variant for a save that never wore the lanyard (§5.2, D1695); and Juniper's optional reveal point in Fernbrook (§3.4, D1688).",
+ "_about": "Ours, not a design copy. Applied after detail_zzz_act2_opener.json. The reveal system keys on a lanyard past: story.cover=glimmer | seal:seal_glim_1 (D1695). Same three choices everywhere (D1681). Save stays pixelpets.save.v2, v 2; new additive story.* keys only; nothing written at load. Not built here (their beats are not built): Lizzy's scene (C-L, after B9), Rook (B5), Lumen (B7), Fen (B8), the copy in R4 (B11), the barks and gossip.",
+ "_placeholders": {
+  "note": "PLACEHOLDER copy (Story/June to replace; ACT2_COVER_STORY §2.3, §3.4, §5.2; OPEN_DECISIONS rows D1680-D1699). Every line in this file is a placeholder.",
+  "paths": ["scenes", "slicePatch", "objPatch"]
+ },
+ "flags": {
+  "story.cv_mom": "§2.3 (D1682): told / cover / quiet; Mom's answer at Supper (quiet also for the pin variant)",
+  "story.cv_mom_walk": "§2.3: Mom said m1 at the Lodge gate and walked home ahead (the scene goes on at the drawer). Engineer's helper flag",
+  "story.cv_mom_day": "§2.3 (D1696): the day Mom last gave the snack (the day key; cleared on the day roll)",
+  "story.cv_juniper": "§3.4 (D1688): told / cover / quiet; Juniper's optional point in Fernbrook"
+ },
+ "slicePatch": {
+  "maps": {
+   "hearthmoor": {
+    "addObjs": [
+     {"kind": "npc", "id": "cv_mom_gate", "name": "Mom", "look": "mom", "x": 10, "y": 7, "facing": "right",
+      "when": ["story.gov_posted", "!story.cv_mom", "!story.cv_mom_walk"], "lines": {"else": "@cv_mom_gate"},
+      "_note": "§2.3 m1: Mom waits at the Lodge gate (a temporary body) after the posting."},
+     {"kind": "trigger", "id": "cv_mom_gate_at", "x": 11, "y": 7, "r": 1,
+      "when": ["story.gov_posted", "!story.cv_mom", "!story.cv_mom_walk"], "scene": "cv_mom_gate",
+      "_note": "§2.3: the first step out of the Lodge after the posting. No gate on the coach."}
+    ]
+   },
+   "hm_home_in": {
+    "addObjs": [
+     {"kind": "trigger", "id": "cv_mom_home_at", "x": 4, "y": 6, "r": 1,
+      "when": ["story.gov_posted", "!story.cv_mom", "!story.cv_mom_walk"], "scene": "cv_mom_home",
+      "_note": "§2.3 fallback: a save that never passed the Lodge gate (or is past B1) gets Supper on the next entry home."}
+    ]
+   },
+   "hm_home_room": {
+    "addObjs": [
+     {"kind": "npc", "id": "cv_mom_room", "name": "Mom", "look": "mom", "x": 5, "y": 5, "facing": "up",
+      "when": ["story.cv_mom_walk", "!story.cv_mom"], "lines": {"else": "@cv_mom_supper"},
+      "_note": "§2.3 m3: Mom at your door. Talking to her first plays the same scene from the drawer."}
+    ]
+   }
+  }
+ },
+ "scenes": {
+  "cv_mom_gate": [
+   ["music", "hearth"],
+   ["if", "story.cover=glimmer | seal:seal_glim_1", [
+    ["say", "Mom", "There you are. Ilse kept you long enough. Walk me home before your long walk?"],
+    ["walkTo", "cv_mom_gate", 3, 6, {"drop": true}],
+    ["setFlag", "story.cv_mom_walk", true]
+   ], [
+    ["say", "Mom", "A Keeper pin. Look at you. Sit down before supper goes cold."],
+    ["setFlag", "story.cv_mom", "quiet"]
+   ]]
+  ],
+  "cv_mom_home": [
+   ["if", "story.cover=glimmer | seal:seal_glim_1", [
+    ["setFlag", "story.cv_mom_walk", true]
+   ], [
+    ["music", "hearth"],
+    ["say", "Mom", "A Keeper pin. Look at you. Sit down before supper goes cold."],
+    ["setFlag", "story.cv_mom", "quiet"]
+   ]]
+  ],
+  "cv_mom_supper": [
+   ["music", "hearth"],
+   ["say", "", "You put the company lanyards in the drawer. Not on your coat, Ilse said."],
+   ["say", "Mom", "Is that a Glimmerwell lanyard? Three of them?"],
+   ["say", "Mom", "Hattie showed me a Ribbit post. You, on the Brinewick quay, in their colours."],
+   ["say", "Mom", "Now there's a Keeper pin on your coat, and the Governor has sent for you."],
+   ["choice", "I'm not cross, love. I'm lost. Who are you working for?", [
+    ["Tell the truth", [
+     ["say", "", "You tell her. Ilse asked you to wear it, to watch, and to tell only her."],
+     ["say", "Mom", "Oh, love. So that's why you came home so tired."],
+     ["say", "Mom", "I won't breathe a word. Maze, you didn't hear that."],
+     ["say", "Mom", "Come home when you can. There'll always be something packed for {pet}."],
+     ["toast", "Mom packs a snack for {pet} daily."],
+     ["setFlag", "story.cv_mom", "told"]
+    ]],
+    ["Cover story", [
+     ["say", "", "You tell her the Keepers made you a better offer. It sounds true out loud."],
+     ["say", "Mom", "Hm. A better offer. They always sound good at the door."],
+     ["say", "Mom", "Just keep coming home between them."],
+     ["setFlag", "story.cv_mom", "cover"]
+    ]],
+    ["Say nothing", [
+     ["say", "", "You don't answer. Mom looks at the drawer, then at you."],
+     ["say", "Mom", "All right. When you're ready. The kettle stays warm."],
+     ["say", "", "She takes her coat on the way down. You hear the door."],
+     ["setFlag", "story.cv_mom", "quiet"]
+    ]]
+   ], "Mom"]
+  ],
+  "cv_mom_snack": [
+   ["say", "Mom", "Maze packed this for {pet}."],
+   ["give", "heal_snack", 1],
+   ["setFlag", "story.cv_mom_day", true]
+  ],
+  "cv_juniper": [
+   ["choice", "{name}! You vanished from the partnership! Did the Keepers poach you? Blink twice!", [
+    ["Tell the truth", [
+     ["say", "Associate Juniper", "Undercover? But I gave you that lanyard. I meant it. I meant all of it."],
+     ["say", "Associate Juniper", "I'm going to ask Imogen if that's allowed. It isn't, is it?"],
+     ["say", "", "By evening her lantern stand is gone from the plaza."],
+     ["inc", "story.sway_fernbrook", 1],
+     ["setFlag", "story.cv_juniper", "told"]
+    ]],
+    ["Cover story", [
+     ["say", "Associate Juniper", "Aw. No hard feelings! The trial lanyard offer stays open. Have a bright day!"],
+     ["setFlag", "story.cv_juniper", "cover"]
+    ]],
+    ["Say nothing", [
+     ["say", "Associate Juniper", "Mysterious! Very Keeper of you. Have a bright day!"],
+     ["setFlag", "story.cv_juniper", "quiet"]
+    ]]
+   ], "Associate Juniper"]
+  ]
+ },
+ "objPatch": {
+  "_note": "Mom's Act 2 repeats and the daily snack go before her plain line (her Act 1 keys still win); the drawer in your room plays Supper while it waits; downstairs Mom steps out while she is upstairs at your door. Juniper's point comes first on her Fernbrook body in Act 2 for a lanyard past; truth sends her and her stand off the plaza.",
+  "mom": {
+   "whenAdd": ["!story.cv_mom_walk | story.cv_mom"],
+   "linesBefore": {
+    "anchorKey": "else",
+    "add": {
+     "story.cv_mom=told & !story.cv_mom_day": "@cv_mom_snack",
+     "story.cv_mom=told": "I told nobody. Well. Maze. She's a vault.",
+     "story.cv_mom=cover": "A better offer. Hattie isn't buying it.",
+     "story.cv_mom=quiet": "Ilse says you're hers. That'll do me."
+    }
+   }
+  },
+  "room_chest": {
+   "linesFirst": {"story.cv_mom_walk & !story.cv_mom": "@cv_mom_supper"}
+  },
+  "juniper": {
+   "whenAdd": ["!story.cv_juniper=told"],
+   "linesFirst": {
+    "story.act>=2 & story.cover_done & !story.cv_juniper & story.cover=glimmer": "@cv_juniper",
+    "story.act>=2 & story.cover_done & !story.cv_juniper & seal:seal_glim_1": "@cv_juniper"
+   }
+  },
+  "fb_lantern_stand": {
+   "whenAdd": ["!story.cv_juniper=told"]
+  }
+ }
+}

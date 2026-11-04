@@ -402,6 +402,30 @@ const SPECIES = [
       '.......a','......aa','.....aaa','...d.aaa','..daaaaa','..aaaaaa','.daaaaaa','.aaaaiea',
       '.aaaaeea','.aaaccbb','..aaccbb','..daaaaa','...aaaaa','...daaa.','..c..c.c','....c..c']}
   ]},
+  // ROUTE_TO_GOVERNOR v0.1.1 §7 (D1855, D1857, D1862) and KILNMOUTH v0.1.1 §4.4 (indices 25-28, appended in landing order).
+  // Names are PLACEHOLDER. tableOnly: wild only on an authored spawn table (never the any-species roll or a habitat pick).
+  // spawnNear: a tile char the line prefers to spawn beside (the adder basks by drystone walls, D1871); idleMul stretches
+  // the wild's idle between steps (the heron stands still, D1871). The heron's stages are full 16-column profiles.
+  { id:'adder', habitat:{meadow:4, hot:4, storm:3, mountain:3}, tiles:'grass', tableOnly:true, spawnNear:'h', type:'VOLT', blurb:"A wall adder. Its zigzag back looks like a lightning mark.", stages:[
+    { name:"Adderlet", col:{a:PAL.h,b:PAL.y,c:PAL.m,d:PAL.r,x:PAL.d}, half:['........','........','........','........','........','......aa','.....aaa','....aiea','....aeea','.....aad','......ab','....abab','..aababa','.abaabab','.caaaaaa','..cccccc']},
+    { name:"Walladder", col:{a:PAL.m,b:PAL.y,c:PAL.d,d:PAL.r,x:PAL.k}, half:['........','........','......aa','.....aaa','....aaaa','....aiea','....aeea','.....aad','......ab','......ba','......ab','...aabaa','..abaaba','.abaabab','caaaaaaa','.ccccccc']},
+    { name:"Zigzag", col:{a:PAL.m,b:PAL.y,c:PAL.d,d:PAL.r,x:PAL.w}, half:['....x..x','....b.bb','....aaaa','...aaaaa','...aaiea','...aaeea','...baaaa','....aaad','.....aab','.....aba','..aabaab','.aabaaba','abaabaab','baabaaba','caaaaaaa','cccccccc']}
+  ]},
+  { id:'heron', habitat:{water:6, rain:3, fog:3, night:3}, tiles:'shore', tableOnly:true, idleMul:3, type:'TIDE', blurb:"A striped reed-heron. It stands so still it becomes a reed.", stages:[
+    { name:"Reedling", grid:['................','................','................','.......F........','.......G........','......GGG.......','......GkG.......','......GGGt......','.......GGtt.....','......GwGttt....','.....GwwGttt....','.....GwwGGtt....','......GwGGt.....','.......GGG......','.......F.F......','.......F.F......']},
+    { name:"Stalker", grid:['.......F........','.......G........','.......G........','......GGG.......','......GkGt......','......GGGt......','.......GF.......','.......FG.......','.......GF.......','.......FGt......','......GwGtt.....','.....GwwGttt....','.....GwwGGttt...','......GwGGtt....','.......GGG......','.......F.F......']},
+    { name:"Boomer", grid:['.......F........','.......G........','.......G.tt.....','......GGGtt.....','......GkGGt.....','......GGGG......','......GwFG......','.....GwwGF......','.....GwFGG......','.....GGFGGt.....','......GGGGtt....','.....tGGGGttt...','....ttGGGGGttt..','.....ttGGGGtt...','.......G..G.....','.......F..F.....']}
+  ]},
+  { id:'dipper', habitat:{water:6, cold:4, rain:2}, tiles:'shore', tableOnly:true, type:'TIDE', blurb:"Walks the stream bed. Hunches when the water runs cold.", stages:[
+    { name:"Chick", col:{a:PAL.m,b:PAL.w,c:PAL.d,d:PAL.y,x:PAL.k}, half:['........','........','........','........','.....aaa','....aaaa','...aaaaa','...aeiaa','...aaaaa','.ccaaabb','c.caabbb','..caabbb','...caabb','....aaaa','......d.','.....dd.']},
+    { name:"Walker", col:{a:PAL.m,b:PAL.w,c:PAL.d,d:PAL.y,x:PAL.k}, half:['........','........','.....aaa','....aaaa','...aaaaa','...aeiaa','...aaaax','..aaaaab','.caaaabb','ccaaabbb','ccaaabbb','.caaaabb','..caaaaa','...aaaaa','.....d..','....dd..']},
+    { name:"Diver", col:{a:PAL.m,b:PAL.w,c:PAL.n,d:PAL.y,x:PAL.k}, half:['......c.','.....cc.','....aaaa','...aaaaa','..aaaaaa','..aaeiaa','..aaaaax','.aaaaaab','ccaaaabb','cccaabbb','cccaabbb','.ccaaabb','..caaaaa','...aaaaa','....d...','...dd...']}
+  ]},
+  { id:'jugwasp', habitat:{mountain:4, hot:3, meadow:2}, tiles:'grass', tableOnly:true, type:'STONE', blurb:"Shapes tiny clay jugs on warm banks. Carries one always.", stages:[
+    { name:"Bearer", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['........','........','...x....','....x...','.....aaa','....aeia','.bb..aaa','bbbb..xa','.bb..aaa','....aaxa','....aaaa','.....aax','......cc','.....ccc','.....ccc','......dd']},
+    { name:"Potter", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['........','..x.....','...x....','....xaaa','....aaaa','...aaeia','bbb..aaa','bbbb..xa','.bbb.aaa','.b..aaxa','...aaaaa','....aaax','.....ccc','....cccc','....cccc','.....ddd']},
+    { name:"Cluster", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['.x......','..x.....','...xaaaa','...aaaaa','...aaeia','bb..aaaa','bbbb..xa','bbbb.aaa','.bb.aaxa','...aaaaa','....aaax','.cc..ccc','cccccccc','cccccccc','.dd.dddd','........']}
+  ]},
 ];
 
 // HUSHWATER B0: one fallback stage for a species id this client does not know.
@@ -2021,6 +2045,33 @@ function buildTiles(){
     coach_tile: ["CCCCCCCDCCCCCCCD","CwwCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","DDDDDDDDDDDDDDDD","CCCCCCCDCCCCCCCD","CCCCCCCDCwwCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","DDDDDDDDDDDDDDDD"],
     rug_coach: ["BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBGBBGBBBBBB","BBBBBGBBBBGBBBBB","BBBBGBBBBBBGBBBB","BBBBGBBBBBBGBBBB","BBBBBGBBBBGBBBBB","BBBBBBGBBGBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB"],
   };
+  // BRIGHTGATE_LAYOUT §7 palette ledger: one floor per room, no new PAL keys. The Lantern House's warm planks are the city's
+  // one scuffed floor; Bright Mart's grey panels; the HQ lobby's polished soot-grey gloss; floor 2's light slate panels; the gala's
+  // soot gloss with a honey inlay; Hall 4's navy storm stone. Mats in each room's own pair. PLACEHOLDER art until Pia's pass.
+  T.floor_bg_plank = woodFloor('G', 'F', [0, 5, 10, 15], [[3, 1], [11, 6], [6, 11]], [[8, 3, 'A'], [2, 8, 'C']]);
+  T.floor_bg_plank_b = woodFloor('G', 'F', [1, 6, 11], [[7, 2], [13, 8]], [[4, 4, 'A'], [9, 9, 'A'], [10, 10, 'A'], [14, 13, 'C']]);
+  T.floor_bg_plank_c = woodFloor('G', 'F', [0, 6, 12], [[5, 1], [1, 8], [12, 10]], [[6, 7, 'F'], [7, 7, 'F'], [11, 3, 'A']]);
+  T.floor_bg_panel = shopFloor('h', null);
+  T.floor_bg_panel_b = shopFloor('h', 'y');
+  T.floor_bg_panel_c = shopFloor('w', null);
+  T.floor_bg_gloss = stoneFloor('d', 'N', [[3, 3, 'm'], [4, 4, 'm'], [11, 11, 'm']], null);
+  T.floor_bg_gloss_b = stoneFloor('d', 'N', [[10, 2, 'm'], [11, 3, 'm'], [2, 12, 'h']], null);
+  T.floor_bg_gloss_c = stoneFloor('d', 'N', [[6, 9, 'm'], [7, 10, 'm']], [9, 12, 3]);
+  T.floor_bg_review = stoneFloor('m', 'h', [[4, 3, 'K'], [12, 10, 'K']], null);
+  T.floor_bg_review_b = stoneFloor('m', 'h', [[9, 5, 'K']], [2, 12, 4]);
+  T.floor_bg_review_c = stoneFloor('m', 'K', [[3, 11, 'h']], null);
+  T.floor_bg_gala = parquetFloor('N', 'd', 'y');
+  T.floor_bg_gala_b = parquetFloor('d', 'N', 'y');
+  T.floor_bg_gala_c = parquetFloor('N', 'N', 'y');
+  T.floor_bg_storm = stoneFloor('n', 'd', [[3, 4, 'b'], [12, 11, 'm']], null);
+  T.floor_bg_storm_b = stoneFloor('n', 'd', [[9, 3, 'y'], [2, 12, 'b']], [5, 10, 4]);
+  T.floor_bg_storm_c = stoneFloor('n', 'm', [[6, 6, 'b']], null);
+  T.mat_bg_lantern = doormat('F', 'V');
+  T.mat_bg_store = doormat('N', 'h');
+  T.mat_bg_lobby = doormat('N', 'V');
+  T.mat_bg_review = doormat('d', 'h');
+  T.mat_bg_gala = doormat('V', 'y');
+  T.mat_bg_storm = doormat('d', 'y');
   for (const [k, rows] of Object.entries(ART_PASS_TILES)) T[k] = mkTile(g => paintGrid(g, rows));
   // LANTERN_HOUSE_FERNBROOK draft tiles (oak parquet, wire plinth, cable run) live with the other room tiles, so the skin
   // check (maps_b8) finds them here; addCrackdownArt only fills a name that is still missing.
@@ -2098,6 +2149,15 @@ const HOUSE_SKINS = {
   bw_store: hcSkin('floor_tarboard', 'wall_chandler', 'mat_chandler', { wall: wallRow('mhdhKFFdFcsF') }),
   bw_hall: hcSkin('floor_ferrydeck', 'wall_ferry', 'mat_ferry', { decal: { q: 'deck_lane' }, walk: { q: 1 }, wall: wallRow('ncdwhrrdnswn') }),
   bw_depot: hcSkin('floor_sealed', 'wall_depot', 'mat_depot', { decal: { q: 'depot_line' }, walk: { q: 1 }, wall: wallRow('dmdmdVVddswV') }),
+  // BRIGHTGATE_LAYOUT §7 (rule 9 previews approved, D2000-D2009): each room its own wall row and floor; Glimmerwell rooms inside
+  // the Glimmerwell set (soot, wine, white, grey, slate, honey marks), Hall 4 neutral. The Lantern House is the old cream house
+  // with a wine band at the wainscot and a soot plinth (D1490, D2009).
+  bg_lantern: hcSkin('floor_bg_plank', 'wall_cream', 'mat_bg_lantern', { wall: wallRow('FCGCAVNFGcwF') }),
+  bg_store: hcSkin('floor_bg_panel', 'wall_vault', 'mat_bg_store', { wall: wallRow('mwhwhyNdmcsh') }),
+  bg_lobby: hcSkin('floor_bg_gloss', 'wall_vault', 'mat_bg_lobby', { remap: { E: 'lift_doors' }, walk: { E: 1 }, wall: wallRow('NwhwhVNdNswN') }),
+  bg_review: hcSkin('floor_bg_review', 'wall_stone', 'mat_bg_review', { remap: { E: 'lift_doors' }, walk: { E: 1 }, wall: wallRow('dhmhmNNdmcwd') }),
+  bg_gala: hcSkin('floor_bg_gala', 'wall_civic', 'mat_bg_gala', { remap: { '=': 'floor_bg_gala_c' }, wall: wallRow('NVpVpyNdyswN') }),
+  bg_hall: hcSkin('floor_bg_storm', 'wall_slate', 'mat_bg_storm', { remap: { '=': 'floor_bg_storm_c' }, wall: wallRow('dmKmKyndycsd') }),   // Hall 4: navy storm stone, slate, copper-gold
   // HIGH_CHARITY_LAYOUT §7 palette ledger (rule 9 previews pending). Existing tile families only; each wall+floor pair is new.
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
   obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_dusk', m:'mat_dusk' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: floorFixVar('floor_dusk'), wall: wallRow('FGdGFyFFynsF') },
@@ -3701,6 +3761,76 @@ const PROP_LIBRARY_ART = {
   "pd_wear_patch":{"set":"ext_ground","cells":[1,1],"walk":true,"place":"decal","rows":["................","................","................","........g.......","......AAAAC.....","....ACAAAAAAA...","...AAAAAAAAAAA..","..ACAAAAAAAAAAg.","..AAAAAACAAAACA.","..gAAAAAAAAAAAA.","...AAAAAAAAAAA..","....AACAAAACA...","......AAAAA.....",".......g........","................","................"]},
   "pd_kerb_moss":{"set":"ext_ground","cells":[1,1],"walk":true,"place":"decal","rows":["................","................","................","......m.........",".......m........",".......m........","........m.......","........m.......","................","................","................","................","...g............","..ggt.....g..g..",".........ggt....","................"]}
 };
+// ROUTE_TO_GOVERNOR E6/E7 (D1869, yellow, settled): Route 4's three new tiles (y reeds, h drystone wall, l mown lawn) and its
+// roadside props, PAL keys only, drawn from the packet's descriptions. water_trough and notice_board reuse built art.
+const ROUTE4_ART = {
+  tiles: {
+    y: ["gggtggglggggtggg", "gglgggtyggglgtgg", "ggyggggyggtyggyg", "gtygglgyggtyglyg", "gtyggyglgttygyyg", "gtlggygygltyggyl", "ttlgtygygltylgyl", "ttytlyglgyttytyl", "gtytyyglgytltlyg", "gtltylgytyltylyg", "ttylyytlyyltyyyt", "tlyttyyttyltlyyt", "ttlttlyttlttltyt", "ttttttttttttttlt", "gtttgtttttgtttgt", "gggggggggggggggg"],
+    h: ["dhhhdmmmhdhhhmmd", "hhwhdmhmhdhwhhmd", "hhhmdmmmmdhhhmmd", "dddddddddddddddd", "mmdhhhhmdmmmhhhd", "mhdhwhhmdmlmhwhd", "mmdhhhmmdmmmhhmd", "dddddddddddddddd", "hhhmdmmmhhdhhhmd", "hwhmdmlmhwdhhmmd", "hhmmdmmmmhdhmmmd", "dddddddddddddddd", "mmhhhdmmmhhhdmmm", "mlhwhdmhmwhhdmhm", "mmhhmdmmmhhmdmmm", "kkkkkkkkkkkkkkkk"],
+    l: ["gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt"],
+  },
+  art: {
+    milestone: ["................", "................", "................", "....dddddddd....", "....hwwhhhhm....", "....hwhhhhhm....", "....hmmmmhhm....", "....hhhhhhhm....", "....hmmmhhhm....", "....hhhhhhhm....", "....hmmmmhhm....", "....hhhhhhhm....", "....hhhhhhhm....", "...dhhhhhhhmd...", "...gddddddddg...", "................"],
+    finger_post: ["................", "................", ".......ddd......", ".......dod......", "..dddddddoddd...", ".dyyyyyyyyyyyd..", "dyoooooooooood..", ".dyyyyyyyyyyyd..", "..dddddddoddd...", ".......dod......", "...ddddddodddd..", "..dyyyyyyyyyyyd.", "..dooooooooooood", "..dyyyyyyyyyyyd.", "...ddddddodddd..", ".......dod......", ".......dod......", ".......dod......", "......ddoddd....", "......dyyyyd....", "......doooodd...", "......dyyyyd....", "......ddoddd....", ".......dod......", ".......dod......", ".......dod......", ".......dod......", ".......dod......", ".......dod......", "......ddoddd....", ".....gddddddg...", "................"],
+    road_bar: ["................", "................", "................", "................", ".kk..........kk.", ".dk..........dk.", "kkkkkkkkkkkkkkkk", "krrrrwwwwrrrrwwk", "krrrrwwwwrrrrwwk", "kkkkkkkkkkkkkkkk", ".dk..........dk.", ".dk..........dk.", ".dk..........dk.", ".dk..........dk.", "kdkk........kdkk", "................"],
+    gate_arch_post: ["................", "....kkkkkkkk....", "...khhhhhhhhk...", "...kmmmmmmmmk...", "....kyyyyyyk....", "....kyooooyk....", "....kyooooyk....", "....kkyyyykk....", "....khhhhhhk....", "....khwhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khwhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khhhhhmk....", "....khwhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "...khhhhhhhmk...", "...kmmmmmmmmk...", "..khhhhhhhhhmk..", "..kmmmmmmmmmmk..", "..kkkkkkkkkkkk..", "................"],
+    capital_roofs: ["....................y...........", "...................yoy..........", "....y.............kkkkk.........", "...yoy...........krrrrrk........", "..kkkkk.........krrprrrrk.......", ".krrrrrk.......krrrrrrprrk......", "krrprrrrk.....krprrrrrrrrrk.....", "krrrrrprk....krrrrrprrrrrrrk....", "kprrrrrrrk..krrrrrrrrrrprrrrk...", "kCCCCCCCCk..kCCCCCCCCCCCCCCCk...", "kCyCCCyCCk..kCCyCCCCCyCCCCyCk...", "kCyCCCyCCk..kCCyCCCCCyCCCCyCk...", "kCCCCCCCCk..kCCCCCCCCCCCCCCCk...", "kkkkkkkkkk..kkkkkkkkkkkkkkkkk...", "................................", "................................"],
+    capital_spire: [".......k........", ".......krr......", ".......krrr.....", ".......krr......", ".......k........", "......kmk.......", "......kmk.......", ".....kmhmk......", ".....kmhmk......", "....kmhhhmk.....", "....kmhhhmk.....", "...kmhhhhhmk....", "...kCCCCCCCk....", "...kCyCCCyCk....", "...kCCCCCCCk....", "...kkkkkkkkk...."],
+    reed_clump: ["................", "......y.....y...", "......y..y..y...", "...y..l..y..l...", "...y..l..l..l...", "...l..l..l.yl...", "...l.ll..l.ll...", "...llgl.ll.lg...", "...lglg.lg.lg...", "..lglgglgglgg...", "..gtgtggtgtgtl..", "..tgtgttgtgtgt..", "..ttgttttgttt...", "...tttttttttt...", "....dddddddd....", "................"],
+    clipped_tree: ["................", "................", "......kkkk......", "....kkggggkk....", "...kggllggggk...", "..kgglgggggtgk..", "..kglggggggtgk..", ".kgggggggggtttk.", ".kgggggggggtttk.", ".kggggggggttttk.", "..kgggggggtttk..", "..ktggggtttttk..", "...kttttttttk...", "....kkttttkk....", "......kkkk......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", "......kdpk......", ".....kmmmmk.....", "....khhhhhhk....", "....khwhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....kkkkkkkk....", "................", "................", "................", "................"],
+    bin_tipped: ["................", "................", "................", "................", "................", "..kkkkkkkk......", ".kmmmmmmmhk.....", ".kmhhhhhhhkk....", ".kmhhhhhhhkdk...", ".kmmmmmmmhkdk...", "..kkkkkkkkkk....", "................", "..y.y.y..o.o.ww.", "..yyyyy..ooo.ww.", ".kkkkkkkkkkkkkk.", "................"],
+    withy_bundle: ["................", "................", "................", ".....o.y.o......", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "...gooyoyoog....", "................"],
+  },
+};
+// BRIGHTGATE_LAYOUT v0.2 (design specs/BRIGHTGATE_LAYOUT.md §3.3, §9, §10 B01-B08, B37-B39; D2000 no mint): the city's new
+// tiles by map char (I panel paving, L glide lane, x crossing, J planter kerb, b Cruiser stand bay, o Old Wick cobbles,
+// d Lamp Works setts, O rail on setts, G company fence, V Concierge pad, N the clipped hedge at the city's edge, & a company
+// flowerbed; lawns use Route 4's mown lawn `l`, which has no mint pixel) and Bright Mart's awning and lantern crate.
+// PAL keys only, drawn from the packet's descriptions; no mint `l` anywhere. PLACEHOLDER art until Pia's pass.
+const BRIGHTGATE_ART = {
+    frames: {   // animated props: frames, then the shared beat in ms (every lamp on one timer, D1494)
+      bg_lamp_ring_pulse: [["................", ".......yy.......", "....VyVVVVyV....", "....VVVVVVVV....", "......NNNN......", "......NwwN......", "......NyyN......", "......NwwN......", "......NNNN......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", "......dddd......", "......dddd......", "................"], ["................", "................", "....VyVVVVyV....", "....VVVVVVVV....", "......NNNN......", "......NwwN......", "......NwwN......", "......NwwN......", "......NNNN......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", "......dddd......", "......dddd......", "................"]],
+    },
+    tiles: {
+      I: ["wwwwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "wwhwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "hhhhhhhhhhhhhhhh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwhwwwwh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwwwwwwh", "hhhhhhhhhhhhhhhh"],
+      L: ["mmmmmmmmmmmmmmmm", "mhhhhhhhmhhhhhhh", "mhhhhhhhmhhhhhhh", "mhhhhhhhmhhhhhhh", "mmmmmmmmmmmmmmmm", "hhhhmhhhhhhhmhhh", "hhhhmhhhhhhhmhhh", "hhwwmhwwhhwwmhww", "mmwwmmwwmmwwmmww", "mhhhhhhhmhhhhhhh", "mhhhhhhhmhhhhhhh", "mhhhhhhhmhhhhhhh", "mmmmmmmmmmmmmmmm", "hhhhmhhhhhhhmhhh", "hhhhmhhhhhhhmhhh", "hhhhmhhhhhhhmhhh"],
+      x: ["mmmmmmmmmmmmmmmm", "mwwwhwwwmwwwhwww", "mwwwhwwwmwwwhwww", "mwwwhwwwmwwwhwww", "mwwwmwwwmwwwmwww", "hwwwmwwwhwwwmwww", "hwwwmwwwhwwwmwww", "hwwwmwwwhwwwmwww", "mwwwmwwwmwwwmwww", "mwwwhwwwmwwwhwww", "mwwwhwwwmwwwhwww", "mwwwhwwwmwwwhwww", "mwwwmwwwmwwwmwww", "hwwwmwwwhwwwmwww", "hwwwmwwwhwwwmwww", "hhhhmhhhhhhhmhhh"],
+      J: ["dddddddddddddddd", "dggggggggggggggd", "dggtggggggggtggd", "dgggggggtggggggd", "dggggtgggggggggd", "dgggggggggtggggd", "dddddddddddddddd", "dddddddddddddddd", "dddddddddddddddd", "dddddddddddddddd", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "VVVVVVVVVVVVVVVV", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "kkkkkkkkkkkkkkkk"],
+      b: ["VVVVVVVVVVVVVVVV", "Vhhhhhhhmhhhhhhh", "Vhhhhhhhmhhhhhhh", "Vhhhhhhhmhhhhhhh", "Vmmmmmmmmmmmmmmm", "Vhhhmhhhhhhhmhhh", "Vhhhmhhhhhhhmhhh", "Vhhhmhhhhhhhmhhh", "Vmhhmmhhmmhhmmhh", "Vhhhhhhhmhhhhhhh", "Vhhhhhhhmhhhhhhh", "Vhhhhhhhmhhhhhhh", "Vmmmmmmmmmmmmmmm", "Vhhhmhhhhhhhmhhh", "Vhhhmhhhhhhhmhhh", "VVVVVVVVVVVVVVVV"],
+      o: ["CAAAABCAAAABCAAA", "AAAAABAAAAABAAAA", "AAAAABAAAAABAAAA", "FFFFFBFFFFFBFFFF", "BBBBBBBBBBBBBBBB", "BBCAAAABCAAAABCA", "BBAAAAABAAAAABAA", "BBAAAAABAAAAABAA", "BBFFFFFBFFFFFBFF", "BBBBBBBBBBBBBBBB", "CAAABCAAAABCAAAA", "AAAABAAAAABAAAAA", "AAAABAAAAABAAAAA", "AAAABAAAAABAAAAA", "FFFFBFFFFFBFFFFF", "BBBBBBBBBBBBBBBB"],
+      d: ["mmmmmmmhmmmmmmmh", "mmmmmmmhmmmmmmmh", "dddddddhdddddddh", "hhhhhhhhhhhhhhhh", "mmmhmmmmmmmhmmmm", "mmmhmmmmmmmhmmmm", "dddhdddddddhdddd", "hhhhhhhhhhhhhhhh", "mmmmmmmhmmmmmmmh", "mmmmmmmhmmmmmmmh", "dddddddhdddddddh", "hhhhhhhhhhhhhhhh", "mmmhmmmmmmmhmmmm", "mmmhmmmmmmmhmmmm", "dddhdddddddhdddd", "hhhhhhhhhhhhhhhh"],
+      O: ["mmmwhmmhmmmwhmmh", "mFFwhFFFFFFwhFFh", "dFFwhFFFFFFwhFFh", "hddwhddddddwhddh", "mmmwhmmmmmmwhmmm", "mmmwhmmmmmmwhmmm", "dFFwhFFFFFFwhFFd", "hFFwhFFFFFFwhFFh", "mddwhddddddwhddh", "mmmwhmmhmmmwhmmh", "dddwhddhdddwhddh", "hFFwhFFFFFFwhFFh", "mFFwhFFFFFFwhFFm", "mddwhddddddwhddm", "dddwhddddddwhddd", "hhhwhhhhhhhwhhhh"],
+      G: ["wwwwwwwhwwwwwwww", "wNNwwwwhNNwwwwNN", "wyNwwwwhyNwwwwyN", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "wNNwwwwhNNwwwwNN", "wNNwwwwhNNwwwwNN", "hNNhhhhhNNhhhhNN", "wNNhwwwwNNwwwwNN", "wNNhwwwwNNwwwwNN", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "wNNhwwwwNNwwwwNN", "wNNhwwwwNNwwwwNN", "dddddddddddddddd", "hhhhhhhhhhhhhhhh"],
+      V: ["dddddddddddddddd", "dyNNNNVVVVNNNNNN", "dNNNVVVVVVVVNNNN", "dNNVVNNNNNNVVNNN", "dNVVNNNNNNNNVVNN", "dNVNNNNNNNNNNVNN", "dVVNNNNyyNNNNVVN", "dVVNNNyyyyNNNVVN", "dVVNNNyyyyNNNVVN", "dVVNNNNyyNNNNVVN", "dNVNNNNNNNNNNVNN", "dNVVNNNNNNNNVVNN", "dNNVVNNNNNNVVNNN", "dNNNVVVVVVVVNNNN", "dNNNNNVVVVNNNNyN", "dNNNNNNNNNNNNNNN"],
+      roof_bg_terracotta: ["FBGBBBBBFBGBBBBB", "FBBBBBBBFBBBBBBB", "FBBBBBBBFBBBBBBB", "FFFFFFFFFFFFFFFF", "BBBBFBGBBBBBFBGB", "BBBBFBBBBBBBFBBB", "BBBBFBBBBBBBFBBB", "FFFFFFFFFFFFFFFF", "FBGBBBBBFBGBBBBB", "FBBBBBBBFBBBBBBB", "FBBBBBBBFBBBBBBB", "FFFFFFFFFFFFFFFF", "BBBBFBGBBBBBFBGB", "BBBBFBBBBBBBFBBB", "BBBBFBBBBBBBFBBB", "FFFFFFFFFFFFFFFF"],
+      wall_bg_cream: ["AAAAAAAAAAAAAAAA", "CCCCCACCCCCCCCCC", "CCCCCACCCCCCCCCC", "CCCCCACCCCCCCCCC", "CCCCCACCCCGCCCCC", "CCCCCACCCCCCCCCC", "CCCCCACCCCCCCCCC", "CCCCCACCCCCCCCCC", "AAAAAAAAAAAAAAAA", "CCCCCCCCCCCCACCC", "CCCCCCCCCCCCACCC", "CCCCCCCCCCCCACCC", "CCCGCCCCCCCCACCC", "CCCCCCCCCCCCACCC", "CCCCCCCCCCCCACCC", "FFFFFFFFFFFFFFFF"],
+      N: ["tttttttttttttttt", "tggggggggggggggt", "tggtgggggggggtgt", "tggggggggtgggggt", "tggggggtgggggggt", "tggggggggggggggt", "tgggggggggggtggt", "tggggtgggggggggt", "tgtggggggggggggt", "tggggggggggggggt", "dddddddddddddddd", "tttttttttttttttt", "ttgttttgttttgttt", "tttttttttttttttt", "tttttttttttttttt", "kkkkkkkkkkkkkkkk"],
+      "&": ["NNNNNNNNNNNNNNNN", "NttttttttttttttN", "NttgttttttttgttN", "NttVgtttgtttygtN", "NtttttttwgtttttN", "NttttttttttttttN", "NttttttttttttttN", "NttttgtttttttttN", "NttttVgtttgttttN", "NtttttttttwgtttN", "NttttttttttttttN", "NttgtttgttttgttN", "NttygttwgtttVgtN", "NttttttttttttttN", "NttttttttttttttN", "NNNNNNNNNNNNNNNN"],
+    },
+    art: {
+      bg_awning: ["VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VV..VV..VV..VV..", "................", "...NNNNNNNNNN...", "...NwwwsNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NNNNNNNNNN...", "...yyyyyyyyyy...", "................"],
+      bg_lantern_crate: ["................", "................", "................", "....VV..VV.VV...", "....ww..ww.ww...", "....yw..yw.yw...", "....ww..ww.ww...", "....NN..NN.NN...", "..FFFFFFFFFFFF..", "..FGGGGGGGGGGF..", "..FGGGGGGGGGGF..", "..FFFFFFFFFFFF..", "..FGGGGGGGGGGF..", "..FGGGGGGGGGGF..", "..FFFFFFFFFFFF..", "................"],
+      bg_rod: ["................", ".......mm.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", "....mmmmmmmm....", "...dddddddddd...", "...dddddddddd...", "...dddddddddd...", "................"],
+      bg_rod_lit: [".......yw.......", "......ywwy......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", ".......yG.......", "....mmmmmmmm....", "...dddddddddd...", "...dddddddddd...", "...dddddddddd...", "................"],
+      bg_coil: ["dddddddddddddddd", "dmymmmmmmmmmmymd", "dmmmmmmmmmmmmmmd", "dddddddddddddddd", "dmymmmmmmmmmmymd", "dmmmmmmmmmmmmmmd", "dddddddddddddddd", "dmymmmmmmmmmmymd", "dmmmmmmmmmmmmmmd", "dddddddddddddddd", "dmymmmmmmmmmmymd", "dmmmmmmmmmmmmmmd", "dddddddddddddddd", "dmymmmmmmmmmmymd", "dmmmmmmmmmmmmmmd", "dddddddddddddddd"],
+      bg_lamp_ring: ["................", ".......yy.......", "....VyVVVVyV....", "....VVVVVVVV....", "......NNNN......", "......NwwN......", "......NyyN......", "......NwwN......", "......NNNN......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", "......dddd......", "......dddd......", "................"],
+      bg_flame_lantern: ["................", "................", "................", ".....GGGGGG.....", ".....FFFFFF.....", ".....FyoyyF.....", ".....FyooyF.....", ".....FyooyF.....", ".....FyyyyF.....", ".....FFFFFF.....", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".....FFFFFF.....", ".....FFFFFF.....", "................"],
+      bg_flame_lantern_swapped: ["................", "................", "................", ".....VVVVVV.....", ".....NNNNNN.....", ".....NwwwwN.....", ".....NwwwwN.....", ".....NwyywN.....", ".....NwwwwN.....", ".....NNNNNN.....", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".....FFFFFF.....", ".....FFFFFF.....", "................"],
+      bg_bright_board: ["................................................", "................................................", "................................................", "................................................", "..NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN..", "..NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN..", "..NNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVNN..", "..NNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVNN..", "..NNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNwwwhhhhhhhhhhhhhhhhhhhhwwwyyyyyyyyyywwwwNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNwwwhhhhhhhhhhhhhhhhhhhhwwwyyyyyyyywwwwwwNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNwwwhhhhhhhhhhhhhhhhhhhhwwwyyyyyywwwwwwwwNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNwwwhhhhhhhhhhhhhhhhhhhhwwwyyyywwwwwwwwwwNN..", "..NNwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwNN..", "..NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN..", "..NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN..", "......NN................................NN......", "......NN................................NN......", "......NN................................NN......", "......NN................................NN......", "......NN................................NN......", "......NN................................NN......", "......NN................................NN......", "................................................"],
+      bg_switch_board: ["................", "................", "................", "................", "................", "................", ".NNNNNNNNNNNNNN.", ".NwwwwwhwwwwwwN.", ".NwwwwwhwwwwwwN.", ".NwowowhwwwwwwN.", ".NwwwwwhwwwwwwN.", ".NwwwwwhwywwwwN.", ".NwwwwwhwwwwwwN.", ".NhhhhhhhhhhhhN.", ".NwwwwwhwwwwwwN.", ".NwowwwhwywwwwN.", ".NwwwwwhwwwwwwN.", ".NwwwwwhwwwwwwN.", ".NwwwwwhwwwwwwN.", ".NNNNNNNNNNNNNN.", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", "................", "................"],
+      bg_shelter: ["................................", "................................", "................................", "................................", "................................", "................................", "..NNNNNNNNNNNNNNNNNNNNNNNNNNNN..", "..NNNNNNNNNNNNNNNNNNNNNNNNNNNN..", "..VNNVVVVVVVVVVVVVVVVVVVVVVNNV..", "...NNssssssssssssssssssssssNN...", "...NNwwwwwwssssssssssssssssNN...", "...NNwwwwwwssssssssssssssssNN...", "...NNwwwwwwssssssssssssssssNN...", "...NNwwwwwwssssssssssssssssNN...", "...NNssssssssssssssssssssssNN...", "...NNssssssssssssssssssssssNN...", "...NNssssssssssssssssssssssNN...", "...NNssssssssssssssssssssssNN...", "...NNssssssssssssssssssssssNN...", "...NNssssssssssssssssssssssNN...", "...NNssssssssssssssssssssssNN...", "...NN......................NN...", "...NN......................NN...", "...NN......................NN...", "...NN.dddddddddddddddddddd.NN...", "...NN.dddddddddddddddddddd.NN...", "...NN.hh................hh.NN...", "...NN.hh................hh.NN...", "...NN.hh................hh.NN...", "...NN.hh................hh.NN...", "................................", "................................"],
+      bg_seam_post: ["................", "................", "................", "....VVVVVVVV....", "....VVVVVVVV....", "......NNNN......", "......NwwN......", "......NwwN......", "......NNNN......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......NN.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".....dddddd.....", ".....dddddd.....", "................"],
+      bg_scaffold: ["................", "................", "................", "................", "..GG........GG..", "..GG........GG..", "..FFFFFFFFFFFF..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..FFFFFFFFFFFF..", "..GGGGGGGGGGGG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..FFFFFFFFFFFF..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..GG........GG..", "..FFFFFFFFFFFF..", "..GG........GG..", "..GG........GG..", "................", "................"],
+      bg_washing: ["................", "................", ".F............F.", ".hhhhhhhhhhhhhh.", ".F.ww.oo.CC.bbF.", ".F.ww.oo.CC.bbF.", ".F.ww.oo.CC.bbF.", ".F.ww.oo.CC.bbF.", ".F.ww.oo.CC.bbF.", ".F............F.", ".F............F.", ".F............F.", ".F............F.", ".F............F.", ".F............F.", "................"],
+      bg_wagon: ["................................", "................................", "................................", "................................", "...mmmmmmmm.........mmmmmmmm....", "...mmmmmmmm.........mmmmmmmm....", ".GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.", ".FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.", "....dddd................dddd....", "....dddd................dddd....", "....dddd................dddd....", "................................", "................................", "................................"],
+      bg_baskets: ["................", "................", "................", "................", "....oF..oF.oF...", "....FF..FF.FF...", "....FF..FwwwF...", "....FF..FwwwF...", "..GGGGGGGGGGGG..", "..GGGGGGGGGGGG..", "..FFFFFFFFFFFF..", "..GGGGGGGGGGGG..", "..GGGGGGGGGGGG..", "..FFFFFFFFFFFF..", "................", "................"],
+      bg_pool_ring: ["................", "......VVVV......", "....VVVVVVVV....", "...VV......VV...", "..VV........VV..", "..V..........V..", ".VV..........VV.", ".VV..........VV.", ".VV..........VV.", ".VV..........VV.", "..V..........V..", "..VV........VV..", "...VV......VV...", "....VVVVVVVV....", "......VVVV......", "................"],
+      bg_lanyard_gate: [".VVVVVVVVVVVVVV.", ".VVVVVVVVVVVVVV.", ".VVssssssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVssssssssssVV.", ".VVhhhhhhhhhhVV.", "NNNNNNNNNNNNNNNN", "NNNNNNNyyNNNNNNN", "NNNNNNNNNNNNNNNN"],
+      bg_lanyard_rack: ["................", "................", ".NNNNNNNNNNNNNN.", ".NNNNNNNNNNNNNN.", "...y..y..y..y...", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", "......w..w..w...", "......Q..Q..Q...", "................", "................"],
+      bg_insign_plaque: ["................", "................", "................", "..NNNNNNNNNNNN..", "..NyyyyyyyyyyN..", "..NyyyyyyyyyyN..", "..NyNNNNNNNNyN..", "..NyyyyyyyyyyN..", "..NyyNNNNNNyyN..", "..NyyyyyyyyyyN..", "..NyyyyyyyyyyN..", "..NNNNNNNNNNNN..", "................", "................", "................", "................"],
+      bg_outcomes_board: ["................", "NNNNNNNNNNNNNNNN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NyyyyyyyyyyyyyyN", "NNNNNNNNNNNNNNNN", "................", "................"],
+    },
+};
 function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
@@ -3736,7 +3866,146 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   // Blink is the sit grid with the two dark eye pixels closed. Design did not ship a blink grid.
   if (LIZZY_ART.art.buddy_sit) A.buddy_blink = paint(LIZZY_ART.art.buddy_sit.map(r => r.replace(/k/g, 'y')));
   for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
+  // ROUTE_TO_GOVERNOR: the new tiles by map char, the props, and the built trough tile as a prop (the fold's rest).
+  for (const [k, rows] of Object.entries(ROUTE4_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  for (const [k, rows] of Object.entries(ROUTE4_ART.art)) if (!A[k]) A[k] = paint(rows);
+  if (!A.water_trough && T.water_trough) A.water_trough = T.water_trough;
+  // BRIGHTGATE_LAYOUT: the city's tiles by map char and its props; the fleet's panel roof, wall, glass door, window strip and
+  // badge plate (glimmer_fleet.js GW_ART) as plain art, so Brightgate's buildings use them outside the preview lot. None of
+  // those five carries mint; the fleet pieces that do (lamp glass, cruiser lights) are copied mint-free where Brightgate places them.
+  for (const [k, rows] of Object.entries(BRIGHTGATE_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  for (const [k, rows] of Object.entries(BRIGHTGATE_ART.art)) if (!A[k]) A[k] = paint(rows);
+  for (const [k, fr] of Object.entries(BRIGHTGATE_ART.frames)) if (!A[k]) { const a = fr.map(paint); a.ms = 1400; A[k] = a; }
+  // The built Comfort Lamp and hedge planter carry mint glass and leaves; Brightgate takes honey copies (D2000: no mint in the city).
+  const noMint = img => { if (!img || !img.width) return null; const c = sheetScratch(img.width, img.height), g = c.getContext('2d');
+    const out = document.createElement('canvas'); out.width = img.width; out.height = img.height; const o = out.getContext('2d');
+    g.clearRect(0, 0, img.width, img.height); g.drawImage(img, 0, 0); const d = g.getImageData(0, 0, img.width, img.height), p = d.data;
+    const L = [1, 3, 5].map(i => parseInt(PAL.l.slice(i, i + 2), 16)), Y = [1, 3, 5].map(i => parseInt(PAL.y.slice(i, i + 2), 16));
+    for (let i = 0; i < p.length; i += 4) if (p[i] === L[0] && p[i + 1] === L[1] && p[i + 2] === L[2]) { p[i] = Y[0]; p[i + 1] = Y[1]; p[i + 2] = Y[2]; }
+    o.putImageData(d, 0, 0); return out; };
+  if (!A.bg_comfort_lamp && A.comfort_lamp) { const f = [].concat(A.comfort_lamp).map(noMint).filter(Boolean); if (f.length) { A.bg_comfort_lamp = f.length > 1 ? f : f[0]; if (A.comfort_lamp.ms) A.bg_comfort_lamp.ms = A.comfort_lamp.ms; } }
+  if (!A.bg_hedge_planter && A.hedge_planter) A.bg_hedge_planter = noMint(A.hedge_planter);
+  if (!A.bg_vane && A.weathervane) A.bg_vane = noMint(A.weathervane);   // the dead vane, Old Wick and Hall 4
+  if (typeof GW_ART === 'object') {
+    for (const k of ['roof_gw_panel', 'wall_gw_panel']) if (!T[k] && GW_ART[k]) T[k] = paint(GW_ART[k][0]);
+    for (const k of ['door_gw_glass', 'win_strip_gw']) if (!A[k] && GW_ART[k]) A[k] = paint(GW_ART[k][0]);
+    // The fleet's built pieces, mint-free (honey for mint; D2000): the Cruiser (parked and gliding, east and west), the Concierge
+    // (parked and flying), Bright Swap and the relay mast. The `_l` copies face west.
+    const fix = rows => rows.map(r => r.replace(/l/g, 'y')), flipR = rows => rows.map(r => r.split('').reverse().join(''));
+    for (const [to, from] of [['bg_cruiser', 'gw_cruiser'], ['bg_cruiser_move', 'gw_cruiser_move'], ['bg_concierge', 'gw_concierge'], ['bg_concierge_fly', 'gw_concierge_fly'], ['bg_swap_stall', 'gw_swap_stall'], ['bg_relay_mast', 'gw_relay_mast']]) {
+      if (A[to] || !GW_ART[from]) continue;
+      const mk = f => { const a = GW_ART[from].map(r => paint(f(fix(r)))); if (a.length === 1) return a[0]; a.ms = 400; return a; };
+      A[to] = mk(r => r); if (/cruiser|concierge/.test(to)) A[to + '_l'] = mk(flipR);
+    }
+    if (!A.bg_badge && GW_ART.gw_badge) A.bg_badge = paint(GW_ART.gw_badge[0].map(r => r.replace(/l/g, 'y')));   // the badge plate, honey for mint (D2000)
+  }
   addCrackdownArt(T, A, paint);   // POST_TRIAL_CRACKDOWN + LANTERN_HOUSE_FERNBROOK draft art
+  if (city) addHcParadeArt(T, A);   // HC_PARADE PLACEHOLDER art, city only, built on first draw
+}
+// HC_PARADE §8 (D1355, D1356; design specs/HC_PARADE.md): PLACEHOLDER draft art for the parade, PAL keys only, from the sub-agent
+// inspiration briefs in handoff/maps/HC_PARADE.md (rule 9). Pia redraws before HC_CITY_V2 ships. Installed only while the city is
+// on, and built on first draw, not at boot (each new size opens a whole pool sheet; memory_walk). No gun on any of it.
+// Sizes: rotor craft 48x32 (its shadow 40x10), the President's car 64x32, the President 16x16, crowd strips 64x16.
+function addHcParadeArt(T, A){
+  const lazy = (key, fn) => {
+    if (key in A) return;
+    const set = v => { Object.defineProperty(A, key, { value: v, writable: true, configurable: true, enumerable: true }); return v; };
+    Object.defineProperty(A, key, { configurable: true, enumerable: true, get(){ return set(fn()); }, set });
+  };
+  const anim = (list, ms) => { list.ms = ms; return list; };
+  const P = (g, mir, W) => (k, x, y, w = 1, h = 1) => { g.fillStyle = PAL[k]; g.fillRect(mir ? W - x - w : x, y, w, h); };
+  // Keeper rotor craft, facing right (mir = facing left). f: rotor frame 0-3.
+  const rotor = (f, mir) => sheetPaint(48, 32, g => {
+    const d = P(g, mir, 48);
+    d('J', 3, 15, 13, 3); d('D', 3, 15, 13, 1); d('J', 1, 10, 3, 6); d('D', 1, 10, 1, 5);                // tail boom and fin
+    d('d', 0, 8, 5, 1); d('m', 2, 6, 1, 5);                                                              // tail rotor
+    d('J', 15, 11, 24, 13); d('J', 13, 13, 2, 9); d('J', 39, 13, 2, 9); d('D', 16, 11, 22, 2);         // cabin
+    d('C', 14, 20, 26, 2); d('A', 14, 22, 26, 1);                                                        // cream belly band
+    d('F', 16, 15, 18, 1); d('G', 16, 16, 18, 1);                                                        // brass rail
+    d('d', 32, 13, 7, 5); d('m', 33, 14, 5, 3); d('h', 36, 14, 1, 1);                                     // glass
+    d('y', 22, 13, 3, 3); d('F', 23, 14, 1, 1);                                                          // lantern crest on the door
+    d('F', 40, 17, 5, 5); d('y', 41, 18, 3, 3); d('w', 42, 19, 1, 1);                                     // caged nose lantern
+    d('d', 18, 24, 1, 3); d('d', 34, 24, 1, 3); d('d', 13, 27, 28, 1); d('m', 13, 27, 2, 1);           // skids
+    d('d', 26, 7, 2, 4);                                                                                 // mast
+    if (f === 0) { d('d', 3, 7, 44, 1); d('m', 3, 6, 4, 1); }
+    else if (f === 1) { for (let i = 0; i < 18; i++) d(i % 2 ? 'h' : 'm', 10 + i * 2, 3 + (i >> 1) % 2 + Math.floor(i / 6), 2, 1); }
+    else if (f === 2) { d('d', 24, 2, 6, 1); d('d', 26, 3, 2, 4); d('d', 22, 8, 10, 1); }
+    else { for (let i = 0; i < 18; i++) d(i % 2 ? 'h' : 'm', 10 + i * 2, 9 - Math.floor(i / 6), 2, 1); }
+  });
+  for (const [k, mir] of [['hc_rotor_r', false], ['hc_rotor_l', true]]) lazy(k, () => anim([0, 1, 2, 3].map(f => rotor(f, mir)), 70));
+  // ROTOR_CRAFT v0.1.1 (D1385-D1394): Design's draft frames, carried in the city data (PP_HC_V2.art: deduplicated rows of PAL
+  // keys; a legend char is [PAL key, alpha] for the translucent shadow and beam). They win over the engineer draft above.
+  const R = typeof window !== 'undefined' && window.PP_HC_V2 && window.PP_HC_V2.art;
+  if (R && R.rows && R.sprites) for (const [k, sp] of Object.entries(R.sprites)) lazy(k, () => {
+    const fr = sp.frames.map(f => sheetPaint(sp.w, sp.h, g => f.forEach((ri, y) => { const row = R.rows[ri] || '';
+      for (let x = 0; x < row.length; x++) { const ch = row[x]; if (ch === '.') continue;
+        const lg = sp.legend && sp.legend[ch], key = lg ? lg[0] : ch; if (!PAL[key]) continue;
+        g.globalAlpha = lg ? lg[1] : 1; g.fillStyle = PAL[key]; g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; })));
+    return fr.length === 1 && !sp.ms ? fr[0] : anim(fr, sp.ms || 400);
+  });
+  lazy('hc_rotor_shadow', () => sheetPaint(40, 10, g => {
+    g.globalAlpha = 0.32; g.fillStyle = PAL.k;
+    for (let y = 0; y < 10; y++) { const r = Math.round(20 * Math.sqrt(1 - ((y - 4.5) / 5) ** 2)); g.fillRect(20 - r, y, 2 * r, 1); }
+    g.globalAlpha = 1;
+  }));
+  // The President's car, facing right (mir = left). v: 0 drive, 1 wheels turned, 'hand' the still, 'door' the rear door open.
+  // v0.2 (relayed from Vincent's preview review, Tue Nov 3): a stately armoured car, 64x32 (four tiles long; the parked
+  // runabouts are two), high armoured cabin, long bonnet, two pennants, a large rear window so the gloved hand reads.
+  const car = (v, mir) => sheetPaint(64, 32, g => {
+    const d = P(g, mir, 64);
+    d('k', 3, 29, 58, 2);                                                                                // hard shadow
+    d('J', 2, 16, 60, 11); d('E', 2, 25, 60, 2); d('D', 3, 16, 58, 1);                                   // armoured body, sill
+    d('h', 3, 21, 58, 1); for (let x = 5; x < 60; x += 5) d('m', x, 18, 1, 1);                           // chrome strip, rivets
+    d('J', 40, 13, 21, 4); d('D', 41, 13, 19, 1); d('w', 44, 14, 14, 1);                                 // long bonnet, its streak
+    d('m', 60, 17, 3, 9); d('h', 61, 18, 1, 6); d('y', 61, 15, 2, 2); d('w', 62, 15, 1, 1);              // grille, headlamp
+    d('m', 0, 18, 3, 8);                                                                                 // rear bumper
+    d('J', 12, 3, 30, 13); d('E', 12, 3, 30, 1); d('D', 13, 4, 28, 1); d('k', 11, 4, 1, 12); d('k', 42, 4, 1, 12);   // armoured cabin
+    d('k', 14, 6, 9, 8); d('k', 24, 6, 8, 8); d('k', 33, 6, 8, 8);                                       // tinted glass, three panes
+    d('d', 15, 6, 3, 1); d('d', 25, 6, 3, 1); d('n', 34, 6, 5, 1); d('m', 39, 7, 1, 2);                  // glass glints
+    d('y', 25, 17, 5, 5); d('F', 26, 18, 3, 3); d('y', 27, 19, 1, 1);                                    // Keeper crest on the rear door
+    d('F', 49, 3, 1, 11); d('J', 50, 3, 5, 3); d('y', 54, 3, 1, 3);                                      // pennants on the front wings
+    d('F', 56, 5, 1, 9); d('J', 57, 5, 4, 3); d('y', 60, 5, 1, 3);
+    d('k', 7, 23, 10, 8); d('k', 44, 23, 10, 8); d('d', 8, 24, 8, 6); d('d', 45, 24, 8, 6);             // wheels under the wings
+    const hub = v === 1 ? 1 : 0; d('m', 10 + hub, 26, 3, 2); d('m', 47 + hub, 26, 3, 2);
+    if (v === 'hand') {                                                                                  // 1.6: the window down, one gloved hand
+      d('J', 14, 6, 9, 3); d('d', 14, 9, 9, 1); d('k', 14, 10, 9, 4);
+      d('C', 16, 9, 5, 4); for (const fx of [16, 18, 20]) d('C', fx, 6, 1, 3); d('w', 17, 9, 2, 1); d('C', 21, 10, 2, 2); d('J', 16, 13, 5, 1);   // a raised glove: three fingers, a thumb, the cuff
+    }
+    if (v === 'door') { d('k', 13, 6, 11, 20); d('y', 15, 24, 6, 1); d('J', 8, 9, 6, 20); d('D', 8, 9, 6, 1); d('h', 12, 17, 1, 2); }
+  });
+  for (const [sfx, mir] of [['r', false], ['l', true]]) {
+    lazy('hc_pcar_' + sfx, () => car(0, mir));
+    lazy('hc_pcar_' + sfx + '_move', () => anim([car(0, mir), car(1, mir)], 160));
+    lazy('hc_pcar_hand_' + sfx, () => car('hand', mir));
+    lazy('hc_pcar_door_' + sfx, () => car('door', mir));
+  }
+  // The President, minimal and half-seen (D1356): a dark long coat with a rim of light from behind; no face pixels.
+  const pres = f => sheetPaint(16, 16, g => {
+    const d = P(g, false, 16);
+    d('k', 6, 1, 4, 4); d('y', 6, 0, 4, 1); d('y', 10, 1, 1, 3); d('C', 9, 0, 1, 1);                     // head, rim
+    d('k', 5, 5, 6, 8); d('d', 6, 6, 1, 6); d('m', 8, 8, 1, 3); d('y', 11, 5, 1, 4); d('y', 5, 5, 1, 1); // coat, rim on shoulder and sleeve
+    d('k', 4, 11, 8, 2); d('d', 5, 12, 6, 1);                                                            // hem
+    if (f) { d('d', 5, 13, 2, 2); d('d', 9, 13, 2, 1); } else { d('d', 6, 13, 2, 2); d('d', 8, 13, 2, 2); }
+  });
+  lazy('hc_president', () => pres(0));
+  lazy('hc_president_move', () => anim([pres(1), pres(0)], 180));
+  // Crowd strips: rows of heads and shoulders seen from behind (one object fills four tiles). v 0-2; f 1 = the bob and the clap.
+  const HAIR = ['k', 'd', 'F', '5', 'G', 'y', 'd', 'k'], COAT = ['m', 'I', 'A', 'B', 'h', 'K', 'm'];
+  const strip = (v, f) => sheetPaint(64, 16, g => {
+    const d = P(g, false, 64), up = f ? 1 : 0;
+    for (let i = 0; i < 8; i++) { const x = 1 + i * 8; d(HAIR[(i + v * 3) % 8], x + 2, 2 - up, 4, 4); d(COAT[(i + v) % 7], x, 6 - up, 8, 3); }
+    for (let i = 0; i < 7; i++) {
+      const x = 4 + i * 8, coat = (v === 2 && i === 3) ? 'V' : COAT[(i * 3 + v) % 7];   // one supporter's vest: Glimmerwell wine (rule 11)
+      d(HAIR[(i * 5 + v) % 8], x + 1, 6 - up, 5, 5); d(coat, x - 1, 10 - up, 9, 6 + up);
+      if (v === 2 && i === 3) d('N', x + 3, 13 - up, 1, 1);
+      if (f && i % 3 === 0 && !(v === 2 && i === 3)) { d('3', x - 1, 7, 1, 2); d('3', x + 7, 7, 1, 2); }
+    }
+    if (v === 1) { d('F', 14, 0, 1, 7); d('y', 15, 0, 3, 2); d('J', 15, 2, 3, 1); d('F', 46, 0, 1, 7); d('y', 47, 0, 3, 2); d('J', 47, 2, 3, 1); }
+    if (v === 2) { d('2', 30, 0 - up, 3, 3); d('d', 30, 0 - up, 3, 1); }
+  });
+  for (const v of [0, 1, 2]) lazy('hc_crowd_' + 'abc'[v], () => anim([strip(v, 0), strip(v, 1)], 650));
+  // E8 in a still: the crowd strips' clap frame, for the beat when the Officer raises a hand (reduced motion keeps frame 0).
+  for (const v of [0, 1, 2]) lazy('hc_crowd_' + 'abc'[v] + '_clap', () => strip(v, 1));
   // PROP_LIBRARY v0.1: each prop under its id, and a multi-cell prop also as <id>_0..n 16x16 slices (left to right, top to
   // bottom), so a room places one slice per blocking cell. A `tile` piece (jetty, steps) is also offered as a tile. Existing names stay.
   for (const [k, p] of Object.entries(PROP_LIBRARY_ART)) {

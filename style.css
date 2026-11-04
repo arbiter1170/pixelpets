@@ -858,6 +858,11 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .map-level{flex:1 1 0;height:44px;min-height:44px;border:2px solid var(--h);background:var(--d);color:var(--w);font-size:18px;padding:0 4px}
 .map-level.on{background:var(--y);color:var(--k);border-color:var(--o)}
 .map-level.off{opacity:.45;color:var(--m)}
+/* ROUTE_TO_GOVERNOR §4 (D1851): the two region sheets, switched by buttons under the parchment (rule 6: 44 px). */
+.map-sheets{width:100%;display:flex;gap:4px;padding:4px 6px 0;box-sizing:border-box;flex:0 0 auto}
+.map-sheets[hidden]{display:none}
+.map-sheet{flex:1 1 0;min-width:44px;height:44px;min-height:44px;border:2px solid var(--h);background:var(--d);color:var(--w);font-size:16px;padding:0 4px}
+.map-sheet.on{background:var(--y);color:var(--k);border-color:var(--o)}
 .map-chips{display:flex;gap:6px;width:min(468px, calc(100% - 12px));flex:0 0 auto}
 .map-chips[hidden]{display:none}
 .map-chip{min-width:44px;height:44px;padding:0 10px;background:var(--d);color:var(--w);border:2px solid var(--h);font-size:16px}
@@ -868,7 +873,7 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .map-pin{display:flex;gap:8px;align-items:center;min-height:22px;color:var(--h);font-size:14px}
 .map-pin b{color:var(--w);background:var(--k);min-width:16px;text-align:center}
 #regionCanvas{width:320px;height:192px;image-rendering:pixelated;flex:0 0 auto;touch-action:none}
-.map-place{position:relative;width:min(320px, calc(100% - 12px));box-sizing:border-box;background:var(--n);box-shadow:0 0 0 2px var(--h);padding:6px 8px 8px;min-height:74px}
+.map-place{position:relative;width:min(320px, calc(100% - 12px));box-sizing:border-box;background:var(--n);box-shadow:0 0 0 2px var(--h);padding:6px 8px 8px;min-height:74px;flex-shrink:0}   /* ROUTE_TO_GOVERNOR: never squeezed under its text when the sheet buttons take a row; the overlay scrolls */
 .map-acts{display:flex;justify-content:flex-end;gap:6px;margin-top:6px}
 .map-act{min-height:44px;min-width:44px;padding:0 10px;background:var(--y);color:var(--k);font-size:16px}
 .map-act[hidden]{display:none}
@@ -1824,3 +1829,5 @@ body:not(.ctl-modern) #thChip .th-stripe{bottom:-6px;left:0;right:0}
 .side-row .side-name{display:block;color:var(--y);font-size:16px;line-height:1.2;font-weight:normal}
 .side-row[data-side="glimmer"] .side-name{color:var(--w)}
 .side-row .side-line{margin:2px 0 0;font-size:14px;line-height:1.25;color:var(--w)}
+/* WALK_BESIDE D1972: the Keepers' whole word under the tier, in the row's own text colour; wraps at 320 */
+.side-row .side-word,.st-row .side-word{margin:4px 0 0;font-size:14px;line-height:1.25;color:var(--w);overflow-wrap:break-word;white-space:normal}
