@@ -203,15 +203,44 @@ test('a test room with every v0.2 prop draws in the walk view with no console er
   if (saved) expect(saved.v).toBe(2);
 });
 
-test('reduced motion holds frame 0 of every animated v0.2 prop', async ({ page }) => {
+// A test-only room with just the animated pieces: with reduced motion the drawn room never changes; without it, it does.
+function animRoom() {
+  const W = 9, objs = [];
+  ANIMATED.forEach((id, i) => {
+    const p = LIB[id], x = 1 + i;
+    if (p.place === 'wall') objs.push({ kind: 'prop', id: 'pla2_' + id, x, y: 1, sprite: id });
+    else objs.push({ kind: 'prop', id: 'pla2_' + id, x, y: 2 + p.cells[1] - 1, sprite: id });
+  });
+  const grid = ['#'.repeat(W), '#' + 'W'.repeat(W - 2) + '#'];
+  for (let r = 2; r < 7; r++) grid.push('#' + '.'.repeat(W - 2) + '#');
+  grid.push('#'.repeat(4) + 'm' + '#'.repeat(W - 5));
+  return { maps: { zz_prop2_anim: { name: 'Animated props v0.2 (test only)', kind: 'interior', outdoor: 'hearthmoor', skin: 'house_home', w: W, h: 8,
+    spawns: null, zones: [], safe: { x: 4, y: 6 }, grid,
+    objs: objs.concat([{ kind: 'warp', id: 'pla2_mat', x: 4, y: 7, to: 'hearthmoor', tx: 3, ty: 5, facing: 'down' }]) } } };
+}
+
+async function grabs(page, n) {   // the art rows (map rows 0-4 at the camera), n times, 450 ms apart: how many differ
+  const shots = [];
+  for (let i = 0; i < n; i++) {
+    shots.push(await page.evaluate(() => {
+      const c = document.querySelector('#mapCanvas'), cam = PixelPets.walk.cam;
+      return Array.from(c.getContext('2d').getImageData(Math.max(0, -cam.x), Math.max(0, -cam.y), 9 * 16, 5 * 16).data).join(',');
+    }));
+    await page.waitForTimeout(450);
+  }
+  return new Set(shots).size;
+}
+
+test('reduced motion holds frame 0 of every animated v0.2 prop; without it they move', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await boot(page);
-  const r = await page.evaluate((ids) => {
-    const A = buildWorldArt(), T = buildTiles();
-    addExteriorArt(T, A, true);
-    return ids.map(id => [id, [0, 700, 1400, 2100, 5000].every(t => artFrame(A[id], t) === A[id][0])]);
-  }, ANIMATED);
-  expect(r.filter(([, held]) => !held).map(([id]) => id)).toEqual([]);
+  await boot(page, animRoom());
+  await page.evaluate(() => { if (PixelPets.clock && PixelPets.clock.set) { PixelPets.clock.set('tue', 11, 0); if (PixelPets.clock.freeze) PixelPets.clock.freeze(true); } });
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.evaluate(() => PixelPets.goto('zz_prop2_anim', 4, 6, 'up'));
+  await page.waitForTimeout(400);
+  expect(await grabs(page, 6)).toBe(1);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  expect(await grabs(page, 6)).toBeGreaterThan(1);
 });
 
 test('main maps place no v0.2 prop yet (art only; rooms adopt it in their own builds)', () => {
