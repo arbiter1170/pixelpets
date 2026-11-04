@@ -204,7 +204,8 @@ test('the buyout still sets the quarry flag after the match @w1', async ({ page 
   expect(after.points).toBe(5);
 });
 
-test('keepers Rook leaves and glimmer Rook stays @w1', async ({ page }) => {
+// ACT1_KEEPER_JOIN D1515: Rook stays with the company on every new save, on the Keepers face too.
+test('Rook stays with the company on both faces (D1515) @w1', async ({ page }) => {
   const save = cobbleSave({ 'story.side': 'keepers', 'story.seal2': true });
   await boot(page, save);
   expect(await page.evaluate(() => PixelPets.sceneFor('brinewick_hook'))).toBe('brinewick_hook');
@@ -214,19 +215,19 @@ test('keepers Rook leaves and glimmer Rook stays @w1', async ({ page }) => {
     await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
     const text = await page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '');
     heard += '\n' + text;
-    if (text.includes('getting off')) break;
+    if (text.includes('staying with the company')) break;
     await page.keyboard.press('Space');
     await page.waitForTimeout(30);
   }
-  expect(heard).toContain('getting off');
-  expect(heard).not.toContain('riding with the cart');
+  expect(heard).toContain('staying with the company');
+  expect(heard).not.toContain('getting off');
   await playScene(page, []);
   const keepers = await page.evaluate(() => ({
     end: PixelPets.state.flags['story.rook_end'],
     card: PixelPets.state.flags['story.cobble_end'],
     points: PixelPets.standing.keepers.points,
   }));
-  expect(keepers.end).toBe('ally');
+  expect(keepers.end).toBe('stays');
   expect(keepers.card).toBe(true);
   expect(keepers.points).toBe(5);
 

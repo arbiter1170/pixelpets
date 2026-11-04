@@ -116,8 +116,8 @@ test('signed scene lines and tap lines read the new copy', async ({ page }) => {
   expect(await page.evaluate(() => PixelPets.runScene('hc_council'))).toBe(true);
   await showLines(page, ['We are opening it.', 'A small light beside it flickers on.', 'THE ROAD AHEAD · Route 3 to Brinewick']);
 
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await showLines(page, ['Choose with care. This road is a long one.']);
+  // ACT1_KEEPER_JOIN 4.6: the gate is the orchard lean now; the pick's promise lines are retired (they move to the Act 3 switch, D1558).
+  expect(JSON.stringify(await page.evaluate(() => PixelPets.sceneScript('side_pick')))).not.toContain('Choose with care. This road is a long one.');
 
   expect(await page.evaluate(() => PixelPets.runScene('brinewick_hook'))).toBe(true);
   await showLines(page, ['The Brinewick road stays shut while crates are loaded.']);
@@ -494,7 +494,7 @@ test('Rook asks twice as a competitor, not a rival (ROOK_KEEPERS_REENTRY sign-of
 test("Fen's Glimmer-pick result line is doubt, not disapproval (C14, STORY_DECISIONS v0.64)", async ({ page }) => {
   const day1 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data/detail_zz_day1.json'), 'utf8'));
   const swap = day1.lineSwaps.find((s) => s.scene === 'orchard@glimmer' && s.when === 'story.seal1' && /Come to the Hall if you must/.test(s.text));
-  const line = "Go on, then. You won my Seal fairly. I can't say you're wrong.";   // "After last night," returns with the crackdown (PR #288)
+  const line = "Go on, then. You won my Seal fairly. After last night, I can't say you're wrong.";   // "After last night," is back with the crackdown (PR #288)
   expect(swap.to).toEqual([['say', 'Master Fen', line]]);
   expect(line.length).toBeLessThanOrEqual(110);
   expect(JSON.stringify(day1)).not.toContain('I hope you remember how.');
