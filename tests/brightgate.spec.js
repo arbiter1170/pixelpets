@@ -9,7 +9,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 const CHUNKS = { brightgate: [64, 40, 32, 37], bg_campus: [64, 48, 32, 46], bg_works: [64, 48, 2, 20], bg_oldtown: [64, 40, 62, 20], bg_partner: [48, 48, 1, 32] };
-const ROOMS = ['bg_lantern_in', 'bg_store_in'];
+const ROOMS = ['bg_lantern_in', 'bg_store_in', 'bg_hq_lobby', 'bg_review_in', 'bg_gala_in'];
 const RULE10 = { lantern: { door: [29, 34], marker: ['bg_lantern_sign', 28, 33, 'heal_lantern'] }, store: { door: [35, 34], marker: ['bg_store_board', 36, 33, 'acorn_board'] } };
 
 function save(extra) {
@@ -44,7 +44,7 @@ async function closeSay(page) {
   for (let i = 0; i < 12 && await page.evaluate(() => !!PixelPets.scene); i++) { await page.keyboard.press('Space'); await page.waitForTimeout(80); }
 }
 
-test('BG1 the five districts and the two rooms load at this width, Glimmerwell held, with the right size and arrival', async ({ page }) => {
+test('BG1 the five districts and the rooms load at this width, Glimmerwell held, with the right size and arrival', async ({ page }) => {
   await boot(page);
   for (const [id, [w, h, x, y]] of Object.entries(CHUNKS)) {
     const ok = await page.evaluate(([m, x, y]) => !!PixelPets.goto(m, x, y, 'up'), [id, x, y]);
@@ -59,9 +59,9 @@ test('BG1 the five districts and the two rooms load at this width, Glimmerwell h
     expect(await page.evaluate(m => !!PixelPets.goto(m), id), id).toBe(true);
     await settled(page, id);
   }
-  // rooms belong to the city: their outdoor is Gate Plaza (respawn, "where am I")
+  // rooms belong to the city: their outdoor is the district their door stands in (respawn, "where am I")
   const outs = await page.evaluate(ids => ids.map(id => window.WORLD[id].outdoor), ROOMS);
-  expect(outs).toEqual(ROOMS.map(() => 'brightgate'));
+  expect(outs).toEqual(['brightgate', 'brightgate', 'bg_campus', 'bg_campus', 'bg_campus']);
 });
 
 test('BG2 rule 10: a fresh arrival on 32,37 shows both doors and both markers with no scroll (D2001, D613, D615)', async ({ page }) => {
@@ -219,7 +219,7 @@ test('BG6 shut doors say their line, and the shuttle stop says no shuttle runs y
   await boot(page);
   await place(page, 'bg_keeper');
   const cases = [['brightgate', 55, 12, 'Residents only. Have a bright day!'], ['bg_campus', 52, 19, "By appointment. We'll call you."],
-    ['bg_campus', 9, 17, 'Closed for an event. Have a bright day!'], ['bg_works', 43, 14, 'Fleet staff only.'],
+    ['bg_campus', 9, 17, 'Closed for an event. Have a bright day!'], ['bg_works', 43, 14, 'Fleet staff only.'], ['bg_campus', 11, 45, 'Staff only. Have a bright day!'],
     ['bg_oldtown', 46, 31, 'Closed. Lanterns are free at the Plaza now.'], ['bg_partner', 36, 29, 'Term starts soon. Have a bright day!']];
   for (const [m, x, y, line] of cases) {
     await page.evaluate(([m, x, y]) => PixelPets.goto(m, x, y, 'up'), [m, x, y]);
@@ -276,4 +276,71 @@ test('BG9 reduced motion and the save: v 2, keys additive, only story.reached_br
   for (const k of keys0) expect(Object.keys(after), k).toContain(k);
   const added = Object.keys(after.flags).filter(k => !(k in s.flags) && k.startsWith('story.'));
   expect(added).toEqual(['story.reached_brightgate']);
+});
+
+// §5.3-§5.4 and §13 items 5-6 (D1483, D1493, D2006, D2008): five saves at the lanyard gate. Debug act values stand in for the
+// derived act. The gate is a pair of props that stand while it is shut; the west lift is floor 2's only way up.
+const HOLDS = [
+  ['a Keeper in Act 2', { 'story.act': 2 }, 'shut', "Visitors' hours end at five. It's five."],
+  ['a Keeper with the undercover lanyard', { 'story.act': 2 }, 'shut', "Your name isn't on today's list.", { seal_glim_1: 1 }],
+  ['an unswitched Keeper in Act 3', { 'story.act': 3 }, 'shut', "Visitors' hours end at five. It's five."],
+  ['an open offer in Act 3 (Rook\'s guest)', { 'story.act': 3, 'story.a3_offer': true }, 'open'],
+  ['an open offer after the Spire', { 'story.act': 3, 'story.a3_offer': true, 'story.solvane_met': true }, 'shut', "Visitors' hours end at five. It's five."],
+  ['a switcher', { 'story.act': 3, 'story.side': 'glimmer', 'story.switched_a3': true }, 'open'],
+];
+for (const [who, flags, want, line, seals] of HOLDS) {
+  test(`BG10 the lanyard gate for ${who}: ${want} (§5.4)`, async ({ page }) => {
+    const s = save(flags); if (seals) s.seals = Object.assign({}, s.seals, seals);
+    await installSave(page.context(), s, { quietDay: true });
+    await gotoGame(page, '?debug=1');
+    await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && PixelPets.state);
+    await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('bg_campus', 32, 18, 'up'); });
+    await settled(page, 'bg_campus');
+    await page.evaluate(() => PixelPets.walkStep('up'));          // every holder may enter the lobby
+    await settled(page, 'bg_hq_lobby');
+    expect(await page.evaluate(() => [PixelPets.state.world.x, PixelPets.state.world.y])).toEqual([7, 14]);
+    const juniper = await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'bg_juniper_desk'));
+    expect(juniper, 'Juniper only while the offer is open').toBe(!!flags['story.a3_offer'] && !flags['story.switched_a3']);
+    expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.x === 5 && o.y === 6)), 'no body at 5,6 (D1491)').toBe(false);
+    await page.evaluate(() => PixelPets.goto('bg_hq_lobby', 7, 5, 'up'));
+    await settled(page, 'bg_hq_lobby');
+    const lift = await page.evaluate(() => !!PixelPets.findPath([{ x: 3, y: 1 }]));
+    if (want === 'shut') {
+      expect(lift, 'no lift with the gate shut').toBe(false);
+      await page.evaluate(() => PixelPets.walkStep('up'));
+      expect(await sayText(page)).toBe(line);
+      await closeSay(page);
+      expect(await page.evaluate(() => PixelPets.state.world.y)).toBe(5);
+    } else {
+      expect(lift, 'the west lift is reachable').toBe(true);
+      await page.evaluate(() => PixelPets.goto('bg_hq_lobby', 3, 2, 'up'));
+      await settled(page, 'bg_hq_lobby');
+      await page.evaluate(() => PixelPets.walkStep('up'));
+      await settled(page, 'bg_review_in');
+      const floor2 = await page.evaluate(() => ({ at: [PixelPets.state.world.x, PixelPets.state.world.y],
+        bodies: PixelPets.mapObjs.filter(o => o.kind === 'npc').map(o => [o.id, o.x, o.y]).sort() }));
+      expect(floor2.at).toEqual([7, 12]);
+      expect(floor2.bodies).toEqual([['bg_dorian_review', 11, 8], ['bg_quinn_review', 2, 1], ['bg_rook_review', 5, 2]]);
+      // the one desk (6-7,3) stays empty: no body on any tile beside it (D2007); the stair to the wing is shut
+      for (const [, x, y] of floor2.bodies) expect([[5, 3], [8, 3], [6, 2], [7, 2], [6, 4], [7, 4]].some(([a, b]) => a === x && b === y), 'beside the one desk').toBe(false);
+      await page.evaluate(() => PixelPets.goto('bg_review_in', 13, 2, 'up'));
+      await settled(page, 'bg_review_in');
+      expect(await page.evaluate(() => PixelPets.state.world.y)).toBe(2);
+    }
+  });
+}
+
+test('BG11 the HQ floors and the gala carry no chip, Tuning or implant word, and Glow Care stays shut for a switcher (§13 item 5) @w1', async ({ page }) => {
+  await boot(page, { 'story.act': 3, 'story.side': 'glimmer', 'story.switched_a3': true });
+  const words = await page.evaluate(() => {
+    const out = [], re = /\b(chip(ped|s)?|microchip\w*|tuning|implant\w*|mint)\b/i;
+    for (const [id, m] of Object.entries(window.WORLD)) if (id === 'brightgate' || id.indexOf('bg_') === 0)
+      for (const o of m.objs) for (const v of [o.text, o.deny, o.name].concat(Object.values(o.lines || {}))) if (typeof v === 'string' && re.test(v)) out.push(id + ':' + o.id);
+    return out;
+  });
+  expect(words).toEqual([]);
+  await page.evaluate(() => PixelPets.goto('bg_campus', 52, 19, 'up'));
+  await settled(page, 'bg_campus');
+  await page.evaluate(() => PixelPets.walkStep('up'));
+  expect(await sayText(page)).toBe("By appointment. We'll call you.");
 });

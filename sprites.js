@@ -2151,9 +2151,12 @@ const HOUSE_SKINS = {
   bw_depot: hcSkin('floor_sealed', 'wall_depot', 'mat_depot', { decal: { q: 'depot_line' }, walk: { q: 1 }, wall: wallRow('dmdmdVVddswV') }),
   // BRIGHTGATE_LAYOUT §7 (rule 9 previews approved, D2000-D2009): each room its own wall row and floor; Glimmerwell rooms inside
   // the Glimmerwell set (soot, wine, white, grey, slate, honey marks), Hall 4 neutral. The Lantern House is the old cream house
-  // with a wine band at the wainscot and a soot plinth (D1490, D2009). The lobby, review floor, gala and Hall 4 skins land with their rooms.
+  // with a wine band at the wainscot and a soot plinth (D1490, D2009). Hall 4's skin lands with its room.
   bg_lantern: hcSkin('floor_bg_plank', 'wall_cream', 'mat_bg_lantern', { wall: wallRow('FCGCAVNFGcwF') }),
   bg_store: hcSkin('floor_bg_panel', 'wall_vault', 'mat_bg_store', { wall: wallRow('mwhwhyNdmcsh') }),
+  bg_lobby: hcSkin('floor_bg_gloss', 'wall_vault', 'mat_bg_lobby', { remap: { E: 'lift_doors' }, walk: { E: 1 }, wall: wallRow('NwhwhVNdNswN') }),
+  bg_review: hcSkin('floor_bg_review', 'wall_stone', 'mat_bg_review', { remap: { E: 'lift_doors' }, walk: { E: 1 }, wall: wallRow('dhmhmNNdmcwd') }),
+  bg_gala: hcSkin('floor_bg_gala', 'wall_civic', 'mat_bg_gala', { remap: { '=': 'floor_bg_gala_c' }, wall: wallRow('NVpVpyNdyswN') }),
   // HIGH_CHARITY_LAYOUT §7 palette ledger (rule 9 previews pending). Existing tile families only; each wall+floor pair is new.
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
   obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_dusk', m:'mat_dusk' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: floorFixVar('floor_dusk'), wall: wallRow('FGdGFyFFynsF') },
@@ -3669,6 +3672,10 @@ const BRIGHTGATE_ART = {
     art: {
       bg_awning: ["VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VV..VV..VV..VV..", "................", "...NNNNNNNNNN...", "...NwwwsNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NNNNNNNNNN...", "...yyyyyyyyyy...", "................"],
       bg_lantern_crate: ["................", "................", "................", "....VV..VV.VV...", "....ww..ww.ww...", "....yw..yw.yw...", "....ww..ww.ww...", "....NN..NN.NN...", "..FFFFFFFFFFFF..", "..FGGGGGGGGGGF..", "..FGGGGGGGGGGF..", "..FFFFFFFFFFFF..", "..FGGGGGGGGGGF..", "..FGGGGGGGGGGF..", "..FFFFFFFFFFFF..", "................"],
+      bg_lanyard_gate: [".VVVVVVVVVVVVVV.", ".VVVVVVVVVVVVVV.", ".VVssssssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVswwsssssssVV.", ".VVssssssssssVV.", ".VVhhhhhhhhhhVV.", "NNNNNNNNNNNNNNNN", "NNNNNNNyyNNNNNNN", "NNNNNNNNNNNNNNNN"],
+      bg_lanyard_rack: ["................", "................", ".NNNNNNNNNNNNNN.", ".NNNNNNNNNNNNNN.", "...y..y..y..y...", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", ".....VVVVVVVVV..", "......w..w..w...", "......Q..Q..Q...", "................", "................"],
+      bg_insign_plaque: ["................", "................", "................", "..NNNNNNNNNNNN..", "..NyyyyyyyyyyN..", "..NyyyyyyyyyyN..", "..NyNNNNNNNNyN..", "..NyyyyyyyyyyN..", "..NyyNNNNNNyyN..", "..NyyyyyyyyyyN..", "..NyyyyyyyyyyN..", "..NNNNNNNNNNNN..", "................", "................", "................", "................"],
+      bg_outcomes_board: ["................", "NNNNNNNNNNNNNNNN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NyyyyyyyyyyyyyyN", "NNNNNNNNNNNNNNNN", "................", "................"],
     },
 };
 function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)

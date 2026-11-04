@@ -2,6 +2,18 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 02:55 ET: Build: Brightgate, slice 2: the HQ lobby and the lanyard gate, the review floor, the gala (BRIGHTGATE_LAYOUT v0.2; D1483, D1486, D1493, D2006-D2008)
+- What changed and why:
+  - The Campus HQ door opens on `bg_hq_lobby` for every holder. The front desk with the Receptionist ("Visitors' hours end at five. It's five."), the lanyard rack with its empty hook and the INSIGN plaque on the public side, the clip tiles 2,5 and 2,6 and Dorian's Act 5 tile 5,9 kept free, Courtesy staff inside the gate.
+  - The lanyard gate (7-8,4) stands shut for every holder but a switcher (`story.switched_a3`) or an open offer before the Spire (`story.a3_offer & !story.solvane_met`, Rook's guest, D2008). An undercover Keeper's Glimmerwell lanyard does not open it ("Your name isn't on today's list.", D1521). With the gate shut no lift is reachable (checked in the tool and the spec).
+  - The west lift goes to `bg_review_in`: the one desk empty under the Outcomes Board, Rook's desk beside it, Dorian at his own desk by the lift, Quinn at the wire sets (D2007); their lines and the board's cards wait on ACT3_SWITCH and GLIMMER_DECISIONS (PLACEHOLDER). The east lift says "Out of service."; the stair to the wing shell stays shut. Juniper stands at the desk only while the offer is open.
+  - `bg_gala_in` (stage, round tables, the host) exists for Story's G1; its door stays "Closed for an event." (D1486).
+- Files touched: `tools/build_brightgate.py`, `data/detail_zzzzz_brightgate.json`, `data/mapdata.js`, `sprites.js` (three skins, the gate, rack, plaque and board art), `battle_bg.js`, `index.html`, `version.json`, `tests/brightgate.spec.js`, `tests/interior_walls.spec.js`, `handoff/shots/brightgate/`.
+- Commit(s) + build id: claude/brightgate slice 2, build 20261104-0234.
+- Tests run and result (widths, checks): brightgate 41/41 (320, 375, 390) with the six gate holds; interior_walls, battle_backdrops, data_integrity pass.
+- Decisions made (colour + reasoning): as settled.
+- Anything left unfinished: ACT3_SWITCH's lobby and floor 2 scenes, the Outcomes Board's cards, G1, the Tuning wing and the Act 5 shells.
+
 ## 2026-11-04 02:25 ET: Build: Brightgate, slice 1: the city's five districts, the Lantern House and Bright Mart (BRIGHTGATE_LAYOUT v0.2; D1478-D1499, D2000-D2009)
 - What changed and why:
   - Vincent settled BRIGHTGATE_LAYOUT v0.2 and approved its previews (rule 9). `tools/build_brightgate.py` reads the packet's layout json (private, never copied whole) and writes `data/detail_zzzzz_brightgate.json`: Gate Plaza (`brightgate`), the Campus (`bg_campus`), the Lamp Works (`bg_works`), Old Wick (`bg_oldtown`) and Partner Row (`bg_partner`), 13,568 tiles, every building on the roof kit, the paired five-wide mouths, every door with its room or its shut line, district signposts.

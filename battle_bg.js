@@ -346,7 +346,7 @@ const ROOMS = {
   sm_tunnel: {}, bw_lantern_in: {}, bw_store_in: {}, fb_lantern_in: {},
   fbh_press_in: {}, fbh_picker_in: {}, fbh_stitch_in: {},   // FERNBROOK_HOMES (on main without a scene; added with WEIR_HUT)
   hw_weir_hut_in: {},   // WEIR_HUT: no wilds or holders inside; listed so every room has a scene (its first two props)
-  bg_lantern_in: {}, bg_store_in: {},   // BRIGHTGATE_LAYOUT (BATTLE_BACKDROPS_ACT2): no battle designed; every room has a scene
+  bg_lantern_in: {}, bg_store_in: {}, bg_hq_lobby: {}, bg_review_in: {}, bg_gala_in: {},   // BRIGHTGATE_LAYOUT (BATTLE_BACKDROPS_ACT2): no battle designed; every room has a scene
 };
 // A room with no named props takes its own first two prop sprites (back, then front), so every room still shows its things.
 function autoProps(env, o){

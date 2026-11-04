@@ -644,8 +644,10 @@
      "id": "bg_hq",
      "x": 32,
      "y": 18,
-     "need": "story.bg_no_room",
-     "deny": "Closed for now."
+     "to": "bg_hq_lobby",
+     "tx": 7,
+     "ty": 14,
+     "facing": "up"
     },
     {
      "kind": "door",
@@ -2419,6 +2421,906 @@
      8
     ]
    }
+  },
+  "bg_hq_lobby": {
+   "name": "Brightgate HQ",
+   "kind": "interior",
+   "outdoor": "bg_campus",
+   "door": "bg_hq",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 16,
+   "h": 16,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 7,
+    "y": 14
+   },
+   "skin": "bg_lobby",
+   "variants": true,
+   "grid": [
+    "#WWWWWWWWWWWWWW#",
+    "#..E........E..#",
+    "#..............#",
+    "#..............#",
+    "#######..#######",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_hq_lobby_mat",
+     "x": 7,
+     "y": 15,
+     "to": "bg_campus",
+     "tx": 32,
+     "ty": 18,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "bg_lift_w",
+     "x": 3,
+     "y": 1,
+     "to": "bg_review_in",
+     "tx": 7,
+     "ty": 12,
+     "facing": "up"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_lift_e",
+     "x": 12,
+     "y": 1,
+     "sprite": "none",
+     "text": "Out of service."
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lanyard_gate_7",
+     "x": 7,
+     "y": 4,
+     "sprite": "bg_lanyard_gate",
+     "name": "the lanyard gate",
+     "when": [
+      "!story.switched_a3",
+      "!story.a3_offer | story.solvane_met"
+     ],
+     "lines": {
+      "seal:seal_glim_1 | seal:seal_glim_2 | seal:seal_glim_3": "Your name isn't on today's list.",
+      "else": "Visitors' hours end at five. It's five."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lanyard_gate_8",
+     "x": 8,
+     "y": 4,
+     "sprite": "bg_lanyard_gate",
+     "name": "the lanyard gate",
+     "when": [
+      "!story.switched_a3",
+      "!story.a3_offer | story.solvane_met"
+     ],
+     "lines": {
+      "seal:seal_glim_1 | seal:seal_glim_2 | seal:seal_glim_3": "Your name isn't on today's list.",
+      "else": "Visitors' hours end at five. It's five."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_k_1_5",
+     "x": 1,
+     "y": 5,
+     "sprite": "bg_lanyard_rack",
+     "name": "the lanyard rack",
+     "lines": {
+      "else": "A lanyard rack. One hook is empty. The card under it has your name."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_k_1_6",
+     "x": 1,
+     "y": 6,
+     "sprite": "bg_lanyard_rack",
+     "name": "the lanyard rack",
+     "lines": {
+      "else": "A lanyard rack. One hook is empty. The card under it has your name."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_D_10_7",
+     "x": 10,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "the front desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_D_11_7",
+     "x": 11,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "the front desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_D_12_7",
+     "x": 12,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "the front desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_3_10",
+     "x": 3,
+     "y": 10,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_4_10",
+     "x": 4,
+     "y": 10,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_11_10",
+     "x": 11,
+     "y": 10,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_12_10",
+     "x": 12,
+     "y": 10,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_3_11",
+     "x": 3,
+     "y": 11,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_4_11",
+     "x": 4,
+     "y": 11,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_11_11",
+     "x": 11,
+     "y": 11,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_12_11",
+     "x": 12,
+     "y": 11,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_1_3",
+     "x": 1,
+     "y": 3,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_2_3",
+     "x": 2,
+     "y": 3,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_13_3",
+     "x": 13,
+     "y": 3,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_14_3",
+     "x": 14,
+     "y": 3,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_14_8",
+     "x": 14,
+     "y": 8,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_insign_plaque",
+     "x": 1,
+     "y": 8,
+     "sprite": "bg_insign_plaque",
+     "name": "the INSIGN plaque",
+     "lines": {
+      "else": "Founded as INSIGN. Brighter by nature."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_receptionist",
+     "name": "Receptionist",
+     "look": "bg_receptionist",
+     "x": 11,
+     "y": 6,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "story.switched_a3": "Have a bright day!",
+      "seal:seal_glim_1 | seal:seal_glim_2 | seal:seal_glim_3": "Your name isn't on today's list.",
+      "else": "Visitors' hours end at five. It's five."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_juniper_desk",
+     "name": "Associate Juniper",
+     "look": "juniper",
+     "x": 12,
+     "y": 6,
+     "facing": "down",
+     "still": true,
+     "when": [
+      "story.a3_offer",
+      "!story.switched_a3"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] ACT3_SWITCH's lines go here."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_lobby_guard",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 5,
+     "y": 2,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    }
+   ],
+   "wall": {
+    "windows": []
+   }
+  },
+  "bg_review_in": {
+   "name": "Brightgate HQ, floor 2",
+   "kind": "interior",
+   "outdoor": "bg_campus",
+   "door": "bg_hq",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 16,
+   "h": 14,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 7,
+    "y": 12
+   },
+   "skin": "bg_review",
+   "variants": true,
+   "grid": [
+    "#WWWWWWWWWWWWWW#",
+    "#............E.#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_review_mat",
+     "x": 7,
+     "y": 13,
+     "to": "bg_hq_lobby",
+     "tx": 3,
+     "ty": 2,
+     "facing": "down"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_review_stair",
+     "x": 13,
+     "y": 1,
+     "sprite": "none",
+     "text": "[PLACEHOLDER] The stair is shut."
+    },
+    {
+     "kind": "prop",
+     "id": "bg_outcomes_board_0",
+     "x": 6,
+     "y": 0,
+     "sprite": "bg_outcomes_board",
+     "name": "the Outcomes Board",
+     "lines": {
+      "else": "[PLACEHOLDER] The Outcomes Board. Its cards are GLIMMER_DECISIONS' to build."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_outcomes_board_1",
+     "x": 7,
+     "y": 0,
+     "sprite": "bg_outcomes_board",
+     "name": "the Outcomes Board",
+     "lines": {
+      "else": "[PLACEHOLDER] The Outcomes Board. Its cards are GLIMMER_DECISIONS' to build."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_wire_3",
+     "x": 3,
+     "y": 1,
+     "sprite": "tv_set",
+     "name": "a wire set"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_wire_4",
+     "x": 4,
+     "y": 1,
+     "sprite": "tv_set",
+     "name": "a wire set"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_wire_9",
+     "x": 9,
+     "y": 1,
+     "sprite": "tv_set",
+     "name": "a wire set"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_wire_10",
+     "x": 10,
+     "y": 1,
+     "sprite": "tv_set",
+     "name": "a wire set"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_4_3",
+     "x": 4,
+     "y": 3,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_5_3",
+     "x": 5,
+     "y": 3,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_6_3",
+     "x": 6,
+     "y": 3,
+     "sprite": "keep_desk",
+     "name": "the one desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_7_3",
+     "x": 7,
+     "y": 3,
+     "sprite": "keep_desk",
+     "name": "the one desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_2_5",
+     "x": 2,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_3_5",
+     "x": 3,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_5_5",
+     "x": 5,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_6_5",
+     "x": 6,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_9_5",
+     "x": 9,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_10_5",
+     "x": 10,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_12_5",
+     "x": 12,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_13_5",
+     "x": 13,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_2_7",
+     "x": 2,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_3_7",
+     "x": 3,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_5_7",
+     "x": 5,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_6_7",
+     "x": 6,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_9_7",
+     "x": 9,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_10_7",
+     "x": 10,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_12_7",
+     "x": 12,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_13_7",
+     "x": 13,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_planter_2_9",
+     "x": 2,
+     "y": 9,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_planter_3_9",
+     "x": 3,
+     "y": 9,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_11_9",
+     "x": 11,
+     "y": 9,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_12_9",
+     "x": 12,
+     "y": 9,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_planter_2_12",
+     "x": 2,
+     "y": 12,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_planter_13_12",
+     "x": 13,
+     "y": 12,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "npc",
+     "id": "bg_rook_review",
+     "name": "Rook",
+     "look": "rook",
+     "x": 5,
+     "y": 2,
+     "facing": "down",
+     "still": true,
+     "when": [
+      "story.switched_a3 | story.a3_offer"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] ACT3_SWITCH's lines go here."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_dorian_review",
+     "name": "Dorian Pell",
+     "look": "dorian",
+     "x": 11,
+     "y": 8,
+     "facing": "down",
+     "still": true,
+     "when": [
+      "story.switched_a3 | story.a3_offer"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] GLIMMER_DECISIONS' lines go here."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_quinn_review",
+     "name": "Associate Quinn",
+     "look": "quinn",
+     "x": 2,
+     "y": 1,
+     "facing": "right",
+     "still": true,
+     "when": [
+      "story.switched_a3 | story.a3_offer"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] ACT3_SWITCH's lines go here."
+     }
+    }
+   ],
+   "wall": {
+    "windows": []
+   }
+  },
+  "bg_gala_in": {
+   "name": "Gala Hall",
+   "kind": "interior",
+   "outdoor": "bg_campus",
+   "door": "bg_gala",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 16,
+   "h": 18,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 7,
+    "y": 16
+   },
+   "skin": "bg_gala",
+   "variants": true,
+   "grid": [
+    "#WWWWWWWWWWWWWW#",
+    "#....======....#",
+    "#....======....#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_gala_mat",
+     "x": 7,
+     "y": 17,
+     "to": "bg_campus",
+     "tx": 9,
+     "ty": 17,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_2_4",
+     "x": 2,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_3_4",
+     "x": 3,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_6_4",
+     "x": 6,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_7_4",
+     "x": 7,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_10_4",
+     "x": 10,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_11_4",
+     "x": 11,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_2_7",
+     "x": 2,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_3_7",
+     "x": 3,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_6_7",
+     "x": 6,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_7_7",
+     "x": 7,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_10_7",
+     "x": 10,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_11_7",
+     "x": 11,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_2_10",
+     "x": 2,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_3_10",
+     "x": 3,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_6_10",
+     "x": 6,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_7_10",
+     "x": 7,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_10_10",
+     "x": 10,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_11_10",
+     "x": 11,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_p_1_12",
+     "x": 1,
+     "y": 12,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_p_14_12",
+     "x": 14,
+     "y": 12,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "npc",
+     "id": "bg_gala_host",
+     "name": "Gala host",
+     "look": "bg_courtesy",
+     "x": 7,
+     "y": 3,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "[PLACEHOLDER] The gala is Story's scene (G1)."
+     }
+    }
+   ],
+   "wall": {
+    "windows": []
+   }
   }
  },
  "looks": {
@@ -2437,6 +3339,22 @@
    "outfit": "apron",
    "outfitCol": "V",
    "accent": "w"
+  },
+  "bg_receptionist": {
+   "skin": "2",
+   "hair": "bob",
+   "hairCol": "k",
+   "outfit": "jacket",
+   "outfitCol": "w",
+   "accent": "N"
+  },
+  "bg_courtesy": {
+   "skin": "4",
+   "hair": "short",
+   "hairCol": "d",
+   "outfit": "jacket",
+   "outfitCol": "w",
+   "accent": "V"
   }
  },
  "cast": [
@@ -2447,6 +3365,24 @@
   },
   {
    "name": "Bright Mart clerk",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Receptionist",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Courtesy staff",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Gala host",
    "faction": "glimmer",
    "base": 50,
    "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"

@@ -251,13 +251,13 @@ for cid, c in CHUNKS.items():
 # ---------- doors: every packet door, its room or its shut line (§5.4, §11) ----------
 SHUT = {   # door id -> deny line; `need` names a flag nothing sets, the city preview's pattern (story.hc_no_room)
     'bg_flats_a': TXT['residents'], 'bg_flats_b': TXT['residents'], 'bg_welcome': TXT['closed'],
-    'bg_hq': TXT['closed'], 'bg_gala': TXT['gala'], 'bg_glowcare': TXT['glowcare'],
+    'bg_gala': TXT['gala'], 'bg_glowcare': TXT['glowcare'],
     'bg_annex_a': TXT['staff'], 'bg_annex_b': TXT['staff'], 'bg_lampworks': TXT['works'], 'bg_fleetbay': TXT['fleet'],
     'bg_census': TXT['closed'], 'bg_hall': TXT['closed'], 'bg_old_a': None, 'bg_old_b': None, 'bg_odell': TXT['closed'],
     'bg_wickshop': TXT['wickshop'], 'bg_academy': TXT['academy'], 'bg_showhome': None,
 }
 for h in 'abcdefghij': SHUT['bg_home_' + h] = TXT['residents']
-ROOM_DOOR = {'bg_lantern': ('bg_lantern_in', 6, 12), 'bg_store': ('bg_store_in', 5, 7)}
+ROOM_DOOR = {'bg_lantern': ('bg_lantern_in', 6, 12), 'bg_store': ('bg_store_in', 5, 7), 'bg_hq': ('bg_hq_lobby', 7, 14)}
 for cid, c in CHUNKS.items():
     for d in c.src['doors']:
         did = d['id']
@@ -388,19 +388,20 @@ def from_packet(r):
             else: out[y][x] = '.'
     return [''.join(row) for row in out], g
 
-def room_check(rid, grid, objs, arrival, targets):
-    h, w = len(grid), len(grid[0])
+def room_check(rid, grid, objs, arrival, targets, walk=RWALK, open_gates=False):
+    """open_gates: props that come and go by `when` (the lanyard gate) are left out, the gate as a switcher finds it."""
+    RWALK_ = walk; h, w = len(grid), len(grid[0])
     for x in range(w):
         for y in (0, h - 1):
-            if grid[y][x] in RWALK and grid[y][x] != 'm': fail(f'{rid}: wall open at {(x, y)}')
+            if grid[y][x] in RWALK_ and grid[y][x] not in 'mE': fail(f'{rid}: wall open at {(x, y)}')
     for y in range(h):
         for x in (0, w - 1):
-            if grid[y][x] in RWALK: fail(f'{rid}: wall open at {(x, y)}')
-    block = {(o['x'], o['y']) for o in objs if o['kind'] in ('npc', 'sign', 'prop') and grid[o['y']][o['x']] in RWALK}
-    seen = reach(grid, arrival, frozenset(block), walk=RWALK)
+            if grid[y][x] in RWALK_: fail(f'{rid}: wall open at {(x, y)}')
+    block = {(o['x'], o['y']) for o in objs if o['kind'] in ('npc', 'sign', 'prop') and grid[o['y']][o['x']] in RWALK_ and not (open_gates and o.get('when'))}
+    seen = reach(grid, arrival, frozenset(block), walk=RWALK_)
     for k, p in targets.items():
         if p not in seen: fail(f'{rid}: {k} at {p} not reachable with every body and prop in place')
-    lost = {(x, y) for y in range(h) for x in range(w) if grid[y][x] in RWALK} - block - seen
+    lost = {(x, y) for y in range(h) for x in range(w) if grid[y][x] in RWALK_} - block - seen
     if lost: fail(f'{rid}: unreachable floor {sorted(lost)[:4]}')
     for o in objs:
         if o['kind'] in ('npc', 'sign', 'prop') and (o.get('lines') or o.get('scene') or o.get('text') or o.get('shop')):
@@ -460,13 +461,118 @@ objs = [{'kind': 'warp', 'id': 'bg_store_mat', 'x': 5, 'y': 8, 'to': 'brightgate
 ROOMS['bg_store_in'] = room('bg_store_in', 'Bright Mart', 'bg_store', 'brightgate', g, 'bg_store', objs, (5, 7), wall={'windows': [2, 8]})
 room_check('bg_store_in', g, objs, (5, 7), {'mat': (5, 8), 'clerk_front': (5, 4)})
 
+# ---------- slice 2: the HQ lobby and the lanyard gate (§5.3, D1483, D1493, D2006, D2008), the review floor (D2007), the gala (D1486) ----------
+SWITCHED = 'story.switched_a3'                                     # ACT3_SWITCH's flag (settled)
+GUEST = 'story.a3_offer & !story.switched_a3 & !story.solvane_met'   # D2008: an open offer, Rook's guest, floor 2 only
+GATE_SHUT = ['!' + SWITCHED, '!story.a3_offer | story.solvane_met']  # every holder but a switcher or an open-offer guest
+LANYARD = 'seal:seal_glim_1 | seal:seal_glim_2 | seal:seal_glim_3'    # D1521: an undercover Keeper's Glimmerwell lanyard
+TXT.update({
+    'reception': hook('bh_receptionist'),          # "Visitors' hours end at five. It's five." (CHIP_SECRECY §3)
+    'not_listed': hook('bh_not_listed'),           # "Your name isn't on today's list."
+    'courtesy': hook('bh_courtesy'),               # "Lost? Everything's this way. Have a bright day!"
+    'rack': 'A lanyard rack. One hook is empty. The card under it has your name.',   # §11 (ACT3_SWITCH §3.2, settled)
+    'insign': hook('bh_hq_plaque'),                # "Founded as INSIGN. Brighter by nature." (T2, PROPOSED)
+    'out_of_service': 'Out of service.',           # §5.3 the executive lift (PLACEHOLDER)
+    'gate_open': '[PLACEHOLDER] The lanyard gate stands open.',
+    'board': '[PLACEHOLDER] The Outcomes Board. Its cards are GLIMMER_DECISIONS\' to build.',
+    'stair': '[PLACEHOLDER] The stair is shut.',
+    'wait_act3': "[PLACEHOLDER] ACT3_SWITCH's lines go here.",
+    'wait_board': "[PLACEHOLDER] GLIMMER_DECISIONS' lines go here.",
+    'gala_host': '[PLACEHOLDER] The gala is Story\'s scene (G1).',
+})
+REVIEW_WHEN = [SWITCHED + ' | story.a3_offer']   # who is on floor 2 at all
+
+def furnish(raw, legend, oid):
+    """Furniture letters of a designed grid to props: legend maps a letter to (sprite, name, line or None)."""
+    out = []
+    for y in range(len(raw)):
+        for x in range(len(raw[0])):
+            k = raw[y][x]
+            if k in legend:
+                sp, nm, ln = legend[k]
+                o = P(f'{oid}_{k}_{x}_{y}', x, y, sp, name=nm)
+                if ln: o['lines'] = {'else': ln}
+                out.append(o)
+    return out
+
+# bg_hq_lobby, floor 1, 16x16, mat 7,15 (Appendix A). The gate cells stay floor; a gate prop stands on each while it is shut.
+rp = RP['bg_hq_lobby']; g, raw = from_packet(rp)
+g = [r[:3] + ('E' if y == 1 else r[3]) + r[4:12] + ('E' if y == 1 else r[12]) + r[13:] for y, r in enumerate(g)]   # the two lifts
+door = DOORS['bg_hq']
+objs = [{'kind': 'warp', 'id': 'bg_hq_lobby_mat', 'x': 7, 'y': 15, 'to': 'bg_campus', 'tx': door['x'], 'ty': door['y'], 'facing': 'down'},
+        {'kind': 'warp', 'id': 'bg_lift_w', 'x': 3, 'y': 1, 'to': 'bg_review_in', 'tx': 7, 'ty': 12, 'facing': 'up'},
+        {'kind': 'sign', 'id': 'bg_lift_e', 'x': 12, 'y': 1, 'sprite': 'none', 'text': TXT['out_of_service']}]
+for gx, gy in rp['gates'][0]['cells']:
+    objs.append(P(f'bg_lanyard_gate_{gx}', gx, gy, 'bg_lanyard_gate', name='the lanyard gate', when=list(GATE_SHUT),
+                  lines={LANYARD: TXT['not_listed'], 'else': TXT['reception']}))
+objs += furnish(raw, {'k': ('bg_lanyard_rack', 'the lanyard rack', TXT['rack']), 'D': ('keep_desk', 'the front desk', None),
+                      's': ('keep_bench', 'a visitor sofa', None)}, 'bg_lobby')
+for (x, y) in ((1, 3), (2, 3), (13, 3), (14, 3), (14, 8)): objs.append(P(f'bg_lobby_planter_{x}_{y}', x, y, 'bg_hedge_planter', name='a planter'))
+pl = next(m for m in rp['marks'] if m['id'] == 'insign_plaque')['cells'][0]
+objs.append(P('bg_insign_plaque', pl[0], pl[1], 'bg_insign_plaque', name='the INSIGN plaque', lines={'else': TXT['insign']}))
+an = {a['id']: a for a in rp['anchors']}
+objs.append(N('bg_receptionist', 'Receptionist', 'bg_receptionist', an['bg_receptionist']['x'], an['bg_receptionist']['y'], 'down',
+              lines={SWITCHED: 'Have a bright day!', LANYARD: TXT['not_listed'], 'else': TXT['reception']}))
+objs.append(N('bg_juniper_desk', 'Associate Juniper', 'juniper', an['bg_juniper_desk']['x'], an['bg_juniper_desk']['y'], 'down',
+              when=['story.a3_offer', '!' + SWITCHED], lines={'else': TXT['wait_act3']}))
+objs.append(N('bg_lobby_guard', 'Courtesy staff', 'bg_courtesy', an['bg_lobby_guard']['x'], an['bg_lobby_guard']['y'], 'down', lines={'else': TXT['courtesy']}))
+ROOMS['bg_hq_lobby'] = room('bg_hq_lobby', 'Brightgate HQ', 'bg_hq', 'bg_campus', g, 'bg_lobby', objs, tuple(rp['arrival']))
+keep_free = {tuple(c) for m in rp['marks'] if m['id'] in ('clip_holder', 'clip_juniper', 'dorian_lobby') for c in m['cells']}
+for o in objs:
+    if (o['x'], o['y']) in keep_free and o['kind'] in ('npc', 'prop', 'sign'): fail(f"bg_hq_lobby: {o['id']} stands on a kept-free tile")
+room_check('bg_hq_lobby', g, objs, tuple(rp['arrival']), {'mat': (7, 15), 'desk_front': (11, 8), 'clip_holder': (2, 5), 'clip_juniper': (2, 6),
+           'dorian_lobby': (5, 9), 'gate_front': (7, 5), 'rack_tap': (2, 5), 'west_lift': (3, 1), 'east_lift_tap': (12, 2)}, walk=RWALK | {'E'}, open_gates=True)
+# CHIP_SECRECY (§13 item 1): with the gate shut, no lift is reachable; the gate is the only way.
+shut = {(x, y) for x, y in rp['gates'][0]['cells']} | {(o['x'], o['y']) for o in objs if o['kind'] in ('npc', 'prop', 'sign') and g[o['y']][o['x']] in RWALK and not o.get('when')}
+seen = reach(g, tuple(rp['arrival']), frozenset(shut), walk=RWALK | {'E'})
+if (3, 1) in seen or (12, 1) in seen: fail('bg_hq_lobby: a lift is reachable with the lanyard gate shut')
+
+# bg_review_in, floor 2, 16x14 (D2007): the one desk empty under the Outcomes Board, Rook's desk beside it, Dorian's own desk.
+rp = RP['bg_review_in']; g, raw = from_packet(rp)
+g = [r[:13] + ('E' if y == 1 else r[13]) + r[14:] for y, r in enumerate(g)]   # the stair to the wing shell
+objs = [{'kind': 'warp', 'id': 'bg_review_mat', 'x': 7, 'y': 13, 'to': 'bg_hq_lobby', 'tx': 3, 'ty': 2, 'facing': 'down'},
+        {'kind': 'sign', 'id': 'bg_review_stair', 'x': 13, 'y': 1, 'sprite': 'none', 'text': TXT['stair']}]
+mk = {m['id']: m for m in rp['marks']}
+for i, (x, y) in enumerate(mk['outcomes_board']['cells']):
+    objs.append(P(f'bg_outcomes_board_{i}', x, y, 'bg_outcomes_board', name='the Outcomes Board', lines={'else': TXT['board']}))
+one = {tuple(c) for c in mk['one_desk']['cells']}
+for y in range(len(raw)):
+    for x in range(len(raw[0])):
+        k = raw[y][x]
+        if k == 'w': objs.append(P(f'bg_review_wire_{x}', x, y, 'tv_set', name='a wire set'))
+        elif k in 'tD': objs.append(P(f'bg_review_desk_{x}_{y}', x, y, 'keep_desk', name='the one desk' if (x, y) in one else 'a desk'))
+        elif k == 'p': objs.append(P(f'bg_review_planter_{x}_{y}', x, y, 'bg_hedge_planter', name='a planter'))
+an = {a['id']: a for a in rp['anchors']}
+for aid, nm, look in (('bg_rook_review', 'Rook', 'rook'), ('bg_dorian_review', 'Dorian Pell', 'dorian'), ('bg_quinn_review', 'Associate Quinn', 'quinn')):
+    a = an[aid]
+    objs.append(N(aid, nm, look, a['x'], a['y'], a['facing'], when=list(REVIEW_WHEN), lines={'else': TXT['wait_act3'] if nm != 'Dorian Pell' else TXT['wait_board']}))
+ROOMS['bg_review_in'] = room('bg_review_in', 'Brightgate HQ, floor 2', 'bg_hq', 'bg_campus', g, 'bg_review', objs, tuple(rp['arrival']))
+ring = {n for p in one for n in nbrs(*p, 16, 14)} - one
+if any((o['x'], o['y']) in ring for o in objs if o['kind'] == 'npc'): fail('bg_review_in: a body stands at the one desk (D2007)')
+room_check('bg_review_in', g, objs, tuple(rp['arrival']), {'mat': (7, 13), 'board_tap': (6, 1), 'one_desk_front': (6, 4), 'dorian_front': (11, 10)}, walk=RWALK | {'E'}, open_gates=True)
+
+# bg_gala_in, 16x18 (D1486): staging only; its door stays shut ("Closed for an event."), the room waits for Story's G1.
+rp = RP['bg_gala_in']; g, raw = from_packet(rp)
+g = [''.join('=' if raw[y][x] == 'd' else ch for x, ch in enumerate(r)) for y, r in enumerate(g)]   # the stage
+door = DOORS['bg_gala']
+objs = [{'kind': 'warp', 'id': 'bg_gala_mat', 'x': 7, 'y': 17, 'to': 'bg_campus', 'tx': door['x'], 'ty': door['y'], 'facing': 'down'}]
+objs += furnish(raw, {'t': ('cafe_table', 'a round table', None), 'p': ('bg_hedge_planter', 'a planter', None)}, 'bg_gala')
+a = rp['anchors'][0]
+objs.append(N('bg_gala_host', 'Gala host', 'bg_courtesy', a['x'], a['y'], a['facing'], lines={'else': TXT['gala_host']}))
+ROOMS['bg_gala_in'] = room('bg_gala_in', 'Gala Hall', 'bg_gala', 'bg_campus', g, 'bg_gala', objs, tuple(rp['arrival']))
+room_check('bg_gala_in', g, objs, tuple(rp['arrival']), {'mat': (7, 17), 'host_side': (8, 3)})
+for rid in ('bg_hq_lobby', 'bg_review_in', 'bg_gala_in'): ROOMS[rid]['wall'] = {'windows': []}
+
 # ---------- looks (PLACEHOLDER bodies; palette lock for Glimmerwell figures: white, soot, wine, crimson accent under 10%) ----------
 LOOKS = {
     'bg_lantern_host': {'skin': '3', 'hair': 'bun', 'hairCol': 'd', 'outfit': 'jacket', 'outfitCol': 'w', 'accent': 'N'},   # §3.5: a civilian in a white jacket with soot trim
     'bg_store_clerk': {'skin': '2', 'hair': 'short', 'hairCol': 'k', 'outfit': 'apron', 'outfitCol': 'V', 'accent': 'w'},
+    'bg_receptionist': {'skin': '2', 'hair': 'bob', 'hairCol': 'k', 'outfit': 'jacket', 'outfitCol': 'w', 'accent': 'N'},     # the fleet's built Receptionist look
+    'bg_courtesy': {'skin': '4', 'hair': 'short', 'hairCol': 'd', 'outfit': 'jacket', 'outfitCol': 'w', 'accent': 'V'},       # B28: white top, soot trim, wine band
 }
-CAST = [{'name': TXT['host_name'], 'faction': 'none', 'base': 50}, {'name': TXT['store_clerk_name'], 'faction': 'glimmer', 'base': 50,
-         'rankFlag': 'BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story'}]
+CAST = [{'name': TXT['host_name'], 'faction': 'none', 'base': 50}]
+for nm in (TXT['store_clerk_name'], 'Receptionist', 'Courtesy staff', 'Gala host'):
+    CAST.append({'name': nm, 'faction': 'glimmer', 'base': 50, 'rankFlag': 'BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story'})
 
 # ---------- text checks (walklings-wording-check, CHIP_SECRECY, D1446, D1434) ----------
 BANNED = re.compile(r'\b(' + '|'.join(['fa' + 'int(ed)?', 'ev' + 'olv\\w*', 'co' + 'ins?', 'app' + 'eared', 'tr' + 'ainer', '\\w+' + 'dex']) + r')\b|go, [a-z]+!', re.I)
