@@ -31,6 +31,7 @@ const SHELL = [
   './clock.js',
   './mv_fx.js',
   './battle_bg.js',
+  './sprite_anim.js',
   './net.js',
   './game.js',
   './fonts/Jersey15.woff2',

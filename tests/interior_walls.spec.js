@@ -157,7 +157,7 @@ test('Your Home draws the wall kit, and rooms without it keep their tiles', asyn
   expect(report.keys.slice().sort()).toEqual(PAL_KEYS.slice().sort());
   expect(report.wall).toEqual(HOME_WALL);
   expect(report.opted).toContain('house_home');
-  expect(report.opted.length).toBe(47);   // 37 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT
+  expect(report.opted.length).toBe(53);   // 37 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT + BRIGHTGATE's six
   expect(report.lists).toEqual({ home: [2, 6], up: [3, 5] });
   expect(report.parts).toEqual([
     'house_home__cap_n', 'house_home__cap_ne', 'house_home__cap_nw', 'house_home__cap_s', 'house_home__cap_se', 'house_home__cap_sw',
@@ -268,6 +268,12 @@ const ROOMS = [
   { id: 'fbh_stitch_in', skin: 'fbh_stitch', windows: [3, 7], doors: [], jambs: [[4, 14, 'jamb_l'], [6, 14, 'jamb_r']] },
   // WEIR_HUT (D1591): the weir hut, its own skin and wall row ICFKmFFFFcsB.
   { id: 'hw_weir_hut_in', skin: 'weir_hut', windows: [3, 6], doors: [], jambs: [[3, 11, 'jamb_l'], [5, 11, 'jamb_r']] },
+  { id: 'bg_lantern_in', skin: 'bg_lantern', windows: [], doors: [], jambs: [[5, 13, 'jamb_l'], [7, 13, 'jamb_r']] },   // BRIGHTGATE_LAYOUT §7 (D2009)
+  { id: 'bg_store_in', skin: 'bg_store', windows: [2, 8], doors: [], jambs: [[4, 8, 'jamb_l'], [6, 8, 'jamb_r']] },
+  { id: 'bg_hq_lobby', skin: 'bg_lobby', windows: [], doors: [], jambs: [[6, 15, 'jamb_l'], [8, 15, 'jamb_r']] },
+  { id: 'bg_review_in', skin: 'bg_review', windows: [], doors: [], jambs: [[6, 13, 'jamb_l'], [8, 13, 'jamb_r']] },
+  { id: 'bg_gala_in', skin: 'bg_gala', windows: [], doors: [], jambs: [[6, 17, 'jamb_l'], [8, 17, 'jamb_r']] },
+  { id: 'bg_hall_in', skin: 'bg_hall', windows: [], doors: [], jambs: [[6, 23, 'jamb_l'], [8, 23, 'jamb_r']] },
 ];
 
 test('every interior uses its own wall row, windows, doors and jambs @w1', async ({ page }) => {
@@ -361,7 +367,7 @@ test('every interior uses its own wall row, windows, doors and jambs @w1', async
   }, ROOMS);
 
   expect(report.v).toBe(2);
-  expect(report.n).toBe(53);   // 43 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT
+  expect(report.n).toBe(59);   // 43 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT + BRIGHTGATE's six
   expect(report.problems).toEqual([]);
   expect(report.cap).toEqual([]);
   for (const row of report.shares) expect(row.share, row.id + ' ' + row.tile).toBeLessThanOrEqual(0.7);
