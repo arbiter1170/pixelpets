@@ -1,7 +1,7 @@
 /* Reload screen name and the script-error log. The log is pp_errors, never the save.
    The full list is only on a ?debug=1 page. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -14,7 +14,7 @@ async function boot(page, search) {
 test('a window error is logged outside the save and Settings shows one line', async ({ page }) => {
   await boot(page);
   const saveBefore = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#setError')).toBeHidden();
   await page.locator('#setClose').click();
   await page.locator('#repBtn').click();
@@ -43,7 +43,7 @@ test('a window error is logged outside the save and Settings shows one line', as
   expect(kept[4].message).toBe('mark 5');
   expect(await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'))).toBe(saveBefore);
   await page.locator('#repBack').click();
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   const line = page.locator('#setError');
   await expect(line).toBeVisible();
   await expect(line).toHaveText(/^Last error: \d{1,2}:\d{2}\s?[AP]M, on People$/);
@@ -115,7 +115,7 @@ test('the full error list shows only with ?debug=1', async ({ page }) => {
   await expect(fresh.locator('#dbgReloadList')).toContainText('phase hit');
   await expect(fresh.locator('#dbgReloadList')).toContainText('standalone no');
   await fresh.locator('#dbgClose').click();
-  await fresh.locator('#settingsBtn').click();
+  await openSettings(fresh);
   await expect(fresh.locator('#setError')).toHaveText(/^Last error: \d{1,2}:\d{2}\s?[AP]M/);
   await expect(fresh.locator('#setError')).not.toContainText('listed 0');
   await expect(fresh.locator('#setReload')).toHaveText(/^Last reload: crash\?, /);
@@ -168,7 +168,7 @@ test('an alive boot with no crumb records nav and standalone and says on People'
   expect(Number.isFinite(entry.made)).toBe(true);
   const discarded = await fresh.evaluate(() => 'wasDiscarded' in document);
   if (discarded) expect(typeof entry.wasDiscarded).toBe('boolean');
-  await fresh.locator('#settingsBtn').click();
+  await openSettings(fresh);
   const line = fresh.locator('#setReload');
   await expect(line).toHaveText(/^Last reload: crash\?, \d{1,2}:\d{2}\s?[AP]M, on People$/);
   await expect(line).not.toContainText('home-screen');
@@ -211,7 +211,7 @@ test('an alive boot that was hidden is a background kill, not crash?', async ({ 
   expect(typeof entry.sw).toBe('boolean');
   const discarded = await fresh.evaluate(() => 'wasDiscarded' in document);
   if (discarded) expect(typeof entry.wasDiscarded).toBe('boolean');
-  await fresh.locator('#settingsBtn').click();
+  await openSettings(fresh);
   const line = fresh.locator('#setReload');
   await expect(line).toHaveText(/^Last reload: background kill, \d{1,2}:\d{2}\s?[AP]M, on People$/);
   await expect(line).not.toContainText('crash?');
@@ -319,7 +319,7 @@ test('pp_diag keeps taps, screen, canvas MB and DOM size outside the save and a 
   const mine = await fresh.evaluate(() => JSON.parse(localStorage.getItem('pp_diag')));
   expect(mine.up).toBeLessThan(diag.up + 30);
   expect(mine.acts.some((a) => /^repBtn@/.test(a))).toBe(false);
-  await fresh.locator('#settingsBtn').click();
+  await openSettings(fresh);
   const line = fresh.locator('#setReload');
   await expect(line).toBeVisible();
   await expect(line).toHaveText(/^Last reload: crash\?, \d{1,2}:\d{2}\s?[AP]M, on People$/);

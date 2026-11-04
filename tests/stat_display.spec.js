@@ -1,6 +1,6 @@
 /* STAT_DISPLAY v0.1 (design 39ef920): one NRG / GROW strip for PARTNER and WALK, EXPLORE once, CARE / STEPS slot. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -83,7 +83,7 @@ test('criteria 1-4: the strip stays on WALK; PARTNER hides it and mirrors NRG, G
 test('criterion 5: hidden on WALKLINGS, on PARTNER, and on WALK in modern; shown on arcade WALK @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.showTab('col')); await expect(page.locator('#statStrip')).toBeHidden();
-  await page.locator('#tabs button[data-tab="walk"]').click(); await expect(page.locator('#statStrip')).toBeVisible();
+  await showScreen(page, 'walk'); await expect(page.locator('#statStrip')).toBeVisible();
   await boot(page, {}, { controls: 'modern' });
   await page.evaluate(() => PixelPets.showTab('walk')); await expect(page.locator('#statStrip')).toBeHidden();
   await page.evaluate(() => PixelPets.showTab('pet')); await expect(page.locator('#statStrip')).toBeHidden();

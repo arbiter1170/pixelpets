@@ -1,7 +1,7 @@
 /* Build 3: Glimmerwell Fernbrook path and the Bright Pavilion Tour.
    Widths come from the Playwright projects (320, 375, 390). */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, playScene, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -86,7 +86,7 @@ const PICK_READY = { 'story.seal1': true, 'story.lizzy_class': true, 'story.post
 test('Think about it sets nothing, and stepping off the gate toasts once @w1', async ({ page }) => {
   await installSave(page.context(), fernSave(PICK_READY), { quietDay: true });
   await gotoDebug(page);
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await showScreen(page, 'walk');
   await page.keyboard.down('ArrowDown');
   await page.waitForFunction(() => {
     const s = window.PixelPets.scene;

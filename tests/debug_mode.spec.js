@@ -1,7 +1,7 @@
 /* Settings debug gate (password Larson) and the checkpoint / item / encounter / faction tools.
    See tests/README.md. The password is compared case-insensitively. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -12,7 +12,7 @@ async function boot(page, search) {
 }
 
 async function openDebugPanel(page) {
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#ovSettings')).toBeVisible();
   await page.locator('#setDebug').click();
   await expect(page.locator('#ovDebug')).toBeVisible();
@@ -22,7 +22,7 @@ test('the password gate rejects a wrong word and accepts Larson', async ({ page 
   await boot(page, '');
   expect(await page.evaluate(() => window.PixelPets.debug)).toBe(false);
   expect(await page.evaluate(() => window.PixelPets.giveItem('heal_snack', 1))).toBeUndefined();
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setDebug').click();
   await expect(page.locator('#dbgGate')).toBeVisible();
   const unlock = await page.locator('#dbgUnlock').boundingBox();

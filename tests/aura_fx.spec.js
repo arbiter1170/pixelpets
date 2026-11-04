@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 function save(extra) {
   const s = starterSave();
@@ -163,7 +163,7 @@ test.describe('effects', () => {
   test('EFFECTS cycles, saves, and the row is at least 44 px', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await boot(page, save(), '?debug=1');
-    await page.locator('#settingsBtn').click();
+    await openSettings(page);
     await expect(page.locator('#setEffectsVal')).toHaveText('FULL');
     const box = await page.locator('#setEffects').boundingBox();
     expect(box.height).toBeGreaterThanOrEqual(44);
@@ -294,7 +294,7 @@ test.describe('effects', () => {
     expect(ember.drawn).toBeGreaterThan(0);
     expect(ember.drawn).toBeLessThanOrEqual(12);
 
-    await page.locator('#settingsBtn').click();
+    await openSettings(page);
     await frame(page, 2);
     expect(await page.evaluate(() => PixelPets.aura.drawn)).toBe(0);
     await page.locator('#setClose').click();
@@ -398,9 +398,9 @@ test.describe('effects', () => {
     const afterFrames = await read();
     expect(afterFrames.made).toBe(before.made);
 
-    await page.locator('#settingsBtn').click();
+    await openSettings(page);
     await page.locator('#setClose').click();
-    await page.locator('#settingsBtn').click();
+    await openSettings(page);
     await page.locator('#setClose').click();
     const afterSettings = await read();
     expect(afterSettings.made).toBe(afterFrames.made);

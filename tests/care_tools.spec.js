@@ -1,7 +1,7 @@
 /* Rename a Walkling you already have, the music volume slider, and the welcome-back line. */
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, openSettings } = require('./helpers');
 
 function saveShot(page, name) {
   const w = page.viewportSize().width;
@@ -100,7 +100,7 @@ test('the music volume slider saves a level and leaves the on/off switch alone',
   await installSave(page.context(), save, { quietDay: true });
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state);
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#setVolRange')).toBeVisible();
   await expect(page.locator('#setVolVal')).toHaveText('50%');
   await expect(page.locator('#setMusicVal')).toHaveText('ON');

@@ -3,7 +3,7 @@
    Every step keeps Hearthmoor's north exit row (tiles 8-10, y=2) clear of the top chips, and the town square
    spawn never shows the void past the left map edge. Save stays pixelpets.save.v2, settings.mapZoom is additive. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -31,7 +31,7 @@ async function boot(page, sv, search = '?debug=1') {
 async function openSettings(page) {
   const gear = page.locator('#gearFloat');
   if (await gear.isVisible()) await gear.click();
-  else await page.locator('#settingsBtn').click();
+  else await openSettings(page);
   await expect(page.locator('#ovSettings')).toBeVisible();
 }
 

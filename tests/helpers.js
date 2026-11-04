@@ -155,9 +155,53 @@ async function playScene(page, choices = [], onChoice = null, onSeal = null) {
   throw new Error('scene did not end');
 }
 
+// Modern controls (the default, Vincent, Nov 4, 2026) have no header gear, no tab row and no TALK button: Settings is the dock's
+// gear (#gearFloat), PET and WALKLINGS are the dock's #petFloat and #colFloat, each other screen has a WALK back button, and a
+// tap on the map walks or talks. Arcade specs keep #settingsBtn, #tabs and TALK. These helpers tap whatever the layout on
+// screen shows (body.ctl-modern), so a spec that opts into Arcade still works.
+const isModern = (page) => page.evaluate(() => document.body.classList.contains('ctl-modern'));
+async function openSettings(page) {
+  await page.locator((await isModern(page)) ? '#gearFloat' : '#settingsBtn').click();
+}
+async function showScreen(page, name) {
+  if (!(await isModern(page))) return page.locator(`#tabs button[data-tab="${name}"]`).click();
+  if (name === 'walk') {
+    const back = page.locator('.screen.active .scr-back');
+    if (await back.count()) await back.click();
+    return;
+  }
+  return page.locator(name === 'pet' ? '#petFloat' : '#colFloat').click();
+}
+// A finger on the map canvas over tile (x, y), once the walk camera has stopped easing. In Modern a tap on a person or a
+// sign next to the player talks; a tap further away walks there.
+async function tapTile(page, x, y) {
+  await page.waitForFunction(async () => {
+    const a = Object.assign({}, PixelPets.walk.cam);
+    await new Promise(r => setTimeout(r, 120));
+    const b = PixelPets.walk.cam;
+    return a.x === b.x && a.y === b.y;
+  }, null, { timeout: 5000 });
+  await page.evaluate(({ x, y }) => {
+    const mc = document.querySelector('#mapCanvas'), b = mc.getBoundingClientRect(), cam = PixelPets.walk.cam;
+    const cx = b.left + ((x * 16 + 8 - cam.x) / mc.width) * b.width, cy = b.top + ((y * 16 + 8 - cam.y) / mc.height) * b.height;
+    const opt = { bubbles: true, cancelable: true, clientX: cx, clientY: cy, pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0 };
+    mc.dispatchEvent(new PointerEvent('pointerdown', opt));
+    mc.dispatchEvent(new PointerEvent('pointerup', opt));
+  }, { x, y });
+}
+
+// Modern talk: tap the tile the player faces (the person, sign or prop there answers, as TALK does in Arcade).
+async function tapFacing(page) {
+  const t = await page.evaluate(() => {
+    const w = PixelPets.state.world, d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[w.facing] || [0, 1];
+    return { x: w.x + d[0], y: w.y + d[1] };
+  });
+  await tapTile(page, t.x, t.y);
+}
+
 // A new game (no save) up to the first look picker, WHO ARE YOU?. Call after gotoGame with no save. If the intro opens the
 // picker, stop there. PARTNER_DAY moved the first pick to the bedroom mirror (home_dress): play the intro to its end (the
-// controls prompt takes ARCADE, so TALK works), stand at the mirror and TALK. Leaves #ovLook open with options armed.
+// controls prompt takes MODERN, the default for play testing), stand at the mirror and tap it. Leaves #ovLook open with options armed.
 async function newPlayerPicker(page) {
   await page.waitForFunction(() => window.PixelPets && PixelPets.scene && PixelPets.scene.id === 'intro', null, { timeout: 10000 });
   const lookOpen = () => page.evaluate(() => !document.querySelector('#ovLook').hidden);
@@ -165,7 +209,7 @@ async function newPlayerPicker(page) {
     const s = await page.evaluate(() => { const c = PixelPets.scene; return c && { mode: c.mode, full: !!c.full, waiting: !!c.waiting, text: c.text || '' }; });
     if (!s) return false;
     if (s.mode === 'choice' && s.full && await page.evaluate(() => PixelPets.optionsReady === true)) {
-      const n = /walk/i.test(s.text) ? 1 : 0;
+      const n = 0;   // the first button; on the controls prompt that is MODERN
       await page.locator('#sbChoices button').nth(n).click();
     } else if (s.waiting) await page.keyboard.press('Space');
     await page.waitForTimeout(40);
@@ -174,12 +218,11 @@ async function newPlayerPicker(page) {
   for (let i = 0; i < 300 && !(await lookOpen()); i++) if (!(await step())) break;
   if (!(await lookOpen())) {
     await page.evaluate(() => PixelPets.goto('hm_home_room', 4, 3, 'up'));
-    await page.waitForFunction(() => document.querySelector('#talkBtn').classList.contains('ready'), null, { timeout: 8000 });
-    await page.locator('#talkBtn').click();
+    await tapFacing(page);   // Modern: tap the mirror to talk
     await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'home_dress', null, { timeout: 8000 });
     for (let i = 0; i < 100 && !(await lookOpen()); i++) if (!(await step())) break;
   }
   await page.waitForFunction(() => !document.querySelector('#ovLook').hidden && PixelPets.optionsReady === true, null, { timeout: 8000 });
 }
 
-module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, withOverlay, boxesOverlap, shot, artifactsDir, playScene, newPlayerPicker };
+module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, openSettings, showScreen, tapTile, tapFacing, withOverlay, boxesOverlap, shot, artifactsDir, playScene, newPlayerPicker };

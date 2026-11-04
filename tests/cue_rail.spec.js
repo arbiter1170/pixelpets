@@ -1,6 +1,6 @@
 /* QUEST_CUE (D461-D469). Edge cues are today's small arrow in a 44 px box. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -27,7 +27,7 @@ async function frame(page) {
 async function openSettings(page) {
   const gear = page.locator('#gearFloat');
   if (await gear.isVisible()) await gear.click();
-  else await page.locator('#settingsBtn').click();
+  else await openSettings(page);
   await expect(page.locator('#ovSettings')).toBeVisible();
 }
 

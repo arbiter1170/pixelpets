@@ -2,7 +2,7 @@
    Save stays pixelpets.save.v2 with v 2. New data is wardrobe.* flags only. */
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -227,7 +227,7 @@ test('CHANGE LOOK, shuffle and GEAR hide an unowned paid item @w1', async ({ pag
   expect(lists.acc).toEqual(FREE_ACC);
   expect(lists.col).toEqual(FREE_COL);
 
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setLook').click();
   await page.waitForSelector('#ovLook:not([hidden])');
   const buttons = await page.evaluate(() => ({

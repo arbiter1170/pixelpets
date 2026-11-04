@@ -2,7 +2,7 @@
    Bitlet's befriend started from the bay itself, the Arbiter's lines by flag, floor variants on a second device, the camera
    in modern controls, and a map resized by a data/detail_*.json overlay keeping a saved spot past its old size. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, withOverlay } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, withOverlay, tapFacing } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -25,7 +25,7 @@ async function at(page, x, y, facing = 'up') {
 }
 async function tapTalk(page) {
   await expect.poll(() => page.evaluate(() => document.querySelector('#talkBtn').classList.contains('ready'))).toBe(true);
-  await page.locator('#talkBtn').click();
+  await tapFacing(page);   // Modern: tap the person you face
   await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.full ? PixelPets.scene.text : null), { timeout: 5000 }).not.toBeNull();
   return page.evaluate(() => PixelPets.scene.text);
 }

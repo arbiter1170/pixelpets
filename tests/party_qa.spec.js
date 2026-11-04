@@ -1,7 +1,7 @@
 /* Extra QA for the party board, Walkling sheet, held items, and battle send-outs.
    Players never load this file. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -193,7 +193,7 @@ test('the bag will not use up a holdable item', async ({ page }) => {
   save.bag = { soft_berry: 1, heal_snack: 1 };
   save.flags['story.side_pick_done'] = true;
   await boot(page, save);
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await showScreen(page, 'walk');
   await expect(page.locator('#walkBagBtn')).toBeVisible();
   await page.locator('#walkBagBtn').click();
   await expect(page.locator('#ovBag')).toBeVisible();

@@ -2,7 +2,7 @@
    Headless Chromium often leaves the AudioContext suspended. music() still returns true and
    records musicWant. When state is running after a tap, musicTrack must match; otherwise musicWant. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -31,7 +31,7 @@ test('each new loop loads @w1', async ({ page }) => {
   await boot(page, '');
   // The boot save is muted, and unlock ignores a tap while muted. Unmute first, then tap a visible control.
   await page.evaluate(() => { PPSound.setMuted(false); PPSound.setMusic(true, true); });
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await showScreen(page, 'walk');
   const rows = await page.evaluate((ids) => ids.map((id) => {
     const ok = PPSound.music(id);
     return { id, ok, track: PPSound.musicTrack, want: PPSound.musicWant, state: PPSound.state };

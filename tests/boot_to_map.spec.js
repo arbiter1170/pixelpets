@@ -3,7 +3,7 @@
    Nothing about the screen is saved; the save stays pixelpets.save.v2, v 2. A player with no Walklings keeps the
    existing boot branch (walk screen, tabs locked, "Ilse is waiting inside."). See tests/README.md. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -67,7 +67,7 @@ test('a reload with an overlay open on the PARTNER screen lands on the map with 
   await seedOnce(page.context(), starterSave());
   await gotoGame(page); await ready(page);
   await page.evaluate(() => PixelPets.showTab('pet'));
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#ovSettings')).toBeVisible();
   await page.reload({ waitUntil: 'commit' }); await ready(page);
   expectMap(await where(page), 'reload with Settings open');
