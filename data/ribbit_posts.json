@@ -34,7 +34,7 @@
    "region": "hearthmoor",
    "name": "Hill local",
    "handle": "fencepost",
-   "text": "Mrs. Calloway says Rook has a friend in mint. She said it like a weather report.",
+   "text": "Mrs. Calloway says Rook has a friend in a wine vest. She said it like a weather report.",
    "lore": [
     "person.mrs_calloway",
     "person.rook"
@@ -635,7 +635,7 @@
    "when": [
     "story.met_glimmerwell"
    ],
-   "text": "Free lanterns in Fernbrook. 'Tired is just relaxed with bad lighting!' says a mint vest.",
+   "text": "Free lanterns in Fernbrook. 'Tired is just relaxed with bad lighting!' says a wine vest.",
    "lore": [
     "faction.glimmerwell",
     "thing.mint_vests",
@@ -1081,7 +1081,7 @@
    "when": [
     "story.quarry_bought"
    ],
-   "text": "Clerk Mint runs the Bright Quarry desk now. Very bright. Very mint.",
+   "text": "Clerk Mint runs the Bright Quarry desk now. Very bright. Very polite.",
    "lore": [
     "person.clerk_mint",
     "place.bright_quarry"
@@ -1528,7 +1528,7 @@
     "story.hc_arrived",
     "story.met_glimmerwell"
    ],
-   "text": "A mint vest knocked at a Keeper door today. Asked to leave. Very politely.",
+   "text": "A wine vest knocked at a Keeper door today. Asked to leave. Very politely.",
    "lore": [
     "term.rank_is_spatial",
     "thing.mint_vests"
@@ -1676,7 +1676,7 @@
     "story.ans_open",
     "story.met_glimmerwell"
    ],
-   "text": "Keepers say Answerers. Mint vests say Founder's Line. The five say nothing at all.",
+   "text": "Keepers say Answerers. Wine vests say Founder's Line. The five say nothing at all.",
    "lore": [
     "creature.answerers",
     "thing.mint_vests"

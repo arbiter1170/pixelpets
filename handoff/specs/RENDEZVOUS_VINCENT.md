@@ -22,7 +22,7 @@
 | Status | Draft v0.1, Tue Nov 3, 2026. Copy: Story (June). Design: Iris. Build: PixelPets |
 | Ask | D1395 (settled): no pick straight after the crackdown; Ilse phones, debriefs the holder at home, sends them on a quest that starts the pick. D1396 (open, umbrella): scope that quest, with Vincent, an unaligned Glimmerwell agent, and "a sense of going undercover" in both factions |
 | Builds on | POST_TRIAL_CRACKDOWN v0.3.1 (not built: dawn release, §5 curfew read, §6 hand-off); DAY1_TRIAL1_FLOW (built `side_pick` at `fb_side_pick` 9,10; D1175 gate); TRIAL_HALL_FERNBROOK_MAP §7.1 (`story.fen_lean`) |
-| Canon | design `STORY.md` @6ca4cb8: §2 "What Seals are" (the roll's call-up clause, the buy-back stall), §3a (Wardens are not in the cover-up), §6, §7, §12; `CHIP_SECRECY` §1, §3, §4; FPT D1146; `HC_PARADE` S2 ("the draft returns") |
+| Canon | design `STORY.md` @6ca4cb8: §2 "What Seals are" (the roll's call-up clause, the buy-back stall), §3a (the Wardens' part: story detail, private design STORY.md §3a), §6, §7, §12; `CHIP_SECRECY` §1, §3, §4; FPT D1146; `HC_PARADE` S2 ("the draft returns") |
 | Ids | D1395 (settled) and D1396 (umbrella, open) moved from D1353-D1354 off Design's HC_PARADE block. This spec reserves **D1397-D1410**; next free **D1411** (checked against game main, every origin branch and design master b11348f, Tue Nov 3, 2026, about 8:30 AM ET) |
 | Rooms | **None new.** Built maps only: `fb_lantern_in`, `fernbrook`, `route1`, `hm_lodge_in`. Rule 9 does not apply. Tiles marked UNVERIFIED need a path check |
 
@@ -52,7 +52,7 @@ Want: understand what happened in Fernbrook. Pressure: both sides want an answer
 
 The shifts run in either order. Budget: **about 60 text boxes** for the whole quest; the hook audit flags Act 1 reading load.
 
-**Why the secrets fit canon.** *Keepers:* the Seal roll began as a Great War muster roll and its call-up law "was never struck out" (SEALS-L, Y); Wardens are kept in the dark (§3a), so Ilse's distress is earned; it seeds HC_PARADE S2. The President's Seal trade is **not** shown, so Fen's "Then who's been buying?" stays open. *Glimmerwell:* the both-path buy-back (it "never says why") plus one CHIP_SECRECY hint (a Walkling who answers late after a visit). **No line names the chip, the Tuning, an implant or a relay**, because this save is not Glimmer-side.
+**Why the secrets fit canon.** *Keepers:* the roll and its call-up clause, and why the Wardens never see it, are story detail (private design STORY.md §2 SEALS-L and Y, §3a); the player sees only what the quest's lines show, and it seeds HC_PARADE S2. The Seal trade is **not** shown, so Fen's "Then who's been buying?" stays open. *Glimmerwell:* the both-path buy-back (it "never says why") plus one CHIP_SECRECY hint (a Walkling who answers late after a visit). **No line names the chip, the Tuning, an implant or a relay**, because this save is not Glimmer-side.
 
 ## 4. Vincent
 
