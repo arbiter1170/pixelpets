@@ -928,7 +928,7 @@ for m in list(CHUNKS.values()):
     for o in m.objs: walk_text({k: o.get(k) for k in ('text', 'lines', 'deny', 'name')}, f'{m.id}:{o["id"]}', o['kind'] == 'sign')
 for rid, r in ROOMS.items():
     for o in r['objs']: walk_text({k: o.get(k) for k in ('text', 'lines', 'deny', 'name')}, f'{rid}:{o["id"]}', o['kind'] == 'sign')
-for tid, row in TRAINERS_OUT.items(): walk_text(row['lines'], 'trainer ' + tid)
+for tid, row in TRAINERS_OUT.items(): walk_text(row['lines'], 'holder ' + tid)
 for sid, steps in SC.items(): walk_text([st[2] for st in steps if st and st[0] == 'say'], 'scene ' + sid)
 walk_text([KILNMOUTH_STOP.get('objs', []), SLICE_PATCH], 'shuttle', True)
 for cid in CHUNKS:
