@@ -86,12 +86,13 @@ test('the save form table and the journal count the Hushwater lines @w1', () => 
   const npc = (block.match(/npcOnly:true/g) || []).length;
   const boss = (block.match(/boss:true/g) || []).length;   // ARBITER_UNITS: boss lines sit outside the journal grid
   expect(ids.slice(15, 20)).toEqual(['fetch', 'skink', 'otter', 'owl', 'snail']);
-  expect(ids.slice(-5)).toEqual(['tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
-  expect(ids).toHaveLength(25);
+  expect(ids.slice(20, 25)).toEqual(['tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
+  expect(ids.slice(25)).toEqual(['adder', 'heron', 'dipper', 'jugwasp']);   // ROUTE_TO_GOVERNOR and KILNMOUTH (Act 2), appended
+  expect(ids).toHaveLength(29);
   expect(npc).toBe(1);
   expect(boss).toBe(5);
-  expect((ids.length - npc - boss) * 3).toBe(57);
-  expect(ids.length * 3).toBe(75);
+  expect((ids.length - npc - boss) * 3).toBe(69);
+  expect(ids.length * 3).toBe(87);
   const save = lib.read('save.js');
   const row = save.match(/const SPECIES_IDS = Object\.freeze\(\[\.\.\.V1_SPECIES, ([^\]]+)\]\)/);
   expect(row).toBeTruthy();
