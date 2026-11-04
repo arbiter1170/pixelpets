@@ -41,6 +41,7 @@
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
     'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
+    'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
@@ -316,6 +317,23 @@
       npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
       text: 'Warden Ilse wants to see you at the Lodge.', place: 'Hearthmoor, the Lodge',
       target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    // GOVERNOR_MEETING §6.3 (D1469, D1473): Act 2 opens for every Cadet. The posting waits behind the recall, the plain Cadet's
+    // R3 and an old save's Lodge talk (all earlier rows); the Lantern Council (hc_council) comes earlier in the chain too.
+    { id: 'gov_post', when: ['story.ep1_end', 'story.keeper_cadet'], done: ['story.gov_posted'],
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: 'Warden Ilse wants you home at the Lodge in Hearthmoor. You have a posting.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    // ROUTE HOOK: today the Cadet rides the Lantern Coach to High Charity (GOVERNOR_MEETING §0, settled). A walkable route to
+    // the Governor (ROUTE_TO_GOVERNOR, being designed) would add its own rows here, between gov_post and gov_meet, ending at
+    // the Governor's House door; gov_meet's target stays the office.
+    { id: 'gov_meet', when: ['story.gov_posted'], done: ['story.km_assigned'],
+      npc: 'Governor Merriden', npcIds: ['hc_governor'],
+      text: "Report to Governor Merriden at the Governor's House on Charter Hill, High Charity.", place: "Governor's House",
+      target: { map: 'hc_gov_1', x: 12, y: 3 } },
+    // §6.3 holding row (pacing audit, Nov 4): Kilnmouth is not built, so the chain does not point there. It waits on the
+    // Kilnmouth packet's first flag (B2: story.km_arrived), which nothing sets yet; that packet replaces this row.
+    { id: 'a2_hold', when: ['story.km_assigned'], done: ['story.km_arrived'],
+      text: 'Await your next orders.', place: 'The Amberwild' },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];
@@ -476,6 +494,12 @@
       { id: 'ans_close_g', when: ['story.ans_humwisp', 'story.side=glimmer'], done: ['story.ans_all'],
         text: 'Tell Associate Quinn all five relays are home.', place: 'Cobblecrest Trial Hall',
         target: { map: 'cc_hall_in', x: 8, y: 3 } },
+    ],
+    // GOVERNOR_MEETING §6.1 (D1474): the optional report after the meeting is a side pointer, never a main step.
+    [
+      { id: 'gov_report', label: 'How it went', when: ['story.hc_gov_met', '!story.switched_a3', '!story.warden_cut'], done: ['story.rpt_gov'],
+        text: 'Warden Ilse would like to hear how it went.', place: 'Hearthmoor, the Lodge',
+        npc: 'Warden Ilse', target: { map: 'hm_lodge_in', x: 5, y: 3 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();

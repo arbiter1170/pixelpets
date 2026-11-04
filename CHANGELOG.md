@@ -2,6 +2,20 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 22:18 ET: Build: Act 2 opens: Ilse's call, the posting, the Governor meeting and the report hook (GOVERNOR_MEETING v0.2.1; D1469-D1475)
+- What changed and why:
+  - Ilse's Act 2 Keeper1 call (`a2_ilse_call`, a story call) on the first free outdoor step after the Episode 1 card, for a Cadet who is not a cover holder. A cover holder (every new save, D1562) gets the join packet's recall call instead, which now also writes `story.a2_called`: one call (§4.1).
+  - The posting (`a2_posting`) at the Lodge, after the join packet's recall, R3 send-off and old-save talk (the next talk; `linesBefore` anchored on the enrolment key), and her repeat line. Sets `story.gov_posted`.
+  - The Governor's House door now also needs `story.gov_posted` (D1473); the desk Keeper's line; the meeting `hc_gov_meet` (`tools/build_hc_city.py`, the city preview): he walks round the chute end of his desk, gives the Kilnmouth assignment, and, only with Fernbrook's ledger seen (`story.shift_g`), offers "Tell him about the ledger" / "Keep it to myself" (`story.gov_told` told / kept). Sets `story.km_assigned` and the existing `story.hc_gov_met` (D1459, not duplicated). His repeat line. The builder fails on any `hc_gov_meet` variant and now checks nested says and choice labels.
+  - The optional report `a2_report_gov` at the Lodge (D1474), told / kept / unset lines, `story.rpt_gov`; a side pointer "How it went".
+  - Quest rows `gov_post`, `gov_meet` and a holding row `a2_hold` ("Await your next orders.", waits on Kilnmouth's `story.km_arrived`, which nothing sets yet). Route hook: a comment above `gov_meet` (quests.js) and `_route_hook` in the data mark where a walkable route to the Governor would replace the first coach ride.
+  - Three `?debug=1` places: `a2_start`, `a2_posted`, `a2_met`.
+- Files touched: `data/detail_zzz_act2_opener.json` (new), `data/detail_zz_keeper_join.json` (the recall call writes `story.a2_called`), `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `data/mapdata.js`, `quests.js`, `game.js` (debug places), `tools/GAMEJS_MAP.txt`, `tests/governor_meeting.spec.js` (new), `tests/hc_city_v2.spec.js`, `tests/standing.spec.js`, `tests/act1_keeper_join.spec.js` (O8's next step is now `gov_post`).
+- Commit(s) + build id: claude/act2-opener (base claude/act1-keeper-join, #303), build 20261103-2218.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1469-D1475 settled by Vincent, built as written. Green (engineer): the recall call writes `story.a2_called` (one call); the report key and side pointer also skip on `story.switched_a3` / `story.warden_cut` (D1725's rule); the ledger choice's prompt is step 7a's own line; quest targets point at Ilse's tile (5,3) like the other Lodge rows; `gov_meet`'s place is "Governor's House" (24-character limit); the holding row replaces §6.3's "The road to Kilnmouth opens in a later update." (pacing audit: never point at an unbuilt town).
+- Anything left unfinished: every new line is PLACEHOLDER for Story. The meeting plays in the High Charity city preview (`?debug=1&hccity=2`) until HC_CITY_V2 ships. T8 (the parade on the next coach arrival) waits for #296. Lumen's lead-in stays held (D1470); nothing here writes `story.thr_chip_rumour`.
+
 ## 2026-11-03 18:32 ET: Build: the Act 1 Keeper join: Vincent Chi, the Wickerglen shifts, the orchard lean, the enrolment, the reports, the recall and the old-save move (ACT1_KEEPER_JOIN K3-K9; D1545-D1562, D1674, D1700)
 - What changed and why:
   - K3: Ilse's debrief sends the holder to Vincent Chi (1c-1e; D1700 re-voice); Route 2 opens on `story.warden_met` (D1551); Imogen's battle and the glen intro wait for the enrolment on a crackdown save; the Wickerglen slip and a Keeper Constable (D1555). Juniper's east-road body moves to 30,7 so the warp stays reachable.

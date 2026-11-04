@@ -18234,6 +18234,17 @@ const DEBUG_EXTRAS = {
     kj_old_glimmer: { place: 'Old Glimmer save (moved)', text: 'A save that picked Glimmerwell.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side=glimmer', 'story.side_pick_done']) },
     kj_old_keepers: { place: 'Old Keepers save (moved)', text: 'A save that picked the Keepers.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side_pick_done', 'story.orchard_cleared']) },
   });
+  // GOVERNOR_MEETING §6.5 (D1475): three Act 2 places. A new save is a cover holder (D1562), recalled after Brinewick and past
+  // the Lantern Council, so the recall call stands in for Ilse's Act 2 call. The House is in the city preview (?hccity=2) only.
+  const A2 = LAN.concat(['story.seal2', 'story.gb_done', 'story.route3_open', 'story.reached_brinewick', 'story.seal3', 'story.ep1_end',
+    'story.ilse_call3', 'story.a2_called', 'story.side=keepers', 'story.cover_done', 'story.rpt_3=told', 'story.hc_council_done']);
+  const door = HC_V2_ON ? { map: 'hc_civic', x: 32, y: 16, facing: 'up' } : { map: 'hearthmoor', x: 11, y: 7, facing: 'down' };
+  Object.assign(DEBUG_EXTRAS, {
+    a2_start: { place: 'Act 2 start (Cadet, after the card)', text: 'Ilse gives the posting.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up', flags: A2 },
+    a2_posted: Object.assign({ place: 'Act 2 posted', text: "The Governor's House opens.", flags: A2.concat(['story.gov_posted']) }, door),
+    a2_met: { place: 'Act 2 met, ledger told', text: 'Ilse hears how it went.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up',
+      flags: A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.gov_told=told', 'story.shift_g']) },
+  });
 }
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
 if (HC_V2_ON) {

@@ -70,6 +70,21 @@ TXT = {
     'hb15_keeper': "Shut since the war, holder. Come back with seven on the roll.",
     'gov_door': "By appointment.",
     'gov_line': "[PLACEHOLDER: Governor Merriden's Act 2 lines are Story's.]",
+    # GOVERNOR_MEETING v0.2.1 §5 (D1471, D1472, D1473), all PLACEHOLDER until Story signs them
+    'gov_desk': "The Governor will see you, Cadet. Go on through.",
+    'gov_m2': "Warden Ilse's new Cadet. Don't sit. You won't be here long enough to need a chair.",
+    'gov_m3': "I've work for you. Kilnmouth's springs have gone cold this season. Nobody there can tell me why.",
+    'gov_m4': "A Calm Tower went up there the same season. Its permit is in order. I checked it myself.",
+    'gov_m5': "And their council has an empty seat. Everyone has a name for it. I'd like the town's.",
+    'gov_m6': "Go and look. Listen more than you talk. Then come back and tell me what you found.",
+    'gov_m7a': "You know where Fernbrook's Seals went.",
+    'gov_tell': "Tell him about the ledger",
+    'gov_keep': "Keep it to myself",
+    'gov_told_n': "You tell him about the crate ledger: LAMP STOCK, from the Fernbrook allotment. By permit.",
+    'gov_told': "Lamp stock. My office signs a hundred permits a week. I'll ask. Kindly, but I'll ask.",
+    'gov_kept': "You've the look of someone holding something back. Keep it, then. Bring it when it's ready.",
+    'gov_m8': "Kilnmouth, then. Safe roads, Cadet.",
+    'gov_after': "Kilnmouth's springs, and the empty seat. Come back when you know more.",
     'gov_stair': "[PLACEHOLDER] Upstairs is the President's floor. Not today, holder.",
     'court': "The Court is not sitting.",
     'closed': "Closed for now.",                                # PLACEHOLDER facade line (Store Row a-c, the Exchange, Ferry House, College)
@@ -246,7 +261,7 @@ NEW_STYLE = {
 # Doors: kept ids carry from WORLD; new doors are authored here.
 GOV1 = '!story.side=glimmer & story.act>=2'   # the Governor's House floors 1-2 (layout v0.4 §5.3); floor 3 is GOV3
 NEW_DOORS = {
-    'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': GOV1, 'deny': TXT['gov_door']},   # D1426/D1439: Act 2 on
+    'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': GOV1 + ' & story.gov_posted', 'deny': TXT['gov_door']},   # D1426/D1439: Act 2 on; D1473: after Ilse's posting
     'hc_news': {'to': 'hc_news_1', 'tx': 7, 'ty': 14, 'facing': 'up'},
     'hc_trial': {'need': 'story.hc_trial_called', 'deny': {'seals>=7': TXT['hb15_door_seven'], 'else': TXT['hb15_door']}},   # §5.2 keyed deny; seals>= counts Seals held (D1329)
     'hc_court': {'need': 'story.hc_no_room', 'deny': TXT['court']},
@@ -701,12 +716,29 @@ objs = [{'kind': 'warp', 'id': 'hc_gov_1_mat', 'x': 7, 'y': 15, 'to': 'hc_civic'
         {'kind': 'warp', 'id': 'hc_gov_up', 'x': 1, 'y': 2, 'to': 'hc_gov_3', 'tx': 2, 'ty': 12, 'facing': 'up', 'need': GOV3},
         D('hc2_gov_stair_1', 1, 2, 'stair_flight')]
 objs += [P(f'hc2_lobbydesk_{x}', x, 9, 'keep_desk', name='the Keeper desk') for x in (2, 3, 4)]
-objs.append(N('hc_gov_keeper_a', 'Keeper', 'officer', 3, 8, 'down', lines={'else': 'Welcome to the Governor\'s House, holder.'}))
+objs.append(N('hc_gov_keeper_a', 'Keeper', 'officer', 3, 8, 'down', lines={'story.gov_posted & !story.hc_gov_met': TXT['gov_desk'], 'else': 'Welcome to the Governor\'s House, holder.'}))
 objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
 objs += [P(f'hc2_govdesk_{x}', x, 4, 'keep_desk', name="the Governor's desk") for x in (11, 12)]
 SC['hc2_chute'] = [['say', '', TXT['hb12_chute']], ['setFlag', 'story.hc_chute', True]]
 objs.append(P('hc_chute_mouth', 13, 4, 'hc_chute_mouth', name='the ORDERS DOWN chute', scene='hc2_chute', lines={'else': TXT['hb12_chute']}))
-objs.append(N('hc_governor', 'Governor Merriden', 'hc_governor', 12, 3, 'down', when=['story.act>=2'], lines={'else': TXT['gov_line']}))
+# GOVERNOR_MEETING v0.2.1 §5 (D1471-D1473): the meeting, one scene for every holder (no @glimmer variant, D1543). He comes
+# round the chute end of his desk (13,3 / 14,3 / 14,4); the player stands at governor_front (12,5). The only choice shows
+# when the holder saw Fernbrook's ledger (story.shift_g). Flags are written at the end, so an interrupted meeting replays.
+GM = 'Governor Merriden'
+SC['hc_gov_meet'] = [
+    ['walkTo', 'hc_governor', 14, 4],
+    ['say', GM, TXT['gov_m2']], ['say', GM, TXT['gov_m3']], ['say', GM, TXT['gov_m4']], ['say', GM, TXT['gov_m5']], ['say', GM, TXT['gov_m6']],
+    ['if', 'story.shift_g', [
+        ['choice', TXT['gov_m7a'], [
+            [TXT['gov_tell'], [['say', '', TXT['gov_told_n']], ['say', GM, TXT['gov_told']], ['setFlag', 'story.gov_told', 'told']]],
+            [TXT['gov_keep'], [['say', GM, TXT['gov_kept']], ['setFlag', 'story.gov_told', 'kept']]],
+        ], ''],
+    ]],
+    ['say', GM, TXT['gov_m8']],
+    ['setFlag', 'story.km_assigned', True], ['setFlag', 'story.hc_gov_met', True],
+]
+objs.append(N('hc_governor', GM, 'hc_governor', 12, 3, 'down', when=['story.act>=2'],
+              lines={'story.gov_posted & !story.hc_gov_met': '@hc_gov_meet', 'story.km_assigned': TXT['gov_after'], 'else': TXT['gov_line']}))
 objs += [P('hc2_gov_flag_w', 10, 2, 'banner_keeper'), P('hc2_gov_flag_e', 14, 2, 'banner_keeper')]
 ROOMS['hc_gov_1'] = room('hc_gov_1', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_1', objs, (7, 14))
 
@@ -763,10 +795,22 @@ for cid, c in CHUNKS.items():
         walk_text({k: o.get(k) for k in ('text', 'lines', 'deny', 'name')}, f'{cid}:{o["id"]}')
 for rid, r in ROOMS.items():
     for o in r['objs']: walk_text({k: o.get(k) for k in ('text', 'lines', 'deny', 'name')}, f'{rid}:{o["id"]}')
+def walk_says(steps, sid):   # every say, at any depth (if and choice branches), and every choice label
+    for st in steps if isinstance(steps, list) else []:
+        if not isinstance(st, list) or not st: continue
+        if st[0] == 'say' and len(st[2]) > 110: fail(f'{sid}: say over 110')
+        if st[0] == 'choice':
+            if len(st[1]) > 110: fail(f'{sid}: choice prompt over 110')
+            for opt in st[2]:
+                if len(opt[0]) > 30: fail(f'{sid}: choice over 30')
+                walk_says(opt[1], sid)
+        if st[0] == 'if': walk_says(st[2], sid); walk_says(st[3] if len(st) > 3 else [], sid)
 for sid, steps in SC.items():
     walk_text(steps, sid)
-    for st in steps:
-        if st[0] == 'say' and len(st[2]) > 110: fail(f'{sid}: say over 110')
+    walk_says(steps, sid)
+# GOVERNOR_MEETING §5 (D1473): one scene for every holder; the build fails if a Glimmer variant of the meeting ever appears.
+for sid in SC:
+    if sid.startswith('hc_gov_meet') and sid != 'hc_gov_meet': fail(f'{sid}: no variant of hc_gov_meet (D1543)')
 
 # ---------- the reputation cast (every named body needs an entry; only added while the city is on) ----------
 # D1439: the Governor is a civil post, not a Keeper; the cast has no civil value, so he takes 'none' (as civilians do)
@@ -805,7 +849,8 @@ out = {
     'speakers': SPEAKERS,
     'cast': CAST,
     'notStepFlags': ['story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',
-                     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called'],
+                     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
+                     'story.gov_told'],   # GOVERNOR_MEETING §6.2; story.km_assigned is the gov_meet chain step
 }
 for n in notes: print('note:', n)
 if fails:

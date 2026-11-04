@@ -27,6 +27,7 @@ function save(opts = {}) {
   if (opts.side === 'glimmer') s.flags['story.side'] = 'glimmer';
   if (opts.act) s.flags['story.act'] = opts.act;
   if (opts.govMet) s.flags['story.hc_gov_met'] = true;
+  if (opts.posted) s.flags['story.gov_posted'] = true;   // GOVERNOR_MEETING D1473: the door opens on Ilse's posting
   s.world = Object.assign({ map: 'highcharity', x: 32, y: 37, facing: 'up', respawn: 'hearthmoor' }, opts.world || {});
   return s;
 }
@@ -218,10 +219,12 @@ test('§5.3 gates: the Governor\'s House opens on the Keepers path in Act 2, the
     { side: 'glimmer', govMet: false, lobby: false, top: false },
     { side: 'glimmer', act: 2, govMet: false, lobby: false, top: false },
     { side: 'glimmer', act: 5, govMet: true, lobby: false, top: false },
-    { side: 'keepers', act: 2, govMet: false, lobby: true, top: false },
-    { side: 'keepers', act: 2, govMet: true, lobby: true, top: false },
-    { side: 'keepers', act: 5, govMet: false, lobby: true, top: false },
-    { side: 'keepers', act: 5, govMet: true, lobby: true, top: true },
+    { side: 'keepers', act: 2, govMet: false, lobby: false, top: false },   // D1473: Act 2 alone is not enough
+    { side: 'glimmer', act: 2, govMet: false, posted: true, lobby: false, top: false },
+    { side: 'keepers', act: 2, govMet: false, posted: true, lobby: true, top: false },
+    { side: 'keepers', act: 2, govMet: true, posted: true, lobby: true, top: false },
+    { side: 'keepers', act: 5, govMet: false, posted: true, lobby: true, top: false },
+    { side: 'keepers', act: 5, govMet: true, posted: true, lobby: true, top: true },
   ];
   for (const c of cases) {
     await boot(page, save(c));
@@ -304,11 +307,12 @@ test('the preview never writes the save: localStorage is untouched after walking
 test('D1426, D1439: Governor Merriden is Act 2 and civil (cast faction none); the President stays Act 5 and a Keeper', async () => {
   const gov1 = DATA.rooms.hc_gov_1.objs, gov3 = DATA.rooms.hc_gov_3.objs;
   const door = DATA.maps.hc_civic.objs.find(o => o.id === 'hc_gov');
-  expect(door.need).toBe('!story.side=glimmer & story.act>=2');
+  expect(door.need).toBe('!story.side=glimmer & story.act>=2 & story.gov_posted');   // GOVERNOR_MEETING D1473
   expect(door.deny).toBe('By appointment.');
   const gov = gov1.find(o => o.id === 'hc_governor');
   expect(gov.when).toEqual(['story.act>=2']);
   expect(gov.lines.else).toContain('Act 2');
+  expect(gov.lines['story.gov_posted & !story.hc_gov_met']).toBe('@hc_gov_meet');   // GOVERNOR_MEETING §5
   expect(gov.lines.else).not.toContain('Act 5');
   expect(gov1.find(o => o.id === 'hc_gov_up').need).toBe('!story.side=glimmer & story.act>=5 & story.hc_gov_met');
   expect(gov1.find(o => o.id === 'hc_chute_mouth')).toBeTruthy();   // HB12 sits on floor 1, behind the Act 2 door

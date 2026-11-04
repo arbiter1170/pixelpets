@@ -89,6 +89,8 @@ D1520-D1544 reserved: Design, Vincent's 25 answers on the new Act 1 (design spec
 
 D1545-D1589 reserved: Design, ACT1_KEEPER_JOIN v0.1 (design specs/ACT1_KEEPER_JOIN.md); D1545-D1562 used and settled by Vincent (D1546 B, D1561 the Fernbrook post, D1562 always undercover); D1563-D1589 held. D1590-D1599 reserved: WEIR_HUT. D1700-D1702: Ilse's arc (D1700 built here). Next free id is D1600 (design repo owns D1600 and above).
 
+D1458-D1477 reserved: Design, GOVERNOR_MEETING v0.2.1 (design repo specs/GOVERNOR_MEETING.md); D1469-D1475 SETTLED by Vincent, Tue Nov 3, 2026 (defaults) and built in claude/act2-opener; v0.1's D1461 withdrawn, D1462/D1465 moved to a later cabinet packet; D1476-D1477 held. Every Act 2 opener line is PLACEHOLDER for Story (the scenes `a2_ilse_call`, `a2_posting`, `a2_report_gov`, `hc_gov_meet`).
+
 Next free id is D1600.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
