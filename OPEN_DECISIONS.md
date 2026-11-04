@@ -96,6 +96,8 @@ D1520-D1544 reserved: Design, Vincent's 25 answers on the new Act 1 (design spec
 
 D1545-D1589 reserved: Design, ACT1_KEEPER_JOIN v0.1 (design specs/ACT1_KEEPER_JOIN.md); D1545-D1562 used and settled by Vincent (D1546 B, D1561 the Fernbrook post, D1562 always undercover); D1563-D1589 held. D1590-D1599 reserved: WEIR_HUT. D1700-D1702: Ilse's arc (D1700 built here). Next free id is D1600 (design repo owns D1600 and above).
 
+D2070-D2089 reserved: Design, SPRITE_ANIM v0.1 (design specs/SPRITE_ANIM.md); D2070-D2079 used (red D2070-D2071 open with Vincent; the build PR is held), D2080-D2089 held.
+
 Next free id is D1600.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
@@ -118,6 +120,13 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
+| D2070 | SPRITE_ANIM, RED, OPEN (Vincent) | Battle Walklings take pose frames (breathe, wind-up, strike, flinch, happy) in their own letters and PAL, inside today's lunge, squash and knock | Built on branch `claude/sprite-anim`; the PR is held and not merged until Vincent says yes. `SA.on = false` draws today's battle | `sprite_anim.js` `SA.on`, `SPRITE_ANIM` |
+| D2071 | SPRITE_ANIM, RED, OPEN (Vincent) | Asymmetric frames: the three leans are `full` 16-column letter grids, not mirrored halves | Built as the default (wind-up, strike and hit are `full`); the symmetric fallback is in the generator | `tools/gen_sprite_anim.js`, `sprite_anim.js` |
+| D2072 | SPRITE_ANIM, YELLOW, OPEN | The hit frame is a flinch only (duck 1 px, lean away 1 px, eyes squeezed shut); never hurt | Built as the default | `tools/gen_sprite_anim.js` `frames()` |
+| D2073 | SPRITE_ANIM, YELLOW, OPEN | Timings: idle 500/500 ms, today's blink, foe 250/1170 ms behind; wind-up 0-80 ms; strike to contact + stop; flinch max(170, stop + knock) ms; happy with the hearts | Built as the default | `sprite_anim.js` `SA`, `saPose()` |
+| D2074 | SPRITE_ANIM, YELLOW, OPEN | FULL drops today's whole-sprite 1 px bob (the breathe replaces it) | Built as the default; CALM and OFF keep the bob | `sprite_anim.js` `saPose()` |
+| D2075 | SPRITE_ANIM, YELLOW, OPEN | CALM (and reduced motion): today's idle plus held strike, flinch and happy; no breathe or wind-up. OFF: today's sprite exactly | Built as the default | `sprite_anim.js` `saPose()` |
+| D2076 | SPRITE_ANIM, YELLOW, OPEN | Ship the happy frame on the befriend hearts (FULL and CALM) | Built as the default | `sprite_anim.js` `saHearts()` |
 | D1560 | green, ACT1_KEEPER_JOIN build (claude/act1-keeper-join) | PLACEHOLDER copy that needs Story (June): every new line of the investigation, the lean, the enrolment, the letters, the recall, the post-recall Lantern Council and the old-save Lodge talk; "eleven" Walklings; Vincent Chi's name check (D1524); the Keeper Constable's name; the engineer's draft lines (Vincent Chi's jar line and lean line, Ilse's in-between reminders, the lanyard line that replaced the pin question under D1562, Juniper's handset line, the runner's note, the Lantern Council after the recall, the Constable's line at the post, D1561) | Plays the drafted copy; every path is in `data/detail_zz_keeper_join.json` `_placeholders` | `data/detail_zz_keeper_join.json`, `data/detail_zz_crackdown.json` |
 | D1515-act2 | green, ACT1_KEEPER_JOIN build | Rook's one Act 2 line for an old save whose Rook came over ("They offered me a desk. I took it.") has no Act 2 Rook body to stand on yet | Kept as data (`lines.rook_desk_ally` in the overlay); the Act 2 packet places it | `data/detail_zz_keeper_join.json` |
 | D1629-build | green, ACT1_KEEPER_JOIN build | The report skips read `story.switched_a3` (D1629, REPORTS_AND_ENDINGS); nothing writes that flag yet (the switch packet does) | Letters, R3 and the chain rows skip on `story.switched_a3` or `story.warden_cut`; `PPStanding.reportsOpen` (K2) still reads `story.switches` | `data/detail_zz_keeper_join.json`, `quests.js`, `standing.js` |
