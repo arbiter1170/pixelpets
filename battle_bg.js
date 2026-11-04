@@ -291,6 +291,8 @@ const ROOMS = {
   hc_airport_in: {}, hc_command_in: {}, hc_barracks_in: {}, hc_marina_in: {}, hc_school_in: {}, hc_bank_in: {}, hc_gym_in: {},
   hc_lantern_in: {}, hc_church_in: {}, hc_hall_in: {}, hc_apt_in: {}, hc_mall_1: {}, hc_mall_2: {},
   sm_tunnel: {}, bw_lantern_in: {}, bw_store_in: {}, fb_lantern_in: {},
+  fbh_press_in: {}, fbh_picker_in: {}, fbh_stitch_in: {},   // FERNBROOK_HOMES (on main without a scene; added with WEIR_HUT)
+  hw_weir_hut_in: {},   // WEIR_HUT: no wilds or holders inside; listed so every room has a scene (its first two props)
 };
 // A room with no named props takes its own first two prop sprites (back, then front), so every room still shows its things.
 function autoProps(env, o){

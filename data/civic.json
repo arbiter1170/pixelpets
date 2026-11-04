@@ -2,7 +2,7 @@
   "spec": "CIVIC",
   "version": "1",
   "status": "Keeper House, town officers, Keeper1 phone, cracked handset.",
-  "_about": "Ours, not a design copy. Hearthmoor stays the Keepers' town. Glimmerwell buildings read mint. The phone is a side quest on Route 1.",
+  "_about": "Ours, not a design copy. Hearthmoor stays the Keepers' town. Glimmerwell buildings read wine. The phone is a side quest on Route 1.",
   "looks": {
     "officer": {"skin": "3", "hair": "short", "hairCol": "d", "outfit": "coat", "outfitCol": "g", "accent": "y"},
     "hmp_vale": {"skin": "5", "hair": "short", "hairCol": "n", "outfit": "coat", "outfitCol": "g", "accent": "y"},
@@ -48,7 +48,7 @@
           {"kind": "door", "id": "hm_hq", "x": 11, "y": 11, "to": "hm_hq_f1", "tx": 6, "ty": 14, "facing": "up"},
           {"kind": "sign", "id": "hm_hq_sign", "x": 9, "y": 11, "text": "KEEPER HOUSE · Hearthmoor watch. The lantern's law."},
           {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 1, "y": 8, "facing": "down", "patrol": [[1, 7], [1, 9]], "lines": {
-            "story.side=glimmer": "Mint vest. Not welcome on this road.",
+            "story.side=glimmer": "Wine vest. Not welcome on this road.",
             "standing.keepers>=3": "Name's on the good list. Walk easy.",
             "standing.keepers>=1": "A Keeper on the road. Glad you are out.",
             "story.side=keepers": "New pledge. The lantern still knows you.",
@@ -58,7 +58,7 @@
             "story.board_gate_sign&!story.board_gate_done": "@gate_tell",
             "story.board_gate_yes&!story.board_gate_sign": "The east sign. Look, then come back.",
             "story.board_gate_pinned&!story.board_gate_yes": "@gate_ask",
-            "story.side=glimmer": "Mint on the east path. Keep walking.",
+            "story.side=glimmer": "Wine vest on the east path. Walk on.",
             "standing.keepers>=3": "East gate is yours. Walk easy.",
             "standing.keepers>=1": "A Keeper at the gate. Good.",
             "story.side=keepers": "New pledge. The gate stays open.",
@@ -87,7 +87,7 @@
         "addObjs": [
           {"kind": "npc", "id": "fb_constable", "name": "Constable Rue", "look": "officer", "x": 4, "y": 9, "facing": "up", "lines": {
             "story.leak5b_filed&!story.leak5b_served": "@leak_serve",
-            "story.side=glimmer": "Mint in the orchard. I am not smiling.",
+            "story.side=glimmer": "Wine vest in the orchard. Not smiling.",
             "standing.keepers>=3": "Fernbrook is glad of you. Truly.",
             "standing.keepers>=1": "A Keeper in the square. Welcome.",
             "story.side=keepers": "New pledge. The trees still count you.",
@@ -216,7 +216,7 @@
             "!story.met_mo": "@hq_mo",
             "story.reached_route3&!story.side=glimmer&!story.ans_open": "@ans_open",
             "story.ans_humwisp&!story.side=glimmer&!story.ans_all": "@ans_close",
-            "story.side=glimmer": "I note the mint. The books will too.",
+            "story.side=glimmer": "Wine vest noted. The books will too.",
             "standing.keepers>=1": "The shelf is open to a Keeper. Read.",
             "else": "Citizen. Old books stay on the shelf."
           }
@@ -386,7 +386,7 @@
         ["say", "Sergeant Bram", "You can stand in the doorway. You do not sit."],
         ["say", "Sergeant Bram", "The lantern keeps this house. Your company does not."],
         ["say", "Sergeant Bram", "If you need a form, ask. If you need a friend, look elsewhere."],
-        ["say", "Sergeant Bram", "Mo writes the mint down. Wynn copies your notes. You do not get a chair."],
+        ["say", "Sergeant Bram", "Mo writes the wine vest down. Wynn copies your notes. You do not get a chair."],
         ["say", "Sergeant Bram", "Your company likes a bright day. This doorway is as far as you come."],
         ["setFlag", "story.met_bram", true]
       ], [
@@ -399,7 +399,7 @@
     ],
     "hq_mo": [
       ["if", "story.side=glimmer", [
-        ["say", "Archivist Mo", "I will write down the mint. I write down everything."],
+        ["say", "Archivist Mo", "I will write down the wine vest. I write down everything."],
         ["say", "Archivist Mo", "Your machine has been leaking a long, long time."],
         ["say", "Archivist Mo", "They smile and will not name it. The books leave that space blank."],
         ["say", "Archivist Mo", "The books fear a child born already listening. No date is written."],
@@ -435,7 +435,7 @@
       ], [
         ["say", "Captain Lumen", "Captain Lumen. The watch is mine. The town is the lantern's."],
         ["say", "Captain Lumen", "A citizen waits in the doorway. A holder is offered a chair."],
-        ["say", "Captain Lumen", "A mint vest is asked to leave. Rank is not a secret here."],
+        ["say", "Captain Lumen", "A wine vest is asked to leave. Rank is not a secret here."],
         ["say", "Captain Lumen", "Rue holds the radio. Every Keeper1 on our wires checks in with her."],
         ["say", "Captain Lumen", "Mo records a slow change. I keep my watch clear of their machine."],
         ["setFlag", "story.met_lumen", true]

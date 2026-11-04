@@ -109,7 +109,7 @@ y  0   TTTTTTTTTTTTTTTTTTTTTTTTTT
 
 Four pieces, all in one exterior language: white panel walls with a soot plinth and a wine trace line, soot panel roofs with a trace, frosted strips for windows, the badge plate beside every door, and the town's faction band (soot ridge and wine band on a Glimmerwell hold; gold and green when the Keepers hold, through the existing `drawFactionBand`).
 
-| | Glow Care (the chip clinic) | Bright Swap (its own lamp-swap stall; D1440) | Glimmerwell Relay (the relay mast) | Fleet Bay (the vehicle depot) |
+| | Glow Care (the member clinic) | Bright Swap (its own lamp-swap stall; D1440) | Glimmerwell Relay (the relay mast) | Fleet Bay (the vehicle depot) |
 |---|---|---|---|---|
 | Footprint | 6 x 3 (roof 2 rows, wall 1), flat roof | a 2 x 2 stall prop (32 x 32 art), blocks 2 cells | a 1 x 3 prop (16 x 48 art), blocks 1 cell | 7 x 4 (roof 2, wall 2), arched roof |
 | Door | a deep, recessed glass door (16 x 16). Shut: "By appointment. We'll call you." (natural blocker, CHIP_SECRECY) | open counter, no door | none (a staff mast) | a 48 x 32 roll door with a honey header, slats, a crimson stop light and mint guide strips. Shut: "Fleet staff only." |
@@ -209,7 +209,7 @@ Voice: Glimmerwell is bright and corporate ("Brighter by nature!", "It's a partn
 
 | Where | Speaker | Line |
 |---|---|---|
-| On the walk up to 30,8 at dawn | (narration) | Past the rubble, a Sky Concierge hangs over Juniper's camp. Mint light pools under it. |
+| On the walk up to 30,8 at dawn | (narration) | Past the rubble, a Sky Concierge hangs over Juniper's camp. A soft wine light pools under it. |
 | Juniper's pitch (`story.pitch_g`), opener | Associate Juniper | See our Sky Concierge? Warm light, no curfew, nobody shut indoors. Brighter by nature! |
 | Glimmer pick, the result scene (the hold flip, D1171) | (narration) | The east road brightens. A Courtesy Cruiser parks by the rubble. Wine banners go up. |
 | Glimmer pick, the result scene, after her P6g line (see Q-G2) | Associate Juniper | Yay! The Bright Swap's open on the east road. Free lanterns for everyone! Have a bright day! |
@@ -297,7 +297,7 @@ First reserved as D1220-D1234 (Mon Nov 2, 2026, ~11:00 PM ET). Those ids clash w
 | D1334 | **red** (naming) | The air unit's name. Alternatives: "Hover Lamp", "Glow Scout" | **SETTLED: yes** (**Sky Concierge**; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
 | D1335 | **red** (naming) | The building names: Glow Care, Bright Swap, Glimmerwell Relay, Fleet Bay | **SETTLED: yes** (As named; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
 | D1336 | **red** (canon) | Glimmerwell runs a fleet: vehicles that hover on the hum (no wheels, no rotors, no weapons), sent to reassure a town. A Keepers hold holds them at a Keeper yard | **SETTLED: yes** (Yes; the hover is drawn, never explained; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
-| D1337 | **red** (canon, CHIP_SECRECY) | Glow Care is where the chip is fitted, implied only: a member clinic for Walklings with a shut door. Its inside is Glimmer-side only and later | **SETTLED: yes** (Yes, as §6-§7; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
+| D1337 | **red** (canon, CHIP_SECRECY) | Glow Care's purpose is implied only (story detail: private design STORY.md §3): a member clinic for Walklings with a shut door. Its inside is Glimmer-side only and later | **SETTLED: yes** (Yes, as §6-§7; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
 | D1338 | **red** (rule 10) | Glimmerwell buildings never carry the Lantern House heart or the store acorn; a "clinic" for Walklings never heals; the badge plate is the one piece every Glimmerwell building shares | **SETTLED: yes** (Yes; Vincent, Tue Nov 3, 2026, 7:44 AM ET) |
 | D1339 | yellow | The four civilians: no rank, Glimmerwell-lock colours (tops w/V/h, trims N/w/s), no lanyard, and not on the WS-PALETTE locked list (they are not uniformed staff) | As built |
 | D1340 | yellow | What changes on a Keepers or Glimmerwell hold (§6) | As §6 |

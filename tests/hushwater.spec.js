@@ -358,7 +358,9 @@ test('the first step in plays once, the rope stays, and the three holders appear
 });
 
 test('spawn tables roll the Hushwater lines at Lv 19-23 @w1', async ({ page }) => {
-  await boot(page);
+  // WEIR_HUT D1594 (a): before story.cobble_end the Falls and the Cut roll Wickerglen's band (tests/weir_hut.spec.js);
+  // the built tables are for after Hall 2.
+  await boot(page, fieldSave({ 'story.cobble_end': true }));
   const tables = await page.evaluate(() => {
     const all = PixelPets.spawnTables();
     const out = {};
