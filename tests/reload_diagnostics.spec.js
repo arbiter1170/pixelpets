@@ -1,7 +1,7 @@
 /* Reload screen name and the script-error log. The log is pp_errors, never the save.
    The full list is only on a ?debug=1 page. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings, openDebug } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -77,7 +77,7 @@ test('the full error list shows only with ?debug=1', async ({ page }) => {
   await page.addInitScript(() => { sessionStorage.setItem('pixelpets.debug', '1'); });
   await boot(page);
   await page.evaluate(() => { window.onerror('hidden list', 'diag.js', 1, 1, new Error('hidden list')); });
-  await page.locator('#dbgTag').click();
+  await openDebug(page);
   await expect(page.locator('#ovDebug')).toBeVisible();
   await expect(page.locator('#dbgErrors')).toBeHidden();
   await expect(page.locator('#dbgErrorList li')).toHaveCount(0);
@@ -93,7 +93,7 @@ test('the full error list shows only with ?debug=1', async ({ page }) => {
     localStorage.removeItem('pp_errors');
     for (let i = 0; i < 5; i++) window.onerror('listed ' + i, 'diag.js', 1, 1, new Error('listed ' + i));
   });
-  await fresh.locator('#dbgTag').click();
+  await openDebug(fresh);
   await expect(fresh.locator('#dbgErrors')).toBeVisible();
   await expect(fresh.locator('#dbgErrorList li')).toHaveCount(5);
   await expect(fresh.locator('#dbgErrorList')).toContainText('listed 0');
@@ -104,7 +104,7 @@ test('the full error list shows only with ?debug=1', async ({ page }) => {
     for (let i = 0; i < 5; i++) rows.push({ reason: 'crash', at: i + 1, battleOn: false, screen: 'People', nav: 'navigate', standalone: false, sw: false, gap: 1000 + i, hid: i === 4, live: 10 + i, portraits: i, made: i, phase: 'hit' });
     localStorage.setItem('pp_reload_last', JSON.stringify(rows));
   });
-  await fresh.locator('#dbgTag').click();
+  await openDebug(fresh);
   await expect(fresh.locator('#dbgReloads')).toBeVisible();
   await expect(fresh.locator('#dbgReloadList li')).toHaveCount(5);
   await expect(fresh.locator('#dbgReloadList')).toContainText('nav navigate');

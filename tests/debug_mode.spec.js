@@ -6,7 +6,9 @@ const { starterSave, installSave, trackErrors, gotoGame, shot, openSettings } = 
 trackErrors(test, expect);
 
 async function boot(page, search) {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  // Arcade opt-in: the DBG tag these tests tap and check sits in the Arcade header (Modern hides the header).
+  const s = starterSave(); s.settings.controls = 'arcade';
+  await installSave(page.context(), s, { quietDay: true });
   await gotoGame(page, search);
   await page.waitForFunction(() => window.PixelPets && window.BUILD);
 }

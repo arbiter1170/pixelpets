@@ -171,6 +171,12 @@ async function openSettings(page) {
   if (!(await gear.isVisible())) throw new Error('openSettings: the Modern gear is on the walk screen; go back to WALK first, or opt into Arcade');
   await gear.click();
 }
+// Debug tools (a ?debug=1 session): Arcade taps the DBG tag in its header; Modern has no header, so Settings -> Debug opens them.
+async function openDebug(page) {
+  if (!(await isModern(page))) return page.locator('#dbgTag').click();
+  await openSettings(page);
+  await page.locator('#setDebug').click();
+}
 async function showScreen(page, name) {
   if (!(await isModern(page))) return page.locator(`#tabs button[data-tab="${name}"]`).click();
   if (name === 'walk') {
@@ -233,4 +239,4 @@ async function newPlayerPicker(page) {
   await page.waitForFunction(() => !document.querySelector('#ovLook').hidden && PixelPets.optionsReady === true, null, { timeout: 8000 });
 }
 
-module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, openSettings, showScreen, tapTile, tapFacing, withOverlay, boxesOverlap, shot, artifactsDir, playScene, newPlayerPicker };
+module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, openSettings, openDebug, showScreen, tapTile, tapFacing, withOverlay, boxesOverlap, shot, artifactsDir, playScene, newPlayerPicker };

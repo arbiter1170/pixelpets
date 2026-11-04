@@ -2,7 +2,7 @@
    Headless Chromium often leaves the AudioContext suspended. music() still returns true and
    records musicWant. When state is running after a tap, musicTrack must match; otherwise musicWant. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot, showScreen } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, showScreen, openDebug } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -169,7 +169,7 @@ test('the debug Music row lists the eight new loops, and only in a debug session
   await page.goto('/?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
   expect(await page.evaluate(() => !!document.querySelector('#dbgMusic'))).toBe(false);
-  await page.locator('#dbgTag').click();
+  await openDebug(page);
   await expect(page.locator('#dbgMusic')).toBeVisible();
   const ids = await page.locator('#dbgMusicId option').evaluateAll((opts) => opts.map((o) => o.value));
   expect(ids.slice(0, NEW.length)).toEqual(NEW);
