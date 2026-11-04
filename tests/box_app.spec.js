@@ -132,7 +132,7 @@ test('the game can be installed and opened offline @w1', async ({ page }) => {
   const env = await (await page.request.get('./env.js')).text();
   expect(env).toMatch(/open-meteo/);
   expect(env).toMatch(/meadow/);
-  for (const iconPath of ['/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png']) {
+  for (const iconPath of ['./icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png']) {
     const res = await page.request.get(iconPath);
     expect(res.ok(), iconPath).toBe(true);
     expect(res.headers()['content-type'] || '').toMatch(/png/);
