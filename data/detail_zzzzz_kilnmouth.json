@@ -2194,6 +2194,47 @@
       "story.km_settled",
       "story.sway_kilnmouth<=-2"
      ]
+    },
+    {
+     "kind": "warp",
+     "id": "bs_kilnmouth",
+     "x": 53,
+     "y": 16,
+     "to": "brightgate",
+     "tx": 32,
+     "ty": 37,
+     "facing": "up",
+     "when": [
+      "story.km_twin_lead"
+     ],
+     "_note": "BRIGHTGATE_LAYOUT §17.1 (D2090 settled Wed Nov 4, 2026; D2092): the Bright Shuttle stop in the works yard (PLACEHOLDER names, D2097), shown from B4. Lands on Gate Plaza 32,37 facing north; the Brightgate overlay loads first, so the stop lives here."
+    },
+    {
+     "kind": "sign",
+     "id": "ks_sign",
+     "x": 49,
+     "y": 16,
+     "text": "BRIGHT SHUTTLE · Brightgate. Free for partners and their guests. Step on the mark.",
+     "when": [
+      "story.km_twin_lead"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "ks_attendant",
+     "name": "Shuttle attendant",
+     "look": "bg_courtesy",
+     "x": 53,
+     "y": 17,
+     "facing": "left",
+     "still": true,
+     "when": [
+      "story.km_twin_lead"
+     ],
+     "lines": {
+      "!story.reached_brightgate": "The Lamp Works sends a shuttle for the tower crew. Guests ride free, Cadet. Have a bright day!",
+      "else": "One step to Brightgate. Mind the mark!"
+     }
     }
    ]
   },

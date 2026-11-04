@@ -398,7 +398,9 @@ const COPY = {
   km_reeve: ['Find Reeve Agna at the council house in Kilnmouth.', 'Kilnmouth council house'],
   km_listen: ['Listen to the town: the springs, the market and the kiln yard.', 'Kilnmouth, the springs'],
   km_permit: ["The tower crew holds the fence gate. Get past them and read the tower's permit.", 'Kilnmouth, the common'],
+  bg_ride: ['Ride the company shuttle from the Kilnmouth works yard to Brightgate.', 'Kilnmouth works yard'],   // BRIGHT_SHUTTLE (D2106, PLACEHOLDER)
   a2_hold: ['Await your next orders.', 'The Amberwild'],
+  bg_home: ['Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', 'Brightgate shuttle stop'],
   wb_cut: ['Archivist Mo is waiting at the Lodge.', 'Hearthmoor, the Lodge'],   // WALK_BESIDE §3.3 (D1961)
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
@@ -436,7 +438,7 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
   let overrides = 0;
   // ACT1_KEEPER_JOIN rows key on story states this one-flag walk cannot build (a lean value, a face, an old-save move);
   // their copy is checked as written, and tests/act1_keeper_join.spec.js checks where each one shows.
-  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge', 'gov_post', 'gov_walk', 'gov_walk2', 'gov_meet', 'km_walk', 'km_reeve', 'km_listen', 'km_permit', 'a2_hold', 'wb_cut']);   // ACT2 rows and WALK_BESIDE's wb_cut need states this walk cannot build
+  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge', 'gov_post', 'gov_walk', 'gov_walk2', 'gov_meet', 'km_walk', 'km_reeve', 'km_listen', 'km_permit', 'bg_ride', 'a2_hold', 'bg_home', 'wb_cut']);   // ACT2 rows and WALK_BESIDE's wb_cut need states this walk cannot build
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
     if (COPY_ONLY.has(id)) {

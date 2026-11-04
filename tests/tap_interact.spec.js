@@ -48,7 +48,10 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // KILNMOUTH (#318): Claybank Road, the town and its six rooms (Hall 5 and the Hall Stone room among them) add door 9,
     // warp 22, sign 11, talk 76, trigger 4, trainer 7, pickup 1, wild 2, shop 1 (recounted on the tree merged with main at
     // 5052c15, Wed Nov 4, 2026; the four tap-side moves change no count).
-    door: 88, warp: 224, sign: 137, talk: 1136, scene: 41, trigger: 60, board: 7,
+    // BRIGHT_SHUTTLE (D2090-D2092, D2106): the works yard stop (mark, sign, attendant), the works line on Gate Plaza and the
+    // Hearthmoor sign add warp 2 and sign 2; the attendant's talk 1 replaces the removed "no shuttle yet" bar's (net talk 0).
+    // Recounted on the tree at 9e65883 (main with #318), Wed Nov 4, 2026.
+    door: 88, warp: 226, sign: 139, talk: 1136, scene: 41, trigger: 60, board: 7,
     trainer: 46, pickup: 22, wild: 15, shop: 16, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
@@ -82,8 +85,7 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // (weir_desk_r, the same line) answers from (4,3). tests/weir_hut.spec.js taps it.
     'hw_weir_hut_in:weir_desk_l has no free neighbour',
     // (route4:r4_east_bar_n left this list with KILNMOUTH (#318): the Claybank Road warps at (23,1)-(23,3) put its east neighbour on the walk region.)
-    // BRIGHTGATE (#316): the shuttle's home gate stays inert until D2090/D2091 (story.bg_shuttle_live); its stop is not open yet.
-    'brightgate:bs_gate_home walk-on tile is solid or blocked',
+    // (brightgate:bs_gate_home left this list with BRIGHT_SHUTTLE: the "no shuttle yet" bar no longer stands on its tile.)
   ]);
   expect(audit.n).toBeGreaterThan(100);
   const sceneOnly = audit.rows.filter((r) => r.kind === 'prop' && r.act === 'scene' && !r.talkable).map((r) => r.id).sort();

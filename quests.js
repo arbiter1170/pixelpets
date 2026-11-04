@@ -363,9 +363,19 @@
     { id: 'km_permit', when: ['story.km_storm'], done: ['story.km_permit_seen'],
       text: "The tower crew holds the fence gate. Get past them and read the tower's permit.", place: 'Kilnmouth, the common',
       target: { map: 'kilnmouth', x: 27, y: 20 } },
-    // Brightgate (B5) is its own build: until a route or coach reaches it, the chain holds here.
+    // BRIGHTGATE_LAYOUT §17.1 (D2090, D2106; copy PLACEHOLDER, D2097): B4 to B5. The twin lead opens the Bright Shuttle in the
+    // Kilnmouth works yard; the first visit is always that ride, and the arrival on Gate Plaza is the done.
+    { id: 'bg_ride', when: ['story.km_twin_lead'], done: ['story.reached_brightgate'],
+      text: 'Ride the company shuttle from the Kilnmouth works yard to Brightgate.', place: 'Kilnmouth works yard',
+      target: { map: 'kilnmouth', x: 53, y: 16 } },
+    // The hold stays for a save that read the permit without the twin lead (both are set by the same scene).
     { id: 'a2_hold', when: ['story.km_permit_seen'], done: ['story.reached_brightgate'],
       text: 'Await your next orders.', place: 'The Amberwild' },
+    // H4 to B6 (D2091, D2106): after Hall 4, the shuttle home lands beside the Lantern Coach that B6 rides; the first drop at
+    // Hearthmoor ends it (story.bg_shuttle_hm is only ever set after a first visit, so it implies the rows above).
+    { id: 'bg_home', when: ['story.seal4'], done: ['story.bg_shuttle_hm'],
+      text: 'Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', place: 'Brightgate shuttle stop',
+      target: { map: 'brightgate', x: 32, y: 38 } },
     // WALK_BESIDE §3.3 (D1961): Archivist Mo waits at the Lodge steps from the first sitting (CABINET S1 sets story.cab_seat; not
     // built, so this row is inert today) until the cut is shown. Never for a switcher or the company's face.
     { id: 'wb_cut', when: ['story.cab_seat', '!story.switched_a3', '!story.side=glimmer'], done: ['story.wb_cut'], noImply: true,
