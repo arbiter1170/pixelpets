@@ -6,6 +6,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { stubCloudSdk } = require('./cloud_stub');
 
 trackErrors(test, expect);
 
@@ -299,6 +300,26 @@ test('the preview never writes the save: localStorage is untouched after walking
   const after = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
   expect(after).toBe(before);
   expect(JSON.parse(after).v).toBe(2);
+});
+
+// The preview holds the cloud save too, not just localStorage: a signed-in debug tester on the Act 5 checkpoint must not
+// upload it (a second device would then adopt it). The real cloud.js runs against a stubbed SDK; nothing signs in.
+test('the preview never reaches the cloud save: the state hook gives null and no upload fires, even at Act 5', async ({ page }) => {
+  test.setTimeout(60000);
+  await stubCloudSdk(page);
+  await boot(page, save(), '?debug=1&hccity=2&cloud=block');
+  await page.waitForFunction(() => PPCloud.enabled && PPCloud.info().fbUid === 'preview-uid' && !!window.__ppCloudHooks, null, { timeout: 25000 });
+  const r = await page.evaluate(() => PixelPets.checkpoint('hc2_pres'));
+  expect(r.ok).toBe(true);
+  await settle(page);
+  expect(await page.evaluate(() => [PixelPets.state.flags['story.act'], PixelPets.state.flags['story.hc_gov_met']])).toEqual([5, true]);
+  await page.evaluate(() => PPCloud.syncNow());
+  await page.evaluate(() => PPCloud.syncNow());
+  await page.waitForTimeout(600);
+  const out = await page.evaluate(() => ({ state: window.__ppCloudHooks.getState(), uploads: window.__ppUploads || [], inflight: PPCloud.info().inflight }));
+  expect(out.state, 'getState gives null while the city preview is open').toBeNull();
+  expect(out.uploads, 'no upload during the city preview').toEqual([]);
+  expect(out.inflight).toBe(false);
 });
 
 test('D1426, D1439: Governor Merriden is Act 2 and civil (cast faction none); the President stays Act 5 and a Keeper', async () => {
