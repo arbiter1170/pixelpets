@@ -274,7 +274,7 @@
       "name": "Jory",
       "faction": "none",
       "base": 50,
-      "note": "NAMES_PASS G8 (D1766; Vincent, Wed Nov 4, 2026: own key). The RegenX floor tech and lab ally: npc id rx_cal, scene rx_cal, trainer rx_cal_ally and flag story.met_cal are unchanged. Was raw name Cal, shared with the Mahopac dream's Cal; save.js SPLIT_KEYS copies an old Cal contact here once."
+      "note": "NAMES_PASS G8 (D1766; Vincent, Wed Nov 4, 2026: own key). The RegenX floor tech and lab ally: npc id rx_cal, scene rx_cal, ally id rx_cal_ally and flag story.met_cal are unchanged. Was raw name Cal, shared with the Mahopac dream's Cal; save.js SPLIT_KEYS copies an old Cal contact here once."
     },
     {
       "name": "Keeper Amos",

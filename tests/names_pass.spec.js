@@ -212,7 +212,7 @@ test('the save is unchanged: v 2, the same keys, raw names only, for a fresh sav
 
 // NAMES_PASS G8, G9 (D1766; Vincent, Wed Nov 4, 2026): "Cal -> Jory and Kit -> Mabry each get their own key; the
 // Mahopac-dream Cal and the other Kit keep their names." The renamed body's raw name is the new key; NPC ids, the look,
-// the scene, the trainer id and story.met_cal stay. save.js SPLIT_KEYS copies an old shared mark to the new key once, only
+// the scene, the ally id rx_cal_ally and story.met_cal stay. save.js SPLIT_KEYS copies an old shared mark to the new key once, only
 // when the save reached the renamed person; the old key stays with the person who keeps the name.
 const SPLIT = [
   { shown: 'Jory', old: 'Cal', file: 'heights', map: 'rx_f2', id: 'rx_cal', at: [5, 10], look: 'rx_cal' },
@@ -246,7 +246,7 @@ test('G8, G9: Jory and Mabry have their own keys; the dream Cal and the Heights 
     expect(got.speaker || r.look, r.id + ' portrait').toBe(r.look);   // the dialog portrait is the body's own look
     expect(data.cast, r.shown + ' cast entry').toContain(r.shown);
   }
-  expect(data.ally).toBe('Jory');                           // the lab fight's ally (trainer id rx_cal_ally unchanged)
+  expect(data.ally).toBe('Jory');                           // the lab fight's ally (id rx_cal_ally unchanged)
   expect(new Set(data.scene)).toEqual(new Set(['Jory']));
   expect(data.first).toContain("I'm Jory.");
   expect(data.metFlag).toBe(true);                          // the flag keeps its name
