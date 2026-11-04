@@ -159,9 +159,17 @@ async function playScene(page, choices = [], onChoice = null, onSeal = null) {
 // gear (#gearFloat), PET and WALKLINGS are the dock's #petFloat and #colFloat, each other screen has a WALK back button, and a
 // tap on the map walks or talks. Arcade specs keep #settingsBtn, #tabs and TALK. These helpers tap whatever the layout on
 // screen shows (body.ctl-modern), so a spec that opts into Arcade still works.
-const isModern = (page) => page.evaluate(() => document.body.classList.contains('ctl-modern'));
+async function isModern(page) {
+  await page.waitForFunction(() => /\bctl-(modern|arcade)\b/.test(document.body.className), null, { timeout: 8000 });
+  return page.evaluate(() => document.body.classList.contains('ctl-modern'));
+}
 async function openSettings(page) {
-  await page.locator((await isModern(page)) ? '#gearFloat' : '#settingsBtn').click();
+  if (!(await isModern(page))) return page.locator('#settingsBtn').click();
+  const gear = page.locator('#gearFloat');
+  // Modern has its gear on the walk screen's dock only: fail fast instead of waiting out the test.
+  await gear.waitFor({ state: 'visible', timeout: 4000 }).catch(() => {});
+  if (!(await gear.isVisible())) throw new Error('openSettings: the Modern gear is on the walk screen; go back to WALK first, or opt into Arcade');
+  await gear.click();
 }
 async function showScreen(page, name) {
   if (!(await isModern(page))) return page.locator(`#tabs button[data-tab="${name}"]`).click();

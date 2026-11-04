@@ -64,7 +64,8 @@ test('a player with Walklings boots onto the map, and a refresh from the PARTNER
 });
 
 test('a reload with an overlay open on the PARTNER screen lands on the map with no overlay', async ({ page }) => {
-  await seedOnce(page.context(), starterSave());
+  const s = starterSave(); s.settings.controls = 'arcade';   // Arcade opt-in: only Arcade's header gear opens Settings on PARTNER
+  await seedOnce(page.context(), s);
   await gotoGame(page); await ready(page);
   await page.evaluate(() => PixelPets.showTab('pet'));
   await openSettings(page);

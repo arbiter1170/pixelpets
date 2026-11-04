@@ -1,6 +1,6 @@
 /* STAT_DISPLAY v0.1 (design 39ef920): one NRG / GROW strip for PARTNER and WALK, EXPLORE once, CARE / STEPS slot. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, showScreen } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -10,7 +10,8 @@ const RECTS = {
 };
 const SEL = { strip: '#statStrip', nrgL: '.ss-nrg-l', nrgB: '.ss-nrg-b', nrgV: '.ss-nrg-v', growL: '.ss-grow-l', growB: '.ss-grow-b', growV: '.ss-grow-v', ex: '.ss-ex' };
 async function boot(page, extra = {}, settings = {}) {
-  const s = starterSave(); Object.assign(s.party[0], { energy: 72, xp: 140 }, extra); Object.assign(s.settings, settings); s.steps = 340;
+  // Arcade opt-in: the walk-screen stat strip is an Arcade HUD row. A test that checks Modern passes controls: 'modern'.
+  const s = starterSave(); Object.assign(s.party[0], { energy: 72, xp: 140 }, extra); Object.assign(s.settings, { controls: 'arcade' }, settings); s.steps = 340;
   const pinToday = s.party[0].ex && s.party[0].ex.d === 'TODAY';
   if (pinToday) s.party[0].ex.d = 'PENDING';
   await installSave(page.context(), s, { quietDay: true });
@@ -83,7 +84,7 @@ test('criteria 1-4: the strip stays on WALK; PARTNER hides it and mirrors NRG, G
 test('criterion 5: hidden on WALKLINGS, on PARTNER, and on WALK in modern; shown on arcade WALK @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.showTab('col')); await expect(page.locator('#statStrip')).toBeHidden();
-  await showScreen(page, 'walk'); await expect(page.locator('#statStrip')).toBeVisible();
+  await page.locator('#tabs button[data-tab="walk"]').click(); await expect(page.locator('#statStrip')).toBeVisible();
   await boot(page, {}, { controls: 'modern' });
   await page.evaluate(() => PixelPets.showTab('walk')); await expect(page.locator('#statStrip')).toBeHidden();
   await page.evaluate(() => PixelPets.showTab('pet')); await expect(page.locator('#statStrip')).toBeHidden();
