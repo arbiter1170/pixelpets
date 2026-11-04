@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-"""HIGH_CHARITY_LAYOUT v0.3, phase 1 ("the capital, day one"): writes data/hc_city_v2.json.
+"""HIGH_CHARITY_LAYOUT v0.4.2 (phase 1, "the capital, day one", plus the phase 2 rows that need no new room): writes
+data/hc_city_v2.json.
 v0.3 (D1354): the Keeper High Court stands on the Parade's south half, its front and wide steps facing Muster Road.
+v0.4 (D1426): the Governor's House floors 1-2 open in Act 2; the President's rooms keep Act 5. v0.4.1-v0.4.2: names and text
+only. Rooms that still wait for Vincent's rule 9 previews are listed in RULE9_HELD and are never built here.
 
 Run from the repo root: python3 tools/build_hc_city.py [--layout design/specs/high_charity_layout.json]
 The layout JSON lives in the private design repo (gitignored `design/` checkout); it is read, never copied in whole.
@@ -20,6 +23,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'hc_city_v2.json')
 WALK = set('gPCZADsf')
 SOLID = set('TRHUMwF')
+ROAD = set('CZ')            # carriageway and crosswalk: walk tiles nothing may stand on (layout §4.1)
 RWALK = set('.=m')          # room floor, rug, mat
 fails, notes = [], []
 
@@ -195,7 +199,7 @@ class Chunk:
 
     def safe_block(self, x, y):
         """True if a blocker on (x, y) keeps every target reachable."""
-        if not self.free(x, y): return False
+        if not self.free(x, y) or self.ch(x, y) in ROAD: return False
         b = frozenset(self.block) | {(x, y)}
         seen = reach(self.grid, self.arrival, b)
         return all(p in seen for p in self.targets.values())
@@ -368,6 +372,27 @@ for cid, c in CHUNKS.items():
             if p in [t for k, t in c.targets.items()]: fail(f"{cid}: patrol {pt['id']} stands on a door or mouth {p}")
         c.reserved.update(cells)
 
+# ---------- HC_PARADE v0.3.1 stands (design specs/HC_PARADE.md §2-§3; the scene is #286/#296's tools/hc_parade.py) ----------
+# The tiles the parade's crowd, cordon, guards, officers, car and crowd strips stand on. The city never dresses them (no lamp,
+# sign, planter, bench or parked car), so the scene draws on clear ground; the roads themselves are clear by ROAD (layout §4.1).
+# Copied from the beat sheet on claude/b1-parade-lore (#296) so the two builds agree; the scene stays that PR's.
+PARADE_STANDS = {
+    'highcharity': [(21, 23), (21, 24)] + [(x, 23) for x in range(17, 26)] + [(x, 24) for x in range(17, 26)]   # SPOT, P1_CROWD
+                   + [(x, 22) for x in range(17, 27)],                                                         # P1_CORDON bays
+    'hc_civic': [(28, 30), (28, 34), (24, 30), (25, 30), (26, 30), (24, 31), (25, 31), (26, 31), (27, 31), (24, 33), (25, 33),
+                 (26, 33), (27, 33), (23, 33)]                                                                  # HILL_SPOT, CIV2
+                + [(29, 28), (30, 28), (34, 28), (35, 28)]                                                      # LINE2
+                + [(x, 29) for x in range(26, 37)]                                                              # CORDON2 bays
+                + [(30, 26), (31, 26), (33, 26), (34, 26), (26, 28), (37, 28), (32, 31), (32, 30), (32, 29), (32, 28)]   # CLOSE2, OFF2, the car
+                + [(21, 30), (21, 31), (21, 33), (21, 34), (24, 34), (37, 33), (41, 33), (37, 34), (41, 34), (25, 36), (29, 36),
+                   (33, 36), (37, 36), (45, 33), (21, 28), (17, 28), (41, 28), (45, 28), (17, 30), (17, 31), (17, 33), (17, 34),
+                   (21, 36), (41, 36), (45, 36), (45, 34), (38, 30), (42, 30), (46, 30), (38, 31), (42, 31), (46, 31)],   # STRIPS2
+}
+for cid, cells in PARADE_STANDS.items():
+    for p in cells:
+        if CHUNKS[cid].ch(*p) not in WALK | {'U'}: fail(f'{cid}: parade stand {p} is not a walk tile or a kerb bay')
+    CHUNKS[cid].reserved.update(cells)
+
 # ---------- kept people and props on Lantern Square (§3.3 and §8.1) ----------
 def keep_at(oid, cid, x, y, search=0, **kw):
     c = CHUNKS[cid]
@@ -484,6 +509,7 @@ for cid, c in CHUNKS.items():
     for (x, y) in order:
         if n >= want: break
         if cid == 'hc_exchange' and (x, y) == (56, 44) or (x + 1, y) == (56, 44): continue   # veh_slot_glim_c2 stays empty
+        if {(x, y), (x + 1, y)} & set(PARADE_STANDS.get(cid, [])): continue                    # the parade's cordon bays stay empty
         col = COLOURS[(x * 7 + y * 3) % len(COLOURS)]
         c.add({'kind': 'prop', 'id': f'hc2_car_{cid[3:] if cid != "highcharity" else "sq"}_{n}', 'x': x, 'y': y, 'ox': 8,
                'sprite': 'hc_car_' + col, 'name': 'parked car'}, blocks=False)
@@ -615,6 +641,9 @@ for cid, c in CHUNKS.items():
 
 # ---------- the final outdoor checks ----------
 for cid, c in CHUNKS.items():
+    for (x, y), who in c.block.items():
+        if c.ch(x, y) in ROAD: fail(f'{cid}: {who} stands on the road at {(x, y)} (layout §4.1: nothing on a road stops a holder)')
+        if (x, y) in PARADE_STANDS.get(cid, ()) and who != 'hc_court_steps': fail(f'{cid}: {who} stands on a parade stand {(x, y)}')
     blocked = frozenset(c.block)
     seen = reach(c.grid, c.arrival, blocked)
     for k, p in c.targets.items():
@@ -791,6 +820,21 @@ objs.append(N('hc_clerk3', 'Clerk', 'clerk', 9, 7, 'left'))
 objs.append(N('hc_commander3', 'Commander', 'captain', 1, 11, 'down', lines={'else': TXT['hb13_commander']}))
 ROOMS['hc_gov_3'] = room('hc_gov_3', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_3', objs, (2, 12))
 
+# AGENTS rule 9 (room redesigns): a room is built here only after Vincent has seen its 390 previews and said yes. The phase 1
+# rooms above were approved on Tue Nov 3, 2026 (handoff/maps/HC_CITY_V2.md, "Sign-off"). These v0.4 rooms are specced but have
+# no approved preview (and need the rule 9 inspiration pass first), so they are held: never built, listed in the output.
+RULE9_HELD = {
+    'hc_gov_2': "Cabinet Room, Governor's House floor 2 (layout §7.3; CABINET_AND_COUNCILS §4.1; WALK_BESIDE §2.1): no grid in the packet, no preview",
+    'hc_lantern_up': 'grand Lantern House gallery (layout §7.1): grid in §7.1, no preview',
+    'hc_college_in': 'College Great Hall (layout §7.4): no grid, no preview',
+    'hc_trial_in': 'the Muster Hall, Hall 8 (layout §7.5; also waits on the Hall 8 build and HC_TRIAL_HALL): blockout only',
+    'hc_trial_stone': 'the Hall Stone room (layout §7.5, phase 3): blockout only',
+    'hc_library_in': 'College Library (layout §7.4, phase 3): no grid, no preview',
+    'hc_gym_in (expansion)': 'the Dojo expansion (layout §7.4, phase 3; D1281 keeps the 9x7 room): no grid, no preview',
+}
+for rid in RULE9_HELD:
+    if rid in ROOMS: fail(f'{rid}: held for rule 9 previews, but built')
+
 TARGETS = {
     'hc_lantern_in': ((8, 20), {'mat': (8, 21), 'ines': (7, 15), **{f'bed{i}': (x + 1, y) for i, (x, y) in enumerate(beds)}}),
     'hc_news_1': ((7, 14), {'mat': (7, 15), 'stair': (12, 12), 'editor': (7, 8), 'spike': (11, 8)}),
@@ -860,7 +904,9 @@ for cid, c in CHUNKS.items():
                  'grid': c.grid, 'objs': c.objs,
                  'hcSlots': [h for h in c.src['hooks']]}
 out = {
-    'spec': 'HIGH_CHARITY_LAYOUT v0.3 phase 1 (design specs/HIGH_CHARITY_LAYOUT.md); built by tools/build_hc_city.py',
+    'spec': 'HIGH_CHARITY_LAYOUT v0.4.2 (design specs/HIGH_CHARITY_LAYOUT.md); built by tools/build_hc_city.py',
+    'rule9Held': RULE9_HELD,
+    'paradeStands': {cid: [list(p) for p in sorted(set(cells))] for cid, cells in PARADE_STANDS.items()},
     '_about': 'City preview data. Not in MAPDATA. Merged into WORLD only while HC_CITY_V2 or ?debug=1&hccity=2 is on. '
               'All player text is PLACEHOLDER until Story signs it (layout §11). Art keys hc_* are PLACEHOLDER (HC_PLACEHOLDER_ART).',
     'tiles': {'C': {'name': 'carriageway', 'walk': True}, 'Z': {'name': 'crosswalk', 'walk': True},

@@ -2,6 +2,25 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 02:27 ET: Build: High Charity v0.4, the capital (HIGH_CHARITY_LAYOUT v0.4.2; city preview only, HC_CITY_V2 stays false)
+- What changed and why:
+  - The city tool builds from the v0.4.2 layout. Nothing may stand on a road any more (layout §4.1): five props had been nudged
+    onto carriageways (a Square bench, a Charter Hill tree, an Exchange cafe table, the Counting Garden statue, the Block News
+    poster) and now stand on sidewalk or grass.
+  - The parade's stands (HC_PARADE §2-§3, the beat sheet on #296) are kept clear of city dressing: no parked car in the cordon
+    bays on Muster Road, no lamp, and the Court's sign steps one tile east, off the close guards' step tiles.
+  - Rule 9: the rooms with no approved preview (the Cabinet Room `hc_gov_2`, the gallery, the College Great Hall, the Muster
+    Hall and its Hall Stone room, the Library, the Dojo expansion) are held, listed in the data, never built.
+  - `tests/high_charity_v04.spec.js` ports the layout checker onto the merged game WORLD (§13.1) and adds the rule 10 arrival
+    frame, the coach, Charter Hill's gates, the Governor's office, old saves, the save, reduced motion and frame time.
+- Files touched: `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tests/high_charity_v04.spec.js` (new),
+  `tests/hc_court_move.spec.js`, build stamp files.
+- Commit(s) + build id: claude/high-charity-v04, one commit per slice; build 20261104-0227 (slice 1).
+- Tests run and result (widths, checks): in the PR.
+- Decisions made (colour + reasoning): no new ids. The road rule is the layout's own (§4.1, D1271); the stands follow D1354 and
+  HC_PARADE's settled rows; the holds follow AGENTS rule 9.
+- Anything left unfinished: the held rooms wait on Vincent's previews; the Muster Hall's inside also waits on the Hall 8 build.
+
 ## 2026-11-04 00:12 ET: Build: Route 4, the walk to the Governor, and four new Walklings (ROUTE_TO_GOVERNOR v0.1.1, D1850-D1876; ACT2_PACING D1880, D1881; KILNMOUTH §4.4)
 - What changed and why:
   - Vincent settled ROUTE_TO_GOVERNOR and the Act 2 pacing calls (Wed Nov 4, 2026): the first trip to the Governor is on foot (D1881). `data/detail_zzzz_route4.json` adds Route 4 (`route4`, the walled downs to the fork), the river road (`route4_reeds`, downstream to the Charter Hill gate) and the pocket `route4_withy`; the fold at the fork is a free rest; three holders Lv 27-29; wild tables Lv 27-30 (pocket 28-31); first sightings for the adder and the heron. Hearthmoor's north-east coach-road gap opens on `story.gov_posted | story.hc_gov_met`.
