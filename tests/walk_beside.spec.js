@@ -683,7 +683,7 @@ test.describe('WALK_BESIDE scenes behind their flags (D1960-D1969, D1978)', () =
     const hostId = host.find(id => /host|della|lantern/i.test(id)) || host[0];
     expect(await page.evaluate(i => PixelPets.talkTo(i), hostId)).toBe(true);
     let t = sayTexts(await drive(page));
-    expect(t[0]).toBe("A letter for you, sealed with the Warden's lantern.");
+    expect(t[0]).toBe("A letter for you, sealed with the Warden's lantern. No reply wanted, this time.");   // D2143
     expect(t.slice(1)).toEqual(['A letter from Warden Ilse, in her small, exact hand.', 'Word travels along the lanterns. They say the company offered you a desk.', "Steering is walking ahead with a lamp. I'd sooner walk beside in the dark."]);
     expect((await flags(page))['story.wb_ilse_letter']).toBe(true);
     expect(await page.evaluate(i => PixelPets.talkTo(i), hostId)).toBe(true);

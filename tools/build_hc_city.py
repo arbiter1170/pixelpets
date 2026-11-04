@@ -71,14 +71,14 @@ TXT = {
     'hb15_door_seven': "Chained. Ask the duty Keeper.",
     'hb15_keeper': "Shut since the war, holder. Come back with seven on the roll.",
     'gov_door': "By appointment.",
-    'gov_line': "[PLACEHOLDER: Governor Merriden's Act 2 lines are Story's.]",
-    # GOVERNOR_MEETING v0.2.1 §5 (D1471, D1472, D1473), all PLACEHOLDER until Story signs them
+    'gov_line': "Without an appointment? I'm afraid even I need one of those, most days.",
+    # GOVERNOR_MEETING v0.2.1 §5 (D1471, D1472, D1473); signed by Story, STORY_LINES D2138 (gov_line and gov_m6 re-voiced)
     'gov_desk': "The Governor will see you, Cadet. Go on through.",
     'gov_m2': "Warden Ilse's new Cadet. Don't sit. You won't be here long enough to need a chair.",
     'gov_m3': "I've work for you. Kilnmouth's springs have gone cold this season. Nobody there can tell me why.",
     'gov_m4': "A Calm Tower went up there the same season. Its permit is in order. I checked it myself.",
     'gov_m5': "And their council has an empty seat. Everyone has a name for it. I'd like the town's.",
-    'gov_m6': "Go and look. Listen more than you talk. Then come back and tell me what you found.",
+    'gov_m6': "Go and look. Listen more than you talk. Then come back and tell me what you found, in plain words.",
     'gov_m7a': "You know where Fernbrook's Seals went.",
     'gov_tell': "Tell him about the ledger",
     'gov_keep': "Keep it to myself",
