@@ -54,6 +54,11 @@ test('the library block is well formed: 60+ props, sizes match cells, PAL keys o
   expect(bad).toEqual([]);
 });
 
+// CABINET_AND_COUNCILS 1b (#332; Vincent approved the Cabinet Room previews, Wed Nov 4, 2026): the Cabinet Room hc_gov_2 is the
+// first room to adopt library pieces. They are placed in the city preview data (data/hc_city_v2.js) only, and only these.
+const ADOPTED_IN_CITY = ['pc_rail', 'pc_rail_gate', 'pc_records', 'pc_flag_stand', 'pc_ballot_box', 'pn_clock_tall', 'pv_fern',
+  'pa_notice_pins', 'pa_clock_round', 'pc_clerk_desk_0', 'pc_clerk_desk_1'];
+
 test('no library id or slice id collides with another name in the repo', () => {
   const files = ['game.js', 'keeper.js', 'glimmer_fleet.js', 'battle_bg.js', 'quests.js', 'data/mapdata.js', 'data/hc_city_v2.js', 'data/nav_art.js']
     .map(f => [f, fs.readFileSync(path.join(ROOT, f), 'utf8')]);
@@ -61,7 +66,7 @@ test('no library id or slice id collides with another name in the repo', () => {
   const hits = [];
   for (const id of IDS.concat(SLICES)) {
     const re = new RegExp('[\'"`.]' + id + '[\'"`:\\s,)\\]]');
-    for (const [f, src] of files) if (re.test(src)) hits.push(id + ' in ' + f);
+    for (const [f, src] of files) if (re.test(src) && !(f === 'data/hc_city_v2.js' && ADOPTED_IN_CITY.includes(id))) hits.push(id + ' in ' + f);
   }
   expect(hits).toEqual([]);
   expect(new Set(IDS.concat(SLICES)).size).toBe(IDS.length + SLICES.length);
@@ -156,7 +161,8 @@ test('a test room with every prop draws in the walk view with no console errors,
 });
 
 test('main maps place no library prop yet (art only; rooms adopt it in their own builds)', () => {
-  const md = fs.readFileSync(path.join(ROOT, 'data/mapdata.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'data/hc_city_v2.js'), 'utf8');
-  const used = IDS.concat(SLICES).filter(id => md.includes('"' + id + '"'));
-  expect(used).toEqual([]);
+  const md = fs.readFileSync(path.join(ROOT, 'data/mapdata.js'), 'utf8'), city = fs.readFileSync(path.join(ROOT, 'data/hc_city_v2.js'), 'utf8');
+  expect(IDS.concat(SLICES).filter(id => md.includes('"' + id + '"'))).toEqual([]);   // no main map places one
+  // In the city preview, only the Cabinet Room's adopted pieces (#332) appear, and every one of them does.
+  expect(IDS.concat(SLICES).filter(id => city.includes('"' + id + '"')).sort()).toEqual(ADOPTED_IN_CITY.slice().sort());
 });
