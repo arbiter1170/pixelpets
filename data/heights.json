@@ -7,7 +7,7 @@
     "company": "RegenX",
     "drug": "Atten",
     "machine": "The Arbiter",
-    "emission": "alien device of unknown origin; INSIGN and Glimmerwell study and use it, nobody in the world knows it's alien",
+    "emission": "device of unknown origin; INSIGN and Glimmerwell study and use it, nobody in the world knows where it came from (story detail: private design STORY.md §2a)",
     "walkling": "Bitlet, Hoverbyte, Archivolt (species id byte, type VOLT)"
   },
   "slicePatch": {
@@ -1323,7 +1323,7 @@
           "y": 2,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1334,7 +1334,7 @@
           "y": 2,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1462,7 +1462,7 @@
           "y": 10,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1473,7 +1473,7 @@
           "y": 10,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1484,7 +1484,7 @@
           "y": 12,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1495,7 +1495,7 @@
           "y": 12,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1528,7 +1528,7 @@
           "y": 17,
           "sprite": "lab_scanner",
           "lines": {
-            "else": "The scanner glows mint as you pass. It finds nothing."
+            "else": "The scanner glows softly as you pass. It finds nothing."
           }
         },
         {
@@ -1539,7 +1539,7 @@
           "y": 17,
           "sprite": "lab_scanner",
           "lines": {
-            "else": "The scanner glows mint as you pass. It finds nothing."
+            "else": "The scanner glows softly as you pass. It finds nothing."
           }
         },
         {
@@ -3374,7 +3374,7 @@
     "company": "RegenX is the lab in Fernbrook Heights. The staff are decent people who believe Atten helps Walklings focus. They are not cruel, and the label is not a trick.",
     "building": "A white four-floor lab built around a hum. Lobby, Focus Wing, Records, and the top bay. Stairs lock between floors. Visitors come by appointment.",
     "atten": "Atten is a focus aid with an honest label. Glimmerwell wants one vial and the cheap plans, and talks about that errand as a kindness.",
-    "arbiter": "The Arbiter sits in a cradle in the top bay: an alien device of unknown origin. INSIGN and Glimmerwell only study and use it; nobody in the world knows it's alien. It emits something slowly. Nobody can name the emission. RegenX never knew where it came from.",
+    "arbiter": "The Arbiter sits in a cradle in the top bay: a device of unknown origin. INSIGN and Glimmerwell only study and use it; nobody in the world knows where it came from (story detail: private design STORY.md §2a). It emits something slowly. Nobody can name the emission. RegenX never knew where it came from.",
     "bitlet": "Species id byte, type VOLT. Bitlet, Hoverbyte, Archivolt. It woke when the cradle hummed. It is not a product. Staff call it a glitch and leave it alone."
   },
   "looks": {

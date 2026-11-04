@@ -33,9 +33,11 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // PARTNER_DAY (#258): the new hall and bedroom (hm_home_hall, hm_home_room), Mom (moved down from hm_home_up) and Maze,
     // the home pegs, the up_cushion, and hm_buddy_pre / hm_lizzy_pre in Hearthmoor add talk 12, warp 4 (hall_mom,
     // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
+    // WEIR_HUT (D1590-D1599): the hut door, its mat, the first-step trigger, and 27 talk taps (Vincent Chi, 14 room props, eight
+    // jar shelves (one shows per sill tile at a time), the lamp, barrel and nets outside) add door 1, warp 1, trigger 1, talk 27.
     // POST_TRIAL_CRACKDOWN: +1 sign (the curfew notice), +21 talk (curfew posts, Fen at the gate, Juniper's camp, the six Lantern House
     // townsfolk and the wire station's props), +3 triggers (cd_start, cd_resume, ilse_call).
-    door: 48, warp: 100, sign: 97, talk: 778, scene: 40, trigger: 43, board: 7,
+    door: 49, warp: 101, sign: 97, talk: 805, scene: 40, trigger: 44, board: 7,
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
@@ -65,6 +67,9 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     'bw_hall_in:bw_chart neighbour is off the safe region',
     'bw_hall_in:h3_gauge_b neighbour is off the safe region',
     'bw_hall_in:bw_ringer neighbour is off the safe region',
+    // WEIR_HUT (D1591): the desk is two tiles; while Vincent Chi stands at (3,3) its left half is boxed in and the right half
+    // (weir_desk_r, the same line) answers from (4,3). tests/weir_hut.spec.js taps it.
+    'hw_weir_hut_in:weir_desk_l has no free neighbour',
   ]);
   expect(audit.n).toBeGreaterThan(100);
   const sceneOnly = audit.rows.filter((r) => r.kind === 'prop' && r.act === 'scene' && !r.talkable).map((r) => r.id).sort();

@@ -8,7 +8,7 @@ description: >-
 ---
 # Walklings story craft
 
-Walklings is an all-ages pixel RPG: holders and their Walklings travel the Amberwild, its towns, routes and Keepers. This skill is **craft** (shape, choice, voice, lore). Step format (`say`, `choice`, `if`, `setFlag`...) and line limits come from walklings-quests; wording from walklings-wording-check. Both win on conflict.
+Walklings is a pixel RPG for players aged 16-28: holders and their Walklings travel the Amberwild, its towns, routes and Keepers. This skill is **craft** (shape, choice, voice, lore). Step format (`say`, `choice`, `if`, `setFlag`...) and line limits come from walklings-quests; wording from walklings-wording-check. Both win on conflict.
 
 ## World words (always)
 - The player is a **holder**; their creature is a **Walkling**.
@@ -49,7 +49,7 @@ Five lines per side quest or board slip: **hook** (why care, first line), **ask*
 1. Read the current story docs and built scene steps, not memory. List open threads and seeds.
 2. Draft the act page or quest card, voice cards, and needed flags (new flags only under `S.flags`; save stays `pixelpets.save.v2`, `v` 2).
 3. Write lines; run walklings-wording-check and limits (`say` <= 110, ambient <= 40, choices <= 30).
-4. Read aloud for an all-ages player: no peril without hope, no gore, no shaming. Losses are "worn out".
+4. Read aloud for a 16-28 player: no blood on screen, no gore, no shaming; dark themes and on-screen arrests are allowed where the story calls for them. Losses are "worn out".
 5. Raise anything every player sees through walklings-decision (story staging is red); Design signs off; hand off with the packet.
 
 ## Checklist

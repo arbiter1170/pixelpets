@@ -32,7 +32,7 @@
     { id: 'bn-lamps', kind: 'block', pin: true, when: ['story.glen_cleared'], text: 'Wickerglen: the Comfort Lamps went dark after the glen was cleared.' },
     { id: 'bn-heights', kind: 'block', pin: true, when: ['story.heights_done'], text: 'Heights brief: RegenX is quiet. The tunnels are empty. Walklings hopped home.' },
     { id: 'bn-census', kind: 'block', when: ['!story.glen_cleared'], text: 'Route 2 bulletin: the Glow Census is counting. Comfort Lamps are still lit.' },
-    { id: 'bn-mint', kind: 'block', when: ['story.side=glimmer'], text: "Fernbrook note: the mint stand is open. Smiles are free. Chairs are Fen's." },
+    { id: 'bn-mint', kind: 'block', when: ['story.side=glimmer'], text: "Fernbrook note: the Glimmer stand is open. Smiles are free. Chairs are Fen's." },
 
     { id: 'ch-bowl', kind: 'chirp', pin: true, text: 'A holder and a Walkling shared a Warm Bowl on the hill. Nobody filed a form.' },
     { id: 'ch-fen', kind: 'chirp', text: 'Fen was talking to a blossom in the orchard. The blossom kept the secret.' },
@@ -53,10 +53,10 @@
     { id: 'r1-coats', kind: 'local', region: 'route1', name: 'Route walker', handle: 'greencoat', desk: 'Route walker', text: 'Two green coats stood in the grass and wished me a lawful day.' },
 
     { id: 'fb-fen', kind: 'local', region: 'fernbrook', name: 'Orchard hand', handle: 'fenchair', desk: 'Orchard hand', text: 'Fen says roots, then blossoms. The orchard is pretending to study.' },
-    { id: 'fb-mint', kind: 'local', region: 'fernbrook', name: 'Orchard hand', handle: 'mintcup', desk: 'Orchard hand', text: 'The mint stand smiled at me. The nearest blossom did not.' },
+    { id: 'fb-mint', kind: 'local', region: 'fernbrook', name: 'Orchard hand', handle: 'mintcup', desk: 'Orchard hand', text: 'The Glimmer stand smiled at me. The nearest blossom did not.' },
     { id: 'fb-basket', kind: 'local', region: 'fernbrook', name: 'Orchard hand', handle: 'baskettry', desk: 'Orchard hand', text: 'Empty baskets by the hall. A Walkling tried one on for size.' },
     { id: 'fb-chair', kind: 'local', region: 'fernbrook', name: 'Orchard hand', handle: 'orchardnap', desk: 'Orchard hand', text: 'Fen left a chair under the trees. Nobody has to hurry today.' },
-    { id: 'fb-partner', kind: 'local', region: 'fernbrook', name: 'Orchard hand', handle: 'mintcup', desk: 'Orchard hand', when: ['story.side=glimmer'], text: 'The mint stand called me partner. Fen still saved me a chair.' },
+    { id: 'fb-partner', kind: 'local', region: 'fernbrook', name: 'Orchard hand', handle: 'mintcup', desk: 'Orchard hand', when: ['story.side=glimmer'], text: 'The Glimmer stand called me partner. Fen still saved me a chair.' },
 
     { id: 'r2-census', kind: 'local', region: 'route2', name: 'Census walker', handle: 'censuswalk', desk: 'Census walker', text: 'Glow Census is on Route 2 with clipboards. The count is polite.' },
     { id: 'r2-lamps', kind: 'local', region: 'route2', name: 'Census walker', handle: 'lampcount', desk: 'Census walker', when: ['!story.glen_cleared'], text: 'Comfort Lamps along Route 2 are counted and still glowing.' },
@@ -101,7 +101,7 @@
     { tag: '#SeamSold', w: 3, when: ['story.quarry_bought'] },
     { tag: '#RegenX', w: 3, when: ['story.heights_done'] },
     { tag: '#FloatScreen', w: 2, when: ['story.rx_bitlet'] },
-    { tag: '#MintStand', w: 3, when: ['story.side=glimmer'] },
+    { tag: '#GlimmerStand', w: 3, when: ['story.side=glimmer'] },
   ];
 
   const BASE_TAGS = TAGS.map(t => t.tag);
