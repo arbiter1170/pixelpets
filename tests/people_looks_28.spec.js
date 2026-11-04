@@ -52,6 +52,7 @@ function save() {
   const s = starterSave();
   s.settings.follower = false;
   s.settings.textSpeed = 'fast';
+  s.settings.tips = false;   // the phone tip (story.phone_got) can open mid-test and write story.unlock_phone, which the save compare would catch
   s.flags['story.early_done'] = true;
   s.flags['story.phone_got'] = true;
   return s;
