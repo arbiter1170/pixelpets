@@ -7,7 +7,7 @@
   "story.hall1_shut": "D1224 (SEALS-O): the Fernbrook Trial Hall is shut by order of High Charity until Fen's Act 2 turn",
   "story.fen_lean": "Seals lore v3.1: Fen's hidden lean, moved by the Beat 1 and Beat 7 choices (inc; encoding PLACEHOLDER)",
   "story.warden_called": "D1395/D1404: Warden Ilse's call answered (or Amos passes the message on when there is no phone); RENDEZVOUS_VINCENT's story.ilse_called",
-  "story.warden_met": "D1395: the Lodge debrief done; the pick waits on it until the rendezvous build; RENDEZVOUS_VINCENT's story.ilse_debrief"
+  "story.warden_met": "D1395: the Lodge debrief done; Ilse sends the holder to Vincent Chi (ACT1_KEEPER_JOIN 4.1, chain row chi_meet)"
  },
  "looks": {
   "_note": "PLACEHOLDER (D1198). The Commander keeps the Keeper set (rule 11): a long green cloak and a cap set him apart from the officers' coats. The three Lantern House residents (LANTERN_HOUSE_FERNBROOK §7.2) are kit looks, PLACEHOLDER. The President (D1414, Vincent Nov 3: built from his wire-set bust, wire_wall_pres): grey hair, Keeper-green J coat, a gold front for the bust's gold lapels.",
@@ -896,22 +896,22 @@
    [
     "say",
     "Warden Ilse",
-    "The Keepers are not that order. But it came from the top, and he called it safety."
+    "The Keepers are not that order. Someone dusted off an old law from the war."
    ],
    [
     "say",
     "Warden Ilse",
-    "I can't search my own Commanders' tents. Not openly. Not yet."
-   ],
-   [
-    "say",
-    "",
-    "Ilse folds a note, seals it, and presses it into your hand. A runner's note."
+    "Fen wrote to me before they shut her door. Walklings walking off at night, near Wickerglen."
    ],
    [
     "say",
     "Warden Ilse",
-    "Keep that close. For now, Fernbrook still wants your answer. Fen is at the orchard gate."
+    "Glimmerwell's tents are shut to a Warden. I know someone who walks where I can't."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Jacob Chi. No phone, no side. Past the fallen trunk at Wickerglen's east edge. Say I sent you."
    ],
    [
     "setFlag",
@@ -923,7 +923,7 @@
    [
     "say",
     "Warden Ilse",
-    "I'm still asking my questions. Keep that note safe. Fen is waiting at the orchard gate."
+    "Jacob Chi. Past the fallen trunk at Wickerglen's east edge. Say I sent you."
    ]
   ],
   "ilse_call": [
@@ -996,11 +996,13 @@
        "!story.orchard_cleared"
       ],
       "lines": {
+       "story.orchard_lean=open": "Tobin won't listen to me. Try him.",
+       "story.chi_done": "You saw Ilse? Good. Then let's settle the rest, here at the gate.",
        "story.warden_called & !story.warden_met": "The Warden rang you too? Go. I'll be at the gate.",
-       "story.warden_met": "You saw Ilse? Good. Then let's settle the rest, here at the gate.",
+       "story.warden_met": "Ilse sent you east? Go on. The crates aren't going anywhere today.",
        "else": "The roots held through the night. So did we."
       },
-      "_note": "WARDEN_SUMMONS §3: Fen waits at the orchard gate from the dawn release until the pick (fen_orchard is hidden by then)."
+      "_note": "WARDEN_SUMMONS §3: Fen waits at the orchard gate from the dawn release until the lean. ACT1_KEEPER_JOIN: the Wickerglen investigation comes first; the lean (fb_side_pick) waits for story.chi_done. Re-pointed lines are PLACEHOLDER."
      },
      {
       "kind": "npc",
@@ -1016,9 +1018,9 @@
        "!story.side_pick_done"
       ],
       "lines": {
-       "else": "The order stands until the pick."
+       "else": "The order stands until the Warden sends for you."
       },
-      "_note": "POST_TRIAL_CRACKDOWN §5 (PLACEHOLDER); D1443: the curfew lifts at dawn, the order stands until the pick"
+      "_note": "POST_TRIAL_CRACKDOWN §5 (PLACEHOLDER); D1443: the curfew lifts at dawn; the order stands until the face is set (ACT1_KEEPER_JOIN K9: 'until the Warden sends for you')"
      },
      {
       "kind": "npc",
@@ -1067,8 +1069,8 @@
       "id": "juniper_east",
       "name": "Associate Juniper",
       "x": 30,
-      "y": 8,
-      "facing": "left",
+      "y": 7,
+      "facing": "down",
       "when": [
        "story.crackdown",
        "!story.side_pick_done"
@@ -1076,7 +1078,7 @@
       "lines": {
        "else": "Our crew camp's past the slide. The lamps are still warm. Have a bright day!"
       },
-      "_note": "POST_TRIAL_CRACKDOWN §5: Glimmerwell relocated to the east road. RENDEZVOUS_VINCENT's Glimmerwell shift starts here (that build); PLACEHOLDER line."
+      "_note": "POST_TRIAL_CRACKDOWN §5: Glimmerwell relocated to the east road. ACT1_KEEPER_JOIN: fb_east opens on story.warden_met, so she stands at 30,7 beside the road (30,8 would close the only way to the warp at 31,8). PLACEHOLDER line."
      },
      {
       "kind": "trigger",

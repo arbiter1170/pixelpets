@@ -199,7 +199,7 @@ test('talk lines: neutral is told to stay out, the same side greets and thanks, 
   }
   // The speaker label is the rank or role, and every faction npc says Keeper with a capital K.
   const who = await talk(page, 'fbp_bright_lead');
-  expect(who.who).toBe('Bright Lead');
+  expect(who.who).toBe('Bright Lead');   // the raw speaker key; NAMES_PASS D1738 shows Bright Lead Avery (names_pass.spec.js)
   const every = await page.evaluate(() => MAPDATA.detail_zzz_fernbrook_plaza.slicePatch.maps.fernbrook.addObjs.flatMap((o) => Object.values(o.lines || {}).concat(Object.values(o.chatter || {}))));
   for (const s of every) {
     expect(s, s).not.toMatch(/\bkeeper/);

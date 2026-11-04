@@ -368,7 +368,7 @@
    [
     "say",
     "Keeper Amos",
-    "Wynne's stall has wicks. 8 Acorns. I'd go myself, but I can't leave the cot."
+    "Brisa's stall has wicks. 8 Acorns. I'd go myself, but I can't leave the cot."
    ],
    [
     "setFlag",
@@ -414,7 +414,7 @@
    [
     "say",
     "",
-    "Juniper's lantern glows on the counter. Keeper Amos looks at it for a long moment."
+    "Juniper's lantern glows on the counter. Host Amos looks at it for a long moment."
    ],
    [
     "say",
@@ -489,7 +489,7 @@
        [
         "say",
         "Associate Juniper",
-        "Yay! See, Keeper Amos? A bright light is kind too. Have a bright night, little thorn-paw!"
+        "Yay! See, Host Amos? A bright light is kind too. Have a bright night, little thorn-paw!"
        ],
        [
         "run",
@@ -517,7 +517,7 @@
        [
         "say",
         "Keeper Amos",
-        "Wynne's stall, east end of the square. I'll keep the cot warm."
+        "Brisa's stall, east end of the square. I'll keep the cot warm."
        ]
       ],
       null,
@@ -667,7 +667,7 @@
    [
     "say",
     "",
-    "Lizzy's class is in full swing. Pip and Wren sit at their desks. You slip in at the back."
+    "Lizzy's class is in full swing. Pip and Tilly sit at their desks. You slip in at the back."
    ],
    [
     "say",
@@ -802,7 +802,7 @@
     [
      "say",
      "",
-     "Fen walks back to the Hall without looking back. The cart rolls off toward the pavilion."
+     "Fen turns back to her trees without a word. The cart rolls off down the road."
     ]
    ]
   },

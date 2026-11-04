@@ -46,7 +46,12 @@ function starterSave() {
 }
 
 // quietDay stamps today's hello and Warm Bowl flags inside the browser, so the boot toasts never fire.
-async function installSave(context, save, { quietDay = false } = {}) {
+// ACT1_KEEPER_JOIN §9 (D1546 B): a save that already picked a side (story.side_pick_done, no story.keeper_cadet) is moved to
+// the Keepers once, at load. Fixtures written before that move are marked as already past it (story.ilse_call_old, the move's
+// own guard), so they keep playing the face they were written for. `oldSave: true` leaves a fixture as a real old save.
+async function installSave(context, save, { quietDay = false, oldSave = false } = {}) {
+  const f = save && save.flags;
+  if (!oldSave && f && f['story.side_pick_done'] && !f['story.keeper_cadet'] && !f['story.ilse_call_old']) f['story.ilse_call_old'] = true;
   await context.addInitScript(({ save, quietDay }) => {
     if (quietDay) {
       const d = new Date();
