@@ -128,8 +128,8 @@ async function walkToSeat(page) {
   await goto(page, 'hc_gov_2', 1, 3, 'down');
   for (const d of TO_SEAT) { if (await page.evaluate(() => !!PixelPets.scene)) break; await step(page, d); }
 }
-// Story keys that changed; the engine's own scene-beat and step marks are not this packet's writes.
-const diff = (a, b) => Object.keys(Object.assign({}, a, b)).filter(k => !/^story\.beat\.|^story\.early_steps$/.test(k))
+// Story keys that changed; the engine's own scene-beat, step and unlock-tip marks are not this packet's writes.
+const diff = (a, b) => Object.keys(Object.assign({}, a, b)).filter(k => !/^story\.beat\.|^story\.early_steps$|^story\.unlock_/.test(k))
   .filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])).sort();
 
 test.describe('CABINET 1b C-T1: the lead-in, thr_cabinet_lead (§4.3, D1470)', () => {
