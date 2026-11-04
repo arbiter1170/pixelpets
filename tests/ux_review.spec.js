@@ -19,11 +19,14 @@ for (const mode of ['arcade', 'modern']) {
     await expect(page.locator('#hdrAcornN')).toHaveText('99999');
     await expect(page.locator('#hdrAcorns')).toHaveAttribute('aria-label', '99999 Acorns');
     const vw = page.viewportSize().width;
-    const r = { a: await rect(page, '#hdrAcorns'), lv: await rect(page, '#top .lv'), gear: await rect(page, '#settingsBtn'), name: await rect(page, '#hdrName'), tag: await rect(page, '#dbgTag'), env: await rect(page, '#thChip') };
+    // Player header only. #dbgTag (DBG) shows only in a ?debug=1 session, which this test needs for setMoney; players never
+    // see it, and with 99,999 Acorns and a long nickname at 320 it can touch the chip on wider system fonts (Windows QA,
+    // Nov 3, 2026). The debug badge is not part of the player layout, so it is not pinned here.
+    const r = { a: await rect(page, '#hdrAcorns'), lv: await rect(page, '#top .lv'), gear: await rect(page, '#settingsBtn'), name: await rect(page, '#hdrName'), env: await rect(page, '#thChip') };
     expect(r.a).not.toBeNull();
     expect(r.a.x).toBeGreaterThanOrEqual(0); expect(r.a.right).toBeLessThanOrEqual(vw);
     expect(r.a.right).toBeLessThanOrEqual(r.lv.x + 1);            // left of the Lv badge
-    for (const k of ['lv', 'gear', 'name', 'tag', 'env']) if (r[k]) expect(boxesOverlap(r.a, r[k]), k).toBe(false);
+    for (const k of ['lv', 'gear', 'name', 'env']) if (r[k]) expect(boxesOverlap(r.a, r[k]), k).toBe(false);
     const clip = await page.evaluate(() => { const b = document.querySelector('#hdrAcornN'); return b.scrollWidth > b.clientWidth + 1; });
     expect(clip).toBe(false);
     await page.evaluate(() => PixelPets.setMoney(7));

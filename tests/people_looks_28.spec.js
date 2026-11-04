@@ -54,18 +54,22 @@ function save() {
   s.settings.textSpeed = 'fast';
   s.flags['story.early_done'] = true;
   s.flags['story.phone_got'] = true;
+  // Unlock tips off: the phone tip opens on its own timer after boot and saves story.unlock_phone, which raced the
+  // before/after save compare below. This spec is about looks, not tips.
+  s.settings.tips = false;
   return s;
 }
 
 // game.js is one closure. A served copy (the file on disk is unchanged) adds an eval hook before boot(),
 // as tests/intro_cutscene.spec.js does, so the spec can read HOLDER_LOOK, NPC_LOOKS, LOOK_OF_NAME and npcLook.
-const BOOT_HOOK = 'try {\n  boot();\n';
+// CRLF-tolerant: a Windows checkout with core.autocrlf=true serves game.js with \r\n (.gitattributes now pins LF).
+const BOOT_HOOK = /try \{\r?\n  boot\(\);\r?\n/g;
 async function exposeInternals(page) {
   await page.route('**/game.js*', async (route) => {
     const res = await route.fetch();
     let body = await res.text();
-    const at = body.indexOf(BOOT_HOOK);
-    if (at >= 0 && body.indexOf(BOOT_HOOK, at + 1) < 0) body = body.slice(0, at) + 'window.__pl28 = { ev: s => eval(s) };\n' + body.slice(at);
+    const hits = [...body.matchAll(BOOT_HOOK)];
+    if (hits.length === 1) { const at = hits[0].index; body = body.slice(0, at) + 'window.__pl28 = { ev: s => eval(s) };\n' + body.slice(at); }
     await route.fulfill({ status: 200, body, headers: { 'content-type': 'application/javascript', 'cache-control': 'no-store' } });
   });
 }

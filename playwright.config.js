@@ -39,11 +39,15 @@ module.exports = defineConfig({
     browserName: 'chromium',
     launchOptions: { args: ['--host-resolver-rules=' + CLOUD_BLOCK] },
   },
+  // tools/static_server.js (Node, 127.0.0.1, large listen backlog, fixed content types, no-store). It replaced
+  // `python3 -m http.server`, whose backlog of 5 made Windows refuse connections under 2 workers. Started with this
+  // same node binary, so no python3 or PATH lookup is needed for the server.
   webServer: external ? undefined : {
-    command: 'python3 -m http.server ' + port + ' --bind 127.0.0.1',
+    command: '"' + process.execPath + '" tools/static_server.js --port ' + port + ' --host 127.0.0.1',
+    cwd: __dirname,
     url: 'http://127.0.0.1:' + port + '/version.json',
     reuseExistingServer: true,
-    // python http.server logs every request to stderr (~3.6 KB per test, ~97% of output). Drop it.
+    // The server logs only its start line. Keep the runner's log free of it.
     stdout: 'ignore',
     stderr: 'ignore',
     timeout: 20000,

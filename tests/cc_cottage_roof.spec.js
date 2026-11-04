@@ -108,7 +108,10 @@ test('cottage_e keeps the arch and the slate roof reads over the lawn', async ({
   const crown = view.cells.filter((c) => c.y === 11 && (c.x === 22 || c.x === 23));
   expect(tan).toBeGreaterThan(0);
   expect(crown.every((c) => c.mint === 0 && c.wine === 0 && c.soot === 0)).toBe(true);
-  expect(view.turf).toEqual([]);
+  // roof_turf left cottage_e (D910) and no other Cobblecrest building takes it. The one approved user anywhere is the
+  // Weir Hut at Hushwater's Old Weir (D1591), so any other building that picks the turf roof still fails here.
+  expect(view.turf.filter((id) => id.startsWith('cobblecrest'))).toEqual([]);
+  expect(view.turf).toEqual(['hw_cut.weir_hut']);
   expect(view.tile).toEqual({ n: 16, wide: true, grass: true });
   const after = await saveShape(page);
   expect(after).toEqual(before);
