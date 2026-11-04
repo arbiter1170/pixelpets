@@ -336,8 +336,8 @@ const COPY = {
   heights: ['Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', 'Fernbrook Heights', 'Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.', 'Fernbrook Heights'],
   // DAY1_TRIAL1_FLOW v0.4: Day 1 at the crates, Fen's go-home talk, Mom's trip (home_trip mirrors the live `mom` step), the class.
   crates: ['Tobin is tallying crates at the orchard gate. Lend a hand with three of them.', 'Orchard gate'],
-  tl_amos: ['Evening in Fernbrook. The Lantern House window is dark. See Keeper Amos.', 'Fernbrook Lantern House'],
-  tl_light: ["Amos needs a light for Burrsnout's cot. Wynne's stall sells wicks. Juniper has her own idea.", 'Fernbrook Lantern House'],
+  tl_amos: ['Evening in Fernbrook. The Lantern House window is dark. See Host Amos.', 'Fernbrook Lantern House'],
+  tl_light: ["Amos needs a light for Burrsnout's cot. Brisa's stall sells wicks. Juniper has her own idea.", 'Fernbrook Lantern House'],
   fen_dusk: ['Master Fen is waiting in the orchard. She wants a word before night.', 'Fernbrook orchard'],
   fen_home: ['Morning. Master Fen wants a word in the orchard before you go.', 'Fernbrook orchard'],
   home_trip: ['Head home to Hearthmoor. Mom has plans for you and your Walkling.', 'Hearthmoor, home'],   // no live `mom` step here (no starter), so its own copy
