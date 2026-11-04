@@ -3916,6 +3916,7 @@ function applyObjPatch(W, patch){
       const P = JSON.parse(JSON.stringify(pt));
       if (P.when) o.when = P.when;
       if (P.whenAdd) o.when = [].concat(o.when || [], P.whenAdd);
+      if (P.need) o.need = P.need;   // MAHOPAC_DREAMS DA1: a warp's key, on whichever overlay's copy of it stands
       if (P.linesFirst) o.lines = Object.assign({}, P.linesFirst, o.lines || {});
       if (P.linesBefore && o.lines) {
         const out = {}, anchor = P.linesBefore.anchorKey in o.lines ? P.linesBefore.anchorKey : 'else';
@@ -3960,6 +3961,9 @@ function applyHcCity(W){
   for (const [rid, p] of Object.entries(V.roomPatch || {})) { const r = W[rid]; if (!r) continue;
     if (p.music) r.music = p.music;
     if (Array.isArray(p.add)) for (const o of p.add) if (!r.objs.some(x => x.id === o.id)) r.objs.push(JSON.parse(JSON.stringify(o))); }
+  // ROUTE_TO_GOVERNOR §5.9 (D1853): a warp outside the city that names a `city` target (the river road's Charter Hill gate) lands
+  // there while the city is on; with the city off it keeps its plain target (Lantern Square's coach gate).
+  for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o && o.city && W[o.city.to]) Object.assign(o, o.city);
 }
 const WORLD = (() => {
   const W = JSON.parse(JSON.stringify(MD.maps_slice.maps));
@@ -4455,6 +4459,8 @@ function switchSide(to, opts){
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
   S.flags['story.switch_via'] = 'rook';
+  // REPORTS_AND_ENDINGS §9 (D1629, D1725): only a switch from Act 3 on makes the switcher's path and stops the reports.
+  if (to === SC_STANDING.switch.oneWay && actNow(false) >= SC_STANDING.switch.openAct) S.flags['story.switched_a3'] = true;
   noteRepJoin();   // D178: the side you left, met people only, once per switch
   syncSide(); save();
   return true;
@@ -4960,8 +4966,13 @@ function cond(c, live, o){
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = hasSeal(c.slice(5));
   else if (/^seals>=\d+$/.test(c)) v = sealsHeld() >= +c.slice(7);   // D1329: Seals held, tags never count
-  else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
+  else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;
+  else if (c.startsWith('map:')) v = !!WORLD[c.slice(4)];   // ROUTE_TO_GOVERNOR: a map this build has (Kilnmouth's road lands later)   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
+  // MAHOPAC_DREAMS: `talked:<id>` is a runtime mark for this map visit (a talk, or a scene's ["mark", id]); never saved.
+  else if (c.startsWith('talked:')) v = mapRT.talked.has(c.slice(7));
+  // MAHOPAC_DREAMS E1 (D1941): `lens:<moment>` asks PPStanding.lensMoment, the lens's first match, on the flags as the scene sees them.
+  else if (c.startsWith('lens:')) v = PPStanding.lensMoment(live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags) === c.slice(5);
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
   else if (c === 'enrol:ask') v = ENROL_CHOICE === 'ask';   // ACT1_KEEPER_JOIN D1562: the enrolment's pin-or-lanyard question
@@ -5522,7 +5533,9 @@ function liveContactSpot(name){
   return person.spots.find(s => present(s.o)) || null;
 }
 function whereNow(name){
-  if (name === 'Mom' || name === 'Dad') return wherePack('home', 'home', 'fixed');
+  // MAHOPAC_DREAMS G2 (D1949, D1921): Dad shows no place line (he is only ever met in the Mahopac dreams); Mom stays at home.
+  if (name === 'Dad') return null;
+  if (name === 'Mom') return wherePack('home', 'home', 'fixed');
   // DAY1_TRIAL1_FLOW (D1166): after her go-home talk Fen is away with the Keeper authorities until Lizzy's class is done.
   if (name === 'Master Fen' && S && S.flags['story.fen_sent_home'] && !S.flags['story.lizzy_class']) return wherePack('work', 'away on Keeper business', 'story');
   // POST_TRIAL_CRACKDOWN §7.2: under the curfew order (the crackdown until the pick) people are where the curfew put them.
@@ -9581,7 +9594,7 @@ function endScene(){
     else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
-  if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
+  if (cue && !(battle && battle.on) && (PPSound.musicWant === cue || (cue === 'hush' && !PPSound.musicWant))) {
     const back = trackFor(CUR); if (back && back !== cue) PPSound.music(back, { fadeOut: 400, fadeIn: 500 });
   }
   scheduleTutorial(true);
@@ -9628,9 +9641,14 @@ function expand(text){
   const p = viewPet(), sp = p ? SPECIES[spi(p)] : null, v = scene ? scene.vars : {};
   const line = (v && v.line) || flagOf('story.starter_line', true), rv = COUNTER[line] && SPECIES[SP_INDEX[COUNTER[line]]];
   const vals = { name: curName(true) || DEFAULT_PLAYER_NAME, player: curName(true) || DEFAULT_PLAYER_NAME, pet: viewPetName(), chip: chipLabel(), species: p ? nameOf(spi(p), p.stage) : '',
-    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '' };
-  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType)\}/g, (m, k) => vals[k]);
+    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '',
+    date: cardDate() };
+  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType|date)\}/g, (m, k) => vals[k]);
 }
+// MAHOPAC_DREAMS E3 (D1946): `{date}` is the device's date when the line shows, short month and day in capitals ("NOV 4"),
+// for the Mahopac epilogue card. Nothing is stored.
+const CARD_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+function cardDate(d){ d = d || new Date(); return CARD_MONTHS[d.getMonth()] + ' ' + d.getDate(); }
 function chipLabel(){
   const list = chippedPets();
   if (list.length) return petName(list[0]);
@@ -9917,6 +9935,17 @@ async function readWalk(dir){
   await walkCast([{ id: 'gb_read_pet', steps: steps }]);
   if (dir === 'back') dropCastIds(['gb_read_pet']);
 }
+// MAHOPAC_DREAMS §8: SCENE_MUSIC (design, draft) names cues that have no loop yet. A built loop id plays as built; `hearth`
+// falls back to the room's own loop, `ledger` to `dream`, and `hush` to silence (a 900 ms fade) for the rest of the scene.
+// Any other unknown id does nothing, as before.
+const MUSIC_FALLBACK = { hearth: 'room', ledger: 'dream', hush: null };
+function musicStepId(a){
+  const ids = PPSound.musicIds();
+  if (ids.includes(a) || !(a in MUSIC_FALLBACK)) return a;
+  const f = MUSIC_FALLBACK[a];
+  if (f === 'room') return trackFor(CUR);
+  return f && ids.includes(f) ? f : null;
+}
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene; if (k === 'priceOn') { document.body.classList.add('price-on'); return; }
   switch (k) {
@@ -9988,9 +10017,10 @@ async function execStep(st){
       return;
     }
     case 'setFlag': {
-      const v = b === '$line' ? sc.vars.line : b;
+      let v = b === '$line' ? sc.vars.line : b;
       // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
       const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
+      if (a === 'story.cv_mom_day' && v) v = dayKey(Date.now());   // ACT2_COVER_STORY D1696: the day Mom last packed the snack
       sc.view.flags[a] = v; pend(() => {
         const was = S.flags[a];
         const prevSeals = sealCount();
@@ -10145,6 +10175,7 @@ async function execStep(st){
     }
     case 'rest': if (atLantern()) await bedTuck(sc); sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
+    case 'mark': { if (a) mapRT.talked.add(String(a)); return; }   // MAHOPAC_DREAMS: a runtime mark for this map visit (talked:<id>)
     case 'keepPlace': sc.deferRespawn = false; return;   // this scene walks the holder to the Lantern House itself (ROOK_LANTERN_WALK)
     // The guide teaches the Lantern House once: its "Lanterns" unlock card would repeat the same lesson right after the rest.
     case 'lanternGuide': { const g = lanternGuideHere(); if (g) await execSteps(lanternGuideSteps(g, true)); if (S) S.flags['story.unlock_lantern'] = true; return; }
@@ -10200,8 +10231,17 @@ async function execStep(st){
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
     // KEEPER_ANTHEM M6 (D1381): ["music", id, { fadeOut, fadeIn, minDelay, near, keep }]; plain ["music", id] is 180 / 140 ms as before.
     // `near` starts a swelling cue at full; `keep` holds this cue over a scene warp (M7).
-    case 'music': { if (a && !sc.skip) { const o = (b && typeof b === 'object') ? b : {}; sc.musicCue = a; sc.keepMusic = !!o.keep;
-      try { PPSound.music(a, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near }); } catch (e) {} } return; }
+    // MAHOPAC_DREAMS §8: SCENE_MUSIC's proposed cues fall back (musicStepId) until their loops exist; a real loop always wins.
+    case 'music': {
+      if (!a || sc.skip) return;
+      const o = (b && typeof b === 'object') ? b : {}, id = musicStepId(a);
+      sc.musicCue = id || 'hush'; sc.keepMusic = !!o.keep;
+      try {
+        if (id) PPSound.music(id, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near });
+        else PPSound.hush(900);
+      } catch (e) {}
+      return;
+    }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
       if (a === 'open') openReveal(sc);
@@ -11066,7 +11106,9 @@ const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow
 // npcOnly species (the fetch line): weight 0 everywhere. A keeper cannot meet one, so it is not in the journal either.
 const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
 const wildSpecies = sp => !sp.labOnly && !sp.npcOnly;
-const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && wildSpecies(SPECIES[i]));
+// tableOnly species (ROUTE_TO_GOVERNOR §7.1, D1862: the Act 2 lines) are wild only on an authored spawn table that names them:
+// never in the 8% any-species roll and never in a habitat pick, so they cannot turn up on an Act 1 map.
+const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && !SPECIES[i].tableOnly && wildSpecies(SPECIES[i]));
 // CREATURES_SLICE §3: authored spawn tables, rows [speciesId, baseWeight, minLv, maxLv]. Effective weight = base x (1 + 0.25 x the
 // species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
 const SPAWNS = {
@@ -11082,7 +11124,7 @@ const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] ||
 function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
 const starterMult = sp => !sp.starter ? 1 : (S.flags && S.flags['story.seal1']) ? 0.2 : 0;
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => wildSpecies(sp) && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => wildSpecies(sp) && !sp.tableOnly && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
 const anyWeights = () => SPECIES.map((sp, i) => ANY_POOL.includes(i) ? starterMult(sp) : 0);
 function spawnOdds(tags = envTags(), key = spawnKey()){   // expected spawn probability per species for these tags on this map's table
   const t = SPAWNS[key];
@@ -11142,22 +11184,27 @@ function wildAt(x, y, except){ return wild.list.find(w => w !== except && ((w.x 
 const playerOn = (x, y) => (S.world.x === x && S.world.y === y) || (walk.to && walk.from.x === x && walk.from.y === y);
 function spawnSpot(sp){
   const pref = { grass: (x, y) => MAP[y][x] === 't', shore: (x, y) => nextTo(x, y, 'w'), woods: (x, y) => nextTo(x, y, 'T') }[SPECIES[sp].tiles || 'grass'];
+  // ROUTE_TO_GOVERNOR E8 (D1871): `spawnNear` (the adder: 'h', a drystone wall) is tried first; then the line's tiles, then tall grass.
+  const near = SPECIES[sp].spawnNear, wall = [];
   const best = [], ok = [];
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) {
     if (!roamable(x, y) || wildAt(x, y) || Math.abs(x - S.world.x) + Math.abs(y - S.world.y) < 3 || (fol.x === x && fol.y === y)) continue;
     if (MW > 24 && Math.abs(x - S.world.x) + Math.abs(y - S.world.y) > 10) continue;      // wide maps: within 10 tiles of you (§4)
+    if (near && nextTo(x, y, near)) wall.push([x, y]);
     if (pref(x, y)) best.push([x, y]); else if (MAP[y][x] === 't') ok.push([x, y]);
   }
-  const list = best.length ? best : ok;
+  const list = wall.length ? wall : best.length ? best : ok;
   return list.length ? list[Math.random() * list.length | 0] : null;
 }
+// ROUTE_TO_GOVERNOR E8 (D1871): a line's `idleMul` stretches its idle between steps (the reed-heron stands still: 3).
+const wildIdle = sp => rnd(WILD_IDLE_MS) * ((SPECIES[sp] && SPECIES[sp].idleMul) || 1);
 function spawnWild(sp, stage, at){
   if (sp == null) sp = pickSpecies();
   if (stage == null) stage = pickStage();
   const spot = at || spawnSpot(sp); if (!spot) return null;
   const c = wild.clock;
   const w = { id: ++wild.seq, sp, stage, lv: wildLv(sp, stage), x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
-    born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + rnd(WILD_IDLE_MS), phase: Math.random() * 3000, shyUntil: 0 };
+    born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + wildIdle(sp), phase: Math.random() * 3000, shyUntil: 0 };
   wild.list.push(w); return w;
 }
 // One nearby wild on Hearthmoor after Rook's first battle, until it is met or the keeper already has a second friend.
@@ -11190,7 +11237,7 @@ function updateWild(dt){
     if (w.to) {
       const k = clamp((c - w.t0) / WILD_STEP_MS, 0, 1);
       w.fx = w.from.x + (w.to.x - w.from.x) * k; w.fy = w.from.y + (w.to.y - w.from.y) * k;
-      if (k >= 1) { w.fx = w.x; w.fy = w.y; w.to = null; w.idleUntil = c + rnd(WILD_IDLE_MS); }
+      if (k >= 1) { w.fx = w.x; w.fy = w.y; w.to = null; w.idleUntil = c + wildIdle(w.sp); }
       continue;
     }
     const chased = wild.chase === w.id;
@@ -11378,6 +11425,7 @@ function fadeTick(sample){
     if (!S.flags['daily.buddy_pat']) S.flags['daily.buddy_pat'] = d;
     else if (S.flags['daily.buddy_pat'] !== d) { delete S.flags['story.buddy_pat_today']; delete S.flags['daily.buddy_pat']; }
   } else if (S.flags && S.flags['daily.buddy_pat'] && S.flags['daily.buddy_pat'] !== d) delete S.flags['daily.buddy_pat'];
+  if (S.flags && S.flags['story.cv_mom_day'] && S.flags['story.cv_mom_day'] !== d) delete S.flags['story.cv_mom_day'];   // D1696: one snack a day
   bossRestTick(d); openRoad3();
   for (const p of allPets()) {
     if (!isFaded(p)) continue;
@@ -12783,10 +12831,30 @@ const REGION_MAP = {
       hold: [{ id: 'split', line: "Keepers walk it. Glimmerwell's crates roll down it." }] },    // BRINEWICK (B6): the harbour at the foot of Route 3. A Keepers town with a Glimmerwell depot on the east pier.
     brinewick:     { kind: 'town',  col: 15, row: 10, label: 'BRINEWICK',   labelAt: 'left', blurb: 'Harbour town. Tide Trial Hall.', path: [[17, 9], [16, 10], [15, 10]],
       hold: [{ id: 'split', line: 'Keepers keep the harbour. Glimmerwell leases the east pier.' }] },
+    // ROUTE_TO_GOVERNOR §4 (D1851, D1852): Route 4 on the built (south) sheet, the coach's line from Hearthmoor to the fork and on.
+    route4:        { kind: 'route', col: 4,  row: 5, label: 'ROUTE 4',     labelAt: 'right', blurb: 'The coach road north. The fork, then the river.', path: [[2, 6], [4, 5], [4, 3], [2, 1]],
+      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
+    // The north sheet, "THE AMBERWILD · NORTH" (D1851). None of these maps is built yet, so each stays ??? and grey (not
+    // reachable); Kilnmouth shows its name once the Governor has named it (story.km_assigned). Labels PLACEHOLDER (D1857).
+    kilnmouth:     { sheet: 'north', kind: 'town', col: 8, row: 6, label: 'KILNMOUTH', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', nameWhen: ['story.km_assigned'],
+      coach: { path: [[8, 6], [7, 8], [8, 10], [9, 11]], when: ['story.km_council'] }, hold: [{ id: 'wild' }] },
+    km_road:       { sheet: 'north', kind: 'route', col: 9, row: 9, label: 'CLAYBANK ROAD', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', path: [[9, 11], [9, 9], [8, 6]], hold: [{ id: 'wild' }] },
+    brightgate:    { sheet: 'north', kind: 'town', col: 15, row: 5, label: 'BRIGHTGATE', labelAt: 'below', blurb: 'PLACEHOLDER (Brightgate packet)', hold: [{ id: 'wild' }] },
+  },
+  // ROUTE_TO_GOVERNOR §4 (D1851): two sheets. The seam is column 9 on both; the markers are drawn, not tapped (no 44 px box
+  // fits between the labels), and two buttons under the canvas switch sheets. NORTH shows once the holder has seen the fork.
+  sheets: { south: { title: 'THE AMBERWILD', button: 'THE AMBERWILD' }, north: { title: 'THE AMBERWILD · NORTH', button: 'NORTH', when: ['story.r4_fork | story.km_assigned'] } },
+  seamCol: 9,
+  marks: {
+    south: [{ id: 'river_r4', kind: 'river', path: [[6, 0], [5, 2], [3, 2], [2, 1]] },
+      { id: 'seam_north', kind: 'seam', col: 9, row: 0, label: 'KILNMOUTH', from: [4, 3], via: [8, 2], when: ['story.r4_fork | story.km_assigned'] }],
+    north: [{ id: 'fog', kind: 'fog', cols: [6, 10], rows: [0, 5] }, { id: 'dry_hill', kind: 'hill', col: 11, row: 4 },
+      { id: 'north_road_stub', kind: 'stub', path: [[8, 6], [8, 2], [8, 0]], when: ['story.act>=3'] },
+      { id: 'seam_south', kind: 'seam', col: 9, row: 11, label: 'THE AMBERWILD' }],
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'], route4: ['story.reached_route4'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', hm_store: 'hearthmoor', hm_wardrobe: 'hearthmoor', hm_diner: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook', fbh_press_in: 'fernbrook', fbh_picker_in: 'fernbrook', fbh_stitch_in: 'fernbrook',   // FERNBROOK_HOMES
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
@@ -12796,7 +12864,8 @@ const REGION_MAP = {
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
-    bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick' },
+    bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick',
+    route4_reeds: 'route4', route4_withy: 'route4' },   // ROUTE_TO_GOVERNOR: the river road and the withy beds are Route 4
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -12809,6 +12878,10 @@ function nodeOf(id){
   if (N[REGION_MAP.interiors[id]]) return REGION_MAP.interiors[id];
   const mat = (m.objs || []).find(o => o.kind === 'warp' && N[o.to]); return mat ? mat.to : null;
 }
+// ROUTE_TO_GOVERNOR §4: a node's sheet (south unless it says north); which sheets this save can open; the sheet on show.
+const nodeSheet = id => ((REGION_MAP.nodes[id] || {}).sheet) || 'south';
+const sheetOpen = k => { const sh = REGION_MAP.sheets[k]; return !!sh && (!sh.when || (!!S && sh.when.every(c => cond(c)))); };
+const onSheet = id => nodeSheet(id) === (mapUI.sheet || 'south');
 function markMapSeen(){ const n = nodeOf(S && S.world && S.world.map); if (!n) return; if (!S.mapSeen || typeof S.mapSeen !== 'object') S.mapSeen = {}; S.mapSeen[n] = 1; }
 function mapVisited(id, cur){
   if (!WORLD[id]) return false;                                   // not built in this build: always ??? (§5, test 8)
@@ -12831,7 +12904,7 @@ function syncMapBtn(){
   if (mb) { const grey = !soon; mb.classList.toggle('off', grey); mb.disabled = grey; mb.setAttribute('aria-disabled', grey ? 'true' : 'false'); }
   const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false');
 }
-const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null };
+const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null, sheet: 'south' };
 let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
 // ACT1_KEEPER_JOIN §7 (D1505, E1): one hold condition read on a flags object, the way cond() reads them: `|` first, then `&`,
 // then `!`; 'k=v' compares a flag's value (story.side=glimmer, D1171); 'k>=n', 'k<=n', 'k>n', 'k<n' compare a number, an unset
@@ -12877,7 +12950,8 @@ const sidesShown = () => !!(S && Object.keys(REGION_MAP.nodes).some(id => mapVis
 function nodePoint(n){ return [n.col * 16 + 8, n.row * 16 + 8]; }
 function nodeGeom(id){
   const n = REGION_MAP.nodes[id]; if (!n) return null;
-  const [x, y] = nodePoint(n), known = mapVisited(id, mapUI.cur), label = known ? n.label : REGION_MAP.unknownLabel;
+  const [x, y] = nodePoint(n), known = mapVisited(id, mapUI.cur), named = !known && !!n.nameWhen && !!S && n.nameWhen.every(c => cond(c));
+  const label = known || named ? n.label : REGION_MAP.unknownLabel;
   const out = n.kind === 'town' ? 22 : 18;                       // clear of the claim halo, the you-ring and the quest ring
   let lx = x, ly = y, align = 'center';
   if (n.labelAt === 'right') { lx = x + out; align = 'left'; }
@@ -12894,7 +12968,9 @@ function paintPlaceCard(){
     name = (room ? outdoor + ' · ' + WORLD[S.world.map].name : outdoor).toUpperCase();
     blurb = REGION_MAP.nodes[id].blurb;
   }
-  $('#mapTitle').textContent = REGION_MAP.title;
+  $('#mapTitle').textContent = (REGION_MAP.sheets[mapUI.sheet || 'south'] || {}).title || REGION_MAP.title;
+  if (!known && geo && geo.label !== REGION_MAP.unknownLabel) name = geo.label;   // named, not reached yet (Kilnmouth)
+  syncSheetButtons();
   $('#mapPlaceName').textContent = name;
   $('#mapPlaceBlurb').textContent = blurb;
   const here = $('#mapHere'); if (here) here.hidden = !(id && id === mapUI.cur);
@@ -12933,6 +13009,7 @@ function openMap(opts){
   if (!mapReady()) { sfx('denied'); return; }
   clearMoves(); markMapSeen();
   mapUI.cur = nodeOf(S.world.map); mapUI.sel = mapUI.cur; mapUI.t0 = performance.now();
+  mapUI.sheet = mapUI.cur ? nodeSheet(mapUI.cur) : 'south';   // the map opens on the current node's sheet
   const indoor = !!(CUR && CUR.kind === 'interior');
   const level = (opts && opts.level) || (indoor ? 'room' : 'town');
   showMapLevel(level, opts && opts.id);
@@ -12948,6 +13025,7 @@ function mapNodeAt(px, py){
   const g = ctx($('#regionCanvas'));
   g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font');
   for (const id in REGION_MAP.nodes) {
+    if (!onSheet(id)) continue;
     const geo = nodeGeom(id); if (!geo) continue;
     const icon = Math.hypot(px - geo.x, py - geo.y);
     g.textAlign = geo.align; const tw = g.measureText(geo.label).width;
@@ -12960,10 +13038,12 @@ function mapNodeAt(px, py){
 }
 function mapNudge(dir){
   if (mapUI.level && mapUI.level !== 'region') { nudgeLayer(dir); return; }
-  const from = REGION_MAP.nodes[mapUI.sel || mapUI.cur]; if (!from) return;
+  const fromId = mapUI.sel && onSheet(mapUI.sel) ? mapUI.sel : (mapUI.cur && onSheet(mapUI.cur) ? mapUI.cur : null);
+  const from = REGION_MAP.nodes[fromId];
+  if (!from) { if (dir === 'up' || dir === 'down') flipSheetFor(dir); return; }
   let best = null, bestD = 1e9;
   for (const id in REGION_MAP.nodes) {
-    if (id === (mapUI.sel || mapUI.cur)) continue;
+    if (id === fromId || !onSheet(id)) continue;
     const n = REGION_MAP.nodes[id], dx = n.col - from.col, dy = n.row - from.row;
     const ok = dir === 'left' ? dx < 0 && Math.abs(dy) <= Math.abs(dx) + 1
       : dir === 'right' ? dx > 0 && Math.abs(dy) <= Math.abs(dx) + 1
@@ -12974,6 +13054,29 @@ function mapNudge(dir){
     if (d < bestD) { bestD = d; best = id; }
   }
   if (best) selectMapNode(best);
+  else if (dir === 'up' || dir === 'down') flipSheetFor(dir);   // "up" from a top-row node turns to the north sheet (and down, back)
+}
+function flipSheetFor(dir){
+  const to = dir === 'up' && (mapUI.sheet || 'south') === 'south' ? 'north' : dir === 'down' && mapUI.sheet === 'north' ? 'south' : null;
+  if (to) setMapSheet(to);
+}
+function setMapSheet(k){
+  if (!REGION_MAP.sheets[k] || !sheetOpen(k) || (mapUI.sheet || 'south') === k) return false;
+  mapUI.sheet = k;
+  mapUI.sel = mapUI.cur && nodeSheet(mapUI.cur) === k ? mapUI.cur : (Object.keys(REGION_MAP.nodes).find(id => nodeSheet(id) === k) || null);
+  if (!mapUI.level || mapUI.level === 'region') paintPlaceCard();
+  sfx('tap'); if (!$('#ovMap').hidden) drawMapOverlay(performance.now());
+  return true;
+}
+// Two buttons under the parchment, at least 44 x 44 px (rule 6), on the region level once the north sheet is open.
+function syncSheetButtons(){
+  const box = $('#mapSheets'); if (!box) return;
+  const show = (!mapUI.level || mapUI.level === 'region') && sheetOpen('north');
+  box.hidden = !show;
+  for (const [k, sel] of [['south', '#mapSheetSouth'], ['north', '#mapSheetNorth']]) {
+    const b = $(sel); if (!b) continue;
+    const on = (mapUI.sheet || 'south') === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+  }
 }
 function fitRegionMap(){                                           // whole-number scale only: 2x if there's room for 640 px, else 1x (§2)
   if (mapUI.level && mapUI.level !== 'region') { fitLayerCanvas(); return; }
@@ -13002,7 +13105,9 @@ function mapDevCheck(){
     if (left < 4 || right > 316 || top < 4 || bot > 188) bad.push(id + ': label');
   }
   const pair = (a, b) => { const [ax, ay] = nodePoint(REGION_MAP.nodes[a]), [bx, by] = nodePoint(REGION_MAP.nodes[b]); return Math.hypot(ax - bx, ay - by); };
-  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) if (pair(ids[i], ids[j]) < 28) bad.push('close: ' + ids[i] + ' ' + ids[j]);
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) if (nodeSheet(ids[i]) === nodeSheet(ids[j]) && pair(ids[i], ids[j]) < 28) bad.push('close: ' + ids[i] + ' ' + ids[j]);   // per sheet (ROUTE_TO_GOVERNOR §4)
+  for (const id of ids) if (!REGION_MAP.sheets[nodeSheet(id)]) bad.push(id + ': sheet');
+  for (const [k, list] of Object.entries(REGION_MAP.marks || {})) for (const mk of list) if (mk.kind === 'seam' && mk.col !== REGION_MAP.seamCol) bad.push(k + ': seam col ' + mk.col);
   if (mapHold('cobblecrest', {}) !== 'keepers' || mapHold('cobblecrest', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('cobble');
   if (mapHold('cobble_quarry', {}) !== 'keepers' || mapHold('cobble_quarry', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('quarry');
   if (mapHold('fb_heights', {}) !== 'glimmer' || mapHold('fb_heights', { 'story.sm_done': true }) !== 'split') bad.push('heights');
@@ -13038,13 +13143,48 @@ function mapDevCheck(){
   }
   return bad;
 }
+// ROUTE_TO_GOVERNOR E9 (D1851): the north sheet's parchment, drawn in PAL (the south sheet keeps region_backdrop.png).
+function northBackdrop(R){
+  R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');
+  [[30, 150], [60, 40], [210, 30], [250, 150], [290, 60], [120, 170], [270, 110]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });
+  for (const [cx, cy] of [[24, 24], [36, 36], [276, 24], [292, 172], [212, 172], [40, 120]])   // a few tree clumps (decoration)
+    for (const [dx, dy] of [[0, 0], [7, 3], [-6, 4], [2, 8]]) { R(cx + dx - 2, cy + dy - 2, 5, 5, 't'); R(cx + dx - 1, cy + dy - 2, 2, 2, 'g'); }
+  for (let y = 120; y < 190; y += 2) R(148 + Math.round(Math.sin(y / 9) * 6), y, 2, 2, 'c');      // the stream down the valley
+}
+// Sheet marks: `under` (river, fog, the dry hill) sits below the claims and paths; `over` (the seam markers, the Act 3 stub) above.
+function drawSheetMarks(R, seg, P, sheet, layer){
+  const g = ctx($('#regionCanvas'));
+  for (const mk of (REGION_MAP.marks && REGION_MAP.marks[sheet]) || []) {
+    if (mk.when && !mk.when.every(c => cond(c))) continue;
+    if (layer === 'under' && mk.kind === 'river') for (let i = 0; i < mk.path.length - 1; i++) seg(mk.path[i], mk.path[i + 1], 'c', false);
+    if (layer === 'under' && mk.kind === 'fog') {   // the Act 3 reserve: drawn as fog, not blank (KILNMOUTH A6)
+      const x0 = mk.cols[0] * 16, y0 = mk.rows[0] * 16, x1 = (mk.cols[1] + 1) * 16, y1 = (mk.rows[1] + 1) * 16;
+      for (let y = Math.max(2, y0); y < y1; y++) for (let x = x0; x < x1; x++) { const h = (x * 7 + y * 13) % 5; if (h === 0) R(x, y, 1, 1, 'w'); else if ((x + y) % 2 === 0) R(x, y, 1, 1, 'h'); }
+    }
+    if (layer === 'under' && mk.kind === 'hill') {   // the dry hill: a mark, no node (L1 waits on D976)
+      const [cx, cy] = P([mk.col, mk.row]);
+      for (let i = 0; i < 9; i++) { R(cx - i, cy - 6 + i, 2 * i + 1, 1, 'G'); R(cx - i, cy - 6 + i, 1, 1, 'F'); R(cx + i, cy - 6 + i, 1, 1, 'F'); }
+      R(cx - 8, cy + 3, 17, 1, 'F');
+    }
+    if (layer === 'over' && mk.kind === 'stub') for (let i = 0; i < mk.path.length - 1; i++) seg(mk.path[i], mk.path[i + 1], 'h', true);
+    if (layer === 'over' && mk.kind === 'seam') {   // a drawn arrow at the seam column with the far sheet's name; not a tap target
+      const x = mk.col * 16 + 8, top = mk.row === 0, y = top ? 6 : 186;
+      if (mk.from) { seg(mk.from, mk.via, 'o', true); seg(mk.via, [mk.col, mk.row], 'o', true); }
+      for (let i = 0; i < 5; i++) R(x - i, top ? y + i : y - i, 2 * i + 1, 1, 'k');
+      g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textBaseline = 'middle'; g.textAlign = 'right';
+      g.fillStyle = PAL.k; g.fillText(mk.label, x - 8, top ? y + 4 : y - 4);
+    }
+  }
+}
 function drawRegionMap(t){
   mapLayerMarks = { rings: [], labels: [] };
-  const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, N = REGION_MAP.nodes, cur = mapUI.cur;
+  const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, sheet = mapUI.sheet || 'south', cur = mapUI.cur;
+  const N = {}; for (const [id, n] of Object.entries(REGION_MAP.nodes)) if (nodeSheet(id) === sheet) N[id] = n;   // this sheet's nodes only
   g.setTransform(k, 0, 0, k, 0, 0); g.imageSmoothingEnabled = false;
   const R = (x, y, w, h, col) => { g.fillStyle = PAL[col]; g.fillRect(Math.round(x), Math.round(y), w, h); };
-  const backdrop = regionBackdropOn() ? ensureRegionBackdrop() : null;
+  const backdrop = sheet === 'south' && regionBackdropOn() ? ensureRegionBackdrop() : null;
   if (backdrop && backdrop.complete && backdrop.naturalWidth === 640) g.drawImage(backdrop, 0, 0, 320, 192);
+  else if (sheet === 'north') northBackdrop(R);   // ROUTE_TO_GOVERNOR E9: the north parchment, PAL only
   else {
     R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');                                 // parchment, 2 px orange edge
     [[30, 40], [70, 150], [150, 30], [200, 140], [255, 45], [290, 160], [120, 100]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });   // hill ticks (decoration)
@@ -13054,6 +13194,7 @@ function drawRegionMap(t){
     const [x0, y0] = P(a), [x1, y1] = P(b), n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
     for (let i = 0; i <= n; i++) { if (dashed && Math.floor(i / 4) % 2) continue; R(Math.round(x0 + (x1 - x0) * i / n) - 1, Math.round(y0 + (y1 - y0) * i / n) - 1, 3, 3, col); }
   };
+  drawSheetMarks(R, seg, P, sheet, 'under');
   const discW = (cx, cy, r, yy) => { const dy = yy - cy; if (dy * dy > r * r + r * 0.8) return null; return Math.floor(Math.sqrt(r * r - dy * dy + r * 0.8)); };
   const fillDisc = (cx, cy, r, col, side) => {
     for (let y = cy - r; y <= cy + r; y++) {
@@ -13110,6 +13251,11 @@ function drawRegionMap(t){
     const coach = N[id].link === 'coach';
     for (let i = 0; i < pth.length - 1; i++) seg(pth[i], pth[i + 1], vis[id] ? (coach ? 'g' : 'o') : 'h', !vis[id] || coach);
   }
+  for (const id in N) {   // Kilnmouth's coach (dashed) is drawn only from story.km_council (D1882)
+    const ch = N[id].coach; if (!ch || !(ch.when || []).every(c => cond(c))) continue;
+    for (let i = 0; i < ch.path.length - 1; i++) seg(ch.path[i], ch.path[i + 1], 'g', true);
+  }
+  drawSheetMarks(R, seg, P, sheet, 'over');
   const disc = (cx, cy, r, col) => fillDisc(cx, cy, r, col, 0);
   const ring = (cx, cy, r, col) => { for (let a = 0; a < 360; a += 2) { const x = Math.round(cx + r * Math.cos(a * Math.PI / 180)), y = Math.round(cy + r * Math.sin(a * Math.PI / 180)); R(x - 1, y - 1, 2, 2, col); } };
   g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textBaseline = 'middle';
@@ -13171,7 +13317,7 @@ const ML_SECTION = {
 };
 const ML_CHIPS = { hm_flats_lobby: 'LOBBY', hm_flats_5: '5B', sm_yard: 'YARD', sm_tunnel: 'TUNNEL', sm_hold: 'HOLD', sm_den: 'DEN' };
 const ML_LABEL = { hc_gym_in: 'DOJO' };
-const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K' };
+const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K', y: 't', h: 'm', l: 'g' };   // y h l: ROUTE_TO_GOVERNOR's reeds, drystone wall, mown lawn
 const mapLayers = { ready: false, byId: {}, byFloor: {} };
 let regionBackdropImg = null;
 let mapPinSig = '';
@@ -13596,6 +13742,7 @@ function syncMapChrome(){
   else paintChips();
   if (region) { mapPinSig = ''; mapUI.pins = []; const pins = $('#mapPins'); if (pins) { pins.hidden = true; pins.innerHTML = ''; } }
   syncMapActs();
+  syncSheetButtons();
 }
 function showMapLevel(level, id){
   ensureMapLayers();
@@ -18438,6 +18585,36 @@ const DEBUG_EXTRAS = {
     kj_old_glimmer: { place: 'Old Glimmer save (moved)', text: 'A save that picked Glimmerwell.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side=glimmer', 'story.side_pick_done']) },
     kj_old_keepers: { place: 'Old Keepers save (moved)', text: 'A save that picked the Keepers.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side_pick_done', 'story.orchard_cleared']) },
   });
+  // GOVERNOR_MEETING §6.5 (D1475): three Act 2 places. A new save is a cover holder (D1562), recalled after Brinewick and past
+  // the Lantern Council, so the recall call stands in for Ilse's Act 2 call. The House is in the city preview (?hccity=2) only.
+  const A2 = LAN.concat(['story.seal2', 'story.gb_done', 'story.route3_open', 'story.reached_brinewick', 'story.seal3', 'story.ep1_end',
+    'story.ilse_call3', 'story.a2_called', 'story.side=keepers', 'story.cover_done', 'story.rpt_3=told', 'story.hc_council_done']);
+  const door = HC_V2_ON ? { map: 'hc_civic', x: 32, y: 16, facing: 'up' } : { map: 'hearthmoor', x: 11, y: 7, facing: 'down' };
+  Object.assign(DEBUG_EXTRAS, {
+    a2_start: { place: 'Act 2 start (Cadet, after the card)', text: 'Ilse gives the posting.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up', flags: A2 },
+    a2_posted: Object.assign({ place: 'Act 2 posted', text: "The Governor's House opens.", flags: A2.concat(['story.gov_posted']) }, door),
+    a2_met: { place: 'Act 2 met, ledger told', text: 'Ilse hears how it went.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up',
+      flags: A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.gov_told=told', 'story.shift_g']) },
+  });
+}
+// MAHOPAC_DREAMS E4: four places for Mom's walk and the lens (Seal 4, Seal 5, the Ledger Night and the Spire are later builds,
+// so these places seed their flags). Debug only, like every place here.
+{
+  const MD_A2 = ['story.intro_seen', 'story.starter_received', 'story.reached_route1', 'story.reached_fernbrook', 'story.met_fen', 'story.mom_met',
+    'story.mom_chore', 'story.mom_sent', 'story.reached_mahopac', 'story.dream_started', 'story.dream_toy', 'story.dream_party', 'story.dream_dad',
+    'story.dream_woke', 'story.dream_study', 'story.seal1', 'story.crackdown', 'story.post_trial_done', 'story.warden_called', 'story.warden_met',
+    'story.phone_got', 'story.chi_done', 'story.orchard_cleared', 'story.ilse_call2', 'story.keeper_cadet', 'story.cover=glimmer', 'story.side=keepers',
+    'story.side_pick_done', 'story.seal2', 'story.seal3', 'story.route3_open', 'story.ep1_end', 'story.ilse_call3', 'story.a2_called',
+    'story.cover_done', 'story.rpt_1=told', 'story.rpt_2=told', 'story.rpt_3=told', 'story.hc_council_done', 'story.gov_posted',
+    'story.cv_mom_walk', 'story.cv_mom=told', 'story.seal4'];
+  const MD_A5 = MD_A2.concat(['story.seal5', 'story.ilse_ledger', 'story.solvane_met', 'story.lens_note']);
+  const obs = { map: 'mahopac_obs', x: 4, y: 5, facing: 'up' };
+  Object.assign(DEBUG_EXTRAS, {
+    md_mom_offer: { place: "Mahopac: Mom's offer (after Seal 4)", text: 'Tap Mom at home: walk north.', map: 'hm_home_in', x: 5, y: 6, facing: 'up', flags: MD_A2 },
+    md_lens_kept: Object.assign({ place: 'Mahopac: lens, W kept', text: 'Ilse at the lens; a kept report.', flags: MD_A5.concat(['story.rpt_4=kept']) }, obs),
+    md_lens_switch: Object.assign({ place: 'Mahopac: lens, switcher', text: "Ilse at the lens; Juniper's clip.", flags: MD_A5.concat(['story.switched_a3', 'story.ilse_p0']) }, obs),
+    md_lens_cut: Object.assign({ place: 'Mahopac: lens, loyalist', text: 'Ilse at the lens; the Cabinet Room door.', flags: MD_A5.concat(['story.warden_cut']) }, obs),
+  });
 }
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
 if (HC_V2_ON) {
@@ -19405,6 +19582,9 @@ function bindInput(){
   if (roomLv) roomLv.addEventListener('click', () => chooseMapLevel('room'));
   if (townLv) townLv.addEventListener('click', () => chooseMapLevel('town'));
   if (regLv) regLv.addEventListener('click', () => chooseMapLevel('region'));
+  const shS = $('#mapSheetSouth'), shN = $('#mapSheetNorth');   // ROUTE_TO_GOVERNOR §4: the two sheet buttons
+  if (shS) shS.addEventListener('click', () => setMapSheet('south'));
+  if (shN) shN.addEventListener('click', () => setMapSheet('north'));
   const mapSeeBtn = $('#mapSee'), mapBackBtn = $('#mapBack');
   if (mapSeeBtn) mapSeeBtn.addEventListener('click', mapSee);
   if (mapBackBtn) mapBackBtn.addEventListener('click', mapBack);
@@ -20277,7 +20457,7 @@ function boot(){
     band: (() => { const c = $('#mapCanvas'), b = c && c.height ? outdoorViewBand(c.height) : null; return b && { topPad: b.topPad, hudPad: b.hudPad, VHe: b.VHe, mid: b.mid, head: b.head, padL: b.padL, padR: b.padR }; })(),
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
-    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });
+    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom', music: scene.musicCue || null }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows

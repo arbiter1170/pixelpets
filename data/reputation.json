@@ -951,6 +951,42 @@
       "faction": "none",
       "base": 50,
       "note": "Shown name: NAMES_PASS (D1730). Display only (D1768): the key, S.rep and the phone book keep the raw name."
+    },
+    {
+      "name": "Road Keeper",
+      "faction": "keepers",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.2 (D1857, D1860): the Keeper post at the fold on Route 4. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Lock Keeper",
+      "faction": "keepers",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.3: the towpath lock on the river road. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Gate Keeper",
+      "faction": "keepers",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.3: the Charter Hill gate on the river road. Role name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER A",
+      "faction": "none",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.5 (D1857, D1870): the Rambler on Route 4. Name PLACEHOLDER until Vincent names it."
+    },
+    {
+      "name": "PLACEHOLDER B",
+      "faction": "none",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.5: the Reed Watcher on the river road. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER C",
+      "faction": "none",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.5: the Basket Weaver in the withy beds. Name PLACEHOLDER."
     }
   ],
   "tiers": [

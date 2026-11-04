@@ -321,6 +321,22 @@ const OUT = {
     S.deco(() => { S.art('rock_big', S.W - 9, S.H - 2, 0.75); }); },
   hm_plaza(S){ sky(S); FAR.roofs(S, [[0, 2], [17, 2]]); S.ground('P', 1); S.band('f', 26, 8, 0.5, 0, 24); S.fill('w', S.W - 28, S.hz + 22, 24, 10, 1, 8, 6);
     S.deco(() => { S.art('bench_long', 14, S.hz + 14) || S.art('lamp_post', 14, S.hz + 14); }); },
+  // ROUTE_TO_GOVERNOR §9.1 (D1875; BATTLE_BACKDROPS_ACT2 R6): Route 4's three maps, from their own tiles and props.
+  route4(S){                                          // the downs: a drystone wall across the slope, the finger post at the fork
+    sky(S); FAR.hills(S, 'm', 1.2); S.ground('g', 3); S.band('h', 14, 2);
+    S.deco(() => { S.art('finger_post', 12, S.hz + 12) || S.art('stone_marker', 12, S.hz + 12); });
+  },
+  route4_reeds(S){                                    // the river road: the capital small and far left, the river, the cut's coping, reeds
+    sky(S); FAR.roofs(S, [[1, 1]]); S.ground('g');
+    S.fill('w', 0, S.hz + 22, S.W, 10, 1, 8, 31); S.band('P', 6, 2);
+    [[S.W - 22, 2], [S.W >> 1, 5], [S.W - 8, 9]].forEach(([x, c]) => S.fill('y', x, S.hz + 18, 8, 4, 0.5, c, 30));
+    S.deco(() => { S.art('road_bar', 12, S.hz + 14) || S.art('fence_post', 12, S.hz + 14); });
+  },
+  route4_withy(S){                                    // the withy beds: the pond ringed with reeds, a willow bundle
+    sky(S); FAR.hills(S, 'l', 0.8); S.ground('g', 2);
+    S.fill('s', 4, S.hz + 18, 30, 12, 0.5, 14, 9); S.fill('w', 6, S.hz + 20, 26, 8, 1, 14, 10); S.band('y', 10, 4);
+    S.deco(() => { S.art('withy_bundle', S.W - 9, S.H - 2) || S.art('crate', S.W - 9, S.H - 2); });
+  },
 };
 // Every room (the whole interior list). back: props at the foot of the back wall, left of the foe; front: props in the
 // front-right corner. Trial Halls add banners and a floor ring. group: a group battle happens here (boxes()).

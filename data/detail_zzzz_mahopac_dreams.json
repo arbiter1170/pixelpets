@@ -1,0 +1,39 @@
+{
+  "spec": "MAHOPAC_DREAMS v0.1 (design repo, private; D1940-D1951): Mom's walk north (§4), the lens note (§3.1) and the north trail's key (DA1).",
+  "_about": "Ours, not a design copy. Applied after detail_zzz_act2_cover.json. Mahopac's own objects, flags and scenes are in data/mahopac.json; this file holds what lives outside Mahopac: Mom's offer and repeats at home (DA3; data/interiors.json stays verbatim). Save stays pixelpets.save.v2, v 2; new additive story.* keys only; nothing written at load. Gates nothing in the game sets yet (story.seal4, story.seal5) keep it inert in normal play.",
+  "_placeholders": {
+    "note": "PLACEHOLDER copy (Story/June to replace; MAHOPAC_DREAMS §3-§5; OPEN_DECISIONS D1940-D1959). Every line in this file and every line MAHOPAC_DREAMS adds to data/mahopac.json is a placeholder.",
+    "paths": ["objPatch", "hostNotes", "scenes"]
+  },
+  "_waits": "§5.1 (D1947): spire_echo is SE1-SE2, for the Spire debrief after d3 and before the Keepers' decision scene (W only). The debrief (STORMBELL_SPIRE, REPORTS §5) is not built, so nothing runs it yet; its build adds [\"run\", \"spire_echo\"] after d3.",
+  "scenes": {
+    "spire_echo": [
+      ["say", "", "As Lumen goes, Ilse stays by the window a moment."],
+      ["say", "Warden Ilse", "A bell tower at low tide. I dreamed one once. It's in my other book."]
+    ]
+  },
+  "hostNotes": [
+    {
+      "_note": "§3.1 (D1940, D1923): after the Ledger Night and the Spire, once, at any Lantern House Host; on the switcher path only after the bring-in order (story.ilse_p0). Closed at Act 6.",
+      "when": ["story.ilse_ledger", "story.solvane_met", "!story.climb_open", "!story.lens_note", "!story.switched_a3 | story.ilse_p0"],
+      "line": "A note from Warden Ilse: The lens at Mahopac. Bring {pet}. Come when you can.",
+      "scene": "lens_note"
+    }
+  ],
+  "objPatch": {
+    "_note": "DA1 (D1950): the north trail also opens on Ilse's note, for an old save that skipped Mahopac (no story.mom_sent); wayup's copies of the warp and signs are the ones that stand. §4.2 (D1944): Mom's offer comes first on her home tap from Seal 4 to Seal 5 (the daily snack still plays first when due); her repeat after the walk replaces Supper's for the rest of Act 2.",
+    "hm_north": {"need": "story.mom_sent | story.lens_note"},
+    "hm_north_w": {"need": "story.mom_sent | story.lens_note"},
+    "hm_north_e": {"need": "story.mom_sent | story.lens_note"},
+    "hm_north_closed": {"when": ["!story.mom_sent", "!story.lens_note"]},
+    "hm_north_open": {"when": ["story.mom_sent | story.lens_note"]},
+    "hm_north_wait": {"when": ["!story.mom_sent", "!story.lens_note"]},
+    "mom": {
+      "linesFirst": {"story.cv_mom & story.dream_woke & story.seal4 & !story.seal5 & !story.mom_mah_ask": "@mom_lens_offer"},
+      "linesBefore": {"anchorKey": "story.cv_mom=told", "add": {
+        "story.mom_mahopac=told & !story.seal5": "Thank you for the lens, love.",
+        "story.mom_mahopac=held & !story.seal5": "That lens. I keep thinking about it."
+      }}
+    }
+  }
+}

@@ -124,13 +124,27 @@
   }
   const switchCost = pts => Math.floor(clampPts(pts) / STANDING_CFG.switch.costDiv);
   // Chapter = Seals earned so far. story.seal3 counts when Brinewick writes it (D132). That chapter is not built yet.
-  const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3'].filter(k => !!(flags || {})[k]).length;
+  // ROUTE_TO_GOVERNOR / ACT2_PACING D1880: Seals 4 and 5 (story.seal4, story.seal5, written by Halls 4 and 5 when they land) count
+  // too, so the level cap rises to 41 and 44. No save has either flag today.
+  const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3', 'story.seal4', 'story.seal5'].filter(k => !!(flags || {})[k]).length;
   // The act number (D915, re-issued for seven acts as D977): derived, never stored. 1 plus one for each act start reached.
   // Only story.ep1_end is written today (the Episode 1 card); the others are written by the acts that build them.
   // Acts 3 and 4 also start from Seals held (5 and 7, D1329 count, tags never count), the same boundary as their flags.
   // Nothing writes story.act; a stored one is ignored here (game.js honours it only under ?debug=1). Save stays v2.
   const ACT_FLAGS = Object.freeze(['story.ep1_end', 'story.seal5', 'story.seal7', 'story.skyloom_done', 'story.climb_open', 'story.summit_open']);
   const ACT_SEALS = Object.freeze({ 'story.seal5': 5, 'story.seal7': 7 });
+  // MAHOPAC_DREAMS E1 (D1941): which moment the lens shows in Act 5, first match. Pure; reads flags only, writes nothing.
+  // The loyalist's door (also a loyalist who later switched), the switcher's lanyard, the newest kept report (rpt_6 down to
+  // rpt_1), the first letter told, the enrolment, and the starter morning for any save at all.
+  function lensMoment(flags){
+    const F = flags || {};
+    if (F['story.warden_cut']) return 'cut';
+    if (F['story.switched_a3']) return 'switch';
+    for (let i = 6; i >= 1; i--) if (F['story.rpt_' + i] === 'kept') return 'kept';
+    if (F['story.rpt_1'] === 'told') return 'told';
+    if (F['story.keeper_cadet']) return 'cadet';
+    return 'starter';
+  }
   function actOf(flags, sealsHeld){
     const F = flags || {}, n = Number(sealsHeld) || 0;
     return ACT_FLAGS.filter(k => !!F[k] || (ACT_SEALS[k] != null && n >= ACT_SEALS[k])).length + 1;
@@ -174,17 +188,63 @@
       if (join !== cfg.oneWay) return { ok: false, why: 'one_way' };
     }
     if (cfg.openAct && !((act != null ? Number(act) : actOf(F)) >= cfg.openAct)) return { ok: false, why: 'locked' };
+    if (F['story.solvane_met']) return { ok: false, why: 'closed' };   // REPORTS_AND_ENDINGS D1625: the window shuts at the Spire
     if (!F['story.rc_climax']) return { ok: false, why: 'no_rook' };
     if (cfg.cooldown === 'perChapter' && F['story.switch_chapter'] != null && Number(F['story.switch_chapter']) === chapterOf(F)) return { ok: false, why: 'cooldown' };
     if (to != null && cfg.joinMinTier > 0 && tierOf((standing || {})[to]) < cfg.joinMinTier) return { ok: false, why: 'join_tier' };
     return { ok: true, why: null };
   }
   // ACT1_KEEPER_JOIN §8 (D1514, D1559): may Warden Ilse still take this holder's reports? Only a Keeper Cadet
-  // (story.keeper_cadet) who has not switched in public (story.switches >= 1) and has not taken the Act 3 loyalist choice
-  // (story.warden_cut, reserved here; the Act 3 packet writes it). Pure; reads only.
+  // (story.keeper_cadet) who has not switched in Act 3 (story.switched_a3) and has not taken the Act 3 loyalist choice
+  // (story.warden_cut; the Act 3 packet writes it). REPORT_FLAGS D1725 (REPORTS_AND_ENDINGS §9, D1629): never story.switches,
+  // which an old save may carry from Rook's old offer although the move made it a Keeper in public. Pure; reads only.
   function reportsOpen(flags){
     const F = flags || {};
-    return !!F['story.keeper_cadet'] && !F['story.warden_cut'] && !((Number(F['story.switches']) || 0) >= 1);
+    return !!F['story.keeper_cadet'] && !F['story.warden_cut'] && !F['story.switched_a3'];
+  }
+  /* REPORTS_AND_ENDINGS v0.1.1 §3.3 (D1620, D1621, D1629) with REPORT_FLAGS v0.1 (D1720): the pure readers the endings use.
+     No stored number, no writes: each counts the flags when a scene asks. Six reports, one shape: story.rpt_1 .. story.rpt_6 =
+     'told' / 'kept' (R1-R3 Act 1; R4 Kilnmouth; R5 Act 3's turn; R6 after the third sitting, a letter, D1726 B). Only this fixed
+     list counts (D1720 rule 2: never a story.rpt_ prefix scan, so story.rpt_gov and story.rpt_old_seen are guards, not reports).
+     Paths: 'g' the switcher (story.side glimmer AND story.switched_a3: an Act 1 lanyard or an old switch never counts), 'l' the
+     loyalist (story.warden_cut), 'w' with the Warden. Eight ending ids; their scenes are later packets'. */
+  const RPT = Object.freeze(['story.rpt_1', 'story.rpt_2', 'story.rpt_3', 'story.rpt_4', 'story.rpt_5', 'story.rpt_6']);
+  const ENDINGS = Object.freeze(['k_restored', 'k_court', 'k_desk', 'l_hand', 'l_witness', 'g_turned', 'g_order', 'g_road']);
+  function pathOf(flags){
+    const F = flags || {};
+    if (F['story.side'] === 'glimmer' && F['story.switched_a3']) return 'g';
+    if (F['story.warden_cut']) return 'l';
+    return 'w';
+  }
+  // Trusted 4-6 told, Guarded 2-3, Distant 0-1 (D1621). With the Warden a letter never sent counts as kept, at read time only.
+  function trustOf(flags){
+    const F = flags || {}, p = pathOf(F);
+    let told = 0, kept = 0;
+    for (const k of RPT) {
+      const v = F[k];
+      if (v === 'told') told++;
+      else if (v === 'kept' || p === 'w') kept++;
+    }
+    return { path: p, told, kept, tier: told >= 4 ? 'trusted' : told >= 2 ? 'guarded' : 'distant' };
+  }
+  // What the President's office offers (D1624, D1627, D1728): the loyalist stands or exposes; everyone else may clean up or
+  // expose, and convert only when Trusted and the Keepers have decided.
+  function presOptions(flags){
+    const F = flags || {}, t = trustOf(F);
+    if (t.path === 'l') return ['stand', 'expose'];
+    const o = ['cleanup', 'expose'];
+    if (t.tier === 'trusted' && F['story.keepers_decided']) o.push('convert');
+    return o;
+  }
+  // D1628 gate for Ilse's conversion (the ILSE_ARC packet refines the talks; endingOf reads only story.ilse_turned).
+  function ilseCanTurn(flags){ const F = flags || {}, t = trustOf(F); return t.path === 'g' && !F['story.warden_cut'] && t.told >= 1 && t.kept <= 1; }
+  // Switcher first, then the loyalist, then with the Warden; inside a path the written choice wins. Fallbacks (never reached in
+  // play): W k_desk, L l_hand, G g_order. It trusts the saved choice and never re-checks the gate.
+  function endingOf(flags){
+    const F = flags || {}, p = pathOf(F), c = F['story.pres_choice'];
+    if (p === 'g') return F['story.pres_ally'] === 'no' ? 'g_road' : F['story.ilse_turned'] === 'yes' ? 'g_turned' : 'g_order';
+    if (p === 'l') return c === 'expose' ? 'l_witness' : 'l_hand';
+    return c === 'convert' ? 'k_restored' : c === 'expose' ? 'k_court' : 'k_desk';
   }
   // D1514: the loyalist's explicit choice ("I answer to the Commander now", Act 3 packet copy) is offered only from Act 3 on,
   // and only while the reports are still open. `act` as in canSwitch (default actOf(flags)).
@@ -219,7 +279,8 @@
   }
 
   const api = { CFG: STANDING_CFG, SIDES, isSide, clampPts, tierOf, tierInfo, switchCost, chapterOf, canSwitch, fill, devCheck,
-    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf, reportsOpen, loyalistOpen };
+    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf, lensMoment, reportsOpen, loyalistOpen,
+    RPT, ENDINGS, pathOf, trustOf, presOptions, ilseCanTurn, endingOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.STANDING_CFG = STANDING_CFG;
   root.PPStanding = api;
