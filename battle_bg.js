@@ -291,6 +291,8 @@ const ROOMS = {
   hc_airport_in: {}, hc_command_in: {}, hc_barracks_in: {}, hc_marina_in: {}, hc_school_in: {}, hc_bank_in: {}, hc_gym_in: {},
   hc_lantern_in: {}, hc_church_in: {}, hc_hall_in: {}, hc_apt_in: {}, hc_mall_1: {}, hc_mall_2: {},
   sm_tunnel: {}, bw_lantern_in: {}, bw_store_in: {}, fb_lantern_in: {},
+  fbh_press_in: {}, fbh_picker_in: {}, fbh_stitch_in: {},   // FERNBROOK_HOMES (on main without a scene; added with WEIR_HUT)
+  hw_weir_hut_in: {},   // WEIR_HUT: no wilds or holders inside; listed so every room has a scene (its first two props)
 };
 // A room with no named props takes its own first two prop sprites (back, then front), so every room still shows its things.
 function autoProps(env, o){
@@ -327,5 +329,21 @@ function render(g, W, H, id, env, layer){
 // the water (bridges, docks, props, spray) on top in both. FULL motion only (the caller checks).
 function frame(bg, t){ return bg && bg.btAlt && bg.btAlt.width && Math.floor(t / 500) % 2 ? bg.btAlt : bg; }
 
-window.BattleBG = { scenes, render, frame, boxes, lay };
+// HIGH_CHARITY_LAYOUT phase 1: the four new chunks and the new rooms. game.js calls enableCity() only while the city is
+// on (HC_CITY_V2 or ?debug=1&hccity=2), so every scene here always has its map in WORLD.
+const HC_OUT = {
+  hc_civic(S){ OUT.highcharity(S); },
+  hc_exchange(S){ OUT.highcharity(S); },
+  hc_waterfront(S){ sky(S); FAR.roofs(S, [[0, 1, 2], [20, 2, 3]]); S.ground('D', 2); S.band('w', 22, 10, 1, 0, S.W);
+    S.deco(() => { S.art('rope_coil', 10, S.hz + 14) || S.art('lamp_post', 10, S.hz + 14); }); },
+  hc_college(S){ sky(S); FAR.roofs(S, [[4, 2, 3]]); S.ground('g', 5); S.band('P', 20, 8, 0.5, 0, S.W);
+    S.deco(() => { S.art('lm_big_tree', S.W - 10, S.H - 2, 0.6); }); },
+};
+const HC_ROOMS = { hc_news_1: {}, hc_news_2: {}, hc_gov_1: {}, hc_gov_3: {} };
+function enableCity(){
+  Object.assign(OUT, HC_OUT); Object.assign(ROOMS, HC_ROOMS);
+  Object.keys(HC_OUT).forEach(id => { scenes[id] = { room: false }; });
+  Object.keys(HC_ROOMS).forEach(id => { scenes[id] = { room: true, group: false, hall: false }; });
+}
+window.BattleBG = { scenes, render, frame, boxes, lay, enableCity };
 })();

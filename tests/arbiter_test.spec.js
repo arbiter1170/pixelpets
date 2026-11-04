@@ -151,12 +151,12 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
   }
   expect(await page.evaluate(() => PixelPets.scene)).toBeFalsy();
   const speakers = [
-    ['Associate Quinn', 'Before the cord, one more kindness. A Tuning. Your Walkling hears us a little clearer after.'],
+    ['Associate Quinn', 'Before the lanyard, one more kindness. A Tuning. Your Walkling hears us a little clearer after.'],
     ['Associate Quinn', 'Some holders feel a flutter. We call it increasing the bond. Nothing sharp. Nothing cold.'],
     ['Rook', "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."],
     ['', 'A soft click under the fur. The Hall lights dim. Somewhere below, something vast exhales.'],
     ['Associate Quinn', 'There. Tuned. Keep them close, holder. The box is for the others now.'],
-    ['Associate Quinn', 'Review closed. Bright Tier 2 Lanyard. Two marks, one cord.'],
+    ['Associate Quinn', "Review closed. Tier 2 on your lanyard. Hale still holds your Seal. His floor's open."],   // J9: the Tuning gives the tag, not the Seal
     ['Associate Quinn', 'Same care package Hale gives his friends. We can be generous.'],
     ['Associate Quinn', 'Brinewick is down the coast. The cart goes whether you ride it or not.'],
   ];
@@ -244,8 +244,9 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
 
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
   const again = [];
-  await playScene(page, [], (prompt) => { again.push(prompt); });
-  expect(again).toEqual([]);
+  // SEALS_BOTH_PATHS (D1328): after the Tuning closes the chapter, Hale offers his match again until it is won. No second Tuning.
+  await playScene(page, ['Not today'], (prompt) => { again.push(prompt); });
+  expect(again).toEqual(['One match on the stone. Ready?']);
   const still = await page.evaluate(() => PixelPets.state.party.filter((p) => p.chip && p.chip.on).length);
   expect(still).toBe(1);
 });
@@ -348,7 +349,7 @@ test('Glimmer Rook stays, keeps the lanyard, and quits only if the offer is acce
     }
     await page.waitForTimeout(30);
   }
-  expect(said.some((s) => s.indexOf('mint lanyard is on') >= 0)).toBe(true);
+  expect(said.some((s) => s.indexOf('Glimmerwell lanyard is on') >= 0)).toBe(true);
   expect(said.some((s) => s.indexOf('not walking away') >= 0)).toBe(true);
   const flags = await page.evaluate(() => ({
     quit: PixelPets.state.flags['story.rook_quit'],
@@ -375,7 +376,7 @@ const D26 = [
   { slot: 'S2.question', path: 'scenes.tour1_s2[1][2][1][1][0][2]', speaker: 'Associate Juniper', line: `The scratch? Just settling in! Units get so eager to give back, they forget to sit still. Ha... ha!` },
   { slot: 'S2.pat', path: 'scenes.tour1_s2[1][2][2][1][0][2]', speaker: '(narrator)', line: `The metal is hot to the touch. From within, a small weight leans tiredly against your palm.` },
   { slot: 'S3.intro', path: 'scenes.tour1_s3[0][2]', speaker: 'Associate Juniper', line: `Inside the Trial Hall for stop three! Nothing beats seeing our clean energy goals on the big screen.` },
-  { slot: 'S3.prompt', path: 'scenes.tour1_s3[1][1]', speaker: '(prompt)', line: `The projector hums on a mint-green slide. Juniper asks which campaign slogan grabs you.` },
+  { slot: 'S3.prompt', path: 'scenes.tour1_s3[1][1]', speaker: '(prompt)', line: `The projector hums on a wine-red slide. Juniper asks which campaign slogan grabs you.` },
   { slot: 'S3.L1', path: 'scenes.tour1_s3[1][2][0][0]', speaker: '(label)', line: `Brighter by nature.` },
   { slot: 'S3.L2', path: 'scenes.tour1_s3[1][2][1][0]', speaker: '(label)', line: `It's a partnership!` },
   { slot: 'S3.slogan1', path: 'scenes.tour1_s3[1][2][0][1][0][2]', speaker: 'Associate Juniper', line: `"Brighter by nature." A classic! Because a Walkling's glow really belongs to the whole town, right?` },

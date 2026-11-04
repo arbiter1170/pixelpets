@@ -63,7 +63,8 @@ test('locked looks stay under the crimson cap and the soot band, and the save is
   expect(report.keys).toEqual(beforeKeys);
   for (const frame of report.frames) {
     expect(frame['#c81818']).toBe(4);
-    expect(frame['#a7f070']).toBeGreaterThan(0);
+    expect(frame['#a7f070'] || 0).toBe(0);   // D1087: wine glass, no mint
+    expect(frame['#960e16']).toBeGreaterThan(0);
     expect(frame['#f4f4f4']).toBeGreaterThan(0);
     expect(frame['#ffcd75']).toBeGreaterThan(0);
   }
@@ -147,11 +148,11 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
   expect(got.depot[soot]).toBe(1);
   expect(got.depot['#38b764'] || 0).toBe(0);
   noOld(got.depot, 'depot');
-  expect(got.bunting[mint]).toBeGreaterThan(0);
+  expect(got.bunting[mint] || 0).toBe(0);   // D1087: wine-and-white bunting
   expect(got.bunting[white]).toBeGreaterThan(0);
-  expect(got.bunting[wine] || 0).toBe(0);
+  expect(got.bunting[wine]).toBeGreaterThan(0);
   expect(got.stand[wine]).toBeGreaterThan(0);
-  expect(got.stand[mint]).toBeGreaterThan(0);
+  expect(got.stand[mint] || 0).toBe(0);   // D1087: the jars glow wine
   expect(got.stand[ice]).toBeGreaterThan(0);
   expect(got.stand[soot] || 0).toBe(0);
   expect(got.stand[crimson] || 0).toBe(0);

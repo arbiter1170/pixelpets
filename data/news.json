@@ -279,7 +279,7 @@
    "lead": 20,
    "headline": "Orchard village says hello (so do the Pomlets)",
    "body": [
-    "Fernbrook: orchard village, home of the Bloom Trial Hall. Pomlets live in the orchard and act like it.",
+    "Fernbrook: orchard village, home of the Fernbrook Trial Hall. Pomlets live in the orchard and act like it.",
     "Keepers keep the town. Glimmerwell keeps a stand. The square has opinions about both.",
     "Keeper Amos hosts the Lantern House: beds, a rest, and a proper explanation."
    ],
@@ -364,7 +364,7 @@
    ],
    "headline": "Hall Master skips the Hall for the trees",
    "body": [
-    "Master Fen of the Bloom Trial Hall is out in the orchard, worried about her orchard friends.",
+    "Master Fen of the Fernbrook Trial Hall is out in the orchard, worried about her orchard friends.",
     "Associate Tobin has crates stacked at the orchard gate. Asked why, he points to the memo."
    ],
    "lore": [
@@ -442,8 +442,8 @@
    "replies": [
     {
      "name": "Square regular",
-     "handle": "mintwatch",
-     "text": "The lanyard is very mint. The crates are very quiet."
+     "handle": "lanyardwatch",
+     "text": "The lanyard is very bright. The crates are very quiet."
     }
    ]
   },
@@ -522,7 +522,7 @@
    "lead": 40,
    "headline": "'Wear it kindly': Fernbrook Seal awarded",
    "body": [
-    "Master Fen awarded the Fernbrook Seal at the Bloom Trial Hall, with three words: 'Wear it kindly.'",
+    "Master Fen awarded the Fernbrook Seal at the Fernbrook Trial Hall, with three words: 'Wear it kindly.'",
     "One Seal lifts the level cap from 15 to 22. Kindness, it turns out, has levels."
    ],
    "lore": [
@@ -553,7 +553,7 @@
    "lead": 40,
    "headline": "Tier 1 Lanyard: smile for the wall!",
    "body": [
-    "The Bright Pavilion Tour ends with a Tier 1 Lanyard, the Bright stand-in for a Seal. Congratulations!",
+    "The Bright Pavilion Tour ends with a Tier 1 Lanyard, clipped to your Fernbrook Seal. Congratulations!",
     "Your photo now hangs beside the Sanctuary crate list. Brighter by nature!"
    ],
    "lore": [
@@ -1094,7 +1094,7 @@
     {
      "name": "Junior hopeful",
      "handle": "lanyardgoals",
-     "text": "A Tier 2 Lanyard looks so good on mint. Mine is still Tier 1. Patience."
+     "text": "A Tier 2 Lanyard looks so good on a wine vest. Mine is still Tier 1. Patience."
     },
     {
      "name": "Crate packer",
@@ -1439,7 +1439,7 @@
    ],
    "headline": "Doorway, chair or exit: capital manners",
    "body": [
-    "A citizen waits in the doorway. A holder is offered a chair. A mint vest is asked to leave.",
+    "A citizen waits in the doorway. A holder is offered a chair. A wine vest is asked to leave.",
     "The Keepers are kind, the Post adds, and also watching. Sit up straight."
    ],
    "lore": [
@@ -1451,7 +1451,7 @@
     {
      "name": "Barracks neighbour",
      "handle": "politeexit",
-     "text": "Saw a mint vest get the polite version of 'out'. Very polite. Very out."
+     "text": "Saw a wine vest get the polite version of 'out'. Very polite. Very out."
     }
    ]
   },
@@ -1911,7 +1911,7 @@
    "headline": "Quay review: one Tier 3 Lanyard, signed off",
    "body": [
     "Dorian Pell reviewed a holder on the quay, and the Tier 3 Lanyard changed hands.",
-    "Master Marisol's match was optional. Output was not. Have a bright day!"
+    "Master Marisol's Seal went to the holder, lanyard clipped to it. Output was ours. Have a bright day!"
    ],
    "lore": [
     "event.tier3_lanyard",
@@ -2026,7 +2026,7 @@
    "headline": "Dawn in the orchard: Pomlets first up",
    "body": [
     "First light in Fernbrook. The Pomlets are already up and bothering the blossoms.",
-    "The Bloom Trial Hall is quiet. The orchard is not."
+    "The Fernbrook Trial Hall is quiet. The orchard is not."
    ],
    "art": "beetle",
    "lore": [
@@ -2887,7 +2887,7 @@
    ],
    "headline": "Trial Halls, explained for the nervous",
    "body": [
-    "How-to: a Trial Hall is where a Master tests you for a Seal. Fernbrook's is the Bloom Trial Hall.",
+    "How-to: a Trial Hall is where a Master tests you for a Seal. Fernbrook's is the Fernbrook Trial Hall.",
     "Without a Seal your Walkling caps at Lv 15. One Seal lifts it to 22. That is most of the motivation.",
     "BLOOM is the type on the door and Master Fen is the test. Bring a plan, and a snack for afterwards."
    ],
@@ -2935,7 +2935,7 @@
    "headline": "Rain in the orchard: Pomlets under the leaves",
    "body": [
     "Rain over Fernbrook. The Pomlets have taken cover under the widest leaves and look very pleased about it.",
-    "The Bloom Trial Hall stays dry. The orchard hands do not. Nobody has told the Pomlets to share."
+    "The Fernbrook Trial Hall stays dry. The orchard hands do not. Nobody has told the Pomlets to share."
    ],
    "lore": [
     "creature.line_beetle",
@@ -2954,7 +2954,7 @@
    "headline": "Neighbour news: Rook's lanyard dates to spring",
    "body": [
     "Rook finally said it: 'Junior Bright... They asked in spring.' So, before any of this started.",
-    "His mother did mention 'his friend in mint'. Half of Hearthmoor is now rereading every chat since spring."
+    "His mother did mention 'his friend in a wine vest'. Half of Hearthmoor is rereading every chat since spring."
    ],
    "replies": [
     {
@@ -3567,7 +3567,7 @@
    "headline": "Keeper notice explained: rank is spatial",
    "body": [
     "The Lantern Post explains: a citizen waits in the doorway. A holder is offered a chair.",
-    "A mint vest is asked to leave. With Bright Quarry next door, Cobblecrest's doorways are getting practice."
+    "A wine vest is asked to leave. With Bright Quarry next door, Cobblecrest's doorways are getting practice."
    ],
    "lore": [
     "term.rank_is_spatial",
@@ -4342,8 +4342,8 @@
      "text": "Asked what the cursor meant. Got a sticker. Very nice sticker."
     },
     {
-     "name": "Mint vest",
-     "handle": "mintcondition",
+     "name": "Wine vest",
+     "handle": "freshvest",
      "text": "Someone read the minutes back slowly. It still wasn't saying hello."
     }
    ],
@@ -5100,7 +5100,7 @@
   },
   {
    "id": "vo-fernbrook-quota",
-   "who": "Mint vest, Fernbrook",
+   "who": "Wine vest, Fernbrook",
    "region": "fernbrook",
    "when": [
     "story.side_pick_done",
@@ -5478,14 +5478,14 @@
   },
   {
    "id": "vo-glimmer-vest",
-   "who": "Associate in a mint vest",
+   "who": "Associate in a wine vest",
    "region": "",
    "when": [
     "story.met_glimmerwell",
     "story.side_pick_done",
     "story.side=glimmer"
    ],
-   "text": "Mint vest, mandatory smile, quarterly target. Have a bright day! I mean it. I have to.",
+   "text": "Wine vest, mandatory smile, quarterly target. Have a bright day! I mean it. I have to.",
    "lore": [
     "thing.mint_vests",
     "term.glimmer_glossary",
@@ -6757,7 +6757,7 @@
   {
    "id": "no-fernbrook-hall",
    "kind": "notice",
-   "title": "BLOOM TRIAL HALL",
+   "title": "FERNBROOK TRIAL HALL",
    "region": "fernbrook",
    "when": [
     "story.reached_fernbrook",
@@ -6809,7 +6809,7 @@
     "story.met_glimmerwell",
     "story.side=glimmer"
    ],
-   "text": "Tired is just relaxed with bad lighting! Ask a mint vest. Have a bright day!",
+   "text": "Tired is just relaxed with bad lighting! Ask a wine vest. Have a bright day!",
    "lore": [
     "faction.glimmerwell",
     "thing.mint_vests",
@@ -7059,7 +7059,7 @@
     "story.met_census",
     "story.side=glimmer"
    ],
-   "text": "Tired is just relaxed with bad lighting! Ask any mint vest about Comfort Lamps.",
+   "text": "Tired is just relaxed with bad lighting! Ask any wine vest about Comfort Lamps.",
    "lore": [
     "faction.glimmerwell",
     "thing.comfort_lamps",
@@ -7140,7 +7140,7 @@
     "story.met_glimmerwell",
     "story.side=glimmer"
    ],
-   "text": "Mint vests may be asked to leave. Bright ideas never are. Have a bright day!",
+   "text": "Wine vests may be asked to leave. Bright ideas never are. Have a bright day!",
    "lore": [
     "term.rank_is_spatial",
     "thing.mint_vests",

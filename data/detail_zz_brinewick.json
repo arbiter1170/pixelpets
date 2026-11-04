@@ -474,7 +474,8 @@
           "y": 16,
           "facing": "up",
           "lines": {
-            "story.seal3": "The captain hums when she's pleased. She's been humming since your match.",
+            "seal:seal_brinewick": "The captain hums when she's pleased. She's been humming since your match.",
+            "story.seal3": "The captain hasn't hummed yet. Her deck's still open to you, she says.",
             "else": "The captain runs the ferry and the Hall. Same rule for both: the tide keeps time."
           }
         }
@@ -826,7 +827,7 @@
           "facing": "down",
           "lines": {
             "seal:seal_glim_3": "Tier 3 is filed. Have a calm tide.",
-            "else": "Quarter close is with me, partner. The captain is optional."
+            "else": "Quarter close is with me, partner. The Seal is the captain's."
           },
           "look": "quinn",
           "when": [
@@ -994,7 +995,7 @@
           "y": 3,
           "sprite": "lab_counter",
           "lines": {
-            "else": "A stamp pad. Mint ink. A sticker sheet: BRIGHTER BY NATURE."
+            "else": "A stamp pad. Wine ink. A sticker sheet: BRIGHTER BY NATURE."
           }
         },
         {
@@ -1004,7 +1005,7 @@
           "y": 2,
           "sprite": "glimmer_stand",
           "lines": {
-            "else": "A display of Glimmer Cells. Each one glows the same calm mint."
+            "else": "A display of Glimmer Cells. Each one glows the same calm wine-red."
           }
         },
         {
@@ -1027,7 +1028,7 @@
           "y": 2,
           "sprite": "cell_crate_open",
           "lines": {
-            "else": "The cage is open and empty. Mint light still leaks from the slot."
+            "else": "The cage is open and empty. Wine-red light still leaks from the slot."
           },
           "when": [
             "story.brine_freed"
@@ -1398,7 +1399,7 @@
               [
                 "say",
                 "",
-                "You sign. THUNK. The stamp leaves a bright mint star on the cage."
+                "You sign. THUNK. The stamp leaves a bright wine star on the cage."
               ],
               [
                 "say",
@@ -1627,7 +1628,7 @@
     "marisol_trial@glimmer": [
       [
         "if",
-        "seal:seal_glim_3",
+        "seal:seal_brinewick",
         [
           [
             "say",
@@ -1637,43 +1638,76 @@
         ],
         [
           [
-            "say",
-            "Associate Quinn",
-            "Quarter close, partner. Dorian passed your review on the quay. That is enough for Tier 3."
-          ],
-          [
-            "say",
-            "Master Marisol",
-            "The company rents my floor for its paperwork. My deck still runs on the tide."
-          ],
-          [
-            "choice",
-            "How do you close the quarter?",
+            "if",
+            "seal:seal_glim_3",
             [
               [
-                "Close the quarter",
-                [
-                  [
-                    "run",
-                    "seal3"
-                  ]
-                ]
+                "say",
+                "Master Marisol",
+                "Quinn closed your quarter. The Seal is still mine to give."
               ],
               [
-                "Face Marisol",
+                "choice",
+                "One match on the deck. Ready?",
                 [
                   [
-                    "battle",
-                    "hall3_marisol"
+                    "Face Marisol for the Seal",
+                    [
+                      [
+                        "battle",
+                        "hall3_marisol"
+                      ]
+                    ]
+                  ],
+                  [
+                    "Not today",
+                    []
                   ]
-                ]
-              ],
-              [
-                "Not today",
-                []
+                ],
+                "Master Marisol"
               ]
             ],
-            "Associate Quinn"
+            [
+              [
+                "say",
+                "Associate Quinn",
+                "Quarter close, partner. Dorian passed your review. Tier 3 is yours. The Seal is Marisol's."
+              ],
+              [
+                "say",
+                "Master Marisol",
+                "The company rents my floor for its paperwork. My deck still runs on the tide."
+              ],
+              [
+                "choice",
+                "How do you close the quarter?",
+                [
+                  [
+                    "Close the quarter",
+                    [
+                      [
+                        "run",
+                        "seal3"
+                      ]
+                    ]
+                  ],
+                  [
+                    "Face Marisol",
+                    [
+                      [
+                        "battle",
+                        "hall3_marisol"
+                      ]
+                    ]
+                  ],
+                  [
+                    "Not today",
+                    []
+                  ]
+                ],
+                "Associate Quinn"
+              ]
+            ]
           ]
         ]
       ]
@@ -1707,39 +1741,52 @@
     ],
     "seal3@glimmer": [
       [
-        "say",
-        "Associate Quinn",
-        "Quarter closed. Bright Tier 3 Lanyard. Three marks, one cord."
-      ],
-      [
-        "seal",
-        "seal_glim_3"
-      ],
-      [
-        "give",
-        "hearty_snack",
-        2
-      ],
-      [
-        "give",
-        "wake_tonic",
-        1
-      ],
-      [
-        "say",
-        "Associate Quinn",
-        "The Capital will want to meet you. Not today. Today, rest."
-      ],
-      [
-        "standing",
-        "glimmer",
-        5,
-        "seal3_g"
-      ],
-      [
-        "setFlag",
+        "if",
         "story.seal3",
-        true
+        [
+          [
+            "say",
+            "Associate Quinn",
+            "Marisol's Seal, on your Tier 3 lanyard at last. Logged! Have a bright day!"
+          ]
+        ],
+        [
+          [
+            "say",
+            "Associate Quinn",
+            "Quarter closed. Bright Tier 3 Lanyard. Three marks, one lanyard."
+          ],
+          [
+            "seal",
+            "seal_glim_3"
+          ],
+          [
+            "give",
+            "hearty_snack",
+            2
+          ],
+          [
+            "give",
+            "wake_tonic",
+            1
+          ],
+          [
+            "say",
+            "Associate Quinn",
+            "The Capital will want to meet you. Not today. Today, rest."
+          ],
+          [
+            "standing",
+            "glimmer",
+            5,
+            "seal3_g"
+          ],
+          [
+            "setFlag",
+            "story.seal3",
+            true
+          ]
+        ]
       ]
     ],
     "gauge_a": [
@@ -1974,12 +2021,11 @@
       }
     },
     "hall3_marisol@glimmer": {
-      "seal": "seal_glim_3",
       "onWin": "seal3",
       "lines": {
         "intro": "The company's paper can wait. My deck can't. Show me your beat.",
-        "win": "You read the tide. Tell Quinn the quarter closed itself.",
-        "lose": "The tide's in. Quinn will still take your paperwork."
+        "win": "You read the tide. The Seal is yours. Let Quinn do the filing.",
+        "lose": "The tide's in. My deck stays open. The Seal waits for a match."
       }
     },
     "bw_deckhand": {
@@ -2100,7 +2146,7 @@
     "story.brine_dorian": "Beat Dorian Pell on the quay. CHAIN row brine_dorian; opens the Hall door.",
     "story.h3_gauge_a": "Answered the first tide gauge in Marisol's Hall. Not a step.",
     "story.h3_gauge_b": "Answered the second tide gauge. Not a step.",
-    "story.seal3": "Seal 3: the Brinewick Seal (Keepers) or the Bright Tier 3 Lanyard (Glimmer). CHAIN row hall3.",
+    "story.seal3": "Seal 3 chapter flag: set by seal3 (Keepers) or seal3@glimmer (the quarter close or Marisol's match). The Brinewick Seal comes only from Marisol's match on both paths; Glimmer also gets the Bright Tier 3 tag. CHAIN row hall3.",
     "story.ep1_end": "The Episode 1 card played outside the Hall. CHAIN row ep1_end."
   }
 }

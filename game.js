@@ -69,6 +69,43 @@ function readDebugPref(){
   return on;
 }
 let DEBUG = readDebugPref();     // E/G/F keys, fast mode, "Pick a place" and the cheat console hooks need this
+/* TRIAL_HALL_FERNBROOK_MAP (D1189-D1196): the contested Fernbrook Trial Hall is built but held behind this flag until Vincent
+   says yes to the previews (AGENTS rule 9). Off: fb_hall_in is exactly today's room. On: data/detail_zz_hall_contested.json's
+   hallPatch is laid over it. Preview: ?debug=1&hall2=1 (this tab only, sessionStorage; ?hall2=0 clears it). Without debug
+   the preview key does nothing. Read once at load; never saved. After Vincent's yes, HALL2_RELEASED becomes true. */
+const HALL2_RELEASED = false;
+const HALL2_KEY = 'pixelpets.hall2';
+const HALL2_ON = (() => {
+  if (HALL2_RELEASED) return true;
+  let on = false;
+  // Without debug the key is never stored, and any left over is cleared (as readHcCityPref), so a later ?debug=1 in this tab can't turn it on.
+  if (!DEBUG) { try { sessionStorage.removeItem(HALL2_KEY); } catch (e) {} return false; }
+  try { const q = new URLSearchParams(location.search).get('hall2'); if (q === '1') sessionStorage.setItem(HALL2_KEY, '1'); else if (q === '0') sessionStorage.removeItem(HALL2_KEY); } catch (e) {}
+  try { on = sessionStorage.getItem(HALL2_KEY) === '1'; } catch (e) {}
+  return on;
+})();
+/* HIGH_CHARITY_LAYOUT v0.2.1 phase 1 ("the capital, day one"; D1268, D1270-D1281). The five-chunk city lives in
+   data/hc_city_v2.js (window.PP_HC_V2, built by tools/build_hc_city.py), outside MAPDATA. HC_CITY_V2 is the ship switch:
+   it stays false until Vincent's yes on the 390 previews (layout §13 test 10), then flips in one line. Until then the city
+   is a preview on ?debug=1&hccity=2 only (kept for this tab in sessionStorage; ?hccity=0 turns it off). Plain ?debug=1
+   never turns it on. While it is a preview, the save is held (nothing writes pixelpets.save.v2), as the #268 preview lot does. */
+const HC_CITY_V2 = false;
+const HC_STREET_SOLID_BAYS = true, HC_TANK_POSTS = true, HC_GOV_HOUSE = true;   // D1271, D1272, D1276 (yellow, at their defaults, inside the city)
+const HCCITY_KEY = 'pixelpets.hccity';
+function readHcCityPref(){
+  let on = false;
+  if (!DEBUG) { try { sessionStorage.removeItem(HCCITY_KEY); } catch(e) {} return false; }
+  try { on = sessionStorage.getItem(HCCITY_KEY) === '2'; } catch(e) {}
+  const q = new URLSearchParams(location.search).get('hccity');
+  if (q !== null) { on = q === '2'; try { if (on) sessionStorage.setItem(HCCITY_KEY, '2'); else sessionStorage.removeItem(HCCITY_KEY); } catch(e) {} }
+  return on;
+}
+const HC_V2_ON = !!window.PP_HC_V2 && (HC_CITY_V2 || readHcCityPref());
+const HC_PREVIEW = HC_V2_ON && !HC_CITY_V2;
+if (HC_V2_ON) {   // the city's room skins and battle backdrops exist only while the city does
+  if (typeof HC_CITY_SKINS !== 'undefined') { Object.assign(SKINS, HC_CITY_SKINS); Object.assign(HOUSE_SKINS, HC_CITY_SKINS); }
+  if (window.BattleBG && BattleBG.enableCity) BattleBG.enableCity();
+}
 function writeDebugPref(on){ try { if (on) sessionStorage.setItem(DEBUG_KEY, '1'); else sessionStorage.removeItem(DEBUG_KEY); } catch(e) {} }
 function syncDebugQuery(on){
   try {
@@ -351,8 +388,18 @@ let resetting = false, gameReplaced = false;
 // A write that fails (storage full or blocked, or another tab took the save) used to be silent: progress stopped saving.
 // Tell the player once per page load; the game keeps playing in memory.
 let saveFailTold = false;
+let hcPreviewTold = false;
+// A debug preview is open: the High Charity city preview (HC_CITY_V2) or the Glimmerwell preview lot (GLIMMERWELL_VEHICLES_BUILDINGS).
+// While it is, nothing writes the save, and the cloud hooks see no state, so preview play never uploads or adopts.
+function previewActive(){
+  return HC_PREVIEW || !!(window.PPFleet && PPFleet.holdSave()) || !!(S && S.world && S.world.map === 'gw_preview');
+}
 function save(){
   if (!S || readOnly || resetting) return;
+  if (previewActive()) {
+    if (HC_PREVIEW && !hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
+    return;
+  }
   S.last = Date.now(); if (DEBUG) S.debugSave = true;
   if (PPSave.writeV2(S) !== false || saveFailTold) return;
   saveFailTold = true;
@@ -724,6 +771,10 @@ const petName = p => cleanNick(p.nick) || nameOf(spi(p), p.stage);
 // Level comes from battle XP (p.bx, stats.js levelOf) and is what lets a Walkling grow up. Growth XP (p.xp) stays a record.
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
 function sealCount(){ return window.PPStanding ? PPStanding.chapterOf(S && S.flags) : 0; }
+const SEALS_BOTH_PATHS = true;   // STORY_DECISIONS v0.69; specs/SEALS_BOTH_PATHS.md (design); D1330. Engine kill switch only.
+// Seals held (D1329): a Hall's Seal, never a Bright Tier tag. Old saves read through the tag aliases (D1328). Chapters stay on sealCount().
+const hasSeal = id => !!S && PPStanding.hasSealIn(S.seals, S.flags, id, SEALS_BOTH_PATHS);
+const sealsHeld = () => S ? PPStanding.sealsHeldIn(S.seals, S.flags, SEALS_BOTH_PATHS) : 0;
 function oneGrowBlocked(){ return sealCount() === 0 && !!(S && S.flags && S.flags['story.unlock_growup']); }
 const canEvolve = p => { if (isAttune(p)) return false; const si = spi(p); const gate = GROW_GATES[p.stage]; return si != null && !!(SPECIES[si].stages[p.stage + 1]) && !isFaded(p) && p.stage < 2 && !!gate && levelOf(p) >= gate.level && sealCount() >= gate.seals && !oneGrowBlocked() && care(p) >= EVO_CARE[p.stage]; };
 /* --- ARBITER_UNITS attunement (D838, D839). One name, three tiers in p.stage: Quiet, Humming, Answering. p.hum (0-100)
@@ -3848,7 +3899,8 @@ function applyMapPatch(W, patch){
 // DAY1_TRIAL1_FLOW (Vincent, Nov 2, 2026): small edits to existing objects by id, on whatever map holds them, after every
 // overlay (so a verbatim design object and an object another overlay moves are patched alike; a missing id is skipped).
 // { id: { when: [...] (replace), whenAdd: [...], linesBefore: { anchorKey, add: { key: line } }, linesFirst: {...},
-//         scheduleFirst: [rows], shopAdd: [ids] } }. linesBefore without its anchor lands before `else`.
+//         scheduleFirst: [rows], shopAdd: [ids], linesSet: { key: line } } }. linesBefore without its anchor lands before
+// `else`. linesSet re-voices a line the object already has, in place (D1434); a key the object lacks is skipped.
 function applyObjPatch(W, patch){
   for (const [id, pt] of Object.entries(patch || {})) {
     if (id[0] === '_') continue;
@@ -3865,10 +3917,39 @@ function applyObjPatch(W, patch){
         if (!put) Object.assign(out, P.linesBefore.add);
         o.lines = out;
       }
+      if (P.linesSet && o.lines) for (const [k, v] of Object.entries(P.linesSet)) if (k in o.lines) o.lines[k] = v;
       if (P.scheduleFirst && Array.isArray(o.schedule)) o.schedule = P.scheduleFirst.concat(o.schedule);
       if (P.shopAdd && Array.isArray(o.shop)) for (const it of P.shopAdd) if (o.shop.indexOf(it) < 0) o.shop.push(it);
     }
   }
+}
+/* HIGH_CHARITY_LAYOUT phase 1: swap in the five-chunk city after every overlay and object patch, so each kept object is the
+   merged copy (its lines, shop and patches intact) and only its map, tile and a few door fields move. Retired ids (`null`)
+   and the old outdoor dressing are dropped; the city's own dressing comes from the data. */
+function applyHcCity(W){
+  const V = window.PP_HC_V2; if (!V) return;
+  Object.assign(TILE_DEF, V.tiles || {});
+  const cast = MD.reputation && MD.reputation.cast;   // the city's new cast (a name the cast already has keeps its entry)
+  if (Array.isArray(cast)) for (const e of V.cast || []) if (!cast.some(c => c && c.name === e.name)) cast.push(Object.assign({}, e));
+  const old = {};
+  for (const [mid, m] of Object.entries(W)) if (m && (mid === 'highcharity' || mid.indexOf('hc_') === 0)) for (const o of m.objs || []) old[mid + ':' + o.id] = o;
+  Object.assign(W, JSON.parse(JSON.stringify(V.maps)), JSON.parse(JSON.stringify(V.rooms)));
+  for (const [key, to] of Object.entries(V.keep || {})) {
+    const o = old[key], m = to && W[to.map];
+    if (!o || !m) continue;
+    m.objs.push(Object.assign(JSON.parse(JSON.stringify(o)), { x: to.x, y: to.y }, to.facing ? { facing: to.facing } : {}, to.set || {}));
+  }
+  for (const [rid, mv] of Object.entries(V.matMoves || {})) {
+    const r = W[rid]; if (!r) continue;
+    if (mv.outdoor) r.outdoor = mv.outdoor;
+    const mat = r.objs.find(o => o.id === mv.mat); if (mat) Object.assign(mat, { to: mv.to, tx: mv.tx, ty: mv.ty });
+  }
+  for (const [id, ln] of Object.entries(V.linesPatch || {}))
+    for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o.id === id) o.lines = Object.assign({}, o.lines || {}, ln);
+  // KEEPER_ANTHEM M10 (D1420, D1423): a kept room's loop and added objects (anthem_hall and the framed sheet), city only.
+  for (const [rid, p] of Object.entries(V.roomPatch || {})) { const r = W[rid]; if (!r) continue;
+    if (p.music) r.music = p.music;
+    if (Array.isArray(p.add)) for (const o of p.add) if (!r.objs.some(x => x.id === o.id)) r.objs.push(JSON.parse(JSON.stringify(o))); }
 }
 const WORLD = (() => {
   const W = JSON.parse(JSON.stringify(MD.maps_slice.maps));
@@ -3905,8 +3986,10 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
     applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
   }
+  if (HALL2_ON) for (const k of DETAIL_KEYS) applyMapPatch(W, MD[k].hallPatch);   // TRIAL_HALL_FERNBROOK_MAP: flagged, after the rooms land
   if (MD.rook_crossroads) applyMapPatch(W, MD.rook_crossroads.slicePatch);   // Rook's Crossroads: objects only, after detail so the crates stay
   for (const k of DETAIL_KEYS) if (MD[k].objPatch) applyObjPatch(W, MD[k].objPatch);   // DAY1_TRIAL1_FLOW: last, so every overlay's copy is the one patched
+  if (HC_V2_ON) applyHcCity(W);                                        // HIGH_CHARITY_LAYOUT phase 1 (flag or ?debug=1&hccity=2 only)
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -3921,6 +4004,7 @@ if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
 if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
 SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
 for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
+if (HC_V2_ON) Object.assign(SCENES, JSON.parse(JSON.stringify(window.PP_HC_V2.scenes || {})));   // the city's story hooks (HB1-HB13)
 // FACE_ME (Vincent, Nov 3, 2026): Lizzy's reunion can start from Buddy, with Lizzy wandered off or facing away. She walks
 // back beside the holder and faces them first (whichever of her bodies is here: the morning plaza, the plaza, the school).
 if (SCENES.lizzy_intro) SCENES.lizzy_intro = [['faceMe', ['hm_lizzy_pre', 'hm_lizzy', 'school_lizzy']]].concat(SCENES.lizzy_intro);
@@ -3938,6 +4022,13 @@ for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_pat
 // HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
 for (const k of DETAIL_KEYS) if (MD[k].trainers) for (const [id, t] of Object.entries(MD[k].trainers)) { if (t && Array.isArray(t.team) && t.team.some(m => !BASE_STATS[m && m.form])) continue; TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t); }
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
+// TRIAL_HALL_FERNBROOK_MAP (flagged): the cadet faces right from the Keeper half of the dais (D1193); the worn west flagstone joins
+// the Hall's own variants. Off, both stay as they are.
+if (HALL2_ON) {
+  for (const k of DETAIL_KEYS) for (const [id, t] of Object.entries((MD[k].hallPatch && MD[k].hallPatch.trainers) || {})) if (TRAINERS[id]) Object.assign(TRAINERS[id], t);
+  const hv = SKINS.fb_hall && SKINS.fb_hall.variants;
+  if (hv && hv.hall_flag && TILES.hall_flag_worn) hv.hall_flag = hv.hall_flag.concat([['hall_flag_worn', 0.25]]);
+}
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
 // The design JSON stays verbatim: variants live in data/glimmer_path.json. Objects use `when: ["story.side=glimmer"]` as usual.
@@ -4311,6 +4402,16 @@ function moralDevCheck(){
   }
   return bad;
 }
+// ACT1_KEEPER_JOIN §5/§7 (D1504, D1506): per-town sway, story.sway_<node>, a signed whole number kept in -3..3 (positive leans
+// Keepers). Only REGION_MAP nodes marked `sway: true` are contested (Fernbrook in Act 1). Additive S.flags values (save v2):
+// written by the `inc` step (clamped there), the old-save move and the switch; never at load. Hold rules read them (holdCond).
+const SWAY = Object.freeze({ min: -3, max: 3, prefix: 'story.sway_' });
+const clampSway = n => Math.max(SWAY.min, Math.min(SWAY.max, Math.round(Number(n) || 0)));
+function swayOf(node, live){ return clampSway(flagOf(SWAY.prefix + node, live)); }
+function shiftSway(d){
+  const n = Number(d) || 0; if (!n || !S) return;
+  for (const k of Object.keys(S.flags)) if (k.indexOf(SWAY.prefix) === 0 && S.flags[k] != null) S.flags[k] = clampSway((Number(S.flags[k]) || 0) + n);
+}
 // The pledge changes (D15, D131): the side you leave keeps floor(n / costDiv), the side you join is unchanged, story.side
 // is rewritten, story.switches counts, story.switch_chapter / story.switch_at record when (the per-chapter cooldown).
 // Every new switch is story.switch_via "rook" (D127). `free` skips the cost and is debug-only.
@@ -4321,6 +4422,9 @@ function switchSide(to, opts){
   if (to === from) return false;
   if (!(opts && opts.free)) setStanding(from, PPStanding.switchCost(standingOf(from, false)));
   S.flags['story.side'] = to;
+  // ACT1_KEEPER_JOIN §8 E6 (D1506, D1559): the towns saw you turn. Every story.sway_* the save holds moves by swayShift (-2),
+  // clamped -3..3, on a switch to the one-way side. Old-save moves and the recall write story.side with setFlag, not here.
+  if (to === SC_STANDING.switch.oneWay) shiftSway(SC_STANDING.switch.swayShift);
   if (to === 'glimmer') ensureCrackedPhone();
   S.flags['story.switches'] = (+S.flags['story.switches'] || 0) + 1;
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
@@ -4331,8 +4435,9 @@ function switchSide(to, opts){
   return true;
 }
 const standingView = () => { const out = {}; for (const sd of PPStanding.SIDES) { const i = PPStanding.tierInfo(sd, standingOf(sd, false)); out[sd] = { points: i.points, tier: i.tier, name: i.name }; }
-  return Object.assign(out, { side: side(), switches: +S.flags['story.switches'] || 0, chapter: PPStanding.chapterOf(S.flags), via: 'rook', canSwitch: PPStanding.canSwitch(S.flags, S.standing, side(), null).ok && !scene && !(battle && battle.on) }); };
-// Rook's offer (D127–D129, D131). The only way to change sides. Built when it opens so the cost line shows live numbers.
+  return Object.assign(out, { side: side(), switches: +S.flags['story.switches'] || 0, chapter: PPStanding.chapterOf(S.flags), via: 'rook', canSwitch: PPStanding.canSwitch(S.flags, S.standing, side(), null, actNow(false)).ok && !scene && !(battle && battle.on) }); };
+// Rook's offer (D127–D129, D131; D1558: from inside the company, at the start of Act 3, Keepers -> Glimmerwell only, D1536).
+// The only way to change sides. Built when it opens so the cost line shows live numbers.
 // Before story.rc_climax he says not yet, except inside rc_gate: that scene runs this offer and writes the flag after
 // the branch (a "Not yet" there stays on the company side and fights). A cooldown says the refused line. Yes is never free.
 function rookOfferSteps(to){
@@ -4341,8 +4446,10 @@ function rookOfferSteps(to){
   const atGate = !!(scene && String(scene.id || '').split('@')[0] === 'rc_gate');
   if (!S || (!S.flags['story.rc_climax'] && !atGate)) return [['say', 'Rook', R.notYet]];
   if (from === dest) return [['say', 'Rook', R.wait]];
-  const can = PPStanding.canSwitch(S.flags, S.standing, from, dest);
-  if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : can.why === 'locked' ? R.wait : R.notYet]];
+  const can = PPStanding.canSwitch(S.flags, S.standing, from, dest, actNow(false));
+  // D1536/D1558: before Act 3 (locked) and for a move back to the Keepers (one_way) Rook says the same wait line as before;
+  // the Act 3 packet writes the offer's own copy (the pick's retired promise lines move there).
+  if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : (can.why === 'locked' || can.why === 'one_way') ? R.wait : R.notYet]];
   const pts = standingOf(from, true);
   const costLine = PPStanding.fill(W.costLine, { side: SC_STANDING.sides[from].short, from: pts, to: PPStanding.switchCost(pts) });
   return [
@@ -4374,6 +4481,10 @@ if (MD.heights && MD.heights.speakers) for (const [k, v] of Object.entries(MD.he
 for (const k of DETAIL_KEYS) {
   for (const [n, v] of Object.entries(MD[k].looks || {})) if (!n.startsWith('_') && v && typeof v === 'object') NPC_LOOKS[n] = v;
   for (const [n, v] of Object.entries(MD[k].speakers || {})) if (typeof v === 'string' && !n.startsWith('_')) LOOK_OF_NAME[n] = v;
+}
+if (HC_V2_ON) {   // HIGH_CHARITY_LAYOUT phase 1: the city's new cast; a speaker name another file already owns keeps its look
+  for (const [n, v] of Object.entries(window.PP_HC_V2.looks || {})) if (!NPC_LOOKS[n]) NPC_LOOKS[n] = v;
+  for (const [n, v] of Object.entries(window.PP_HC_V2.speakers || {})) if (!LOOK_OF_NAME[n]) LOOK_OF_NAME[n] = v;
 }
 // Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
 (function wireIlseLetter(){
@@ -4697,7 +4808,14 @@ function takeBattleTrack(kind, trainerId){
 const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
 // Conditions (§4): 'flag', '!flag', 'flag=value', 'seal:id', 'has:name', 'talked' (lines keys only). `live` = read scene pending too.
 // WP-B0: numeric 'flag>=n', 'flag<=n', 'flag>n', 'flag<n' (an unset flag counts as 0) for counters written by the `inc` step.
-function flagOf(k, live){ if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
+// story.act (D915, D977): the act number is derived from the save (PPStanding.actOf), never stored. A stored story.act
+// (debug places, seeded test saves, an old save) is read only under ?debug=1; in normal play it is ignored.
+function actNow(live){
+  const f = live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags;
+  if (DEBUG) { const v = f['story.act']; if (v != null && v !== '' && v !== false && Number.isFinite(+v)) return +v; }
+  return PPStanding.actOf(f, sealsHeld());
+}
+function flagOf(k, live){ if (k === 'story.act') return actNow(live); if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
 function curName(live){ return live && scene && scene.view.name !== undefined ? scene.view.name : (S.player && S.player.name) || null; }
 // LIZZY_REP LR5 (D174, D178). rep: compares the raw number. reptier compares the effective tier.
 // "reptier=warm" with no name is the speaker (NPC lines). A stamp jump applies one new penalty, never the old ones.
@@ -4773,14 +4891,26 @@ function repCond(c, o){
                                   opens after Lizzy's class, and story.heights_done only comes after the pick), or story.heights_done
                                   & !story.seal1 for an older save (trialReady's read) (D1244).
      argue                        everything before.
-   `held` matches either held_ phase and `contested` any other. Reads only; never writes a flag or the save. */
+   `held` matches either held_ phase and `contested` any other; `post` (D1561) is a Keeper Cadet's Glimmerwell-held town.
+   Reads only; never writes a flag or the save. */
 function fbPlazaPhase(live){
   const f = k => flagOf(k, live);
+  // ACT1_KEEPER_JOIN §7 E2 (D1505): once the holder is a Keeper Cadet with a face set, the plaza follows the town's hold
+  // (mapHold on the same flags flagOf reads, live or saved): held_keepers, held_glimmer, or `after` for a split town (the
+  // standoff resumes). Saves without story.keeper_cadet (every save today) read the phases below, unchanged.
+  if (f('story.keeper_cadet') && f('story.side_pick_done')) {
+    const h = mapHold('fernbrook', live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags);
+    return h === 'keepers' ? 'held_keepers' : h === 'glimmer' ? 'held_glimmer' : 'after';
+  }
   if (f('story.seal1')) return f('story.side_pick_done') ? (String(f('story.side')) === 'glimmer' ? 'held_glimmer' : 'held_keepers') : (f('story.crackdown') ? 'curfew' : 'after');
   if (f('story.lizzy_class') || f('story.heights_done')) return 'watch';
   return 'argue';
 }
+// ACT1_KEEPER_JOIN D1561 (Vincent, Nov 3, 2026, night): `fbplaza:post` is a Keeper Cadet's Fernbrook held by Glimmerwell. One
+// Keeper post stays visible then (the Constable at his tile, `hold`, no patrol). Saves without story.keeper_cadet never read it.
+function fbPlazaPost(live){ return !!(flagOf('story.keeper_cadet', live) && flagOf('story.side_pick_done', live)) && fbPlazaPhase(live) === 'held_glimmer'; }
 function fbPlazaIs(want, live){
+  if (want === 'post') return fbPlazaPost(live);
   const ph = fbPlazaPhase(live), held = ph.indexOf('held_') === 0;
   return want === ph || (want === 'held' && held) || (want === 'contested' && !held);
 }
@@ -4802,7 +4932,8 @@ function cond(c, live, o){
   }
   let v;
   if (c === 'has:name') v = !!curName(live);
-  else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
+  else if (c.startsWith('seal:')) v = hasSeal(c.slice(5));
+  else if (/^seals>=\d+$/.test(c)) v = sealsHeld() >= +c.slice(7);   // D1329: Seals held, tags never count
   else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
   else if (c === 'chip:partner') v = chipOn(pet());
@@ -4879,15 +5010,17 @@ const shownName = n => {   // CALEB_FIX: a cast `label` is display only too
   return e.label || n;
 };
 // Dev check (read-only; PixelPets.rankCheck). Every Keeper or Glimmerwell cast entry has a rank, a pending proposal
-// (reputation.json ranks.pending: shown with its plain name until Vincent OKs the rank, D1159) or a flag (rankFlag);
-// a folded name (rep.js REP_CANON) is checked under the name it folds into. No cast label may carry a "[...]" placeholder.
+// (reputation.json ranks.pending: shown with its plain name until Vincent OKs the rank, D1159), a flag (rankFlag) or a
+// `civilian` mark (a host or shopkeeper: aligned to a side, not sworn, so never ranked); a folded name (rep.js REP_CANON)
+// is checked under the name it folds into. No cast label may carry a "[...]" placeholder.
 function rankCheck(){
-  const out = { missing: [], placeholders: [], flagged: [], bad: [], battle: [] };
+  const out = { missing: [], placeholders: [], flagged: [], civilians: [], bad: [], battle: [] };
   const R = (typeof MAPDATA === 'object' && MAPDATA.reputation) || {};
   const cast = R.cast || [], pending = (R.ranks && R.ranks.pending) || {};
   for (const e of cast) {
     if (!e || (e.faction !== 'keepers' && e.faction !== 'glimmer' && !e.rank)) continue;
     if (window.PPRep && PPRep.key(e.name) !== e.name) continue;
+    if (e.civilian) { if (e.rank) out.bad.push(e.name + ': civilian with a rank'); else out.civilians.push(e.name); continue; }
     const p = pending[e.name];
     if (p && !e.rank) out.placeholders.push(e.name + ' (' + (p.decision || 'D1159') + ')');
     else if (p) out.bad.push(e.name + ': ranked and still pending');
@@ -6479,10 +6612,13 @@ function checkArriveTriggers(){
   }
   return false;
 }
+// WEIR_HUT D1598: a trigger may name a scene another build fills in (chi_hut_first -> chi_meet). Until that scene exists the
+// trigger is a stub: it never fires, never stops the walk and writes nothing.
+const sceneBuilt = o => !o.scene || !!sceneSteps(o.scene);
 function checkTriggers(){
   const x = S.world.x, y = S.world.y;
   for (const o of CUR.objs) {
-    if (o.kind !== 'trigger') continue;
+    if (o.kind !== 'trigger' || !sceneBuilt(o)) continue;
     const inside = present(o) && Math.abs(o.x - x) + Math.abs(o.y - y) <= (o.r || 0);
     if (!inside) {
       if (o.id === 'fb_side_pick' && mapRT.trig[o.id] && !S.flags['story.side_pick_done']) {
@@ -6530,7 +6666,7 @@ function matchMarkFor(o){
   if (!S || !o || !CUR || !present(o)) return null;
   const w = o.kind === 'npc' ? MATCH_WALKUP[CUR.id + ':' + o.id] : null;
   const id = o.kind === 'trainer' ? o.id : w ? w[0] : null, t = id && TRAINERS[id];
-  if (!t || S.flags['trainer.' + id] || (t.seal && S.seals && S.seals[t.seal]) || (w && !w[1]())) return null;
+  if (!t || S.flags['trainer.' + id] || (t.seal && hasSeal(t.seal)) || (w && !w[1]())) return null;
   if (S.flags['rematch.' + rematchId(id)] && (S.world.restDue || mapRT.grace > 0)) return null;
   return id;
 }
@@ -6693,6 +6829,7 @@ function tickPatrol(dt){
   for (const o of CUR.objs) {
     const path = o.patrol;
     if (!path || !path.length || !present(o)) continue;
+    if (o._pi == null && o.patrolStart) o._pi = o.patrolStart;   // a pair on one beat starts half a loop apart (HIGH_CHARITY_LAYOUT §8.3)
     const cur = mapRT.pos[o.id] || { x: o.x, y: o.y };
     const near = Math.abs(cur.x - S.world.x) + Math.abs(cur.y - S.world.y);
     if (near <= 2) {                        // the keeper is close: wait, so a walker never steps into the keeper's way (face them when adjacent)
@@ -6768,7 +6905,7 @@ function tickGlides(){
   }
 }
 function wanderable(o){
-  if (!o || o.kind !== 'npc' || o.cast || o.pet || o.frozen || o.patrol || o.catch || o.roll || o.hold) return false;
+  if (!o || o.kind !== 'npc' || o.cast || o.pet || o.frozen || o.patrol || o.catch || o.roll || o.hold || o.still) return false;   // still: a fixed anchor (HIGH_CHARITY_LAYOUT §8.1)
   if (o.shop || o.meals || o.wardrobe || o.panel || o.booth || o.board || o.keeper || o.shot) return false;
   return !(LANTERN_GUIDE_IDS[o.id] || NPC_STILL[o.id] || MATCH_WALKUP[CUR.id + ':' + o.id]);
 }
@@ -7131,6 +7268,7 @@ function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }).then((
 // Keeper towns wear gold and green. Glimmerwell ground wears wine and soot. The stripe sits on the roof edge and the wall foot.
 function factionOfMap(id){
   if (!id) return null;
+  if (id === 'gw_preview') return window.PPFleet ? PPFleet.previewFaction() : null;   // the preview lot follows its chosen hold
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
   if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
   if (id === 'bw_depot_in') return 'glimmer';                               // BRINEWICK (B6): a Keepers harbour with a Glimmerwell depot
@@ -7526,6 +7664,8 @@ function cellImg(m, ch, tx, ty, wf){
     const nm = labTileName(ch, tx, ty, m);
     if (nm !== ch && TILES[nm]) img = TILES[nm];
   }
+  // WEIR_HUT: a skin tile may loop two frames on the water clock (the weir trough); reduced motion holds frame 0.
+  if (Array.isArray(img)) img = img[(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0 : wf % img.length];
   return img;
 }
 function drawMap(t){
@@ -7628,8 +7768,12 @@ function drawMap(t){
   if (window.PPNet && PPNet.mapEnts) PPNet.mapEnts(g, cx, cy).forEach(e => ents.push(e));
   needHeartSkipped = false;
   drawCurtain(g, cx, cy, VW, VH);             // INTRO_CUTSCENE D803: under the actors, so a walker crosses in front of it
+  // GLIMMERWELL_VEHICLES_BUILDINGS (D1342): only on the ?debug=1 preview lot. Shadows first, Cruisers y-sorted, the air unit above everyone.
+  const fleetOn = !!(window.PPFleet && PPFleet.live(CUR.id));
+  if (fleetOn) { PPFleet.drawGround(g, cx, cy, VW, VH, t); PPFleet.mapEnts(g, cx, cy, VW, VH, t).forEach(e => ents.push(e)); }
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
+  if (fleetOn) PPFleet.drawAir(g, cx, cy, VW, VH, t);
   drawHqGlow(g, cx, cy);
   drawLampLights(g, cx, cy, VW, VH);
   drawShotFx(g, cx, cy);
@@ -7794,7 +7938,7 @@ function drawCobbleTrim(g, cx, cy, t){
 // target tile. Off screen, the same arrow sits at the edge in 8 directions, with the distance pill and a 44 px tap that
 // opens QUEST. A board slip keeps the rail chip. No ground ring. On another map the cue points at the exit that starts
 // the shortest route there (BFS over warps and doors). Hidden during scenes, battles and the walk-in flash.
-const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length });
+const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length, both: SEALS_BOTH_PATHS });
 const HC_CLEAR_FLAGS = ['story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs'];
 const HC_QUEST = {
   id: 'hc_games',
@@ -8318,7 +8462,7 @@ function drawObjectiveCue(g, cx, cy, t){
   }
 }
 const WART = buildWorldArt();
-addExteriorArt(TILES, WART);
+addExteriorArt(TILES, WART, HC_V2_ON);   // the city's PLACEHOLDER art only while the city is on
 const drawArt = (g, img, X, Y) => g.drawImage(img, X - (img.width - TS) / 2, Y - (img.height - TS));   // 32x32 art stands bottom-centred on its one blocking cell
 // Animated props and decals are arrays of canvases with .ms. Reduced motion stays on frame 0.
 function artFrame(a, t){
@@ -8386,7 +8530,8 @@ function propArtKey(o){
 }
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
-  if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
+  const wide = o.ox ? 48 : 0;   // a 64 px tank or 32 px car drawn across its bay: cull by its full width
+  if (X < -26 - wide || Y < -24 - wide || X > VW + 10 + wide || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
     if (o.pet === 'maze' && WART.maze_sit) { drawMaze(g, X, Y, t); return; }
@@ -8407,7 +8552,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
   else if (o.kind === 'prop') {
     const key = propArtKey(o);
-    const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y);
+    const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X + (o.ox || 0), Y + (o.oy || 0));   // ox/oy: wide art across its bay (a parked car or tank)
   }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') {
@@ -9255,6 +9400,7 @@ async function runSteps(steps, ctx = {}){
 const GLIMMER_MEET = { glimmer1: 1, faded1: 1 };
 function cueFactionMusic(ctx, steps){
   if (!scene || !S || side() === 'glimmer') return;
+  if (Array.isArray(steps && steps[0]) && steps[0][0] === 'music') return;   // KEEPER_ANTHEM M8 (D1381): a scene that opens with its own cue keeps it
   const hit = (steps || []).find(st => Array.isArray(st) && st[0] === 'battle' && trainerFaction(st[1]) === 'glimmer');
   if (hit) {
     scene.musicCue = battleTrack('trainer', hit[1]);
@@ -9629,7 +9775,9 @@ async function execStep(st){
       return;
     }
     case 'inc': {
-      const n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0); sc.view.flags[a] = n; pend(() => { S.flags[a] = n; });   // WP-B0 counters (Rook bond)
+      let n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0);
+      if (String(a).indexOf(SWAY.prefix) === 0) n = clampSway(n);   // ACT1_KEEPER_JOIN §5: a town's sway stays in -3..3
+      sc.view.flags[a] = n; pend(() => { S.flags[a] = n; });   // WP-B0 counters (Rook bond)
       if (a === 'story.rc_stamped' && n >= 1 && n <= 3) await execStep(['standing', 'glimmer', null, 'rc_stamp' + n]);
       if (a === 'story.rc_loose' && n === 1) await execStep(['standing', 'keepers', null, 'rc_loose']);
       return;
@@ -9787,12 +9935,13 @@ async function execStep(st){
     case 'prop': { cutProp(sc, cutVar(sc, a), b); return; }
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
-    // Build 3: ["seal", id] grants a lanyard without a battle (the Tour's skip path). A Hall win already set it and showed the card.
+    // Build 3: ["seal", id] grants a Seal or a tag without a battle; a tag whose Seal is held is written silently (D1327). A Hall win already set it and showed the card.
     case 'seal': {
       const id = a; if (!id || !SEAL_ART[id]) return;
       const already = !!(S.seals && S.seals[id]);
       pend(() => { if (!S.seals[id]) S.seals[id] = Date.now(); });
       if (sc.skip || already || (battle && battle.on)) return;
+      if (SEALS_BOTH_PATHS && PPStanding.isTag(id) && hasSeal(PPStanding.SEAL_TAGS[id])) return;   // the Seal card already showed, with the cord
       await presentFieldSeal(id);
       return;
     }
@@ -9807,7 +9956,10 @@ async function execStep(st){
     }
     case 'sfx': { if (a) sfx(a); return; }
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
-    case 'music': { if (a && !sc.skip) { sc.musicCue = a; try { PPSound.music(a, { fadeOut: 180, fadeIn: 140 }); } catch (e) {} } return; }
+    // KEEPER_ANTHEM M6 (D1381): ["music", id, { fadeOut, fadeIn, minDelay, near, keep }]; plain ["music", id] is 180 / 140 ms as before.
+    // `near` starts a swelling cue at full; `keep` holds this cue over a scene warp (M7).
+    case 'music': { if (a && !sc.skip) { const o = (b && typeof b === 'object') ? b : {}; sc.musicCue = a; sc.keepMusic = !!o.keep;
+      try { PPSound.music(a, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near }); } catch (e) {} } return; }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
       if (a === 'open') openReveal(sc);
@@ -9837,7 +9989,7 @@ async function execStep(st){
     }
     case 'rookOut': {
       const from = side(), dest = from === 'glimmer' ? 'keepers' : 'glimmer';
-      const can = PPStanding.canSwitch(S.flags, S.standing, from, dest);
+      const can = PPStanding.canSwitch(S.flags, S.standing, from, dest, actNow(false));
       if (can.ok) await playScene('rook_offer');
       else await execStep(['say', 'Rook', 'Not here. Find me by the Brinewick road sign. We finish the crates first.']);
       return;
@@ -9863,11 +10015,17 @@ async function execStep(st){
     case 'warp': {
       if (!a || !WORLD[a]) return;
       commitPending();   // the position save inside the warp must not outrun this scene's flags
-      await new Promise(res => {
-        const at = { map: a, x: b | 0, y: c | 0, facing: d || 'down' };
-        if (fade.busy) { arriveAt(at); res(); return; }
-        warpTo(at, res);
-      });
+      // KEEPER_ANTHEM M7 (D1381, D1384): a scene's own `keep` cue plays on through the warp while it is still the wanted one
+      // (not after a battle handed back the map loop, never under SKIP); arriveAt() then leaves the landing map's loop alone.
+      const hold = !!sc.keepMusic && !sc.skip && PPSound.musicWant === sc.musicCue;
+      if (hold) musicHold = true;
+      try {
+        await new Promise(res => {
+          const at = { map: a, x: b | 0, y: c | 0, facing: d || 'down' };
+          if (fade.busy) { arriveAt(at); res(); return; }
+          warpTo(at, res);
+        });
+      } finally { if (hold) musicHold = false; }
       return;
     }
   }
@@ -10707,7 +10865,11 @@ function pickSpecies(tags = envTags(), key = spawnKey()){
 const pickStage = (key = spawnKey()) => Math.random() < ((SPAWNS[key] || {}).stage2 || WILD_STAGE2_CHANCE) ? 1 : 0;
 // w.lv: a first form rolls uniformly in its table row's range. A second form on Route 1 / Fernbrook stays Lv 6-8.
 // On a high-level table (row min above 8: Route 2, Wickerglen, the quarry) the second form uses that same range.
+// WEIR_HUT D1594 (a): the Wickerglen > Falls > Cut walk opens at story.warden_met, before Hall 2. Until story.cobble_end the
+// Falls and the Cut roll Wickerglen's band (Lv 13-16); after it they roll their own tables (Lv 19-23) as built.
+const HW_EARLY_BAND = { maps: { hw_falls: 1, hw_cut: 1 }, lv: [13, 16] };
 function wildBaseRange(sp, stage, key){
+  if (HW_EARLY_BAND.maps[key] && !(S && S.flags && S.flags['story.cobble_end'])) return HW_EARLY_BAND.lv.slice();
   const id = SPECIES[sp].id, row = SPAWNS[key] && SPAWNS[key].table.find(r => r[0] === id);
   if (row && (!stage || row[2] > 8)) return [row[2], row[3]];
   const t = STAT_RULES.WILD_LEVELS.proto, own = (STAT_RULES.WILD_LEVELS_SPECIES.proto || {})[id];
@@ -11444,6 +11606,7 @@ const LANTERN_NEAR = {
   cobble_quarry: [['cobblecrest'], ['fernbrook']],
   mahopac: [['hearthmoor']],
   highcharity: [['highcharity']],
+  hc_civic: [['highcharity']], hc_exchange: [['highcharity']], hc_waterfront: [['highcharity']], hc_college: [['highcharity']],   // HIGH_CHARITY_LAYOUT chunks
   fb_heights: [['fernbrook']],
   route3: [['cobblecrest', 'brinewick']],   // BRINEWICK: Route 3 runs from Cobblecrest's east gate down to the harbour
   brinewick: [['brinewick']],
@@ -12305,9 +12468,16 @@ const REGION_MAP = {
       hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
     proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]],
       hold: [{ id: 'wild' }] },
-    fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Bloom Trial Hall.',
-      // D1171: Fernbrook is contested until the pick after Trial 1, then flips to the side the holder picked.
-      hold: [{ id: 'glimmer', when: ['story.side_pick_done', 'story.seal1', 'story.side=glimmer'], line: 'Glimmerwell holds the town now. Lanterns on every gate.' },
+    fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Fernbrook Trial Hall.',
+      // ACT1_KEEPER_JOIN §7 (D1504-D1506): a contested town (`sway: true`). Once the holder is a Keeper Cadet with a face set
+      // (story.keeper_cadet & story.side_pick_done) the town settles by story.sway_fernbrook (-3..3, + leans Keepers): >= 2
+      // Keepers, <= -2 Glimmerwell, else split. Rules 4-5 are D1171's flip at the pick, kept for saves that have no
+      // story.keeper_cadet (every save today), so today's play reads exactly as before. Split line: PLACEHOLDER (Story).
+      sway: true,
+      hold: [{ id: 'keepers', when: ['story.keeper_cadet', 'story.side_pick_done', 'story.sway_fernbrook>=2'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
+        { id: 'glimmer', when: ['story.keeper_cadet', 'story.side_pick_done', 'story.sway_fernbrook<=-2'], line: 'Glimmerwell holds the town now. Lanterns on every gate.' },
+        { id: 'split', when: ['story.keeper_cadet', 'story.side_pick_done'], line: 'Keepers walk the lanes. Glimmerwell keeps the gate.' },
+        { id: 'glimmer', when: ['story.side_pick_done', 'story.seal1', 'story.side=glimmer'], line: 'Glimmerwell holds the town now. Lanterns on every gate.' },
         { id: 'keepers', when: ['story.side_pick_done', 'story.seal1', '!story.side=glimmer'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
         { id: 'split', line: 'Keepers keep the town. Glimmerwell keeps a stand.' }] },
     route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]],
@@ -12340,9 +12510,11 @@ const REGION_MAP = {
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook', fbh_press_in: 'fernbrook', fbh_picker_in: 'fernbrook', fbh_stitch_in: 'fernbrook',   // FERNBROOK_HOMES
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
+    hc_civic: 'highcharity', hc_exchange: 'highcharity', hc_waterfront: 'highcharity', hc_college: 'highcharity',   // HIGH_CHARITY_LAYOUT: one node for every chunk (D1275)
+    hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_3: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
-    hw_rim: 'hw_cut', hw_falls: 'hw_cut',
+    hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
     bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
@@ -12380,13 +12552,26 @@ function syncMapBtn(){
 }
 const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null };
 let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
+// ACT1_KEEPER_JOIN §7 (D1505, E1): one hold condition read on a flags object, the way cond() reads them: `|` first, then `&`,
+// then `!`; 'k=v' compares a flag's value (story.side=glimmer, D1171); 'k>=n', 'k<=n', 'k>n', 'k<n' compare a number, an unset
+// flag counting as 0 (story.sway_fernbrook>=2). Pure: no S, no live scene view, so the dev check passes plain flag objects.
+function holdCond(F, c){
+  c = String(c == null ? '' : c).trim();
+  if (c.includes('|')) return c.split('|').some(p => !!p.trim() && holdCond(F, p));
+  if (c.includes('&')) return c.split('&').every(p => !!p.trim() && holdCond(F, p));
+  if (!c) return false;
+  if (c[0] === '!') return !holdCond(F, c.slice(1));
+  const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c), f = F || {};
+  if (!m) return !!f[c];
+  if (m[2] === '=') return String(f[m[1]]) === m[3];
+  const n = Number(f[m[1]]) || 0, r = Number(m[3]);
+  if (!Number.isFinite(r)) return false;
+  return m[2] === '>=' ? n >= r : m[2] === '<=' ? n <= r : m[2] === '>' ? n > r : n < r;
+}
 // First matching rule wins. `flags` lets the dev check try a save without touching S. Unvisited places stay ??? on the parchment.
 function matchHold(id, flags){
   const n = REGION_MAP.nodes[id], F = flags || (S && S.flags) || {};
-  // DAY1_TRIAL1_FLOW §9 (D1171): `k=v` reads a flag's value (story.side=glimmer), as evalCond does; '!' negates either form.
-  const one = c => { const k = c.indexOf('='); return k >= 0 ? String(F[c.slice(0, k)]) === c.slice(k + 1) : !!F[c]; };
-  const ok = c => String(c)[0] === '!' ? !one(String(c).slice(1)) : one(String(c));
-  for (const rule of (n && n.hold) || []) if (!rule.when || rule.when.every(ok)) return rule;
+  for (const rule of (n && n.hold) || []) if (!rule.when || rule.when.every(c => holdCond(F, c))) return rule;
   return { id: 'wild', line: MAP_HOLD_LINE.wild };
 }
 function mapHold(id, flags){ return matchHold(id, flags).id; }
@@ -12541,6 +12726,18 @@ function mapDevCheck(){
   if (mapHold('cobble_quarry', {}) !== 'keepers' || mapHold('cobble_quarry', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('quarry');
   if (mapHold('fb_heights', {}) !== 'glimmer' || mapHold('fb_heights', { 'story.sm_done': true }) !== 'split') bad.push('heights');
   if (mapHold('fernbrook', { 'story.side_pick_done': true, 'story.seal1': true, 'story.side': 'glimmer' }) !== 'glimmer' || mapHold('fernbrook', { 'story.side_pick_done': true, 'story.seal1': true }) !== 'keepers') bad.push('fernbrook flip');   // D1171
+  // ACT1_KEEPER_JOIN §7 E10 (D1504, D1505): a Cadet's Fernbrook settles by sway; the old-save flip above still passes.
+  const cadet = sw => ({ 'story.keeper_cadet': true, 'story.side_pick_done': true, 'story.seal1': true, 'story.sway_fernbrook': sw });
+  if (mapHold('fernbrook', cadet(3)) !== 'keepers' || mapHold('fernbrook', cadet(-3)) !== 'glimmer' || mapHold('fernbrook', cadet(1)) !== 'split') bad.push('fernbrook sway');
+  if (mapHold('fernbrook', cadet(2)) !== 'keepers' || mapHold('fernbrook', cadet(-2)) !== 'glimmer' || mapHold('fernbrook', cadet(-1)) !== 'split' || mapHold('fernbrook', cadet(undefined)) !== 'split') bad.push('fernbrook sway edge');
+  if (mapHold('fernbrook', Object.assign(cadet(-3), { 'story.side': 'keepers' })) !== 'glimmer' || mapHold('fernbrook', Object.assign(cadet(3), { 'story.side': 'glimmer' })) !== 'keepers') bad.push('fernbrook sway beats face');
+  if (mapHold('fernbrook', { 'story.side_pick_done': true, 'story.seal1': true, 'story.sway_fernbrook': -3 }) !== 'keepers') bad.push('fernbrook sway inert');   // no Cadet: the built flip
+  if (!holdCond({ 'story.n': 2 }, 'story.n>=2') || holdCond({}, 'story.n>=1') || !holdCond({}, 'story.n<1') || !holdCond({ 'story.n': -2 }, 'story.n<=-2')) bad.push('holdCond numbers');
+  if (!holdCond({ b: true }, 'a | b') || holdCond({ a: true }, 'a & b') || holdCond({ c: true }, 'a | b & c') || !holdCond({ b: true, c: true }, 'a | b & c') || !holdCond({ s: 'glimmer' }, 's=glimmer') || holdCond({ s: 'glimmer' }, '!s=glimmer')) bad.push('holdCond ops');
+  for (const id of ids) for (const rule of REGION_MAP.nodes[id].hold || []) for (const c of rule.when || []) {
+    const m = /story\.sway_([a-z0-9_]+)/.exec(String(c));
+    if (m && (m[1] !== id || !REGION_MAP.nodes[id].sway)) bad.push(id + ': sway read on a town that is not contested');
+  }
   if (mapHold('fernbrook', {}) !== 'split' || mapHold('route2', {}) !== 'split' || mapHold('route2_glen', {}) !== 'glimmer') bad.push('fork');
   if (mapHold('hearthmoor', {}) !== 'keepers' || mapHold('highcharity', {}) !== 'keepers' || mapHold('route1', {}) !== 'keepers') bad.push('keepers');
   if (mapHold('proto', {}) !== 'wild' || mapHold('mahopac', {}) !== 'wild') bad.push('wild');
@@ -16124,9 +16321,20 @@ SEAL_ART.seal_brinewick = [
 const LANYARD_TIER3 = LANYARD_TIER1.map((row, y) => (y < 2 || y > 12) ? row
   : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'VN'.includes(ch)) ? 'w' : ch).join(''));
 SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL_ART.seal_glim_3 = LANYARD_TIER3;
+// SEALS_BOTH_PATHS §4.6 (D1327): on the Glimmer path the Seal card shows Glimmerwell's cord clipped to the Seal. The overlay
+// reads side(), not the save's tags: the Hall-win card shows before onWin writes the tag. SEAL_CORD holds Pia's 16x16 overlays
+// (design §8, '.' = transparent); until they land the slots are null and the card draws the plain Seal.
+const SEAL_CORD_TIER = Object.freeze({ seal_fernbrook: 1, seal_cobblecrest: 2, seal_brinewick: 3 });   // Halls 4-8 add rows
+const SEAL_CORD = [null, null, null];   // PLACEHOLDER: Pia's SEAL_CORD_1-3 (design SEALS_BOTH_PATHS §8)
+function sealCardGrid(id){
+  const base = SEAL_ART[id] || SEAL_ART.seal_fernbrook;
+  const tier = SEALS_BOTH_PATHS && side() === 'glimmer' ? (SEAL_CORD_TIER[id] || 0) : 0, cord = tier ? SEAL_CORD[tier - 1] : null;
+  if (!cord) return base;
+  return base.map((row, y) => [...row].map((ch, x) => (cord[y] && cord[y][x] && cord[y][x] !== '.') ? cord[y][x] : ch).join(''));
+}
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
-  g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
+  g.drawImage(keeperCanvas(sealCardGrid(id)), 0, 0);
   $('#btSealName').textContent = sealName(id); $('#btSeal').hidden = false;
 }
 // The Tour can finish without a battle. Same Seal card, over a quiet stage, until OK / Space.
@@ -17921,9 +18129,27 @@ const DEBUG_EXTRAS = {
   hc_hall: { place: 'Event Hall', text: 'The five High Charity games.', map: 'hc_hall_in', x: 5, y: 9, facing: 'up',
     flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'] },
 };
+// HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
+if (HC_V2_ON) {
+  const HC_F = ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'];
+  const ACT2 = HC_F.concat(['story.act=2']), ACT5 = HC_F.concat(['story.act=5', 'story.hc_gov_met']);   // D1426: the Governor is Act 2
+  Object.assign(DEBUG_EXTRAS, {
+    hc2_square: { place: 'HC Lantern Square', text: 'The coach stop, the gate tanks.', map: 'highcharity', x: 32, y: 37, facing: 'up', flags: HC_F },
+    hc2_hill: { place: 'HC Charter Hill', text: "The Governor's House, the Parade.", map: 'hc_civic', x: 32, y: 19, facing: 'up', flags: HC_F },
+    hc2_exchange: { place: 'HC Exchange Quarter', text: 'Block News House, Store Row.', map: 'hc_exchange', x: 52, y: 16, facing: 'up', flags: HC_F },
+    hc2_quay: { place: 'HC Lantern Quay', text: 'The Promenade, the piers.', map: 'hc_waterfront', x: 61, y: 19, facing: 'left', flags: HC_F },
+    hc2_green: { place: 'HC College Green', text: 'The College, Charity Park.', map: 'hc_college', x: 23, y: 2, facing: 'down', flags: HC_F },
+    hc2_lantern: { place: 'HC grand Lantern House', text: 'Twelve beds, the lantern wall.', map: 'hc_lantern_in', x: 8, y: 19, facing: 'up', flags: HC_F },
+    hc2_news: { place: 'HC Block News House', text: 'Front hall and wire room.', map: 'hc_news_1', x: 7, y: 14, facing: 'up', flags: HC_F },
+    hc2_gov: { place: "HC Governor's House (Act 2)", text: 'Keepers path, Act 2, the Governor.', map: 'hc_gov_1', x: 7, y: 14, facing: 'up', flags: ACT2 },
+    hc2_pres: { place: "HC President's rooms (Act 5)", text: 'Keepers path, Act 5.', map: 'hc_gov_3', x: 2, y: 12, facing: 'up', flags: ACT5 },
+  });
+}
+// A checkpoint past a Hall means the match route: the Seal, plus the tag on the Glimmer path (SEALS_BOTH_PATHS §4.7).
 const DEBUG_SEALS = {
-  'story.seal1': { keepers: 'seal_fernbrook', glimmer: 'seal_glim_1' },
-  'story.seal2': { keepers: 'seal_cobblecrest', glimmer: 'seal_glim_2' },
+  'story.seal1': { keepers: ['seal_fernbrook'], glimmer: ['seal_fernbrook', 'seal_glim_1'] },
+  'story.seal2': { keepers: ['seal_cobblecrest'], glimmer: ['seal_cobblecrest', 'seal_glim_2'] },
+  'story.seal3': { keepers: ['seal_brinewick'], glimmer: ['seal_brinewick', 'seal_glim_3'] },
 };
 const DEBUG_TRAINER_GATES = [
   ['story.rival1_done', 'rival1_rook'],
@@ -18078,8 +18304,8 @@ function debugRespawn(mapId){
 }
 function syncDebugSeals(){
   for (const [flag, bySide] of Object.entries(DEBUG_SEALS)) {
-    if (S.flags[flag]) { const seal = bySide[side()] || bySide.keepers; if (seal && !S.seals[seal]) S.seals[seal] = Date.now(); }
-    else for (const seal of Object.values(bySide)) delete S.seals[seal];
+    if (S.flags[flag]) { for (const seal of (bySide[side()] || bySide.keepers)) if (!S.seals[seal]) S.seals[seal] = Date.now(); }
+    else for (const seal of new Set([].concat(...Object.values(bySide)))) delete S.seals[seal];
   }
 }
 function syncDebugTrainers(){
@@ -18116,7 +18342,10 @@ function applyCheckpoint(id){
     reconcileChain(PPQuests.SIDE, sideI);
     S.flags['story.intro_seen'] = true;
     S.flags['story.starter_received'] = true;
-  } else for (const f of extra.flags) S.flags[f] = true;
+  } else for (const f of extra.flags) {   // "key=value" sets a value (story.act=5 for the HIGH_CHARITY_LAYOUT Act 5 places)
+    const kv = /^([^=]+)=(.+)$/.exec(f);
+    if (kv) S.flags[kv[1]] = isNaN(+kv[2]) ? kv[2] : +kv[2]; else S.flags[f] = true;
+  }
   if (S.flags['story.starter_received'] || allPets().length) readyParty();
   else setRestDue(false);
   syncSide();
@@ -19200,14 +19429,14 @@ function cloudSummary(raw){
   if (!o || typeof o !== 'object' || o.v !== 2) return null;
   const s = PPSave.normalizeV2(o, Date.now()), p = s.party.find(q => q.id === s.partnerId) || s.party[0];
   return { partner: p ? petName(p) : null, sp: p ? spi(p) : null, stage: p ? p.stage : 0, pets: s.party.length + s.box.length,
-    seals: Object.values(s.seals).filter(Boolean).length, last: s.last, player: s.player.name };
+    seals: PPStanding.sealsHeldIn(s.seals, s.flags, SEALS_BOTH_PATHS), last: s.last, player: s.player.name };
 }
 function startCloud(){
   PPCloud.start({
-    getState: () => (readOnly || resetting) ? null : S,
+    getState: () => (readOnly || resetting || previewActive()) ? null : S,   // a debug preview never reaches the cloud save
     save, toast, sfx, summary: cloudSummary,
     drawPet: (cv, sp, st) => spriteCanvas(cv, sp, st, 'n'),
-    busy: () => overlayOpen() || !!(battle && battle.on),
+    busy: () => overlayOpen() || !!(battle && battle.on) || previewActive(),   // no compare (so no adopt reload) under a preview
     beforeOverlay: () => { clearMoves(); lockTabs(true); },
     afterOverlay: () => lockTabs(!$('#ovSettings').hidden),
     // adopt a cloud save: this page stops writing, the v2 key gets the cloud copy as-is (its `last` keeps away-time decay), reload
@@ -19231,7 +19460,7 @@ function startCloud(){
     bond: () => { const p = pet(); return p ? bondLevel(p) : 0; },
     seenCount: () => (S && S.dex && S.dex.seen) ? Object.keys(S.dex.seen).filter(k => S.dex.seen[k]).length : 0,
     befriended: () => allPets().length,
-    seals: () => (S && S.seals) ? Object.values(S.seals).filter(Boolean).length : 0,
+    seals: () => sealsHeld(),   // D1329: Seals held only (tags never count)
     reduced: () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } },
     stepMs: () => STEP_MS,
     keeper: (look, facing, frame) => { const pack = keeperFrames(look); return pack && pack[facing] ? pack[facing][frame] || pack[facing][0] : null; },
@@ -19352,6 +19581,40 @@ function highCharityDevCheck(){
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek'])
     if (!PPQuests.NOT_STEPS.includes(f)) bad.push('not step ' + f);
   if (!REGION_MAP.nodes.highcharity) bad.push('region');
+  if (HC_V2_ON) bad.push(...hcCityCheck());
+  return bad;
+}
+/* HIGH_CHARITY_LAYOUT phase 1, in the running game: every chunk and new room is in WORLD, every door with a room leads to
+   one with a facade above and a walk step, every mouth warp lands on a walk tile of a chunk, every kept id arrived once,
+   the new flags are off the quest chain, and the §6.4 budgets hold. Empty list = pass. */
+const HC_CHUNKS = ['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college'];
+function hcCityCheck(){
+  const bad = [], V = window.PP_HC_V2;
+  if (!V) return ['no city data'];
+  for (const id of HC_CHUNKS.concat(Object.keys(V.rooms))) if (!WORLD[id]) bad.push('missing ' + id);
+  const walkAt = (m, x, y) => !!(m && m.grid[y] && (TILE_DEF[m.grid[y][x]] || {}).walk);
+  for (const id of HC_CHUNKS) {
+    const m = WORLD[id]; if (!m) continue;
+    if (m.w > 64 || m.h > 48) bad.push(id + ' size');
+    for (const o of m.objs) {
+      if (o.kind === 'door') {
+        if (o.to && !WORLD[o.to]) bad.push('door ' + o.id + ' to ' + o.to);
+        if (!m.grid[o.y - 1] || m.grid[o.y - 1][o.x] !== 'H') bad.push('door wall ' + o.id);
+        if (!walkAt(m, o.x, o.y)) bad.push('door step ' + o.id);
+      }
+      if (o.kind === 'warp' && WORLD[o.to] && HC_CHUNKS.includes(o.to) && !walkAt(WORLD[o.to], o.tx, o.ty)) bad.push('mouth ' + o.id);
+    }
+    const n = m.objs.length, people = m.objs.filter(o => o.kind === 'npc').length, tanks = m.objs.filter(o => /^hc_tank/.test(o.sprite || '')).length;
+    if (n > 240) bad.push(id + ' objects ' + n);
+    if (people > 24) bad.push(id + ' people ' + people);
+    if (tanks > 3) bad.push(id + ' tanks ' + tanks);
+  }
+  for (const [key, to] of Object.entries(V.keep)) {
+    if (!to) continue;
+    const id = key.split(':')[1], hits = (WORLD[to.map] ? WORLD[to.map].objs : []).filter(o => o.id === id && o.x === to.x && o.y === to.y);
+    if (hits.length !== 1) bad.push('kept ' + key);
+  }
+  for (const f of V.notStepFlags || []) if (!PPQuests.NOT_STEPS.includes(f)) bad.push('not step ' + f);
   return bad;
 }
 PPMinigames.bind({
@@ -19738,7 +20001,16 @@ function boot(){
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map
   api.exteriorCell = (x, y) => DEBUG ? exteriorCell(x, y) : null;  // map pass B4: how cell (x, y) of this map is painted
+  // GLIMMERWELL_VEHICLES_BUILDINGS (D1342): the preview lot, ?debug=1 only. glimmer_fleet.js owns it; this is its window into the game.
+  const fleetHost = { debug: () => DEBUG, busy: () => !S || !!scene || !!(battle && battle.on) || fade.busy, get S(){ return S; }, WORLD, TILES, WART, NPC_LOOKS,
+    arrive: at => arriveAt(at), save: () => save(), showWalk: () => { dismissForDebug(); showTab('walk'); } };
+  api.fleetPreview = hold => DEBUG && window.PPFleet ? PPFleet.open(fleetHost, hold) : false;   // hold: 'split' | 'keepers' | 'glimmer'
+  api.fleetExit = () => DEBUG && window.PPFleet ? PPFleet.close(fleetHost) : false;
+  api.fleetState = () => DEBUG && window.PPFleet ? PPFleet.state() : null;
   api.mapHold = (id, flags) => mapHold(id, flags);
+  api.holdLine = (id, flags) => holdLine(id, flags);   // ACT1_KEEPER_JOIN §7: the hold line the chip and map show (read only)
+  api.sway = node => S ? swayOf(node) : null;           // ACT1_KEEPER_JOIN §5: a contested town's sway, -3..3 (read only)
+  api.hall2 = () => HALL2_ON;   // TRIAL_HALL_FERNBROOK_MAP: is the flagged contested Hall laid over fb_hall_in this load? (read only)
   api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
   api.mapNodeCenter = id => { const n = REGION_MAP.nodes[id]; return n ? [n.col * 16 + 8, n.row * 16 + 8] : null; };   // region-map logical px
   api.mapLayer = () => mapLayerSnap();
@@ -19827,6 +20099,9 @@ function boot(){
     return { skin: look.skin || null, hair: look.hair || null, hairCol: look.hairCol || null, outfit: look.outfit || null, outfitCol: look.outfitCol || null, accent: look.accent || null, accessory: look.accessory || 'none' };
   };
   api.sealArt = id => (SEAL_ART[id] || []).slice();
+  api.sealCardArt = id => sealCardGrid(id).slice();   // the card's composite (Seal + cord on the Glimmer path)
+  api.hasSeal = id => hasSeal(id);
+  api.sealsHeld = () => sealsHeld();
   api.sealName = id => sealName(id);
   api.lookGrid = id => {
     const o = objById(id);
@@ -19859,6 +20134,11 @@ function boot(){
   Object.defineProperty(api, 'heights', { enumerable: true, get(){ return { path: S && S.flags['story.heights_path'] || null, done: !!(S && S.flags['story.heights_done']), know: !!(S && S.flags['story.know_us']) }; } });
   // BS (read-only): both meters with tier index and name, the pledge, the switch count, and whether the desk would allow a switch now.
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
+  // D915 (read-only): the act number as cond() reads story.act (derived; a stored value counts only under ?debug=1).
+  Object.defineProperty(api, 'act', { enumerable: true, get(){ return S ? actNow(false) : null; } });
+  // ACT1_KEEPER_JOIN §8 (D1514, D1559), read only: Ilse's reports still open; the Act 3 loyalist choice can be offered.
+  Object.defineProperty(api, 'reportsOpen', { enumerable: true, get(){ return S ? PPStanding.reportsOpen(S.flags) : null; } });
+  Object.defineProperty(api, 'loyalistOpen', { enumerable: true, get(){ return S ? PPStanding.loyalistOpen(S.flags, actNow(false)) : null; } });
   api.standingCfg = () => copy(STANDING_CFG);
   api.standingCheck = () => PPStanding.devCheck();
   // LR5 (D174): raw number, effective tier, effective value. repAdd is a debug hook; scenes use the rep step.
@@ -19877,6 +20157,12 @@ function boot(){
   api.wildGuard = (dmg, hp, maxHp, attLv, foeLv) => wildGuardDmg(dmg, hp, maxHp, attLv, foeLv);
   api.weekKey = ms => weekKey(ms);
   api.charityCheck = () => highCharityDevCheck();
+  // HIGH_CHARITY_LAYOUT phase 1 (debug only): is the city on, its chunks and counts, its check, and the PLACEHOLDER art list.
+  api.hcCity = () => DEBUG ? { on: HC_V2_ON, preview: HC_PREVIEW, ship: HC_CITY_V2, chunks: HC_V2_ON ? HC_CHUNKS.map(id => ({ id, w: WORLD[id].w, h: WORLD[id].h,
+    objs: WORLD[id].objs.length, people: WORLD[id].objs.filter(o => o.kind === 'npc').length,
+    tanks: WORLD[id].objs.filter(o => /^hc_tank/.test(o.sprite || '')).length, cars: WORLD[id].objs.filter(o => /^hc_car/.test(o.sprite || '')).length })) : [],
+    check: HC_V2_ON ? hcCityCheck() : null } : null;
+  api.hcPlaceholders = () => DEBUG && typeof HC_PLACEHOLDER_ART !== 'undefined' ? Object.assign({}, HC_PLACEHOLDER_ART) : null;
   api.exportSave = () => exportText();
   api.importSave = text => { if (!stageCopy(text)) return false; confirmCopy(); return true; };
   let warned = false;
