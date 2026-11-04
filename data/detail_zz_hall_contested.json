@@ -382,7 +382,7 @@
        "hold:fernbrook=glimmer"
       ],
       "lines": {
-       "else": "A black cloth hides the old crest. A small red tag: 'Under renovation. Thanks for your patience!'"
+       "else": "A black cloth hides the old crest. A small wine tag: 'Under renovation. Thanks for your patience!'"
       }
      },
      {
@@ -460,7 +460,7 @@
        "!hold:fernbrook=keepers"
       ],
       "lines": {
-       "else": "A Glimmerwell banner, black with a red trim. Not a crease on it, not a speck of dust."
+       "else": "A Glimmerwell banner, wine with a honey trim. Not a crease on it, not a speck of dust."
       }
      },
      {
@@ -486,7 +486,7 @@
        "!hold:fernbrook=keepers"
       ],
       "lines": {
-       "else": "A Comfort Lamp by the dais. Its mint glass is spotless, and the light never wavers."
+       "else": "A Comfort Lamp by the dais. Its glass is spotless, and the wine-red light never wavers."
       }
      },
      {
@@ -525,7 +525,7 @@
        "!hold:fernbrook=keepers"
       ],
       "lines": {
-       "else": "A Comfort Lamp with a small red tag: 'Free to every home. It's a partnership!'"
+       "else": "A Comfort Lamp with a small wine tag: 'Free to every home. It's a partnership!'"
       }
      },
      {
@@ -668,7 +668,7 @@
        "hold:fernbrook=split"
       ],
       "lines": {
-       "else": "A red velvet rope where the new tile starts. A tag: 'Glimmerwell Co. works. Mind the polish!'"
+       "else": "A wine velvet rope where the new tile starts. A tag: 'Glimmerwell Co. works. Mind the polish!'"
       }
      },
      {

@@ -186,14 +186,19 @@ test('T6 + D1191: the props follow mapHold(fernbrook) on every save kind, throug
   test.skip(page.viewportSize().width !== 390, '390');
   test.setTimeout(120000);
   const kinds = ['a1', 'a2', 'b', "b'", 'c', 'c_glimmer', 'p', 'n', 'a1_glimmer'];
-  for (const kind of kinds) {
-    const fx = K.KINDS[kind], s = starterSave();
+  // #300 (ACT1_KEEPER_JOIN, D1504-D1506): a Keeper Cadet's Fernbrook settles by sway. The props follow it through the
+  // hold: term with no change of their own (D1191); these kinds pin that, with the hold each should read.
+  const cadet = (sway) => ({ flags: Object.assign({}, K.KINDS.c.flags, { 'story.keeper_cadet': true, 'story.side_pick_done': true, 'story.seal1': true, 'story.side': 'keepers', 'story.sway_fernbrook': sway }), seals: K.KINDS.c.seals });
+  const SWAY = { 'cadet_sway+3': [cadet(3), 'keepers'], 'cadet_sway-3': [cadet(-3), 'glimmer'], 'cadet_sway+1': [cadet(1), 'split'] };
+  for (const kind of kinds.concat(Object.keys(SWAY))) {
+    const fx = SWAY[kind] ? SWAY[kind][0] : K.KINDS[kind], s = starterSave();
     Object.assign(s.flags, fx.flags); s.seals = { ...fx.seals };
     s.world = { map: 'fernbrook', x: 12, y: 8, facing: 'down', respawn: 'fernbrook' };
     await installSave(page.context(), s, { quietDay: true });
     await gotoGame(page, ON);
     await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && typeof PixelPets.gateRead === 'function');
     const got = await page.evaluate(ids => ({ hold: PixelPets.mapHold('fernbrook'), on: ids.filter(id => (PixelPets.gateRead('fb_hall_in', id) || {}).whenOk) }), Object.keys(SHOWS));
+    if (SWAY[kind]) expect(got.hold, kind).toBe(SWAY[kind][1]);
     const want = Object.keys(SHOWS).filter(id => shows(SHOWS[id], got.hold) && !['fen_hall'].includes(id));
     expect(got.on.filter(id => id !== 'fen_hall').sort(), kind).toEqual(want.sort());
     // D1191: the props' `hold:` term is mapHold itself, negation included.

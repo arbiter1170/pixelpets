@@ -2092,7 +2092,7 @@ const HOUSE_SKINS = {
   hc_apt: hcSkin('floor_pile', 'wall_peach', 'mat_room', { weights: [0.22, 0.18], remap: { '=': 'rug_room' }, wall: wallRow('mhdpdomdocsm') }),
   hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop', { wall: wallRow('swbcbwmmbswh') }),
   hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz', { wall: wallRow('rypwhbdmncsr') }),
-  // BRINEWICK. Plank, rope, brass and sea blue; the depot is the one mint-and-graphite room. Wall rows are unique to each room.
+  // BRINEWICK. Plank, rope, brass and sea blue; the depot is the one wine-and-graphite room. Wall rows are unique to each room.
   bw_lantern: hcSkin('floor_ropeplank', 'wall_brine_rest', 'mat_brine_rest', { remap: { '=': 'rug_navy_runner' }, wall: wallRow('nbdwhnnFdcsn') }),
   bw_store: hcSkin('floor_tarboard', 'wall_chandler', 'mat_chandler', { wall: wallRow('mhdhKFFdFcsF') }),
   bw_hall: hcSkin('floor_ferrydeck', 'wall_ferry', 'mat_ferry', { decal: { q: 'deck_lane' }, walk: { q: 1 }, wall: wallRow('ncdwhrrdnswn') }),
@@ -2177,6 +2177,14 @@ const HOUSE_SKINS = {
     decal: { v:'wall_shadow', u:'window_light', j:'leaf_scatter' }, walk: { v:1, u:1, j:1 },
     variants: { floor_stitch: [['floor_stitch_b', 0.22], ['floor_stitch_c', 0.18]] },
     wall: wallRow('mhdwhpmdpcsp'),
+  },
+  // WEIR_HUT §3.1, §5 (D1591): the weir hut. River-stone flags, a sacking rug and mat, the lipped weir trough and its planks.
+  // Remap '#'/W keep the rough-stone names for anything that reads them; the wall kit draws the walls (cap I, face K).
+  weir_hut: {
+    remap: { '#':'wall_rough', W:'wall_rough_face', W2:'wall_rough_win', '.':'weir_flag', '=':'rug_sacking', m:'mat_sacking', w:'weir_trough', B:'weir_plank' },
+    decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 },
+    variants: { weir_flag: [['weir_flag_b', 0.22], ['weir_flag_c', 0.12]] },
+    wall: wallRow('ICFKmFFFFcsB'),
   },
 };
 // Shared indoor wall kit (D151). Role letters, not PAL keys. `.` is empty. Mirrors are the other corner, the other side, and the other shadow.
@@ -2270,9 +2278,9 @@ function buildWorldArt(){
   A.basket_empty = mkTile(g => { wicker(g); px(g,PAL.d,3,7,10,2); px(g,PAL.w,10,3,4,4); px(g,PAL.h,11,6,3,1); });
   A.wall_lantern = [0,1].map(f => mkTile(g => { px(g,PAL.d,7,0,2,3); px(g,PAL.d,5,3,6,1); px(g,PAL.y,5,4,6,8); px(g,PAL.d,6,5,4,6); px(g,PAL.o,7,7-f,2,3+f); px(g,PAL.y,7,8,2,1+f); px(g,PAL.d,5,12,6,1); }));
   A.floor_lantern = [0,1].map(f => mkTile(g => { oval(g,7.5,4.5,6+f,4+f,'rgba(255,205,117,.25)'); px(g,PAL.d,7,8,2,7); px(g,PAL.d,4,15,8,1); px(g,PAL.y,5,1,6,7); px(g,PAL.d,6,2,4,5); px(g,PAL.o,7,4-f,2,3+f); px(g,PAL.y,7,5,2,1); }));
-  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'l'],[7,'s'],[11,'l']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.V,1,7,14,1); });
+  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'V'],[7,'s'],[11,'V']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.V,1,7,14,1); });
   A.crate = mkTile(g => { px(g,PAL.d,1,3,14,13); px(g,PAL.o,2,4,12,11); px(g,PAL.d,2,9,12,1); for (let i=0;i<11;i++) px(g,PAL.d,2+i,4+i,1,1); px(g,PAL.y,3,5,1,1); });
-  // Rook's Crossroads: a sealed quarry crate. Mint band, three air holes, one glow. Original; the orchard crate stays A.crate.
+  // Rook's Crossroads: a sealed quarry crate. Wine band, three air holes, one glow. Original; the orchard crate stays A.crate.
   A.rc_crate = mkTile(g => {
     px(g,PAL.d,2,3,12,12); px(g,PAL.o,3,4,10,10); px(g,PAL.d,3,3,10,1);
     px(g,PAL.V,3,8,10,2);
@@ -2306,8 +2314,8 @@ function buildWorldArt(){
     px(g,PAL.d,6,5,7,9); px(g,PAL.m,7,6,5,7); px(g,PAL.h,7,6,2,2);
     px(g,PAL.d,12,9,3,5); px(g,PAL.h,12,10,2,2); });
   A.comfort_lamp = [0, 1].map(f => mkTile(g => {
-    px(g,PAL.l,4,2,1,1); px(g,PAL.l,11,3,1,1); px(g,PAL.l,3,6,1,1); px(g,PAL.l,12,5,1,1);
-    px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.l,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
+    px(g,PAL.V,4,2,1,1); px(g,PAL.V,11,3,1,1); px(g,PAL.V,3,6,1,1); px(g,PAL.V,12,5,1,1);
+    px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.V,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
     px(g,PAL.Q,1,1,1,1); px(g,PAL.Q,14,1,1,1); px(g,PAL.Q,1,12,1,1); px(g,PAL.Q,14,10,1,1);
   }));
   // The Signal Review. Wine relay ring, the Capital screen face, and the loaned crate. PAL only. The ring stays off the maps.
@@ -2371,7 +2379,7 @@ function buildWorldArt(){
   });
   A.stage_bunting = mkTile(g => {
     px(g,PAL.d,2,2,1,14); px(g,PAL.d,13,2,1,14); px(g,PAL.m,2,2,12,1);
-    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.l : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.l, x, 5, 2, 2); }
+    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.V : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.V, x, 5, 2, 2); }
   });
   A.miner_lamps = mkTile(g => {
     px(g,PAL.o,1,3,14,2); px(g,PAL.d,1,5,14,1); px(g,PAL.o,1,12,14,2);
@@ -3204,6 +3212,9 @@ const HC_CITY_ART = {
     hc_chute_mouth: [".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....","....yyyyyyyy....","....FFFFFFFF....",".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....","....yyyyyyyy....","....FFFFFFFF....",".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....",".....yGGGGF.....","....yyyyyyyy....","....FFFFFFFF....",".....yGGGGF.....","...FyyyyyyyyF...","..FGGGGGGGGGGF..",".FGkkkkkkkkkkGF.",".FGkwwwwwwwwkGF.",".FFFFFFFFFFFFFF.","................","...GwwwwwwwwG...","..FFFFFFFFFFFF..","..............yd","..............dy"],
     hc_stamp_table: ["................................","................................","....................FF..........","...............FF...FF..........","....wwrrrrwww..FF...FF..FFFFF...","....wwrrrrwrw..GG..dddd.FrrrF...",".GGGwwwwwwwwwGddddGrGGGGFFFFFGG.",".GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.",".FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.","..GF........................FF..","..GF........................FF..","..GF........................FF..","..GF........................FF..","..GF........................FF..","..GF........................FFyd","..............................dy"],
     hc_thanks_letters: [".....r...................r......",".wwywwwwww...........wwwwwwwww..",".wyyyywwww.....r.....wwwwwwwww..",".wyyyyywww.wwwwwwwww.wwwyywwww..",".wyyyywwww.wwwwwwwww.wwwyywwww..",".wwwwwwwww.wwrwrwbbw.wwwrrwwww..",".wwwwwwwww.wwrrrwbbw.wwrrrrwww..",".wbbbbbbbw.wwwrwwbbw.wwwrrwwww..",".wwwwwwwww.wwwwwwwww.wwwwwwwww..",".wbbbbbwww.wwwwwwwww.wbbbbbbbw..",".wwwwwrwrw.wwyyyyyyw.wyyyywwww..",".wwwwwwrww.wwwwwwwww.wwwwwwwww..",".wwwwwwwww.wwbbbbwww............","...........wwwwwwwww............","..............................yd","..............................dy"],
+    hc_court_steps_w: ["hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","hhhhhhhhhhhhhhhh","dmhwwwwwwwwwwwww","dmhwwwwwwwwwwwww","dmhhhhhhhhhhhhhh","dmhmmmmmmmmmmmmm","dmhmmmmmmmmmmmmm","dmhwwwwwwwwwwwww","dmhwwwwwwwwwwwww","dmhhhhhhhhhhhhhh","dmhmmmmmmmmmmmmm","dmhmmmmmmmmmmmmm","dmhwwwwwwwwwwwww","dmhwwwwwwwwwwwww","dmhhhhhhhhhhhhhh","dmhmmmmmmmmmmmmm","dmhmmmmmmmmmmmmm","dmhwwwwwwwwwwwww","dmhwwwwwwwwwwwww","dmhhhhhhhhhhhhhh","dmhmmmmmmmmmmmmm","dmhmmmmmmmmmmmmm","dmhmmmmmmmmmmmmm","dmhddddddddddddd"],
+    hc_court_steps: ["hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwww","wwwwwwwwwwwwwwww","hhhhhhhhhhhhhhhh","mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm","wwwwwwwwwwwwwwww","wwwwwwwwwwwwwwww","hhhhhhhhhhhhhhhh","mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm","wwwwwwwwwwwwwwww","wwwwwwwwwwwwwwww","hhhhhhhhhhhhhhhh","mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm","wwwwwwwwwwwwwwww","wwwwwwwwwwwwwwww","hhhhhhhhhhhhhhhh","mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm","dddddddddddddddd"],
+    hc_court_steps_e: ["hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","wwwwwwwwwwwwwwwh","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwhmd","wwwwwwwwwwwwwhmd","hhhhhhhhhhhhhhmd","mmmmmmmmmmmmmhmd","mmmmmmmmmmmmmhmd","wwwwwwwwwwwwwhmd","wwwwwwwwwwwwwhmd","hhhhhhhhhhhhhhmd","mmmmmmmmmmmmmhmd","mmmmmmmmmmmmmhmd","wwwwwwwwwwwwwhmd","wwwwwwwwwwwwwhmd","hhhhhhhhhhhhhhmd","mmmmmmmmmmmmmhmd","mmmmmmmmmmmmmhmd","wwwwwwwwwwwwwhmd","wwwwwwwwwwwwwhmd","hhhhhhhhhhhhhhmd","mmmmmmmmmmmmmhmd","mmmmmmmmmmmmmhmd","mmmmmmmmmmmmmhyd","dddddddddddddhdy"],
     hc_car_b: ["................................","................................","................................","..........bbbbbbbbbbb...........",".........bccccbccccccb..........","........bcwcccbcwccccnb.........",".......bccccccbcccccccnb........","......bbbbbbbbbbbbbbbbbbb.......","....bbbbbbbbbbbbbbbbbbbbbbbb....","...bwbbbbbbbbbbbbbbbbbbbbbbbb...","..bwbbbbbbbbbbbbbbbbbbbbbbbbbn..","..ybbbbbbbbbbbbdbbbbbbbbbbbbbr..","..ybbbbbbbbbbbbbbbbbbbbbbbbbbr..","..nnnnnnnnnnnnnnnnnnnnnnnnnnnn..","..dnnkkkknnnnnnnnnnnnnkkkknnnd..","...dkkmmkkddddddddddddkkmmkkd...","....kkmmkk............kkmmkk....",".....kkkk..............kkkk.....","................................","................................","................................","................................","..............................yd","..............................dy"],
     hc_car_r: ["................................","................................","................................","..........rrrrrrrrrrr...........",".........rccccrccccccr..........","........rcwcccrcwccccpr.........",".......rccccccrcccccccpr........","......rrrrrrrrrrrrrrrrrrr.......","....rrrrrrrrrrrrrrrrrrrrrrrr....","...rwrrrrrrrrrrrrrrrrrrrrrrrr...","..rwrrrrrrrrrrrrrrrrrrrrrrrrrp..","..yrrrrrrrrrrrrdrrrrrrrrrrrrro..","..yrrrrrrrrrrrrrrrrrrrrrrrrrro..","..pppppppppppppppppppppppppppp..","..dppkkkkpppppppppppppkkkkpppd..","...dkkmmkkddddddddddddkkmmkkd...","....kkmmkk............kkmmkk....",".....kkkk..............kkkk.....","................................","................................","................................","................................","..............................yd","..............................dy"],
     hc_car_t: ["................................","................................","................................","..........ttttttttttt...........",".........tcccctcccccct..........","........tcwccctcwccccnt.........",".......tcccccctcccccccnt........","......ttttttttttttttttttt.......","....tttttttttttttttttttttttt....","...twtttttttttttttttttttttttt...","..twtttttttttttttttttttttttttn..","..yttttttttttttdtttttttttttttr..","..yttttttttttttttttttttttttttr..","..nnnnnnnnnnnnnnnnnnnnnnnnnnnn..","..dnnkkkknnnnnnnnnnnnnkkkknnnd..","...dkkmmkkddddddddddddkkmmkkd...","....kkmmkk............kkmmkk....",".....kkkk..............kkkk.....","................................","................................","................................","................................","..............................yd","..............................dy"],
@@ -3264,6 +3275,9 @@ const HC_PLACEHOLDER_ART = {
   hc_mural: "A36 Lantern Muster mural",
   hc_motto_board: "A68 motto board",
   hc_gate_arch: "A22 district gate arch",
+  hc_court_steps_w: "A14 Keeper High Court wide steps, west end (v0.3)",
+  hc_court_steps: "A14 Keeper High Court wide steps (v0.3)",
+  hc_court_steps_e: "A14 Keeper High Court wide steps, east end (v0.3)",
   hc_tank_escort_0: "A24 Keeper tank, escort, frame 0",
   hc_tank_escort_1: "A24 Keeper tank, escort, frame 1",
   hc_tank_escort_2: "A24 Keeper tank, escort, frame 2",
@@ -3277,6 +3291,42 @@ const HC_PLACEHOLDER_ART = {
   hc_tank_escort: "A24 Keeper tank, escort (4 frames, 350 ms)",
   hc_tank_command: "A24 Keeper tank, command (4 frames, 350 ms)",
 };
+// WEIR_HUT (D1591, D1599): the weir hut at Hushwater's Old Weir, room hw_weir_hut_in and its porch on hw_cut. The 27 grids
+// as Vincent approved them in the previews (Nov 3, 2026), 16x16, PAL keys only, '.' clear. Each entry is a list of frames;
+// two frames loop (the lamp shelf's pulse, the trough's water), and reduced motion holds frame 0. Tiles go to TILES, props to WART.
+const WEIR_HUT_ART = {
+  tiles: {
+    weir_flag: [["IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIICIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIICIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIICIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIICIIIIIIIIII", "IIIIIIIIIIIIIIII"]],
+    weir_flag_b: [["IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIGGGGIIIIIIII", "IIIIIIIGIIIIIIII", "IIIIIIIGIIIICIII", "IIIIIIIGGGGIIIII", "IIIIIIIIIIIIIIII", "IICIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII"]],
+    weir_flag_c: [["IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIDDIIIIIII", "IIIIIDDDDDIIIIII", "IIIIDDDIDDDIIIII", "IIIIIDDDDDIIICII", "IIIIIIDDIIIIIIII", "IIIIIIIIIIIIIIII", "IICIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIICIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII", "IIIIIIIIIIIIIIII"]],
+    weir_trough: [["hhhhhhhhhhhhhhhh", "mmmmmmmmmmmmmmmm", "dddddddddddddddd", "nnbbbbbbbbbbbbnn", "bbbbbcbbbbbbbbbb", "bbbbccsbbbbbbbbb", "bbbbbbbbbbbcbbbb", "bbbbbbbbbbccsbbb", "bcbbbbbbbbbbbbbb", "ccsbbbbbbbbbbbbb", "bbbbbbbcbbbbbbbb", "bbbbbbccsbbbbbbb", "bbbbbbbbbbbbbbbb", "nnnnnnnnnnnnnnnn", "mmmmmmmmmmmmmmmm", "hhhhhhhhhhhhhhhh"], ["hhhhhhhhhhhhhhhh", "mmmmmmmmmmmmmmmm", "dddddddddddddddd", "nnbbbbbbbbbbbbnn", "bbbbbbbbbbbbbbbb", "bbbbbbcbbbbbbbbb", "bbbbbccsbbbbbcbb", "bbbbbbbbbbbbccsb", "bbbbbbbbbbbbbbbb", "bbcbbbbbbbbbbbbb", "bccsbbbbbbbbbbbb", "bbbbbbbbcbbbbbbb", "bbbbbbbccsbbbbbb", "nnnnnnnnnnnnnnnn", "mmmmmmmmmmmmmmmm", "hhhhhhhhhhhhhhhh"]],
+    weir_plank: [["hhhhhhhhhhhhhhhh", "FGGGGGGFFGGGGGGF", "FGBGGGGFFGGGBGGF", "FGGGGGGFFGGGGGGF", "FGGGGBGFFGGGGGGF", "FGGGGGGFFGBGGGGF", "FGGGGGGFFGGGGGGF", "FGBGGGGFFGGGGGGF", "FGGGGGGFFGGGGBGF", "FGGGGGGFFGGGGGGF", "FGGGGBGFFGGGGGGF", "FGGGGGGFFGGGGGGF", "FGGGGGGFFGBGGGGF", "FGGGGGGFFGGGGGGF", "FFFFFFFFFFFFFFFF", "hhhhhhhhhhhhhhhh"]],
+    rug_sacking: [["AAAAAAAAAAAAAAAA", "AAAAAAAAAACAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAGAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAGAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AACAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAGAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAACAAA", "AAAAAAAAAAAAAAAA"]],
+    mat_sacking: [["FFFFFFFFFFFFFFFF", "FAAAAAAAAAAAAAAF", "FACCAACCAACCAACF", "FAAAAAAAAAAAAAAF", "FAFFFFFFFFFFFFAF", "FAAAAAAAAAAAAAAF", "FACCAACCAACCAACF", "FAAAAAAAAAAAAAAF", "FACCAACCAACCAACF", "FAAAAAAAAAAAAAAF", "FAFFFFFFFFFFFFAF", "FAAAAAAAAAAAAAAF", "FACCAACCAACCAACF", "FAAAAAAAAAAAAAAF", "FAAAAAAAAAAAAAAF", "FFFFFFFFFFFFFFFF"]],
+  },
+  props: {
+    weir_case_board_l: [["................", "FFFFFFFFFFFFFFFF", "FGGGGGGGGGGGGGGG", "FGAAAAAAAAAAAAAA", "FGACCCCCAAArAAAA", "FGACmmmCAAAArAAA", "FGACmCmCAAAAArAA", "FGACCCCCrAAAAArA", "FGAAAAAAArAAAAAr", "FGAAwwwwAArAAAAA", "FGAAwgDwAAArrrrr", "FGAAwDgwrAAAAAAA", "FGAAwwwwArrAAAAA", "FGAAAAAAAAAAAAAA", "FFFFFFFFFFFFFFFF", ".FF............."]],
+    weir_case_board_r: [["................", "FFFFFFFFFFFFFFFF", "GGGGGGGGGGGGGGGF", "AAAAAAAAAAAAAAGF", "AAAACCCCCAAAAAGF", "AAAArCmmCAAAAAGF", "AAArACmCCAwwwwGF", "AArAACCCCAwgDwGF", "ArAAAAAAAAwDgwGF", "rAAAAAAAAAwwwwGF", "AAAAACCCCAAArAGF", "rrrrrrCmCrrrAAGF", "AAAAACCCCAAAAAGF", "AAAAAAAAAAAAAAGF", "FFFFFFFFFFFFFFFF", ".............FF."]],
+    weir_desk_l: [["................", "................", "................", "................", "................", "....CCCC........", "...CwwwwC.......", "GGGCwmmwCGGGGGGG", "GGGCwwwwCGGGGyGG", "FFFFFFFFFFFFFFFF", "FdFFFFFFFFFFFFFF", "Fd..............", "Fd..............", "Fd..............", "Fd..............", "dd.............."]],
+    weir_desk_r: [["................", "................", "................", "................", "................", "..CCCCC.....B...", "..CmmmC....BBB..", "GGCCCCCGGGGBBBGG", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFdF", "..............dF", "..............dF", "..............dF", "..............dF", "..............dd"]],
+    weir_jars_0: [["................", "................", "................", "..FF...FF...FF..", ".hhhh.hhhh.hhhh.", ".hmmh.hmmh.hmmh.", ".hwmh.hwmh.hwmh.", ".hmmh.hmmh.hmmh.", ".hmmh.hmmh.hmmh.", ".hmmh.hmmh.hmmh.", ".hmmh.hmmh.hmmh.", ".hhhh.hhhh.hhhh.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", "................"]],
+    weir_jars_1: [["................", "................", "................", "..FF...FF...FF..", ".hhhh.hhhh.hhhh.", ".hmmh.hmmh.hmmh.", ".hmlh.hwmh.hwmh.", ".hlgh.hmmh.hmmh.", ".hglh.hmmh.hmmh.", ".hgmh.hmmh.hmmh.", ".hgmh.hmmh.hmmh.", ".hhhh.hhhh.hhhh.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", "................"]],
+    weir_jars_2: [["................", "................", "................", "..FF...FF...FF..", ".hhhh.hhhh.hhhh.", ".hmmh.hmwh.hmmh.", ".hmlh.hwCh.hwmh.", ".hlgh.hwCh.hmmh.", ".hglh.hwmh.hmmh.", ".hgmh.hCmh.hmmh.", ".hgmh.hmmh.hmmh.", ".hhhh.hhhh.hhhh.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", "................"]],
+    weir_jars_3: [["................", "................", "................", "..FF...FF...FF..", ".hhhh.hhhh.hhhh.", ".hmmh.hmwh.hmmh.", ".hmlh.hwCh.hmlh.", ".hlgh.hwCh.hlgh.", ".hglh.hwmh.hglh.", ".hgmh.hCmh.hgmh.", ".hgmh.hmmh.hgmh.", ".hhhh.hhhh.hhhh.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", "................"]],
+    weir_lamp_shelf: [["................", "................", "..AA....AA...AA.", ".CCAA..CCAA.CCAA", ".CyCA..CyCA.CyCA", ".CCCA..CCCA.CCCA", "..d.....d....d..", "..dw....dw...dw.", "...w.....w....w.", "................", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", ".F............F.", ".F............F.", ".FF..........FF."], ["................", "................", "..AA....AA...AA.", ".CCAA..CCAA.CCAA", ".CoCA..CoCA.CoCA", ".CCCA..CCCA.CCCA", "..d.....d....d..", "..dw....dw...dw.", "...w.....w....w.", "................", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", ".F............F.", ".F............F.", ".F............F.", ".FF..........FF."]],
+    weir_keeper_lantern: [["................", "......FF........", ".....F..F.......", ".....CCCC.......", "....CIICCC......", "....CIIIICC.....", "...CIIIIIIC.....", "...CIICIIIIC....", "...CIIIIIIIC....", "....GyyyyG......", "....GGGGGG......", "FFFFFFFFFFFFFF..", "FBBBBBBBBBBBBF..", "FBFFFFFFFFFFBF..", "FBBBBBBBBBBBBF..", "FFFFFFFFFFFFFF.."]],
+    weir_cot_head: [["................", "................", "................", "FFFFFFFFFFFFFFFF", "FIIIIIIIIIIIIIIF", "FICCCCCCCCCCCCIF", "FICwCCCCCCCCCCIF", "FICCCCCCCCCCCCIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF"]],
+    weir_cot_foot: [["FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FKKKKKKKKKKKKKKF", "FKmmmmmmmmmmmmKF", "FKKKKKKKKKKKKKKF", "FIIIIIIIIIIIIIIF", "FIIIIIIIIIIIIIIF", "FFFFFFFFFFFFFFFF", "Fd............dF", "Fd............dF", "dd............dd", "................", "................", "................", "................", "................"]],
+    weir_stove: [["................", "........hh......", ".......hmmh.h...", "......hmmmmhh...", "......hhhhhh....", "..dddddddddddd..", "..dmmmmmmmmmmd..", "..dmddddddddmd..", "..dmdoooooodmd..", "..dmdyoyoyodmd..", "..dmddddddddmd..", "..dmmmmmmmmmmd..", "..dddddddddddd..", "..d..........d..", "..dd........dd..", "................"]],
+    weir_easel: [["................", ".......FF.......", "..FFFFFFFFFFFF..", "..FCCCCCCCCCCF..", "..FCmmCCCCgCCF..", "..FCmCmCCgggCF..", "..FCCCmmCCgCCF..", "..FCCCCCCCmCCF..", "..FCmmmmmCCCCF..", "..FCCCCCCCCCCF..", "..FFFFFFFFFFFF..", "...F...FF...F...", "...F...FF...F...", "..F....FF....F..", "..F....FF....F..", ".FF...FFFF...FF."]],
+    weir_files: [["................", "................", "................", "................", "...CwCwCCwCw....", "..wCCwCCwCCwC...", "..CwCCwCCwCCw...", "FFFFFFFFFFFFFFF.", "FBBBBBBBBBBBBBF.", "FBrBBBBBBBBBrBF.", "FBBBBBBBBBBBBBF.", "FFFFFFFFFFFFFFF.", "FBBBBBBBBBBBBBF.", "FBBBBBBBBBBBBBF.", "FFFFFFFFFFFFFFF.", "................"]],
+    weir_doorpost: [["......FGGF......", "......FGGF..r...", "......FwwFr.r...", "......FGGF..r...", "......FGGF..r...", "......FwGF..r...", "......FGGF.GGG..", "......FGGF.GyG..", "......FwwF.GGG..", "......FGGF..y...", "......FGGF......", "......FwGF......", "......FGGF......", "......FGGF......", "......FwwF......", ".....FFFFFF....."]],
+    weir_sluice: [["................", "......dddd......", "......dmmd......", ".......dd.......", ".....FFFFFF.....", ".....FGGGGF.....", ".....FGBGGF.....", ".....FGGGGF.....", ".....FGGBGF.....", ".....FGGGGF.....", ".....FGGGGF.....", "....sFGBGGFs....", "...cbFGGGGFbc...", "..cbbFFFFFFbbc..", "...sbbbbbbbbs...", "................"]],
+    weir_boots: [["................", "................", "................", "................", "...dd.....dd....", "...dFd....dFd...", "...dFd....dFd...", "...dFd....dFd...", "...dFFd...dFFd..", "..ddFFFd.ddFFFd.", "..ddddddddddddd.", "..AACAACAACAACA.", "..CAACAACAAcsAA.", "..AACAACAACcAAA.", "................", "................"]],
+    weir_net_crate: [["................", "................", "................", "................", "..hmhmhmhmhmh...", ".hFhFhFhFhFhFh..", ".mBmBmBmBmBmBm..", ".hFhFhFhFhFhFh..", ".mBmBmBmBmBmBm..", ".hFhFhFhFhFhFh..", "FFFFFFFFFFFFFFF.", "FBBBBBBFBBBBBBF.", "FBFFFFBFBFFFFBF.", "FBBBBBBFBBBBBBF.", "FFFFFFFFFFFFFFF.", "................"]],
+    weir_oil_lamp: [["................", "................", "......dddd......", ".......dd.......", "......dmmd......", ".....dwyywd.....", ".....dyooyyd....", ".....dyoyyd.....", ".....dwyywd.....", "......dmmd......", ".....dddddd.....", "................", "...hhhhhhhhhh...", "..hmmmmmmmmmmh..", "..mmmmmmmmmmmm..", "................"]],
+  },
+};
 function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
@@ -3286,6 +3336,8 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   for (const [k, rows] of Object.entries(LIZZY_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   for (const [k, rows] of Object.entries(LIZZY_ART.art)) if (!A[k]) A[k] = paint(rows);
   for (const [k, rows] of Object.entries(MAZE_ART)) if (!A[k]) A[k] = paint(rows);
+  // WEIR_HUT: a one-frame entry is one canvas, a two-frame one an array (props: artFrame; tiles: cellImg in game.js).
+  for (const [sec, dst] of [['tiles', T], ['props', A]]) for (const [k, fr] of Object.entries(WEIR_HUT_ART[sec])) if (!dst[k]) dst[k] = fr.length > 1 ? fr.map(paint) : paint(fr[0]);
   // HIGH_CHARITY placeholders. Existing names are never replaced. door_chained is also mirrored into WART like door_heavy.
   if (city) for (const [k, rows] of Object.entries(HC_CITY_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   if (city) for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(HC_CITY_ART[grp])) if (!A[k]) A[k] = paint(rows);

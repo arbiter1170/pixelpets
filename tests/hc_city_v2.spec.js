@@ -25,7 +25,7 @@ function save(opts = {}) {
   s.money = 20;
   Object.assign(s.flags, { 'story.side_pick_done': true, 'story.hc_invite': true, 'story.hc_arrived': true, 'story.hc_greeted': true });
   if (opts.side === 'glimmer') s.flags['story.side'] = 'glimmer';
-  if (opts.act5) s.flags['story.act'] = 5;
+  if (opts.act) s.flags['story.act'] = opts.act;
   if (opts.govMet) s.flags['story.hc_gov_met'] = true;
   s.world = Object.assign({ map: 'highcharity', x: 32, y: 37, facing: 'up', respawn: 'hearthmoor' }, opts.world || {});
   return s;
@@ -208,18 +208,28 @@ test('the grand Lantern House: twelve beds that rest, Ines and the 5-Acorn note,
   await expect.poll(() => page.evaluate(() => PixelPets.state.party[0].hpNow)).toBeUndefined();
 });
 
-test('§5.3 gates: the Governor\'s House and the President\'s rooms open only on the Keepers path in Act 5; Block News House is open to both', async ({ page }) => {
-  test.setTimeout(90000);
+// D1426, D1439 (layout v0.4 §5.3): the Governor's House floor 1 and Governor Merriden open on the Keepers path from Act 2;
+// the President's rooms keep Act 5 and the Governor met. Before Act 2 the door says "By appointment." on both paths.
+test('§5.3 gates: the Governor\'s House opens on the Keepers path in Act 2, the President\'s rooms in Act 5; Block News House is open to both', async ({ page }) => {
+  test.setTimeout(120000);
   const cases = [
-    { side: 'keepers', act5: false, govMet: false, lobby: false, top: false },
-    { side: 'glimmer', act5: false, govMet: false, lobby: false, top: false },
-    { side: 'glimmer', act5: true, govMet: true, lobby: false, top: false },
-    { side: 'keepers', act5: true, govMet: false, lobby: true, top: false },
-    { side: 'keepers', act5: true, govMet: true, lobby: true, top: true },
+    { side: 'keepers', govMet: false, lobby: false, top: false },
+    { side: 'keepers', act: 1, govMet: false, lobby: false, top: false },
+    { side: 'glimmer', govMet: false, lobby: false, top: false },
+    { side: 'glimmer', act: 2, govMet: false, lobby: false, top: false },
+    { side: 'glimmer', act: 5, govMet: true, lobby: false, top: false },
+    { side: 'keepers', act: 2, govMet: false, lobby: true, top: false },
+    { side: 'keepers', act: 2, govMet: true, lobby: true, top: false },
+    { side: 'keepers', act: 5, govMet: false, lobby: true, top: false },
+    { side: 'keepers', act: 5, govMet: true, lobby: true, top: true },
   ];
   for (const c of cases) {
     await boot(page, save(c));
     const tag = JSON.stringify(c);
+    // Governor Merriden stands at his desk from Act 2 on (checked in the room itself, whatever the door says)
+    await page.evaluate(() => PixelPets.goto('hc_gov_1', 7, 14, 'up'));
+    await settle(page);
+    expect(await page.evaluate(() => !!(PixelPets.objPos('hc_governor') || {}).present), tag).toBe((c.act || 0) >= 2);
     await page.evaluate(() => PixelPets.goto('hc_civic', 32, 16, 'up'));
     await settle(page);
     await page.evaluate(() => PixelPets.walkStep('up'));
@@ -289,6 +299,24 @@ test('the preview never writes the save: localStorage is untouched after walking
   const after = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
   expect(after).toBe(before);
   expect(JSON.parse(after).v).toBe(2);
+});
+
+test('D1426, D1439: Governor Merriden is Act 2 and civil (cast faction none); the President stays Act 5 and a Keeper', async () => {
+  const gov1 = DATA.rooms.hc_gov_1.objs, gov3 = DATA.rooms.hc_gov_3.objs;
+  const door = DATA.maps.hc_civic.objs.find(o => o.id === 'hc_gov');
+  expect(door.need).toBe('!story.side=glimmer & story.act>=2');
+  expect(door.deny).toBe('By appointment.');
+  const gov = gov1.find(o => o.id === 'hc_governor');
+  expect(gov.when).toEqual(['story.act>=2']);
+  expect(gov.lines.else).toContain('Act 2');
+  expect(gov.lines.else).not.toContain('Act 5');
+  expect(gov1.find(o => o.id === 'hc_gov_up').need).toBe('!story.side=glimmer & story.act>=5 & story.hc_gov_met');
+  expect(gov1.find(o => o.id === 'hc_chute_mouth')).toBeTruthy();   // HB12 sits on floor 1, behind the Act 2 door
+  expect(gov3.find(o => o.id === 'hc_president')).toBeTruthy();
+  const cast = Object.fromEntries(DATA.cast.map(e => [e.name, e]));
+  expect(cast['Governor Merriden'].faction).toBe('none');
+  expect(cast['Governor Merriden'].rankFlag).toBeUndefined();
+  expect(cast['The President'].faction).toBe('keepers');
 });
 
 test('player text: wire set, The President, Block News; no banned words; lines fit', async () => {
