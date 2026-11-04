@@ -2421,8 +2421,8 @@
 3633-3765  const PROP_LIBRARY_ART
 3766-3789  const ROUTE4_ART
 3790-3833  const BRIGHTGATE_ART
-3834-3908  function addExteriorArt
-3909-4022  function addHcParadeArt
+3834-3919  function addExteriorArt
+3920-4022  function addHcParadeArt
 4023-4023  const OUTDOOR_SKIN
 
 # stats.js

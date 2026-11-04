@@ -3900,6 +3900,17 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
     if (!A.bg_badge && GW_ART.gw_badge) A.bg_badge = paint(GW_ART.gw_badge[0].map(r => r.replace(/l/g, 'y')));   // the badge plate, honey for mint (D2000)
   }
   addCrackdownArt(T, A, paint);   // POST_TRIAL_CRACKDOWN + LANTERN_HOUSE_FERNBROOK draft art
+  // PROP_LIBRARY v0.1: each prop under its id, and a multi-cell prop also as <id>_0..n 16x16 slices (left to right, top to
+  // bottom), so a room places one slice per blocking cell. A `tile` piece (jetty, steps) is also offered as a tile. Existing names stay.
+  for (const [k, p] of Object.entries(PROP_LIBRARY_ART)) {
+    if (!A[k]) A[k] = paint(p.rows);
+    if (p.place === 'tile' && !T[k]) T[k] = A[k];
+    const [w, h] = p.cells;
+    if (w * h > 1) for (let cy = 0; cy < h; cy++) for (let cx = 0; cx < w; cx++) {
+      const id = k + '_' + (cy * w + cx);
+      if (!A[id]) A[id] = paint(p.rows.slice(cy * 16, cy * 16 + 16).map(r => r.slice(cx * 16, cx * 16 + 16)));
+    }
+  }
   if (city) addHcParadeArt(T, A);   // HC_PARADE PLACEHOLDER art, city only, built on first draw
 }
 // HC_PARADE §8 (D1355, D1356; design specs/HC_PARADE.md): PLACEHOLDER draft art for the parade, PAL keys only, from the sub-agent
@@ -4006,17 +4017,6 @@ function addHcParadeArt(T, A){
   for (const v of [0, 1, 2]) lazy('hc_crowd_' + 'abc'[v], () => anim([strip(v, 0), strip(v, 1)], 650));
   // E8 in a still: the crowd strips' clap frame, for the beat when the Officer raises a hand (reduced motion keeps frame 0).
   for (const v of [0, 1, 2]) lazy('hc_crowd_' + 'abc'[v] + '_clap', () => strip(v, 1));
-  // PROP_LIBRARY v0.1: each prop under its id, and a multi-cell prop also as <id>_0..n 16x16 slices (left to right, top to
-  // bottom), so a room places one slice per blocking cell. A `tile` piece (jetty, steps) is also offered as a tile. Existing names stay.
-  for (const [k, p] of Object.entries(PROP_LIBRARY_ART)) {
-    if (!A[k]) A[k] = paint(p.rows);
-    if (p.place === 'tile' && !T[k]) T[k] = A[k];
-    const [w, h] = p.cells;
-    if (w * h > 1) for (let cy = 0; cy < h; cy++) for (let cx = 0; cx < w; cx++) {
-      const id = k + '_' + (cy * w + cx);
-      if (!A[id]) A[id] = paint(p.rows.slice(cy * 16, cy * 16 + 16).map(r => r.slice(cx * 16, cx * 16 + 16)));
-    }
-  }
 }
 // E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).
 // Lab maps keep LAB_SKIN.variants; hand-placed chars (`f`, `t`, …) never vary.
