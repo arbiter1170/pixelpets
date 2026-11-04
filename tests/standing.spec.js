@@ -395,6 +395,9 @@ const COPY = {
   gov_walk2: ['Take the west fork and the river road to the Charter Hill gate.', 'Route 4, river road'],
   gov_meet: ["Report to Governor Merriden at the Governor's House on Charter Hill, High Charity.", "Governor's House"],
   a2_hold: ['Await your next orders.', 'The Amberwild'],
+  // CABINET_AND_COUNCILS 1b: Lumen's lead-in, then the stair to the twelfth chair (Keepers path; text PLACEHOLDER, OPEN_DECISIONS D1608-copy)
+  cab_lead: ["Captain Lumen is waiting in the lobby of the Governor's House.", "Governor's House"],
+  cab_seat: ["Take the stair in the Governor's House up to the Cabinet Room. A chair is set for you.", 'Cabinet Room'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -431,7 +434,7 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
   let overrides = 0;
   // ACT1_KEEPER_JOIN rows key on story states this one-flag walk cannot build (a lean value, a face, an old-save move);
   // their copy is checked as written, and tests/act1_keeper_join.spec.js checks where each one shows.
-  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge', 'gov_post', 'gov_walk', 'gov_walk2', 'gov_meet', 'a2_hold']);
+  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge', 'gov_post', 'gov_walk', 'gov_walk2', 'gov_meet', 'a2_hold', 'cab_lead', 'cab_seat']);
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
     if (COPY_ONLY.has(id)) {
