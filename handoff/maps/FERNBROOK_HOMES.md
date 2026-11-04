@@ -276,9 +276,9 @@ Role labels only, no given names; none collides with an existing NPC name (check
 
 | Id | Colour | Call |
 |---|---|---|
-| D1248 | red, open | Vincent's yes on the previews before deploy (rule 9) |
+| D1248 | red, open | Vincent's yes on the previews before deploy (rule 9) **SETTLED by Vincent (Tue Nov 3, 2026, 7:52 AM ET):** yes: the three south-lane homes deploy (rule 9 previews approved) |
 | D1249 | red, settled | Vincent's ask and choice: enterable NPC homes at the bottom of Fernbrook (archive) |
-| D1250 | red, open | Fernbrook grows south to 32x32: exception to D81, precedent D170; settles with D1248 |
+| D1250 | red, open | Fernbrook grows south to 32x32: exception to D81, precedent D170; settles with D1248 **SETTLED by Vincent (Tue Nov 3, 2026, 7:52 AM ET):** yes: Fernbrook grows south to 32x32 (exception to D81, settles with D1248) |
 | D1251 | green, Design sign-off | Placeholder resident labels, looks, lines, room names and the lane sign |
 | D1252 | green, engineer | Three homes not four, the gate at x17-18 with back gardens on row 19 x2-16, on-wall doors, the flower patch, trees and pond |
 

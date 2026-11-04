@@ -195,6 +195,103 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - The HC_PARADE scene itself (the speech staging, Muster Road closed between two tanks) is not built.
   - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (see the PR).
 
+## 2026-11-03 3:20 PM ET: B-3: RENDEZVOUS_VINCENT's Act 1 list is unlabelled (D1428), docs only
+- What changed and why: Vincent settled D1428 (default A, Tue Nov 3, 2026): the speech's draft line is dropped. In `handoff/specs/RENDEZVOUS_VINCENT.md` the Keeper shift's sheet is now an unlabelled list of holders with Seals (no "roll" heading, no "call-up", no "muster"), NPC Vincent's "That's mustering." is cut (PLACEHOLDER), and the spec no longer seeds the later speech line (the two "HC_PARADE S2" links are gone). Open question 4 drops "the word draft waits". Ids D1395-D1410 unchanged.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/b3-rendezvous-roll`; docs only, no build bump.
+- Tests run and result (widths, checks): docs only; wording scan PASS.
+- Decisions made (colour + reasoning): D1428 red, settled by Vincent. No new id.
+- Anything left unfinished: Story's wording for the list and Vincent's line (PLACEHOLDER).
+
+## 2026-11-03 9:56 AM ET: Spec note: RENDEZVOUS_VINCENT merged with WARDEN_SUMMONS, and the build split (Vincent), docs only
+- What changed and why: Vincent ruled that RENDEZVOUS_VINCENT wins over the crackdown branch's WARDEN_SUMMONS on the outcome:
+  - a phone call;
+  - a distraught Ilse who sends the holder to Vincent;
+  - the pick after the report.
+  WARDEN_SUMMONS's town lines and its old-save guard are kept, and the build reuses its flags (`story.warden_called`, `story.warden_met`). The crackdown session builds the call and the debrief. This session builds the rendezvous, the shifts and the report on top of that.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): Vincent's call (merge, split). No new ids.
+- Anything left unfinished:
+  - The crackdown branch's ids (D1333-D1346) clash with #268's settled D1333-D1347. That session has been asked to renumber from D1411.
+
+## 2026-11-03 8:38 AM ET: Decisions: Vincent approves every RENDEZVOUS_VINCENT default (D1397-D1410), docs only
+- What changed and why: Vincent approved all defaults for the Vincent quest (two trial shifts, the stream-bank meeting, the Keeper call-up roll and the Glimmerwell ledger as the secrets, the name kept, Fen's lean unchanged, and the rest of §7). The 14 rows move to the archive, and the spec marks them SETTLED. D1396 stays open until the quest is built.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1397-D1410 settled by Vincent. No new ids.
+- Anything left unfinished:
+  - The build. It waits on the crackdown (POST_TRIAL_CRACKDOWN, being built in another session) and on Vincent's choice of builder.
+
+## 2026-11-03 08:30 ET: Spec: RENDEZVOUS_VINCENT v0.1, Ilse's call, the Vincent rendezvous and the road to the pick (D1396; ids D1397-D1410), docs only
+- What changed and why: Vincent asked for the post-crackdown quest to be scoped (D1395, D1396). The default shape is two trial shifts:
+  - Ilse phones the holder home and debriefs them, distraught at the President.
+  - Vincent, a Glimmerwell field agent who stands with neither side, meets the holder at the Route 1 stream bank.
+  - The holder works one shift for each side and sees what each keeps quiet:
+    - the Keepers: a call-up roll of Seal holders sent from High Charity, with no copies to the Wardens;
+    - Glimmerwell: a buy-back ledger of old Seals, a Walkling that answers a beat late after a free check-up, and a "Partners only" door. The chip is never named.
+  - The built pick at the orchard gate runs after the report.
+  - No new room, town or route. All copy is PLACEHOLDER.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md` (new), `OPEN_DECISIONS.md` (D1397-D1410 reserved and opened; next free D1411), `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1397-D1410: 8 red, 4 yellow, 2 green, each with a default (spec §7). Nothing is built before Vincent rules.
+- Anything left unfinished: Vincent's rulings, Story's copy, and Design's check of canon and the UNVERIFIED tiles.
+
+## 2026-11-03 08:07 ET: Decisions: Vincent settles D1128 (Fen's pacing) as the research recommends, docs only
+- What changed and why: D1128 settled.
+  - Keep the bench XP share at 50%.
+  - Keep Fen at 12/13/14 and test, cutting one level only if the test fails.
+  - The hint goes on Fen's challenge, when the lead is below Lv 12, and suggests a second Walkling.
+  - The payout stays at 420 Acorns.
+  - The build is on its own branch.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1128 (red) settled by Vincent.
+- Anything left unfinished: the build (claude/fen-pacing-d1128) and Nina's Fen test.
+
+## 2026-11-03 08:05 ET: Decisions: the curfew runs through dawn; after the crackdown, Ilse's call and the Vincent rendezvous lead to the pick (D1200, D1203, D1395, D1396), docs only
+- What changed and why:
+  - D1200 settled: the Fernbrook curfew runs through dawn.
+  - D1203 amended and D1395 settled: the pick no longer happens at dawn. When the crackdown ends, Warden Ilse phones the holder home to debrief, distraught at the President's actions.
+  - D1396, new and open: Ilse sends the holder to rendezvous with Vincent, an unaligned Glimmerwell agent who hints at the chip and opposes the Keepers' martial order. The quest should feel like going undercover to see both factions' secrets, and it starts the pick. It needs a spec first.
+  - D1159 confirmed by Vincent (recorded on #277).
+- Files touched: `OPEN_DECISIONS.md` (D1395-D1396 reserved, first numbered D1353-D1354 and moved off Design's HC_PARADE block; next free D1397), `archive/DECISIONS_SETTLED.md`, `handoff/specs/POST_TRIAL_CRACKDOWN.md`, `BACKLOG.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning):
+  - D1200 and D1395 (red) settled by Vincent; D1203 amended.
+  - D1396 (red) open; spec first.
+  - Id check: `claude/high-charity-phase1-k7q2hc` (unmerged) uses D1350-D1352, which collides on D1350 with #277. Reported, not renumbered.
+- Anything left unfinished: the D1396 quest spec; D1128 (research done, awaiting Vincent).
+
+## 2026-11-03 07:52 ET: Decisions: Vincent's rulings on the open red rows (docs only)
+- What changed and why: Vincent answered the open red list. Settled:
+  - D1248 and D1250: the Fernbrook homes (already merged in #267 and #273) are approved.
+  - D1199: a Seal gives the town's voice, and the lore implies many contested for the Seals and lost.
+  - D1201: the Seal ban, with lots of lore and dialogue: NEWS, Ribbit, and Keeper-town NPCs on their next talk when no priority line fires.
+  - D1202: the tank look is the default.
+  - D1203: first light.
+  - D1173: no town moves while the holder is undecided.
+  - D1140: stuck holders are re-armed.
+  - D1034, D1035, D1038 and D1040: the RPG Marks are discarded for now.
+  - D1317: the Hall Stone room is approved (rule 9 previews still first).
+  - D1322: no status effects before Episode 1.
+  - D1198: the Commander keeps a PLACEHOLDER name.
+  - D1020-D1023 and D1029: closed as superseded by #258.
+  - Parked: D1160 and D1319, in the new `handoff/backlog/REVISIT_LATER.md`, which also lists the placeholder names to fill later.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/backlog/REVISIT_LATER.md` (new), `handoff/maps/FERNBROOK_HOMES.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `handoff/specs/POST_TRIAL_CRACKDOWN.md`, `handoff/specs/CORE_LOOP_HOOK_AUDIT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only, no build stamp.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): the red rows above, settled by Vincent in his own words (quoted in the archive). No new ids.
+- Anything left unfinished:
+  - D1128 (Fen's pacing): a research report comes first.
+  - Still open with Vincent: D1200 (curfew), D1044 (shadows), D971, D1000, D1087.
+  - D1159 and D1348-D1350 are recorded on #277.
+
 ## 2026-11-03 07:05 ET: Build: the contested Fernbrook Trial Hall behind a flag (TRIAL_HALL_FERNBROOK_MAP, D1189-D1196), and "Fernbrook Trial Hall" everywhere (D1192)
 - What changed and why:
   - The contested Hall from #263, with Vincent's rulings of Nov 2, 10:19 PM ET (#264):
