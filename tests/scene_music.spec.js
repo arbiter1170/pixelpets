@@ -100,7 +100,7 @@ test.describe('SCENE_MUSIC slice 1: the weir hut', () => {
       const src = await (await fetch('sfx.js', { cache: 'no-store' })).text();
       out.kit = (src.match(/const KIT = \{[\s\S]*?\n  \};/) || [''])[0];
       return out;
-    }, SCENE_IDS);   // SCENE_MUSIC slices 2-3's loops are checked against their own literal below
+    }, ['curfew', 'president', 'ledger', 'dawn', 'hearth', 'sweet', 'storm', 'hush']);   // the scene loops: each is checked against its own literal
     expect(r.check).toEqual([]);
     expect(r.has).toBe(true);
     expect(r.weir, 'weir equals the SCENE_MUSIC §4.1 literal').toBe(WEIR_FNV);
