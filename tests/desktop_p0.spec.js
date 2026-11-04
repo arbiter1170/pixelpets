@@ -30,7 +30,7 @@ async function boot(page, search, save) {
 }
 
 async function onWalk(page) {
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await page.evaluate(() => PixelPets.showTab('walk'));   // Modern: no tab row
   await expect(page.locator('#walkBagBtn')).toBeVisible();
 }
 
@@ -92,7 +92,8 @@ test('a click on BAG, then Escape, then Space or Enter, does not reopen the bag'
 test('Space and Enter still talk to the person you face', async ({ page, browser }, info) => {
   test.setTimeout(90000);
   await runBoth(page, browser, info, async (p) => {
-    await boot(p, '?debug=1', talkSave());
+    const s = talkSave(); s.settings.controls = 'arcade';   // Arcade opt-in: checks the TALK button next to Space and Enter
+    await boot(p, '?debug=1', s);
     await p.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.goto === 'function');
     await p.evaluate(() => PixelPets.showTab('walk'));
     // PARTNER_DAY: Mom moved downstairs and her talk now ends in a tips choice, so the one-line talk is Maze (6,4).

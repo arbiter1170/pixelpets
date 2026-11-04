@@ -205,12 +205,13 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
   const refused = await page.evaluate((id) => {
     const dep = PixelPets.depositPet(id);
     const rel = PixelPets.releasePet(id);
-    return { dep, rel, toast: document.querySelector('#toast').textContent, still: PixelPets.state.party.some((p) => p.id === id) };
+    return { dep, rel, still: PixelPets.state.party.some((p) => p.id === id) };
   }, after.id);
   expect(refused.dep).toBe(false);
   expect(refused.rel).toBe(false);
   expect(refused.still).toBe(true);
-  expect(refused.toast).toContain('stays with you now.');
+  // Modern controls queue toasts, so the refusal shows once the New Seal toast has had its turn.
+  await expect(page.locator('#toast')).toContainText('stays with you now.');
 
   await page.evaluate(() => PixelPets.showTab('col'));
   const locked = await page.evaluate(() => {

@@ -65,7 +65,8 @@ test('the Court stands on the Parade\'s south half: door 32,26 under its facade,
   expect(r.box).toMatch(/^R{39}H{26}$/);             // 13 wide: three roof rows over two facade rows
   expect(r.stepRows).toEqual(['P'.repeat(13), 'P'.repeat(13)]);
   expect(r.steps).toEqual(['hc_court_steps_w'].concat(Array(11).fill('hc_court_steps'), ['hc_court_steps_e']));
-  expect(r.sign).toEqual([[33, 26, 'KEEPER HIGH COURT.']]);
+  // v0.4 build: the sign steps one tile east of the parade's close guards (HC_PARADE CLOSE2 stands on 30-31 and 33-34,26)
+  expect(r.sign).toEqual([[35, 26, 'KEEPER HIGH COURT.']]);
   expect(r.oldCorner).toBe('g'.repeat(13 * 7));     // the old corner is plain grass
   expect(r.oldObjs).toEqual([]);                     // nothing placed there, not even dressing
   for (const [i, row] of r.road.entries()) {
