@@ -14693,6 +14693,7 @@ function renderRibbit(body){
     day: dayKey(Date.now()),
     night: phoneNight(),
     signal: phoneSignal(),
+    holds: feedHolds(),
   }) : { trending: [], posts: [] };
   renderMyChirps(body);
   const trend = document.createElement('div');
@@ -14771,11 +14772,17 @@ function newsEdition(){
   const st = newsState();
   return st && window.PPNews && PPNews.edition ? PPNews.edition(st) : null;
 }
+// PHONE_FEED (D2172): who holds each region-map node, by the map's own rules, so feed lines can follow a town's hold.
+function feedHolds(){
+  const out = {};
+  for (const id of Object.keys(REGION_MAP.nodes)) out[id] = mapHold(id);
+  return out;
+}
 function newsState(){
   if (!S) return null;
   const ck = window.PPClock ? PPClock.now() : null, p = pet(), sky = chipSky();
   return ({
-    flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(),
+    flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(), holds: feedHolds(),
     hh: ck ? ck.hh : 9, phase: ck ? ck.phase : 'day', sky: sky ? sky.kind : '', town: placeName(),
     me: {
       holder: playerName(), partner: p ? petName(p) : '', partnerSpecies: p ? p.species : '', partnerStage: p ? p.stage : 0,
@@ -20486,6 +20493,7 @@ function boot(){
   api.fleetState = () => DEBUG && window.PPFleet ? PPFleet.state() : null;
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.holdLine = (id, flags) => holdLine(id, flags);   // ACT1_KEEPER_JOIN §7: the hold line the chip and map show (read only)
+  api.feedHolds = () => DEBUG ? feedHolds() : undefined;   // PHONE_FEED (D2172): the holds the NEWS and RIBBIT gates read (read only)
   api.sway = node => S ? swayOf(node) : null;           // ACT1_KEEPER_JOIN §5: a contested town's sway, -3..3 (read only)
   api.hall2 = () => HALL2_ON;   // TRIAL_HALL_FERNBROOK_MAP: is the flagged contested Hall laid over fb_hall_in this load? (read only)
   api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
