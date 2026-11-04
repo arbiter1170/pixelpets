@@ -475,6 +475,15 @@
         ]]
       ]]
     ],
+    "mahopac_card": [
+      ["say", "", "MAHOPAC · {date}"],
+      ["say", "", "Nora's wave finishes. Across the green, someone waves back."],
+      ["say", "", "Cal's kite finds the wind it lost and tugs at his hand."],
+      ["say", "", "Bess winds the stopped clock. It keeps time now, like any other."],
+      ["if", "story.mom_mahopac", [
+        ["say", "", "Mom hears it from Hattie and puts the kettle on."]
+      ]]
+    ],
     "ilse_gate": [
       ["if", "story.dream_study", [["run", "ilse_chat"]], [["run", "ilse_dreams"]]]
     ],

@@ -606,3 +606,29 @@ test.describe('MD-4: the echoes (D1947, D1948)', () => {
     expect(Object.keys(st.flags).filter(k => /echo|spire/.test(k))).toEqual([]);   // no flag (the debrief is one-shot)
   });
 });
+
+// ---- MD-5: the epilogue card (§4.5, D1946) ----
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const EC = ["Nora's wave finishes. Across the green, someone waves back.", "Cal's kite finds the wind it lost and tugs at his hand.",
+  'Bess winds the stopped clock. It keeps time now, like any other.'];
+const EC4 = 'Mom hears it from Hattie and puts the kettle on.';
+test.describe('MD-5: the epilogue card (D1946)', () => {
+  for (const walked of [true, false]) {
+    test(`T10: MAHOPAC · today's device date, Nora, Cal, Bess${walked ? ', and Mom\'s kettle' : ''}; no reason given`, async ({ page }) => {
+      test.skip(!walked && page.viewportSize().width !== 320, 'one width for the no-walk card');
+      const extra = walked ? { 'story.mom_mah_ask': true, 'story.mom_mahopac': 'held' } : {};
+      await boot(page, save(Object.assign({}, ACT5, extra), { map: 'mahopac', x: 9, y: 12, facing: 'up' }), { reduce: !walked });
+      const d = await page.evaluate(() => { const n = new Date(); return [n.getMonth(), n.getDate()]; });
+      const head = 'MAHOPAC · ' + MONTHS[d[0]] + ' ' + d[1];
+      expect(await page.evaluate(() => PixelPets.runScene('mahopac_card'))).toBe(true);
+      const lines = await drive(page, [], 60000, async sc => {
+        if (sc.text === head && walked) { expect(await noOverflow(page)).toBe(true); await shot(page, 'mahopac-card'); }
+      });
+      expect(lines.every(l => l[0] === '')).toBe(true);   // narration only, no choice, every line a tap
+      expect(says(lines)).toEqual([head].concat(EC, walked ? [EC4] : []));
+      for (const t of says(lines)) expect(t).not.toMatch(/\b(arbiter|summit|mast|call|hum)\b/i);
+      const st = await stored(page);
+      expect(Object.keys(st.flags).filter(k => /card|epilogue|ending/.test(k))).toEqual([]);   // nothing stored
+    });
+  }
+});
