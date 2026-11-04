@@ -96,7 +96,7 @@ test('Your Home draws the wall kit, and rooms without it keep their tiles', asyn
       board: at(4, 1, 4, 13),
       shine: at(2, 1, 4, 3),
       glass: at(2, 1, 6, 3),
-      plain: at(3, 1, 4, 4),
+      plain: at(1, 1, 8, 4),   // PROP_DRESS (D2032): the region map now hangs on (3,1); (1,1) is bare face
       shade: at(4, 2, 0, 0),
       side: at(1, 3, 0, 4),
       bedShadow: at(1, 2, 0, 0),
