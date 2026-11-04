@@ -2,7 +2,7 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-04 15:13 ET: Build: the Bright Shuttle goes live, the Act 2 way into Brightgate (BRIGHTGATE_LAYOUT §17.1; D2090, D2091 settled; D2092, D2105, D2106)
+## 2026-11-04 15:32 ET: Build: the Bright Shuttle goes live, the Act 2 way into Brightgate (BRIGHTGATE_LAYOUT §17.1; D2090, D2091 settled; D2092, D2105, D2106)
 - What changed and why:
   - Vincent settled D2090 and D2091 (Wed Nov 4, 2026): the Bright Shuttle (PLACEHOLDER name, D2097), the company's free crew shuttle, is the Act 2 way into Brightgate, and the way home and every later visit run through a stop at Hearthmoor beside the Lantern Coach. #316 had built every leg behind `story.bg_shuttle_live`, a flag nothing set; this switches them on.
   - The legs (walk-on marks with a `when` and the built warp fade; no new mechanic): Kilnmouth works yard 53,16 to Gate Plaza 32,37 facing north, from `story.km_twin_lead` (B4); Gate Plaza 32,38 home to Hearthmoor 18,8 facing up, beside the coach; Hearthmoor 18,9 back to 32,37 from `story.reached_brightgate`; the works line, Gate Plaza 33,38 to the yard 52,16 facing left, from `story.km_council`. The first visit is always the yard ride: no other warp leads into the city, and no leg reaches High Charity.
@@ -12,7 +12,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - Quest rows (D2106, PLACEHOLDER copy): `bg_ride` (B4 to B5) "Ride the company shuttle from the Kilnmouth works yard to Brightgate.", place "Kilnmouth works yard", target the mark; `bg_home` (H4 to B6) "Take the shuttle home to Hearthmoor. The Lantern Coach waits there.", place "Brightgate shuttle stop", from `story.seal4` until the first drop. `a2_hold` stays for a save that read the permit without the twin lead.
   - `tools/build_brightgate.py` drops the `story.bg_shuttle_live` gate, the bar, and the hand-over block. Its output was not committed whole: a straight re-run would revert 16 shipped Brightgate lines that are newer than the design layout. The tool's own change was merged onto main's file instead, and a field-level diff shows only shuttle fields change (76 fields) and all 16 newer lines are kept.
 - Files touched: `tools/build_brightgate.py`, `data/detail_zzzzz_brightgate.json`, `data/detail_zzzzz_kilnmouth.json`, `data/mapdata.js` (regenerated), `quests.js`, `game.js` (a stale comment on the region node), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `tests/bright_shuttle.spec.js` (new), `tests/brightgate.spec.js`, `tests/kilnmouth.spec.js`, `tests/standing.spec.js`, `tests/tap_interact.spec.js`, `tests/integrity_lib.js` (the composed-world check reads a skin's walk table, as the game does, so the works line's landing on Kilnmouth's `Y` setts counts as walkable), `tests/README.md`, `CHANGELOG.md`.
-- Commit(s) + build id: claude/bg-shuttle; build 20261104-1513.
+- Commit(s) + build id: claude/bg-shuttle; build 20261104-1513 (restamped 20261104-1532 on the merge with main at 2dff7a5, #317).
 - Tests run and result (widths, checks): `bright_shuttle`, `brightgate`, `kilnmouth`, `route_to_governor`, `map_reach_sweep`, `data_integrity`, `standing`, `tap_interact`, `governor_meeting`, `new_species_act2` at 320, 375 and 390, one worker: all pass (details in the PR).
 - Decisions made (colour + reasoning): D2090, D2091 (red, settled by Vincent); D2092, D2105, D2106 on their defaults; D2097 (names PLACEHOLDER). Green, engineering: the narrations are `load` triggers; the Hearthmoor sign on 19,9; `bg_home` ends on the first drop.
 - Anything left unfinished: the shuttle mark art (a recolour of the lantern mark, §17.7 Sprites) and the region map's works line (D2093, the ROUTE_TO_GOVERNOR region-map slice). A holder who rides home before Hall 4 sets `story.bg_shuttle_hm` early, so `bg_home` does not show after Hall 4 for them.
@@ -185,6 +185,41 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): brightgate 42/42 (320, 375, 390) with the six gate holds; interior_walls, battle_backdrops, data_integrity pass.
 - Decisions made (colour + reasoning): as settled.
 - Anything left unfinished: ACT3_SWITCH's lobby and floor 2 scenes, the Outcomes Board's cards, G1, the Tuning wing and the Act 5 shells.
+
+## 2026-11-04 02:27 ET: Build: High Charity v0.4, the capital (HIGH_CHARITY_LAYOUT v0.4.2; city preview only, HC_CITY_V2 stays false)
+- What changed and why:
+  - The city tool builds from the v0.4.2 layout. Nothing may stand on a road any more (layout §4.1): five props had been nudged
+    onto carriageways (a Square bench, a Charter Hill tree, an Exchange cafe table, the Counting Garden statue, the Block News
+    poster) and now stand on sidewalk or grass.
+  - The parade's stands (HC_PARADE §2-§3, the beat sheet on #296) are kept clear of city dressing: no parked car in the cordon
+    bays on Muster Road, no lamp, and the Court's sign steps one tile east, off the close guards' step tiles.
+  - Rule 9: the rooms with no approved preview (the Cabinet Room `hc_gov_2`, the gallery, the College Great Hall, the Muster
+    Hall and its Hall Stone room, the Library, the Dojo expansion) are held, listed in the data, never built.
+  - `tests/high_charity_v04.spec.js` ports the layout checker onto the merged game WORLD (§13.1) and adds the rule 10 arrival
+    frame, the coach, Charter Hill's gates, the Governor's office, old saves, the save, reduced motion and frame time.
+  - §8.2 scheduled townsfolk (phase 2): nine bodies on schedule rows (Child and Parent, the old holder, two students, the
+    Exchange clerk, the pier dockhand, the shopper, the office worker), home off the map outside their rows. Shown labels drop
+    the letters (NAMES_PASS D1744's rule); lines the layout does not give are PLACEHOLDER.
+  - HB14, the capital road (D1279, behind `HC_SPIRE_ROAD_HOOK` in the tool): a sealed sea gate at Lantern Quay 21,38, tap
+    only ("Sealed. The tide decides.", PLACEHOLDER); the built weir sluice stands in for art A52. P1 reuse props: cafe tables
+    and a Block News bill on the Square, bikes by the College steps.
+  - Battle backdrops (BATTLE_BACKDROPS_ACT2 §4): Charter Hill and the Exchange stop drawing the Square's scene; each has its
+    own in its district's colours, with its landmark on the far layer (the Keeper High Court; Block News House and its mast).
+    With the city on, the Square's scene adds the Muster Hall, the one dark roof. Normal play's scenes are unchanged.
+  - Merge fix (Wed Nov 4, 2026, build 20261104-1325): Brightgate (#316) also schedules a "Child" and a "Parent", and the clock
+    kept one schedule per display name, so with the city on one town's pair walked the other's rows. `wireSchedules` (game.js)
+    now gives each scheduled body its own bag (`name#id`) when two share a name; schedHere, schedPos and tileOk read the body's
+    bag, and `npcSpot(name, npcIds)` uses the schedule of the body its ids name (no quest step names a scheduled body today,
+    so no cue changes). §8.2 looks people up by NPC id and checks Brightgate's pair keeps its own rows. Labels unchanged.
+- Files touched: `game.js` (schedules by body), `tools/GAMEJS_MAP.txt`, `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tests/high_charity_v04.spec.js` (new),
+  `tests/hc_court_move.spec.js`, build stamp files.
+- Commit(s) + build id: claude/high-charity-v04, one commit per slice; build 20261104-0227 (slice 1), 20261104-0306 (slice 2), 20261104-0318 (merge of main with #313), 20261104-0336 (slice 3), 20261104-0341 (slice 4).
+- Tests run and result (widths, checks): in the PR.
+- Decisions made (colour + reasoning): no new ids. The road rule is the layout's own (§4.1, D1271); the stands follow D1354 and
+  HC_PARADE's settled rows; the holds follow AGENTS rule 9.
+- Anything left unfinished: the held rooms wait on Vincent's previews (the Cabinet Room also needs a grid); the Muster Hall's
+  inside also waits on the Hall 8 build; the two phase 2 tank posts have no bays in the layout (and Charter Hill is at its cap of
+  three); patrol carts wait on art A28. Shots: `handoff/shots/high_charity/` (slice 5, docs only).
 
 ## 2026-11-04 02:25 ET: Build: Brightgate, slice 1: the city's five districts, the Lantern House and Bright Mart (BRIGHTGATE_LAYOUT v0.2; D1478-D1499, D2000-D2009)
 - What changed and why:
