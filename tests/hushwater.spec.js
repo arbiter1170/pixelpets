@@ -358,7 +358,9 @@ test('the first step in plays once, the rope stays, and the three holders appear
 });
 
 test('spawn tables roll the Hushwater lines at Lv 19-23 @w1', async ({ page }) => {
-  await boot(page);
+  // WEIR_HUT D1594 (a): before story.cobble_end the Falls and the Cut roll Wickerglen's band (tests/weir_hut.spec.js);
+  // the built tables are for after Hall 2.
+  await boot(page, fieldSave({ 'story.cobble_end': true }));
   const tables = await page.evaluate(() => {
     const all = PixelPets.spawnTables();
     const out = {};
@@ -520,12 +522,13 @@ test('twelve Hushwater forms join the journal and a holder battle names Tindlet'
     };
   }, LINES);
   expect(info.v).toBe(2);
-  expect(info.ids).toHaveLength(25);   // ARBITER_UNITS appended five boss lines after snail
+  expect(info.ids).toHaveLength(29);   // ARBITER_UNITS appended five boss lines after snail; Act 2 four more (ROUTE_TO_GOVERNOR, KILNMOUTH)
   expect(info.fetchAt).toBe(15);
-  expect(info.last).toBe('humwisp');
+  expect(info.ids.slice(20, 25)).toEqual(['tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
+  expect(info.last).toBe('jugwasp');
   expect(info.ids.slice(16, 20)).toEqual(['skink', 'otter', 'owl', 'snail']);
-  expect(info.forms).toBe(75);
-  expect(info.journal).toBe(57);
+  expect(info.forms).toBe(87);
+  expect(info.journal).toBe(69);
   expect(info.arrive).toBe(2);
   expect(info.rope).toBe(11);
   for (const [id, want] of Object.entries(LINES)) {

@@ -20,7 +20,7 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
   expect(audit.counts).toEqual({
     // sign is 74: the authored signs plus the runtime "Back at 3. - L." note on 5B.
     // P4 adds eight shops and fourteen stall lines. The lamp-oil counter moves from talk to shop.
-    // talk is 572: the Bloom Trial Hall adds six terrace props, and the four heart lanterns
+    // talk is 572: the Fernbrook Trial Hall adds six terrace props, and the four heart lanterns
     // plus Host Della, Host Garnet and Host Ines are talk.
     // Hearthmoor Plaza (#196), Route 3 with its three side rooms and the Answerers (ARBITER_UNITS), and Brinewick
     // with Trial Hall #3 and its rooms (BRINEWICK v0.1) bring door 45, warp 93, sign 89, talk 669, scene 40,
@@ -33,12 +33,21 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // PARTNER_DAY (#258): the new hall and bedroom (hm_home_hall, hm_home_room), Mom (moved down from hm_home_up) and Maze,
     // the home pegs, the up_cushion, and hm_buddy_pre / hm_lizzy_pre in Hearthmoor add talk 12, warp 4 (hall_mom,
     // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
-    door: 48, warp: 100, sign: 96, talk: 757, scene: 40, trigger: 40, board: 7,
-    trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
+    // POST_TRIAL_CRACKDOWN: +1 sign (the curfew notice), +21 talk (curfew posts, Fen at the gate, Juniper's camp, the six Lantern House
+    // townsfolk and the wire station's props), +3 triggers (cd_start, cd_resume, ilse_call).
+    // WEIR_HUT (D1590-D1599): the hut door, its mat, the first-step trigger, and 27 talk taps (Vincent Chi, 14 room props, eight
+    // jar shelves (one shows per sill tile at a time), the lamp, barrel and nets outside) add door 1, warp 1, trigger 1, talk 27.
+    // ACT1_KEEPER_JOIN: +7 talk (Imogen's and the Keeper Scout's Wickerglen bodies, the Constable, three lamp lines, the ledger crate).
+    // ACT2_COVER_STORY (#312): Mom at the Lodge gate and at your door add talk 2; the gate step and the home fallback add trigger 2.
+    // ROUTE_TO_GOVERNOR (#315): Route 4, its sightings and the north road add warp 22, sign 7, talk 19, scene 1, trigger 6,
+    // trainer 3, pickup 4, wild 3 (recounted on the merged tree, Wed Nov 4, 2026).
+    // MAHOPAC_DREAMS (#314): the lens room adds talk 2 (Mom and Warden Ilse at the lens) and sign 1 (the sill).
+    door: 49, warp: 123, sign: 105, talk: 835, scene: 41, trigger: 52, board: 7,
+    trainer: 31, pickup: 21, wild: 12, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
+  // The Hearthmoor coach (hm_to_hc) left this list when it moved off the Keeper House roof to (16,9).
   expect(audit.reachGaps).toEqual([
-    'hearthmoor:hm_to_hc walk-on tile is solid or blocked',
     'fernbrook:fb_east walk-on tile is solid or blocked',
     'fernbrook:fb_tour2 walk-on tile is solid or blocked',
     'route2:r2_east walk-on tile is solid or blocked',
@@ -63,10 +72,16 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     'bw_hall_in:bw_chart neighbour is off the safe region',
     'bw_hall_in:h3_gauge_b neighbour is off the safe region',
     'bw_hall_in:bw_ringer neighbour is off the safe region',
+    // WEIR_HUT (D1591): the desk is two tiles; while Vincent Chi stands at (3,3) its left half is boxed in and the right half
+    // (weir_desk_r, the same line) answers from (4,3). tests/weir_hut.spec.js taps it.
+    'hw_weir_hut_in:weir_desk_l has no free neighbour',
+    // ROUTE_TO_GOVERNOR (#315): the top bar of the closed east road (22,1) sits under the tree line; the middle bar gives the same line.
+    'route4:r4_east_bar_n neighbour is off the safe region',
   ]);
   expect(audit.n).toBeGreaterThan(100);
   const sceneOnly = audit.rows.filter((r) => r.kind === 'prop' && r.act === 'scene' && !r.talkable).map((r) => r.id).sort();
-  expect(sceneOnly).toEqual(['balloon_blue', 'balloon_red', 'balloon_yellow']);
+  // ROUTE_TO_GOVERNOR (#315): the Route 4 trough is a tap scene ("Rest a while" / "Not now"), tested in route_to_governor.spec.js.
+  expect(sceneOnly).toEqual(['balloon_blue', 'balloon_red', 'balloon_yellow', 'r4_trough']);
   for (const id of sceneOnly) {
     const row = audit.rows.find((r) => r.id === id);
     expect(row.tappable).toBe(true);

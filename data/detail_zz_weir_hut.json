@@ -1,0 +1,111 @@
+{
+ "spec": "design specs/WEIR_HUT.md (WEIR_HUT v0.1, Vincent Chi's weir hut at the Old Weir). Copy verbatim to data/detail_zz_weir_hut.json, then python3 tools/gen_mapdata.py. Build only after Vincent has seen specs/weir_hut_preview/ and said yes (rule 9).",
+ "version": "0.1",
+ "status": "DRAFT, not built. Every name and line is PLACEHOLDER for Story (D1591, D1594). Decisions D1590-D1599.",
+ "_about": "One overlay, sorted after detail_hushwater: the new room hw_weir_hut_in; on hw_cut three grid rows, one addRoofs entry (the hut), a trimmed south-bank zone and five objects; objPatch re-gates the Wickerglen > Falls > Cut walk so the hut is reachable after Ilse's call (D1595), and keeps two Hall-2 holders out of the way until story.cobble_end. Flags and scene beats are owned by ACT1_KEEPER_JOIN; every flag here is a named placeholder for that packet. The room needs a new skin weir_hut (sprites.js) and the draft art in specs/weir_hut_art.json.",
+ "maps": {
+  "hw_weir_hut_in": {
+   "name": "Weir Hut",
+   "kind": "interior",
+   "outdoor": "hw_cut",
+   "door": "hw_weir_hut",
+   "backdrop": "town",
+   "music": "weir",
+   "w": 10,
+   "h": 12,
+   "spawns": null,
+   "zones": [],
+   "safe": {"x": 4, "y": 9},
+   "skin": "weir_hut",
+   "variants": true,
+   "wall": {"windows": [3, 6]},
+   "grid": [
+    "##########",
+    "#WWWWWWWW#",
+    "#........#",
+    "#........#",
+    "#........#",
+    "#..====..#",
+    "#..====..#",
+    "#........#",
+    "#wwwBBwww#",
+    "#........#",
+    "#........#",
+    "####m#####"
+   ],
+   "objs": [
+    {"kind": "warp", "id": "weir_hut_mat", "x": 4, "y": 11, "to": "hw_cut", "tx": 23, "ty": 13, "facing": "down"},
+    {"kind": "npc", "id": "chi_hut", "name": "Vincent Chi", "look": "chi", "x": 3, "y": 3, "facing": "up", "when": ["story.warden_met"], "lines": {"else": "Boots on the sack, please. The weir gets in everywhere."}},
+    {"kind": "trigger", "id": "chi_hut_first", "x": 4, "y": 9, "r": 0, "when": ["story.warden_met", "!story.chi_met"], "scene": "chi_meet"},
+    {"kind": "prop", "id": "weir_case_l", "x": 1, "y": 2, "sprite": "weir_case_board_l", "lines": {"else": "Sketches of the glen, pinned in a ring. Red thread runs from each one to the same spot."}},
+    {"kind": "prop", "id": "weir_case_r", "x": 2, "y": 2, "sprite": "weir_case_board_r", "lines": {"story.chi_done": "The thread now runs off the board, to a note that just says: FERNBROOK.", "else": "More thread. Every line ends at a dot marked WICKERGLEN, NIGHT."}},
+    {"kind": "prop", "id": "weir_desk_l", "x": 3, "y": 2, "sprite": "weir_desk_l", "lines": {"else": "Notes in tidy pencil. Times, tracks, a moon drawn small. Nothing typed, nothing sent."}},
+    {"kind": "prop", "id": "weir_desk_r", "x": 4, "y": 2, "sprite": "weir_desk_r", "lines": {"else": "Notes in tidy pencil. Times, tracks, a moon drawn small. Nothing typed, nothing sent."}},
+    {"kind": "prop", "id": "weir_jars_a0", "x": 5, "y": 2, "sprite": "weir_jars_0", "when": ["!story.chi_jars>=1"], "lines": {"else": "Three clean jars on the sill, lids on. Waiting."}},
+    {"kind": "prop", "id": "weir_jars_a1", "x": 5, "y": 2, "sprite": "weir_jars_1", "when": ["story.chi_jars>=1", "!story.chi_jars>=2"], "lines": {"else": "One jar holds a leaf. Its tag gives a night, not a name."}},
+    {"kind": "prop", "id": "weir_jars_a2", "x": 5, "y": 2, "sprite": "weir_jars_2", "when": ["story.chi_jars>=2", "!story.chi_jars>=3"], "lines": {"else": "A leaf, a feather. One jar for each Walkling the glen has lost."}},
+    {"kind": "prop", "id": "weir_jars_a3", "x": 5, "y": 2, "sprite": "weir_jars_3", "when": ["story.chi_jars>=3"], "lines": {"else": "Leaf, feather, leaf. The first shelf of jars is full."}},
+    {"kind": "prop", "id": "weir_jars_b0", "x": 6, "y": 2, "sprite": "weir_jars_0", "when": ["!story.chi_jars>=4"], "lines": {"else": "Three more jars, empty. He hopes they stay that way."}},
+    {"kind": "prop", "id": "weir_jars_b1", "x": 6, "y": 2, "sprite": "weir_jars_1", "when": ["story.chi_jars>=4", "!story.chi_jars>=5"], "lines": {"else": "Another leaf, another night. The tags are in his small hand."}},
+    {"kind": "prop", "id": "weir_jars_b2", "x": 6, "y": 2, "sprite": "weir_jars_2", "when": ["story.chi_jars>=5", "!story.chi_jars>=6"], "lines": {"else": "Five jars filled now. He doesn't say the number out loud."}},
+    {"kind": "prop", "id": "weir_jars_b3", "x": 6, "y": 2, "sprite": "weir_jars_3", "when": ["story.chi_jars>=6"], "lines": {"else": "Every jar on the sill is full."}},
+    {"kind": "prop", "id": "weir_keeper_lantern", "x": 7, "y": 2, "sprite": "weir_keeper_lantern", "lines": {"else": "An old Keeper lantern, set apart on the shelf. A cloth is tied over its glass."}},
+    {"kind": "prop", "id": "weir_lamp_shelf", "x": 8, "y": 2, "sprite": "weir_lamp_shelf", "lines": {"else": "Company lamps, each with a paper tag. Put your ear close: a low hum."}},
+    {"kind": "prop", "id": "weir_easel", "x": 1, "y": 4, "sprite": "weir_easel", "lines": {"else": "A charcoal sketch of the glen at dusk. Small shapes walk toward a row of lights."}},
+    {"kind": "prop", "id": "weir_files", "x": 1, "y": 6, "sprite": "weir_files", "lines": {"else": "Paper files in a crate, tied with string. All of it written by hand."}},
+    {"kind": "prop", "id": "weir_cot_head", "x": 8, "y": 4, "sprite": "weir_cot_head", "lines": {"else": "A narrow cot, made up tight. It doesn't look slept in much."}},
+    {"kind": "prop", "id": "weir_cot_foot", "x": 8, "y": 5, "sprite": "weir_cot_foot", "lines": {"else": "A grey blanket, folded square. Old Keeper habits."}},
+    {"kind": "prop", "id": "weir_stove", "x": 8, "y": 6, "sprite": "weir_stove", "lines": {"else": "A squat stove. The kettle on top is always nearly boiling."}},
+    {"kind": "prop", "id": "weir_sluice", "x": 8, "y": 8, "sprite": "weir_sluice", "lines": {"else": "A sluice board. Weir water runs under the floor, loud enough to hide a quiet sound."}},
+    {"kind": "prop", "id": "weir_doorpost", "x": 3, "y": 10, "sprite": "weir_doorpost", "lines": {"else": "Water marks scratched in the post, years of them. A cord runs out to a bell by the path."}},
+    {"kind": "prop", "id": "weir_boots", "x": 5, "y": 10, "sprite": "weir_boots", "lines": {"else": "His boots, still wet. Yours are dripping on the sack beside them."}}
+   ]
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "hw_cut": {
+    "gridRows": {
+     "11": "KgggttttggggggttttgggpRRRRttggggggggggKK",
+     "12": "KgTtttttgggfggtttttggpHHHHtttTggggggpppp",
+     "13": "KggtttttgggggggttttggpppggtttttggggggggK"
+    },
+    "addRoofs": {
+     "weir_hut": {"x0": 22, "y0": 11, "x1": 25, "y1": 11, "roof": "roof_turf", "wall": "wall_rock", "door": "door_barn", "win": "win_slit", "trim": "F", "shape": "gable", "porch": ["hw_hut_lamp", "hw_hut_barrel"]}
+    },
+    "set": {
+     "zones": [
+      {"x": 2, "y": 1, "w": 9, "h": 3},
+      {"x": 15, "y": 1, "w": 9, "h": 2},
+      {"x": 28, "y": 1, "w": 10, "h": 3},
+      {"x": 2, "y": 11, "w": 16, "h": 3},
+      {"x": 26, "y": 11, "w": 8, "h": 3}
+     ]
+    },
+    "addObjs": [
+     {"kind": "door", "id": "hw_weir_hut", "x": 23, "y": 13, "to": "hw_weir_hut_in", "tx": 4, "ty": 10, "facing": "up", "need": "story.warden_met | story.cobble_end", "deny": "Barred from inside. A cord runs from the frame to a bell somewhere within."},
+     {"kind": "prop", "id": "hw_hut_lamp", "x": 24, "y": 13, "sprite": "weir_oil_lamp", "lines": {"else": "A plain oil lamp on a hook. No crest, no tag."}},
+     {"kind": "prop", "id": "hw_hut_barrel", "x": 26, "y": 12, "sprite": "barrel", "lines": {"else": "A rain barrel, full to the brim. A tin cup hangs off the side."}},
+     {"kind": "prop", "id": "hw_hut_nets", "x": 28, "y": 10, "sprite": "weir_net_crate", "lines": {"else": "A net thrown over two crates to dry. It smells of the stream."}}
+    ]
+   }
+  }
+ },
+ "objPatch": {
+  "_note": "D1595: the Wickerglen > Hushwater Falls > Hushwater Cut walk opens at Ilse's call (story.warden_met, owned by ACT1_KEEPER_JOIN), as well as at story.cobble_end. The rim stays shut until cobble_end. The two Hall-2 holders on that walk stay away until cobble_end.",
+  "glen_east": {"when": ["story.cobble_end | story.warden_met"]},
+  "glen_east_log": {"when": ["!story.cobble_end", "!story.warden_met"]},
+  "hw_falls_west": {"when": ["story.cobble_end | story.warden_met"]},
+  "hw_falls_east": {"when": ["story.cobble_end | story.warden_met"]},
+  "hw_cut_west": {"when": ["story.cobble_end | story.warden_met"]},
+  "hw_owlwatch": {"whenAdd": ["story.cobble_end"]},
+  "hw_angler": {"whenAdd": ["story.cobble_end"]},
+  "hw_weir_s": {"linesFirst": {"else": "The weir's south stones, old chisel marks and all. A hut is built right onto them."}}
+ },
+ "flags": {
+  "story.warden_met": "READ ONLY here. Spine beat 2 (Ilse's call and the Lodge); owned by ACT1_KEEPER_JOIN / POST_TRIAL_CRACKDOWN. Opens the walk and the hut door.",
+  "story.chi_met": "READ ONLY here. PLACEHOLDER name; set by the meeting scene chi_meet, owned by ACT1_KEEPER_JOIN.",
+  "story.chi_done": "READ ONLY here. PLACEHOLDER name; the report to Vincent Chi, owned by ACT1_KEEPER_JOIN.",
+  "story.chi_jars": "READ ONLY here. PLACEHOLDER name; a number 0-6, the jars on the sill (one per Walkling the glen has lost). Owned by ACT1_KEEPER_JOIN: it sets the value, including the first jar Vincent fills while the holder watches."
+ }
+}

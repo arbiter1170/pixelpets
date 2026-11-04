@@ -127,7 +127,8 @@
           "look": "old_miner",
           "facing": "down",
           "lines": {
-            "story.seal2": "Hale says you moved stone the right way. Patient. That's high praise from him.",
+            "seal:seal_cobblecrest": "Hale says you moved stone the right way. Patient. That's high praise from him.",
+            "story.seal2": "Hale says your cord's from the company, not him. His floor's still open, patient as stone.",
             "story.quarry_bought": "Sold, just like that. The Pebblits in the Old Seam won't understand a fence.",
             "else": "Forty years Hale and I dug side by side. The Pebblits always showed us where to swing."
           }
@@ -150,7 +151,7 @@
           "y": 9,
           "facing": "down",
           "when": ["story.quarry_bought"],
-          "lines": {"story.seal2": "A Seal from Hale! He doesn't hand those out to just anyone. Well done.", "else": "The vote passed fair and square. I only wish it felt fair."}
+          "lines": {"seal:seal_cobblecrest": "A Seal from Hale! He doesn't hand those out to just anyone. Well done.", "story.seal2": "A Bright Tier from the company. Hale's Seal still waits on his floor.", "else": "The vote passed fair and square. I only wish it felt fair."}
         },
         {
           "kind": "npc",
@@ -213,7 +214,7 @@
           "facing": "down",
           "when": ["story.quarry_bought"],
           "friendSlot": "TOBIN",
-          "lines": {"story.seal2": "Hale's Seal, huh? Doesn't open this gate, sorry. Nothing does. Have a bright day!", "else": "Associates only past the gate. It's for the Pebblits' safety! Says so on the memo."}
+          "lines": {"seal:seal_cobblecrest": "Hale's Seal, huh? Doesn't open this gate, sorry. Nothing does. Have a bright day!", "story.seal2": "A Tier 2 cord, huh? Doesn't open this gate, sorry. Nothing does. Have a bright day!", "else": "Associates only past the gate. It's for the Pebblits' safety! Says so on the memo."}
         },
         {"kind": "prop", "id": "q_stage_l", "x": 15, "y": 4, "sprite": "stage_bunting", "when": ["!story.quarry_bought"], "lines": {"else": "Bunting in Glimmerwell mint and white. It smells like new paint."}},
         {"kind": "prop", "id": "q_stage_r", "x": 17, "y": 4, "sprite": "stage_bunting", "when": ["!story.quarry_bought"], "lines": {"else": "A banner: QUARRY OPEN HOUSE · A BRIGHT NEW PARTNERSHIP."}},

@@ -6,8 +6,9 @@
   "_wiring": "Standing steps (sp_pick, orchard_g, seal1_g, tour1_match) and the seal step are engine grants kept with the delivered lines. Tour completion is seal1@glimmer, so seal1_g is granted once there. tour1_match (+5) runs only when trainer.hall1_fen is already set, which is the optional match win. The Keepers confirm label dropped its final question mark so the label stays within 30 characters.",
   "_decisions": {
     "hall_slot_1": "Tour. Vincent, Oct 13, 2026: slot 1 stays the stated default (Bright Pavilion Tour). The Audit battle is optional stop 4.",
-    "hall_slot_2": "Sacrifice stub (Build 5). Quota is the free floor: three names spoken aloud. Setting a snack down is narrative only (the item stays in the bag, so the review cannot soft-lock). Face the review battles hall2_hale@glimmer and onWin runs seal2. Real cost is still D24.",
-    "rook_r5": "Built (Build 6). Keepers brinewick_hook sets story.rook_end ally. Glimmerwell brinewick_hook@glimmer sets stays. Both set story.cobble_end. Not bond-gated. Tone confirmation is still D25."
+    "hall_slot_2": "Sacrifice stub (Build 5). Quota is the free floor: three names spoken aloud. Setting a snack down is narrative only (the item stays in the bag, so the review cannot soft-lock). The Tuning, Pick another and the quota give the Bright Tier 2 tag and story.seal2, not the Seal. Face Hale for the Seal battles hall2_hale (merged row, seal_cobblecrest) and onWin runs seal2; after a tag close Hale offers the match again until it is won (D1324, D1325, D1328). Real cost is still D24 (partly superseded by D1325, D1328).",
+    "rook_r5": "Built (Build 6). Keepers brinewick_hook sets story.rook_end ally. Glimmerwell brinewick_hook@glimmer sets stays. Both set story.cobble_end. Not bond-gated. Tone confirmation is still D25.",
+    "d1448_rook_signup": "D1448: Partner Day is only the Keepers' starter day. Rook's teaser@glimmer line says \"Sign-up day\": stand-in copy until Story replaces it (OPEN_DECISIONS row B-7 (copy))."
   },
   "slicePatch": {
     "maps": {
@@ -90,13 +91,14 @@
             "y": 9,
             "look": "fen",
             "when": [
-              "story.orchard_cleared"
+              "story.orchard_cleared | story.fen_sent_home & story.seal1 & story.side_pick_done"
             ],
             "lines": {
+              "!story.orchard_cleared": "Tobin won't listen to me. Try him.",
               "story.side=glimmer": "The trees still know your step.",
               "!story.side=glimmer": "Thank you. The blossoms remember."
             },
-            "_note": "fen_orchard leaves once the orchard is cleared. These lines need a Fen who stays. No new look."
+            "_note": "fen_orchard leaves once the orchard is cleared. These lines need a Fen who stays. No new look. D1432: her Hall is shut after Seal 1 and the pick, so on the Day 1 flow she waits here from the pick (a Keepers save sees her before Tobin's battle; that line is draft copy for Story, OPEN_DECISIONS D1186)."
           },
           {
             "kind": "trigger",
@@ -155,27 +157,7 @@
       [
         "say",
         "Master Fen",
-        "{name}, my Pomlets have rooted here since the first blossom. Help me open these crates?"
-      ],
-      [
-        "say",
-        "Master Fen",
-        "No lanterns, no lanyards. Just steady hands and a little patience."
-      ],
-      [
-        "say",
-        "Associate Juniper",
-        "Hi hi! Don't mind us. We're relocating these little ones to a lovely Comfort Sanctuary."
-      ],
-      [
-        "say",
-        "Tobin",
-        "Tired is just relaxed with bad lighting! They'll nap under soft lamps. Clean energy, all round."
-      ],
-      [
-        "say",
-        "Associate Juniper",
-        "Help us pack and we'll sign you up for a Junior Bright trial lanyard. Today only!"
+        "You've seen where the crates go. Help me open them, or help them pack."
       ],
       [
         "say",
@@ -184,158 +166,88 @@
       ],
       [
         "say",
+        "Associate Juniper",
+        "The Sanctuary has warm beds and a vet. It's kind, really!"
+      ],
+      [
+        "say",
         "Master Fen",
         "A lanyard is a ribbon, {name}. Roots are a promise. Choose what you can carry."
       ],
       [
-        "say",
-        "",
-        "This decides who you travel with. Choose with care. This road is a long one."
-      ],
-      [
         "choice",
-        "Who do you help?",
+        "What do you do?",
         [
           [
             "Open the crates with Fen",
             [
               [
-                "choice",
-                "Really? Stand with the Keepers",
-                [
-                  [
-                    "Yes, the Keepers",
-                    [
-                      [
-                        "setFlag",
-                        "story.side",
-                        "keepers"
-                      ],
-                      [
-                        "setFlag",
-                        "story.side_pick_done",
-                        true
-                      ],
-                      [
-                        "setFlag",
-                        "story.met_fen",
-                        true
-                      ],
-                      [
-                        "standing",
-                        "keepers",
-                        null,
-                        "sp_pick"
-                      ],
-                      [
-                        "say",
-                        "Master Fen",
-                        "Then we grow together. Tobin won't listen to me. He might listen to a holder with a strong team."
-                      ],
-                      [
-                        "say",
-                        "Associate Juniper",
-                        "Aw. No hard feelings! The trial lanyard offer stays open. Have a bright day!"
-                      ],
-                      [
-                        "say",
-                        "Master Fen",
-                        "And if your path ever bends, the Lantern House keeps a door open. Paths do bend."
-                      ],
-                      [
-                        "run",
-                        "know_us"
-                      ]
-                    ]
-                  ],
-                  [
-                    "Think about it",
-                    [
-                      [
-                        "say",
-                        "",
-                        "You step back from the gate. The orchard can wait a moment."
-                      ]
-                    ]
-                  ]
-                ]
+                "setFlag",
+                "story.orchard_lean",
+                "open"
+              ],
+              [
+                "inc",
+                "story.fen_lean"
+              ],
+              [
+                "inc",
+                "story.sway_fernbrook",
+                2
+              ],
+              [
+                "setFlag",
+                "story.met_fen",
+                true
+              ],
+              [
+                "say",
+                "Master Fen",
+                "Then we grow together. Tobin won't listen to me. He might listen to a holder with a strong team."
+              ],
+              [
+                "say",
+                "Associate Juniper",
+                "Aw. No hard feelings! The trial lanyard offer stays open. Have a bright day!"
               ]
             ]
           ],
           [
-            "Pack crates with Tobin",
+            "Help Tobin pack",
             [
               [
-                "choice",
-                "Really? Join Glimmerwell?",
-                [
-                  [
-                    "Yes, Glimmerwell",
-                    [
-                      [
-                        "setFlag",
-                        "story.side",
-                        "glimmer"
-                      ],
-                      [
-                        "setFlag",
-                        "story.side_pick_done",
-                        true
-                      ],
-                      [
-                        "setFlag",
-                        "story.met_fen",
-                        true
-                      ],
-                      [
-                        "standing",
-                        "glimmer",
-                        null,
-                        "sp_pick"
-                      ],
-                      [
-                        "say",
-                        "Associate Juniper",
-                        "Yay! Welcome to the partnership, {name}! Brighter by nature."
-                      ],
-                      ["if", "story.seal1", [["seal", "seal_glim_1"]]],
-                      [
-                        "say",
-                        "Tobin",
-                        "Grab that crate lid, trainee. First rule: always smile at the units."
-                      ],
-                      [
-                        "say",
-                        "Tobin",
-                        "Thin handset. No crest. It still sits on their wires."
-                      ],
-                      [
-                        "give",
-                        "cracked_phone",
-                        1
-                      ],
-                      [
-                        "say",
-                        "Master Fen",
-                        "...I see. The Lantern House door stays open, {name}. It always has."
-                      ],
-                      [
-                        "run",
-                        "know_us"
-                      ]
-                    ]
-                  ],
-                  [
-                    "Think about it",
-                    [
-                      [
-                        "say",
-                        "",
-                        "You step back from the gate. The orchard can wait a moment."
-                      ]
-                    ]
-                  ]
-                ]
+                "setFlag",
+                "story.orchard_lean",
+                "pack"
+              ],
+              [
+                "inc",
+                "story.fen_lean",
+                -1
+              ],
+              [
+                "inc",
+                "story.sway_fernbrook",
+                -2
+              ],
+              [
+                "setFlag",
+                "story.met_fen",
+                true
+              ],
+              [
+                "say",
+                "Tobin",
+                "Grab that crate lid, new hire."
+              ],
+              [
+                "run",
+                "orchard@glimmer"
+              ],
+              [
+                "say",
+                "Associate Juniper",
+                "The trial lanyard offer stays open. Have a bright day!"
               ]
             ]
           ],
@@ -349,14 +261,15 @@
               ]
             ]
           ]
-        ]
+        ],
+        ""
       ]
     ],
     "orchard@glimmer": [
       [
         "say",
         "",
-        "Tobin hands you a crate lid with a mint bow on it. Juniper sets a Glimmer lantern by the stack."
+        "Tobin hands you a crate lid with a wine bow on it. Juniper sets a Glimmer lantern by the stack."
       ],
       [
         "say",
@@ -495,7 +408,7 @@
       [
         "say",
         "Associate Juniper",
-        "Wear it everywhere. People trust mint. Brighter by nature!"
+        "Wear it everywhere. People trust a lanyard. Brighter by nature!"
       ],
       [
         "if",
@@ -546,7 +459,7 @@
       [
         "say",
         "Rook",
-        "Yeah, I'm in too. Since spring. Partner day, the jingle, the sticker: all them."
+        "Yeah, I'm in too. Since spring. Sign-up day, the jingle, the sticker: all them."
       ],
       [
         "say",
@@ -694,7 +607,7 @@
       ],
       [
         "choice",
-        "The projector hums on a mint-green slide. Juniper asks which campaign slogan grabs you.",
+        "The projector hums on a wine-red slide. Juniper asks which campaign slogan grabs you.",
         [
           [
             "Brighter by nature.",
@@ -766,7 +679,7 @@
       [
         "say",
         "",
-        "Mint lamps hum. Walklings doze under them, colours washed thin."
+        "Wine-red lamps hum. Walklings doze under them, colours washed thin."
       ],
       [
         "say",
@@ -1150,7 +1063,7 @@
     "hale_trial@glimmer": [
       [
         "if",
-        "seal:seal_glim_2",
+        "seal:seal_cobblecrest",
         [
           [
             "say",
@@ -1161,113 +1074,146 @@
         [
           [
             "if",
-            "story.arbiter_test_done",
+            "seal:seal_glim_2",
             [
               [
                 "say",
-                "Associate Quinn",
-                "Tier 2 is on file. The cradle can wait. Have a bright day!"
-              ]
-            ],
-            [
-              [
-                "setFlag",
-                "story.arbiter_test_seen",
-                true
-              ],
-              [
-                "say",
-                "Associate Quinn",
-                "Before the cord, one more kindness. A Tuning. Your Walkling hears us a little clearer after."
-              ],
-              [
-                "if",
-                "story.tour_unease>=2",
-                [
-                  [
-                    "say",
-                    "Associate Quinn",
-                    "Some holders feel a flutter. We call it increasing the bond. Nothing sharp. Nothing cold."
-                  ],
-                  [
-                    "say",
-                    "Rook",
-                    "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."
-                  ]
-                ],
-                [
-                  [
-                    "say",
-                    "Associate Quinn",
-                    "We call it increasing the bond between a holder and their Walkling. Nothing sharp. Nothing cold."
-                  ]
-                ]
+                "Master Hale",
+                "You have their lanyard. The Seal is still mine to give."
               ],
               [
                 "choice",
-                "How do you close the review?",
+                "One match on the stone. Ready?",
                 [
                   [
-                    "Tune my partner",
+                    "Face Hale for the Seal",
                     [
                       [
-                        "setFlag",
-                        "story.arbiter_test_active",
-                        true
-                      ],
-                      [
-                        "tune"
-                      ]
-                    ]
-                  ],
-                  [
-                    "Pick another Walkling",
-                    [
-                      [
-                        "setFlag",
-                        "story.arbiter_test_active",
-                        true
-                      ],
-                      [
-                        "tune",
-                        "pick"
+                        "battle",
+                        "hall2_hale"
                       ]
                     ]
                   ],
                   [
                     "Not today",
                     []
-                  ],
-                  [
-                    "Meet the quota instead",
-                    [
-                      [
-                        "say",
-                        "Associate Quinn",
-                        "Three names. Say them. The seam heard you. Quota met, no fee."
-                      ],
-                      [
-                        "run",
-                        "seal2"
-                      ]
-                    ]
-                  ],
-                  [
-                    "Face the review",
-                    [
-                      [
-                        "say",
-                        "Associate Quinn",
-                        "Then Hale's floor, our rules. Win or lose, you can still take the quota after."
-                      ],
-                      [
-                        "battle",
-                        "hall2_hale"
-                      ]
-                    ]
                   ]
                 ],
-                "Associate Quinn"
+                "Master Hale"
+              ]
+            ],
+            [
+              [
+                "if",
+                "story.arbiter_test_done",
+                [
+                  [
+                    "say",
+                    "Associate Quinn",
+                    "Tier 2 is on file. The cradle can wait. Have a bright day!"
+                  ]
+                ],
+                [
+                  [
+                    "setFlag",
+                    "story.arbiter_test_seen",
+                    true
+                  ],
+                  [
+                    "say",
+                    "Associate Quinn",
+                    "Before the lanyard, one more kindness. A Tuning. Your Walkling hears us a little clearer after."
+                  ],
+                  [
+                    "if",
+                    "story.tour_unease>=2",
+                    [
+                      [
+                        "say",
+                        "Associate Quinn",
+                        "Some holders feel a flutter. We call it increasing the bond. Nothing sharp. Nothing cold."
+                      ],
+                      [
+                        "say",
+                        "Rook",
+                        "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."
+                      ]
+                    ],
+                    [
+                      [
+                        "say",
+                        "Associate Quinn",
+                        "We call it increasing the bond between a holder and their Walkling. Nothing sharp. Nothing cold."
+                      ]
+                    ]
+                  ],
+                  [
+                    "choice",
+                    "How do you close the review?",
+                    [
+                      [
+                        "Tune my partner",
+                        [
+                          [
+                            "setFlag",
+                            "story.arbiter_test_active",
+                            true
+                          ],
+                          [
+                            "tune"
+                          ]
+                        ]
+                      ],
+                      [
+                        "Pick another Walkling",
+                        [
+                          [
+                            "setFlag",
+                            "story.arbiter_test_active",
+                            true
+                          ],
+                          [
+                            "tune",
+                            "pick"
+                          ]
+                        ]
+                      ],
+                      [
+                        "Not today",
+                        []
+                      ],
+                      [
+                        "Meet the quota instead",
+                        [
+                          [
+                            "say",
+                            "Associate Quinn",
+                            "Three names. Say them. The seam heard you. Quota met, no fee."
+                          ],
+                          [
+                            "run",
+                            "seal2"
+                          ]
+                        ]
+                      ],
+                      [
+                        "Face Hale for the Seal",
+                        [
+                          [
+                            "say",
+                            "Associate Quinn",
+                            "Then Hale's floor. Win, and his Seal is yours. Lose, and the quota's still open."
+                          ],
+                          [
+                            "battle",
+                            "hall2_hale"
+                          ]
+                        ]
+                      ]
+                    ],
+                    "Associate Quinn"
+                  ]
+                ]
               ]
             ]
           ]
@@ -1276,44 +1222,70 @@
     ],
     "seal2@glimmer": [
       [
-        "say",
-        "Associate Quinn",
-        "Review closed. Bright Tier 2 Lanyard. Two marks, one cord."
-      ],
-      [
-        "seal",
-        "seal_glim_2"
-      ],
-      [
-        "give",
-        "hearty_snack",
-        2
-      ],
-      [
-        "give",
-        "wake_tonic",
-        1
-      ],
-      [
-        "say",
-        "Associate Quinn",
-        "Same care package Hale gives his friends. We can be generous."
-      ],
-      [
-        "say",
-        "Associate Quinn",
-        "Brinewick is down the coast. The cart goes whether you ride it or not."
-      ],
-      [
-        "standing",
-        "glimmer",
-        5,
-        "seal2_g"
-      ],
-      [
-        "setFlag",
+        "if",
         "story.seal2",
-        true
+        [
+          [
+            "say",
+            "Associate Quinn",
+            "Hale's Seal, on your Tier 2 lanyard at last. Logged! Have a bright day!"
+          ]
+        ],
+        [
+          [
+            "if",
+            "seal:seal_cobblecrest",
+            [
+              [
+                "say",
+                "Associate Quinn",
+                "Review closed. Tier 2 on your lanyard, clipped to Hale's Seal. Logged!"
+              ]
+            ],
+            [
+              [
+                "say",
+                "Associate Quinn",
+                "Review closed. Tier 2 on your lanyard. Hale still holds your Seal. His floor's open."
+              ]
+            ]
+          ],
+          [
+            "seal",
+            "seal_glim_2"
+          ],
+          [
+            "give",
+            "hearty_snack",
+            2
+          ],
+          [
+            "give",
+            "wake_tonic",
+            1
+          ],
+          [
+            "say",
+            "Associate Quinn",
+            "Same care package Hale gives his friends. We can be generous."
+          ],
+          [
+            "say",
+            "Associate Quinn",
+            "Brinewick is down the coast. The cart goes whether you ride it or not."
+          ],
+          [
+            "standing",
+            "glimmer",
+            5,
+            "seal2_g"
+          ],
+          [
+            "setFlag",
+            "story.seal2",
+            true
+          ]
+        ]
       ]
     ],
     "brinewick_hook": [
@@ -1413,7 +1385,7 @@
       },
       "lines": {
         "intro": "You packed my orchard into crates. Show me what roots you have left, {name}.",
-        "win": "...Strong. Stronger than I'd like. Take your ribbon. The trees will remember.",
+        "win": "...Strong. Stronger than I'd like. Take your Seal. The trees will remember.",
         "lose": "Roots hold. Rest a while, and think about why."
       }
     },
@@ -1425,12 +1397,11 @@
       }
     },
     "hall2_hale@glimmer": {
-      "seal": "seal_glim_2",
       "onWin": "seal2",
       "lines": {
         "intro": "This is an acquisition review. Show me the team you brought to my floor.",
-        "win": "Noted. You moved stone without a lamp. The quota can close.",
-        "lose": "Stone is patient. Come back, or take the free quota instead."
+        "win": "Noted. You moved stone without a lamp. The Seal is yours. Quinn can have the paperwork.",
+        "lose": "Stone is patient. My floor stays open. Come back for the Seal."
       }
     }
   },
@@ -1445,14 +1416,15 @@
       "else": "Crates packed, units happy. Nice!"
     },
     "odile": {
-      "story.side=glimmer": "Mint's a bold colour for an orchard.",
+      "story.side=glimmer": "Wine's a bold colour for an orchard.",
       "!story.side=glimmer": "Fen's trees look brighter today."
     },
     "amos": {
-      "story.side=glimmer": "Beds are beds. Rest up, mint-vest.",
+      "story.side=glimmer": "Beds are beds. Rest up, wine-vest.",
       "!story.side=glimmer": "Rest well, holder. Roots need sleep."
     },
     "fen_after": {
+      "!story.orchard_cleared": "Tobin won't listen to me. Try him.",
       "story.side=glimmer": "The trees still know your step.",
       "!story.side=glimmer": "Thank you. The blossoms remember."
     }
@@ -1477,24 +1449,24 @@
   },
   "flags": {
     "story.side": "\"keepers\" (default, absent on old saves) or \"glimmer\". Pledge, not permanent.",
-    "story.side_pick_done": "The Fernbrook gate choice was made once.",
+    "story.side_pick_done": "The Act 1 face is set (ACT1_KEEPER_JOIN: the enrolment, or Juniper's lanyard step; on an old save, the gate pick). Written once, never cleared.",
     "story.beat.<scene>": "Set by the engine when a story beat finishes: which side played it.",
     "story.switches": "How many times the pledge changed at a Pledge desk.",
     "story.switch_chapter": "The chapter (Seals earned) of the last switch.",
     "story.switch_at": "Date.now() of the last switch.",
-    "story.tour1_s1": "Bright Pavilion Tour stop 1 done (lantern stand). Not a quest step.",
+    "story.tour1_s1": "Bright Pavilion Tour stop 1 done (lantern stand). Not a quest step. On a new-flow save (no Tour) Juniper's pick beat sets it instead (D1436, detail_zz_pick_log.json), so the photo news reads the same; story.tour1_s3 marks a save that took the Tour.",
     "story.tour1_s2": "Tour stop 2 done (Comfort Check at the crates). Not a quest step.",
     "story.tour1_s3": "Tour stop 3 done (Hall slideshow). Not a quest step. Stop 4 stays open until story.seal1.",
-    "story.tour_unease": "D193. +1 on the Comfort Check question and on the stage-photo flinch. At 2 or more, Testing softens Quinn's second line and Rook speaks once. Old saves may still have tour.doubt; that key is read once and left on disk.",
+    "story.tour_unease": "D193. +1 on the Comfort Check question and on the stage-photo flinch (on a new-flow save, +1 once at Juniper's pick photo, D1436). At 2 or more, Testing softens Quinn's second line and Rook speaks once. Old saves may still have tour.doubt; that key is read once and left on disk.",
     "story.arbiter_test_seen": "Quinn offered Testing at least once.",
     "story.arbiter_test_done": "One Walkling was chipped. A second Testing offer is refused.",
     "story.arbiter_test_active": "True during the Tuning beat. Cool tint and arbiter_test music. Cleared when the chip is in.",
     "standing.got.<id>": "A one-shot Standing grant already made.",
     "standing.top.<side>": "The highest tier whose toast has shown for that side.",
-    "seals.seal_glim_1": "Bright Tier 1 lanyard. Set by the seal step in seal1@glimmer (and by a Hall win). story.seal1 is set by that same scene.",
+    "seals.seal_glim_1": "Bright Tier 1 tag (Glimmerwell's cord, clipped to the Fernbrook Seal; never a Seal). Set by the seal step in seal1@glimmer (and by the old-flow Hall 1 win). An old save holding only this tag reads as the Fernbrook Seal (D1328). story.seal1 is set by that same scene.",
     "story.rook_end": "R5. Keepers: ally. Glimmerwell: stays. Not bond-gated.",
     "story.rook_bond": "Optional flavour counter from the quiet Census choice. Does not gate R5.",
-    "seals.seal_glim_2": "Bright Tier 2 lanyard. Sacrifice review. Placeholder art until Design draws tier 2."
+    "seals.seal_glim_2": "Bright Tier 2 tag (never a Seal). Set by seal2@glimmer on the Tuning, Pick another, the quota or Hale's match; only Hale's match also gives seal_cobblecrest (D1324, D1325). Placeholder art until Design draws tier 2."
   },
   "loyalty": {
     "_note": "Talk lines for Keepers and Glimmerwell, chosen by the player's pledge and Standing tier. First matching key wins. Older keeper-facing keys use !story.side=glimmer because an absent story.side is still the Keepers. Keeper House and watch lines (hm_patrol, hm_ness, hq_bram, hq_mo, hq_wynn, hq_lumen, hq_rue, and the town watches) require an explicit story.side=keepers, so a player who has not pledged stays on the civic citizen line. Those keys are applied behind any !story.met_* intro. NPC lines are chatter-sized (<=40). Trainer lines are battle say lines (<=110). Preface steps are said once at the start of an existing scene.",
@@ -1511,25 +1483,25 @@
       "odile": {
         "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The windfalls are yours.",
         "!story.side=glimmer&standing.keepers>=2": "Fen's trees like a trusted Keeper.",
-        "story.side=glimmer&standing.keepers>=2": "Mint coat. The orchard still knows you.",
-        "story.side=glimmer&standing.glimmer>=2": "Mint's a bold colour. The trees cope."
+        "story.side=glimmer&standing.keepers>=2": "Wine vest. The orchard still knows you.",
+        "story.side=glimmer&standing.glimmer>=2": "Wine's a bold colour. The trees cope."
       },
       "tobin_glim": {
         "standing.glimmer>=4": "Founder's Pick! I'll update your file.",
         "standing.glimmer>=2": "Junior Bright. Crates love you.",
-        "standing.keepers>=3": "Hall Friend in a mint vest. Funny."
+        "standing.keepers>=3": "Hall Friend in a wine vest. Funny."
       },
       "fen_after": {
         "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The roots agree.",
         "!story.side=glimmer&standing.keepers>=2": "Trusted hands. The trees agree.",
         "story.side=glimmer&standing.keepers>=3": "You left, and the trees kept you.",
-        "story.side=glimmer&standing.glimmer>=2": "Mint vest. Roots remember your step."
+        "story.side=glimmer&standing.glimmer>=2": "Wine vest. Roots remember your step."
       },
       "amos": {
         "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The bed's warm.",
         "!story.side=glimmer&standing.keepers>=2": "Trusted. Rest. Roots need sleep.",
         "!story.side=glimmer&standing.keepers>=1": "Rest well, friend. Roots need sleep.",
-        "story.side=glimmer&standing.keepers>=3": "Mint vest, old friend. Rest anyway.",
+        "story.side=glimmer&standing.keepers>=3": "Wine vest, old friend. Rest anyway.",
         "story.side=glimmer&standing.glimmer>=2": "Bright day, then rest. Beds are beds."
       },
       "hollis_aside": {
@@ -1538,7 +1510,7 @@
         "story.glen_cleared&!story.side=glimmer&standing.keepers>=2": "The lamps died. Your Hall was right."
       },
       "tobin_gate": {
-        "story.seal2&story.side=glimmer&standing.glimmer>=2": "Seal and vest. Gate stays shut, partner.",
+        "story.seal2&story.side=glimmer&standing.glimmer>=2": "Lanyard and vest. Gate's shut, partner.",
         "story.seal2&!story.side=glimmer&standing.keepers>=2": "Hale's Seal. Still no gate. Sorry.",
         "!story.side=glimmer&standing.keepers>=3": "Associates only. Even Hall Friends.",
         "story.side=glimmer&standing.glimmer>=2": "Partners get a smile, not a gate key."
@@ -1553,7 +1525,7 @@
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The road is yours.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. I'll walk you through.",
         "story.side=keepers&standing.keepers>=1": "A pledged Keeper. Evening, friend.",
-        "story.side=glimmer": "Mint coat. Keep your hands shown."
+        "story.side=glimmer": "Wine vest. Keep your hands shown."
       },
       "hm_ness": {
         "story.side=keepers&standing.keepers>=4": "Ally of the Warden. Pass freely.",
@@ -1569,7 +1541,7 @@
       },
       "hmp_cadet": {
         "story.side=keepers&standing.keepers>=1": "Cadet Lisse. The watch will learn you.",
-        "story.side=glimmer": "Mint already? I'm still on plaque duty."
+        "story.side=glimmer": "Wine vest already? Still on plaque duty."
       },
       "r1_ness": {
         "story.side=keepers&standing.keepers>=4": "Ally of the Warden. Pass freely.",
@@ -1587,7 +1559,7 @@
         "story.side=keepers&standing.keepers>=4": "Ally. The ledger has your page.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. I saved you a shelf.",
         "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Ask, and I'll look.",
-        "story.side=glimmer": "Those files are not for mint coats."
+        "story.side=glimmer": "Those files are not for wine vests."
       },
       "hq_wynn": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. Tea is on the hob.",
@@ -1611,7 +1583,7 @@
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. Fernbrook is quiet.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. The orchard is watched.",
         "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Evening, friend.",
-        "story.side=glimmer": "Mint coats don't get the orchard key."
+        "story.side=glimmer": "Wine vests don't get the orchard key."
       },
       "r2_watch": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The glen is watched.",
@@ -1626,7 +1598,7 @@
       "cc_watch": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The cairn knows you.",
         "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Stone stands firm.",
-        "story.side=glimmer": "Mint coats don't move this cairn."
+        "story.side=glimmer": "Wine vests don't move this cairn."
       },
       "cc_mint": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. Your chit is first.",
@@ -1713,12 +1685,12 @@
           "!story.side=glimmer&standing.keepers>=2": "Trusted hands, {name}. Roots first, then blossoms.",
           "!story.side=glimmer&standing.keepers>=1": "A friend of the orchard. Show me your roots, {name}.",
           "story.side=glimmer&standing.keepers>=3": "You packed my crates, and the trees still like you. Show me.",
-          "story.side=glimmer&standing.glimmer>=2": "Mint vest, {name}. Show me what roots you have left."
+          "story.side=glimmer&standing.glimmer>=2": "Wine vest, {name}. Show me what roots you have left."
         },
         "win": {
           "!story.side=glimmer&standing.keepers>=3": "Strong, and kind. Take the Seal. The trees will remember, {name}.",
           "story.side=glimmer&standing.keepers>=2": "Strong. Stronger than I'd like. The trees still know you.",
-          "story.side=glimmer&standing.glimmer>=2": "...Strong. Take your ribbon. Don't forget the orchard, {name}."
+          "story.side=glimmer&standing.glimmer>=2": "...Strong. Take your Seal. Don't forget the orchard, {name}."
         },
         "lose": {
           "!story.side=glimmer&standing.keepers>=2": "Roots hold, friend. Rest a while. The kettle is on.",
@@ -1731,15 +1703,15 @@
           "!story.side=glimmer&standing.keepers>=2": "Trusted. Stone stands firm. Show me a patient hand.",
           "!story.side=glimmer&standing.keepers>=1": "A friend of the Hall. Stone stands firm, {player}.",
           "story.side=glimmer&standing.keepers>=2": "You stood with us once. Stone still stands firm, {player}.",
-          "story.side=glimmer&standing.glimmer>=1": "Mint coat, {player}. Stone stands firm all the same."
+          "story.side=glimmer&standing.glimmer>=1": "Wine vest, {player}. Stone stands firm all the same."
         },
         "win": {
           "!story.side=glimmer&standing.keepers>=3": "Ha! You moved the hill, {player}. Gently, like a Warden's Ally.",
-          "story.side=glimmer": "You moved the hill. Gently, even in that vest, {player}."
+          "story.side=glimmer": "You moved the hill. Gently, even in that vest. The Seal is yours, {player}."
         },
         "lose": {
           "!story.side=glimmer&standing.keepers>=2": "Stone's patient, friend. So am I. Rest, and come back.",
-          "story.side=glimmer": "Stone's patient. Rest a while, and come back, {player}."
+          "story.side=glimmer": "Stone's patient. Rest a while, and come back for the Seal, {player}."
         }
       }
     },
@@ -1748,7 +1720,7 @@
         ["if", "!story.side=glimmer&standing.keepers>=4",
           [["say", "Warden Ilse", "Warden's Ally. I told the Halls they could trust you."]],
           [["if", "story.side=glimmer&standing.glimmer>=2",
-            [["say", "Warden Ilse", "That mint collar. The ledger still has your name."]],
+            [["say", "Warden Ilse", "That wine vest. The ledger still has your name."]],
             [["if", "!story.side=glimmer&standing.glimmer>=2",
               [["say", "Warden Ilse", "You wore their vest a while. The lantern is still yours."]],
               []]]]]]
@@ -1757,7 +1729,7 @@
         ["if", "!story.side=glimmer&standing.keepers>=4",
           [["say", "Master Hale", "Warden's Ally. The hill was waiting."]],
           [["if", "story.side=glimmer&standing.glimmer>=2",
-            [["say", "Master Hale", "Mint coat. Stone still knows your name."]],
+            [["say", "Master Hale", "Wine vest. Stone still knows your name."]],
             [["if", "!story.side=glimmer&standing.keepers>=2",
               [["say", "Master Hale", "Trusted hands. Come in, friend."]],
               []]]]]]
@@ -1766,7 +1738,7 @@
         ["if", "!story.side=glimmer&standing.keepers>=1",
           [["say", "Master Fen", "A friend already. Good. I need those hands."]],
           [["if", "story.side=glimmer",
-            [["say", "Master Fen", "You chose the mint. My trees still need a hand."]],
+            [["say", "Master Fen", "You chose the wine vest. My trees still need a hand."]],
             []]]]
       ]
     }

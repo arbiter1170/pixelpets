@@ -51,11 +51,19 @@ const BASE_STATS = {               // key = form id "<speciesId>/<stage>" (save 
   'filecrow/0': { hp: 51, atk: 48, def: 54, spd: 39 }, 'filecrow/1': { hp: 68, atk: 64, def: 72, spd: 52 }, 'filecrow/2': { hp: 85, atk: 80, def: 90, spd: 65 },
   'cordhound/0': { hp: 36, atk: 60, def: 33, spd: 63 }, 'cordhound/1': { hp: 48, atk: 80, def: 44, spd: 84 }, 'cordhound/2': { hp: 60, atk: 100, def: 55, spd: 105 },
   'humwisp/0': { hp: 33, atk: 72, def: 30, spd: 57 }, 'humwisp/1': { hp: 44, atk: 96, def: 40, spd: 76 }, 'humwisp/2': { hp: 55, atk: 120, def: 50, spd: 95 },
+  // ROUTE_TO_GOVERNOR §7.2 (D1855) and KILNMOUTH §4.4: totals 192 / 256 / 320; stages 1-2 = final x 0.6 / 0.8, largest remainder.
+  'adder/0': { hp: 45, atk: 57, def: 45, spd: 45 }, 'adder/1': { hp: 60, atk: 76, def: 60, spd: 60 }, 'adder/2': { hp: 75, atk: 95, def: 75, spd: 75 },
+  'heron/0': { hp: 45, atk: 54, def: 36, spd: 57 }, 'heron/1': { hp: 60, atk: 72, def: 48, spd: 76 }, 'heron/2': { hp: 75, atk: 90, def: 60, spd: 95 },
+  'dipper/0': { hp: 48, atk: 45, def: 42, spd: 57 }, 'dipper/1': { hp: 64, atk: 60, def: 56, spd: 76 }, 'dipper/2': { hp: 80, atk: 75, def: 70, spd: 95 },
+  'jugwasp/0': { hp: 42, atk: 54, def: 57, spd: 39 }, 'jugwasp/1': { hp: 56, atk: 72, def: 76, spd: 52 }, 'jugwasp/2': { hp: 70, atk: 90, def: 95, spd: 65 },
 };
 const STAT_RULES = {
   LEVEL_CAP: 50, STARTER_LEVEL: 5, MIGRATED_LEVEL_MIN: 5, MIGRATED_LEVEL_MAX: 10,
   bxForLevel: L => 4 * (L - 1) ** 2,
   STAGE_MULT: [1, 1.25, 1.5], TRAINER_MULT: 1.5, LEVEL_DIFF: { per: 0.1, min: 0.25, max: 1.5 },
+  // D1128 (Vincent, Nov 3, 2026; PACING_REVIEW_OCT31 finding 08): after a win, each benched party Walkling gets this share
+  // of the XP it would earn at its own level (after the LEVEL_DIFF clamp), rounded down. Worn-out Walklings count too.
+  BENCH_SHARE: 0.5,
   SAME_TYPE: 1.25, CRIT: { chance: 1 / 16, spiritedChance: 1 / 10, mult: 1.5 }, RAND: [0.90, 1.00], DMG_DIV: 60, GLOW: 1.05,
   MOOD: { hungryAtk: 0.9, sulkySpd: 0.9, drowsyDef: 0.9, low: 25, spirited: 80, glowCare: 75, minBattleNrg: 10 },
   COST: { nrg: 3, food: 2, tiredNrg: 5, winJoy: 3 }, REGEN: { pctPer10Min: 10, restPct: 50 },   // tiredNrg = the faint cost (id kept)
@@ -70,10 +78,10 @@ const STAT_RULES = {
   WILD_LEVELS_SPECIES: { proto: { beetle: [2, 4], mole: [3, 5], crab: [3, 5], moth: [2, 4], vane: [4, 6], dormouse: [3, 5] } },
 };
 const BX_CAP = STAT_RULES.bxForLevel(STAT_RULES.LEVEL_CAP);
-// D765: one table for the next form, one for the Seal cap. BRINEWICK (B10): the third Seal adds a fourth cap row, 38, a placeholder
-// until Act 2 is scoped. A save past Seal 3 stays on the last row.
+// D765: one table for the next form, one for the Seal cap. BRINEWICK (B10): the third Seal adds a fourth cap row, 38.
+// ACT2_PACING D1880 (settled by Vincent, Nov 4, 2026): 41 after Seal 4 and 44 after Seal 5. A save past the last row stays on it.
 const GROW_GATES = Object.freeze([{ level: 12, seals: 0 }, { level: 24, seals: 2 }]);
-const LEVEL_CAPS = Object.freeze([15, 22, 30, 38]);
+const LEVEL_CAPS = Object.freeze([15, 22, 30, 38, 41, 44]);
 function capLevelFor(seals){
   const i = Math.max(0, Math.min(LEVEL_CAPS.length - 1, seals | 0));
   return LEVEL_CAPS[i];
@@ -111,6 +119,11 @@ function wildGuardDmg(dmg, foeHp, foeMaxHp, attLv, foeLv){
 function battleXpAward({ Lf, Lown, foeStage = 0, trainer = false }){
   const R = STAT_RULES, d = R.LEVEL_DIFF;
   return Math.round((4 + 2.5 * Lf) * R.STAGE_MULT[foeStage] * (trainer ? R.TRAINER_MULT : 1) * statClamp(1 + d.per * (Lf - Lown), d.min, d.max));
+}
+// D1128: the bench share of that award for a party Walkling that sat out: BENCH_SHARE of the clamped award, rounded down.
+function benchXpAward({ Lf, Lown, foeStage = 0, trainer = false }){
+  const R = STAT_RULES, d = R.LEVEL_DIFF;
+  return Math.floor((4 + 2.5 * Lf) * R.STAGE_MULT[foeStage] * (trainer ? R.TRAINER_MULT : 1) * statClamp(1 + d.per * (Lf - Lown), d.min, d.max) * R.BENCH_SHARE);
 }
 
 // §7. Mood from care stats (read at the start of each battle turn).

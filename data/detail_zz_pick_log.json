@@ -1,0 +1,20 @@
+{
+ "spec": "D1436 (STORY v0.7.15 §8 row 7): Juniper's short beat at the lanyard step (was the Glimmer pick), new saves only",
+ "_about": "Ours, not a design copy. New-flow saves (Seal 1 before the pick) never take the Bright Pavilion Tour, so at a Glimmer pick, right after the Tier 1 lanyard is handed over (ACT1_KEEPER_JOIN D1553: Juniper's lanyard step, enrol_lanyard in detail_zz_keeper_join.json, runs pick_log inside its story.seal1 branch; the orchard lean no longer sets a side), Associate Juniper clips the lanyard to the Fernbrook Seal, logs the Seal and takes the holder's photo for the wall beside the Sanctuary crate list. It sets story.tour1_s1, the flag the photo news reads (nw-fernbrook-wall, yo-pavilionwall), and adds 1 to story.tour_unease as the Tour's stage photo does. A save that already took the Tour (story.tour1_s1) never plays it and never gains a second point. Keepers picks never reach it. Save stays pixelpets.save.v2; both flags already ship, nothing is written at load.",
+ "_placeholders": {
+  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS row D1436). Glimmerwell voice; the beat only clips, logs and takes the photo.",
+  "paths": ["scenes.pick_log"]
+ },
+ "scenes": {
+  "pick_log": [
+   ["if", "!story.tour1_s1", [
+    ["say", "Associate Juniper", "Hold still, partner! Your Tier 1 Lanyard clips right onto your Fernbrook Seal. Snap!"],
+    ["say", "Associate Juniper", "Now I just log your Seal for the partnership file. One tap... done! Every Seal counts."],
+    ["say", "", "A flash! Your photo goes up on the Pavilion wall, right beside the Sanctuary crate list."],
+    ["say", "Associate Juniper", "Gorgeous! Brighter by nature. Have a bright day!"],
+    ["setFlag", "story.tour1_s1", true],
+    ["if", "story.tour_unease<1", [["inc", "story.tour_unease"]]]
+   ]]
+  ]
+ }
+}

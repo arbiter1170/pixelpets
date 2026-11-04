@@ -7,6 +7,7 @@ const { starterSave, installSave, trackErrors, gotoGame, shot, playScene } = req
 
 trackErrors(test, expect);
 
+const ACT3_FLAGS = ['story.ep1_end', 'story.seal5'];   // D915/D1536: Act 3 starts at Seal 5 (the switch opens there, one way)
 const SIDE_PICK_FLAGS = { 'story.reached_fernbrook': true, 'story.met_glimmerwell': true, 'story.met_fen': true, 'story.side_pick_done': true };
 
 async function gotoDebug(page) {
@@ -87,7 +88,8 @@ test('thresholds and tier-up toasts come from the config, once per tier @w1', as
   expect(flags.g3).toBe('no');
 });
 
-test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', async ({ page }) => {
+// ACT1_KEEPER_JOIN: the pick's sp_pick grant moved to the face (Juniper's lanyard step under D1562).
+test('the face grants sp_pick once; a replay does not grant again @w1', async ({ page }) => {
   const save = starterSave(); Object.assign(save.flags, { 'story.reached_fernbrook': true, 'story.met_glimmerwell': true });
   save.world = { map: 'fernbrook', x: 9, y: 9, facing: 'down', respawn: 'fernbrook' };
   await installSave(page.context(), save, { quietDay: true });
@@ -95,21 +97,22 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', a
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   const before = await page.evaluate(() => PixelPets.standing.keepers.points);
   expect(before).toBe(0);
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
+  await page.evaluate(() => { PixelPets.setFlag('story.keeper_cadet', true); PixelPets.setFlag('story.cover', 'glimmer'); PixelPets.setFlag('story.orchard_cleared', true); });
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
   const after = await page.evaluate(() => ({ st: PixelPets.standing, got: PixelPets.state.flags['standing.got.sp_pick'], side: PixelPets.side, picked: PixelPets.state.flags['story.side_pick_done'] }));
-  expect(after.st.keepers.points).toBe(cfg.grants.sp_pick + 2);
-  expect(after.st.glimmer.points).toBe(0);
+  expect(after.st.glimmer.points).toBe(cfg.grants.sp_pick + 2);   // sp_pick plus know_us@glimmer's offer
+  expect(after.st.keepers.points).toBe(0);
   expect(after.got).toBe(true);
-  expect(after.side).toBe('keepers');
+  expect(after.side).toBe('glimmer');
   expect(after.picked).toBe(true);
   // replay (debug): the same choice path, no second grant
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
-  expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
+  expect(await page.evaluate(() => PixelPets.standing.glimmer.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
-test('no switch before Act 5 (D161); the switch engine still halves the side you leave, once per Seal @w1', async ({ page }) => {
+test('no switch before Act 3 (D1536); the switch engine still halves the side you leave, once per Seal @w1', async ({ page }) => {
   const save = starterSave(); Object.assign(save.flags, SIDE_PICK_FLAGS, { 'story.side': 'keepers', 'story.orchard_cleared': true, 'story.rook_bond': 2, 'story.rc_climax': true });
   save.standing = { keepers: 30, glimmer: 12 };
   save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'down', respawn: 'fernbrook' };
@@ -117,7 +120,7 @@ test('no switch before Act 5 (D161); the switch engine still halves the side you
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   const before = await page.evaluate(() => ({ quest: PixelPets.quest.id, canSwitch: PixelPets.standing.canSwitch, via: PixelPets.standing.via, orchard: PixelPets.sceneFor('orchard') }));
-  expect(before.canSwitch).toBe(false);   // D161 (Vincent, Oct 28, 2026): locked until story.act >= 5
+  expect(before.canSwitch).toBe(false);   // D1536 (replaces D161's Act 5 lock): locked until story.act >= 3
   expect(before.via).toBe('rook');
   expect(before.orchard).toBe('orchard');
   expect(await page.evaluate(() => typeof PixelPets.pledgeDesk)).toBe('undefined');
@@ -139,12 +142,16 @@ test('no switch before Act 5 (D161); the switch engine still halves the side you
   expect(after.quest).toBe(before.quest);
   expect(after.orchard).toBe('orchard@glimmer');
   expect(after.st.canSwitch).toBe(false);
-  // the next Seal opens a new chapter, but the Act 5 lock still holds; with Act 5 reached the per-Seal rule applies again
+  // the next Seal opens a new chapter, but the Act 3 lock still holds
   await page.evaluate(() => PixelPets.setFlag('story.seal1', true));
   expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
-  await page.evaluate(() => PixelPets.setFlag('story.act', 5));
-  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(true);
-  await page.evaluate(() => PixelPets.setFlag('story.act', null));
+  // Act 3 is derived from the act flags (D915), never a stored story.act. A Glimmerwell face has nowhere to go: one way (D1536)
+  await page.evaluate((ks) => ks.forEach(k => PixelPets.setFlag(k, true)), ACT3_FLAGS);
+  expect(await page.evaluate(() => PixelPets.act)).toBe(3);
+  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
+  expect(await page.evaluate(() => PPStanding.canSwitch(PixelPets.state.flags, PixelPets.state.standing, 'glimmer', 'keepers', PixelPets.act).why)).toBe('one_way');
+  await page.evaluate((ks) => ks.forEach(k => PixelPets.setFlag(k, null)), ACT3_FLAGS);
+  expect(await page.evaluate(() => PixelPets.act)).toBe(1);
   // a free debug switch does not halve
   expect(await page.evaluate(() => PixelPets.standing.chapter)).toBe(1);
   const free = await page.evaluate(() => {
@@ -161,6 +168,43 @@ test('no switch before Act 5 (D161); the switch engine still halves the side you
   expect(back.st.switches).toBe(3);
   expect(back.st.keepers.points).toBe(Math.floor(Math.floor(30 / cfg.switch.costDiv) / cfg.switch.costDiv));
   expect(back.st.glimmer.points).toBe(12);
+});
+
+// ACT1_KEEPER_JOIN T15 (D1536, D1513, D1559): the switch is locked in Act 2, opens in Act 3 (story.seal5, or 5 Seals held
+// once Episode 1 is done) toward Glimmerwell only, says one_way toward the Keepers, and moves every story.sway_* by -2, clamped.
+test('Act 3 switch: locked in Act 2, ok in Act 3 to Glimmerwell, one_way to the Keepers; every sway drops 2 after it @w1', async ({ page }) => {
+  const save = starterSave(); Object.assign(save.flags, SIDE_PICK_FLAGS, { 'story.seal1': true, 'story.seal2': true, 'story.seal3': true, 'story.ep1_end': true,
+    'story.rc_climax': true, 'story.keeper_cadet': true, 'story.sway_fernbrook': 3, 'story.sway_kilnmouth': -2, 'story.sway_zz': 0 });
+  save.standing = { keepers: 30, glimmer: 12 };
+  save.seals = { seal_fernbrook: true, seal_cobblecrest: true, seal_brinewick: true };
+  save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'down', respawn: 'fernbrook' };
+  await installSave(page.context(), save, { quietDay: true });
+  await gotoDebug(page);
+  const r = await page.evaluate(() => {
+    const F = PixelPets.state.flags, st = PixelPets.state.standing, C = PPStanding.canSwitch;
+    const a3 = Object.assign({}, F, { 'story.seal5': true });
+    return {
+      act: PixelPets.act, view: PixelPets.standing.canSwitch,
+      act2: C(F, st, 'keepers', 'glimmer', PPStanding.actOf(F, 3)).why,
+      flag: [PPStanding.actOf(a3, 3), C(a3, st, 'keepers', 'glimmer').ok],
+      seals: [PPStanding.actOf(F, 5), C(F, st, 'keepers', 'glimmer', PPStanding.actOf(F, 5)).ok],
+      back: C(a3, st, 'glimmer', 'keepers').why, backNull: C(Object.assign({ 'story.side': 'glimmer' }, a3), st, 'glimmer', null).why,
+      keepNull: C(a3, st, 'keepers', null).ok,
+    };
+  });
+  expect(r).toEqual({ act: 2, view: false, act2: 'locked', flag: [3, true], seals: [3, true], back: 'one_way', backNull: 'one_way', keepNull: true });
+  await page.evaluate(() => PixelPets.setFlag('story.seal5', true));
+  expect(await page.evaluate(() => PixelPets.act)).toBe(3);
+  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(true);
+  expect(await page.evaluate(() => PixelPets.switchSide('glimmer'))).toBe(true);
+  const after = await page.evaluate(() => ({ f: PixelPets.state.flags, st: PixelPets.standing }));
+  expect(after.f['story.sway_fernbrook']).toBe(1);
+  expect(after.f['story.sway_kilnmouth']).toBe(-3);
+  expect(after.f['story.sway_zz']).toBe(-2);
+  expect(after.f['story.switches']).toBe(1);
+  expect(after.st.keepers.points).toBe(15);
+  expect(after.st.canSwitch).toBe(false);
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
 
 test('Pledge desks are gone; Rook says not yet until the crates, and a battle blocks the offer @w1', async ({ page }) => {
@@ -292,19 +336,31 @@ const COPY = {
   heights: ['Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', 'Fernbrook Heights', 'Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.', 'Fernbrook Heights'],
   // DAY1_TRIAL1_FLOW v0.4: Day 1 at the crates, Fen's go-home talk, Mom's trip (home_trip mirrors the live `mom` step), the class.
   crates: ['Tobin is tallying crates at the orchard gate. Lend a hand with three of them.', 'Orchard gate'],
-  tl_amos: ['Evening in Fernbrook. The Lantern House window is dark. See Keeper Amos.', 'Fernbrook Lantern House'],
-  tl_light: ["Amos needs a light for Burrsnout's cot. Wynne's stall sells wicks. Juniper has her own idea.", 'Fernbrook Lantern House'],
+  tl_amos: ['Evening in Fernbrook. The Lantern House window is dark. See Host Amos.', 'Fernbrook Lantern House'],
+  tl_light: ["Amos needs a light for Burrsnout's cot. Brisa's stall sells wicks. Juniper has her own idea.", 'Fernbrook Lantern House'],
   fen_dusk: ['Master Fen is waiting in the orchard. She wants a word before night.', 'Fernbrook orchard'],
   fen_home: ['Morning. Master Fen wants a word in the orchard before you go.', 'Fernbrook orchard'],
   home_trip: ['Head home to Hearthmoor. Mom has plans for you and your Walkling.', 'Hearthmoor, home'],   // no live `mom` step here (no starter), so its own copy
   mom_class: ['Mom wants a word before you head out again.', 'Hearthmoor, home'],
   lizzy_class: ["Lizzy's class is on at the Hearthmoor Schoolhouse. Sit in and listen.", 'Hearthmoor Schoolhouse'],
-  orchard: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
+  // ACT1_KEEPER_JOIN §6: `orchard` is the Pack lean's row; an old-order save keeps the built copy on `orchard_old`.
+  orchard: ['Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
+  orchard_old: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
   hall1_holders: ['Three holders stand between you and Master Fen. Win all three matches in the Trial Hall.', 'Fernbrook Trial Hall'],
   hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", 'Fernbrook Trial Hall'],
-  post_trial: ['Master Fen has one more thing for you in the Trial Hall.', 'Fernbrook Trial Hall'],
-  pick: ['Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', 'Orchard gate'],
+  // POST_TRIAL_CRACKDOWN and D1395 (Warden Ilse's summons before the pick).
+  crackdown_street: ["Something's happening outside the Trial Hall.", 'Fernbrook Trial Hall'],
+  post_trial: ['Get to the Lantern House.', 'Fernbrook Lantern House'],
+  ilse_call: ['Morning in Fernbrook. Step outside the Lantern House.', 'Fernbrook Lantern House'],
+  warden_summons: ["Warden Ilse wants you home. Go to the Warden's Lodge.", 'Hearthmoor, the Lodge'],
+  // ACT1_KEEPER_JOIN (PLACEHOLDER): the Wickerglen investigation, the orchard lean, the enrolment.
+  chi_meet: ["Find Jacob Chi, past the fallen trunk at Wickerglen's east edge.", 'Wickerglen, east edge'],
+  chi_shifts: ["Work a day with Imogen's lamp crew and a dusk watch with the Keeper Scout.", 'Wickerglen'],
+  chi_report: ['Tell Jacob Chi what you saw.', 'The weir hut'],
+  pick: ['Fen, Tobin and Juniper are still at the orchard gate. The crates are waiting.', 'Orchard gate'],
   tobin_crates: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate'],
+  enrol: ['Warden Ilse wants you at the Lodge tonight.', 'Hearthmoor, the Lodge'],
+  enrol_lanyard: ["Juniper's trial lanyard offer still stands. Find her on the east road.", 'Fernbrook, east road'],
   teaser: ['Rook has news, waiting outside the Trial Hall.', 'Trial Hall doorstep', 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', 'Trial Hall doorstep'],
   route2: ['The rubble east of Fernbrook is cleared. Route 2 is waiting.', 'Fernbrook, east edge'],
   census: ['Follow Route 2 east. Glimmerwell has set something up halfway along.', 'Route 2, halfway', 'The Glow Census tent is halfway along Route 2. They need volunteers.', 'Route 2, halfway'],
@@ -330,6 +386,15 @@ const COPY = {
   brine_dorian: ['Dorian Pell is waiting on the quay outside the depot.', 'Brinewick quay', 'Dorian Pell wants your quarterly review, out on the quay.', 'Brinewick quay'],
   hall3: ["Master Marisol's Trial Hall is open on the west pier. Challenge her for the Brinewick Seal.", 'Brinewick Trial Hall', "Quinn is closing the quarter in Marisol's Hall. The captain's match is optional.", 'Brinewick Trial Hall'],
   ep1_end: ['Rook is waiting outside the Trial Hall.', 'Brinewick, west pier'],
+  recall: ['Warden Ilse wants you home at the Lodge. Take the lanyard off first.', 'Hearthmoor, the Lodge'],
+  cadet_report: ['Warden Ilse wants the last of it in person. Go to the Lodge.', 'Hearthmoor, the Lodge'],
+  rpt_lodge: ['Warden Ilse wants to see you at the Lodge.', 'Hearthmoor, the Lodge'],
+  // GOVERNOR_MEETING §6.3: the Act 2 opener rows (checked as written; tests/governor_meeting.spec.js checks where they show)
+  gov_post: ['Warden Ilse wants you home at the Lodge in Hearthmoor. You have a posting.', 'Hearthmoor, the Lodge'],
+  gov_walk: ['Walk the coach road north from Hearthmoor. The fork is past the downs.', 'Route 4'],   // ROUTE_TO_GOVERNOR §6 (D1854)
+  gov_walk2: ['Take the west fork and the river road to the Charter Hill gate.', 'Route 4, river road'],
+  gov_meet: ["Report to Governor Merriden at the Governor's House on Charter Hill, High Charity.", "Governor's House"],
+  a2_hold: ['Await your next orders.', 'The Amberwild'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -350,19 +415,31 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
       // BRINEWICK: story.route3_open is only ever set after the chapter end (D848), so the Keepers council is done by then.
       if (flags['story.route3_open']) flags['story.hc_council_done'] = true;
       // DAY1_TRIAL1_FLOW: Tobin's post-pick row comes after the Heights pointer, so the Heights are done by then.
-      if (e.id === 'tobin_crates' || e.id === 'orchard') flags['story.heights_done'] = true;   // both come after the Heights pointer
+      if (e.id === 'tobin_crates' || e.id === 'orchard' || e.id === 'orchard_old') flags['story.heights_done'] = true;   // all come after the Heights pointer
+      if (i > Q.CHAIN.findIndex(x => x.id === 'teaser')) flags['story.slice_end'] = true;   // ACT1_KEEPER_JOIN: the teaser is noImply now
       if (e.id === 'mom_class') flags['story.dream_woke'] = true;   // home_trip's done is an OR string, not one flag
       const st = (side) => ({ flags: Object.assign({ 'story.side': side }, flags), seals: {}, pets: 1 });
       const k = Q.current(st('keepers')), g = Q.current(st('glimmer'));
       out.rows[e.id] = { kid: k && k.id, ktext: k && k.text, kplace: k && k.place, gid: g && g.id, gtext: g && g.text, gplace: g && g.place };
+      const rk = Q.resolve(e, st('keepers')), rg = Q.resolve(e, st('glimmer'));
+      out.rows[e.id].copy = { ktext: rk.text, kplace: rk.place, gtext: rg.text, gplace: rg.place };
     });
     return out;
   });
   expect(seen.check).toEqual([]);
   expect(seen.ids).toEqual(Object.keys(COPY));
   let overrides = 0;
+  // ACT1_KEEPER_JOIN rows key on story states this one-flag walk cannot build (a lean value, a face, an old-save move);
+  // their copy is checked as written, and tests/act1_keeper_join.spec.js checks where each one shows.
+  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge', 'gov_post', 'gov_walk', 'gov_walk2', 'gov_meet', 'a2_hold']);
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
+    if (COPY_ONLY.has(id)) {
+      expect([r.copy.ktext, r.copy.kplace], id).toEqual([row[0], row[1]]);
+      expect([r.copy.gtext, r.copy.gplace], id + '@glimmer').toEqual([row[2] || row[0], row[3] || row[1]]);
+      if (row[2]) overrides++;
+      continue;
+    }
     if (id === 'hc_council') {
       expect(r.kid, id).toBe(id);
       expect(r.ktext, id).toBe(row[0]);

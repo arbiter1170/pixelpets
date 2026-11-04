@@ -17,7 +17,7 @@ const PPSave = (() => {
   // HUSHWATER B2 (D347, D357): skink, otter, owl, snail are appended. Save stays pixelpets.save.v2, v: 2.
   // ARBITER_UNITS (D837-D847): tallybat, dimlamp, filecrow, cordhound, humwisp are appended (25 lines, 75 form ids). They are
   // boss lines, kept out of the journal grid with the npcOnly line, so the journal still counts 57.
-  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch', 'skink', 'otter', 'owl', 'snail', 'tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
+  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch', 'skink', 'otter', 'owl', 'snail', 'tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp', 'adder', 'heron', 'dipper', 'jugwasp']);   // + ROUTE_TO_GOVERNOR / KILNMOUTH (Act 2)
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
   // MAPS_SLICE §10 / INTERIORS §5 / ACT1_ROUTE2 §0.2 / COBBLECREST mapdata: ids and sizes from data/mapdata.js.
@@ -317,10 +317,19 @@ const PPSave = (() => {
       if (!bag || typeof bag !== 'object') return;
       if (Object.prototype.hasOwnProperty.call(bag, from) && !Object.prototype.hasOwnProperty.call(bag, to)) bag[to] = bag[from];
     };
-    // NPC_RANKS (Nov 2, 2026): the same copy for every name rep.js REP_CANON folds. Keep this list in step with it.
+    // NPC_RANKS (Nov 2, 2026): the same copy for every name rep.js REP_CANON folds. Keep this list in step with it
+    // (tests/name_fold.spec.js checks the two match).
     const FOLD_KEYS = { Marisol: 'Master Marisol', Fen: 'Master Fen', Hale: 'Master Hale', Tobin: 'Associate Tobin',
-      Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen' };
-    for (const [from, to] of Object.entries(FOLD_KEYS)) { copyIfAbsent(s.phoneBook.met, from, to); copyIfAbsent(s.phoneBook.fav, from, to); }
+      Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen', Ash: 'Sefton' };
+    // Fold once per name (QA, Nov 3, 2026): play deletes the new key (unfavourite, trust back at base), and the old key stays
+    // on disk, so a fold on every load put the removed mark back. flags['fold.<old name>'] = true records that the fold ran.
+    // Set only when an old key is there. Additive, old keys stay, v stays 2.
+    const ownKey = (bag, k) => !!bag && typeof bag === 'object' && Object.prototype.hasOwnProperty.call(bag, k);
+    const foldDue = from => s.flags['fold.' + from] !== true;
+    for (const [from, to] of Object.entries(FOLD_KEYS)) {
+      if (!foldDue(from)) continue;
+      copyIfAbsent(s.phoneBook.met, from, to); copyIfAbsent(s.phoneBook.fav, from, to);
+    }
     // LIZZY_REP LR5 (D174, D175): sparse S.rep, additive, v stays 2. Non-strings and keys over 40 characters are
     // dropped, values clamp to 0..100, and fixed NPCs (Mom, Dad, Warden Ilse, Clerk Wynn) are not stored.
     // S.repJoins counts joins already applied so a reload never runs the penalty twice.
@@ -345,8 +354,11 @@ const PPSave = (() => {
         s.rep[key] = n;
       }
       // Same person as the phone fold above. Copy only. Leave a saved Marisol number in place.
-      for (const [from, to] of Object.entries(FOLD_KEYS))
-        if (Object.prototype.hasOwnProperty.call(s.rep, from) && !Object.prototype.hasOwnProperty.call(s.rep, to) && !fixedKeys.has(to)) s.rep[to] = s.rep[from];
+      for (const [from, to] of Object.entries(FOLD_KEYS)) {
+        if (!foldDue(from)) continue;
+        if (ownKey(s.rep, from) && !ownKey(s.rep, to) && !fixedKeys.has(to)) s.rep[to] = s.rep[from];
+        if (ownKey(s.rep, from) || ownKey(s.phoneBook.met, from) || ownKey(s.phoneBook.fav, from)) s.flags['fold.' + from] = true;
+      }
     }
     fill(s, 'repJoins', x => Number.isInteger(x) && x >= 0, 0);
     // D439: ui.sideTracked stays a string (a side chain id, 'main', or 'none'; absent = not chosen, so the first active
