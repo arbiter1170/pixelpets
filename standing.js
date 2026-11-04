@@ -124,7 +124,9 @@
   }
   const switchCost = pts => Math.floor(clampPts(pts) / STANDING_CFG.switch.costDiv);
   // Chapter = Seals earned so far. story.seal3 counts when Brinewick writes it (D132). That chapter is not built yet.
-  const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3'].filter(k => !!(flags || {})[k]).length;
+  // ROUTE_TO_GOVERNOR / ACT2_PACING D1880: Seals 4 and 5 (story.seal4, story.seal5, written by Halls 4 and 5 when they land) count
+  // too, so the level cap rises to 41 and 44. No save has either flag today.
+  const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3', 'story.seal4', 'story.seal5'].filter(k => !!(flags || {})[k]).length;
   // The act number (D915, re-issued for seven acts as D977): derived, never stored. 1 plus one for each act start reached.
   // Only story.ep1_end is written today (the Episode 1 card); the others are written by the acts that build them.
   // Acts 3 and 4 also start from Seals held (5 and 7, D1329 count, tags never count), the same boundary as their flags.
