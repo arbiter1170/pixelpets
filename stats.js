@@ -56,6 +56,9 @@ const STAT_RULES = {
   LEVEL_CAP: 50, STARTER_LEVEL: 5, MIGRATED_LEVEL_MIN: 5, MIGRATED_LEVEL_MAX: 10,
   bxForLevel: L => 4 * (L - 1) ** 2,
   STAGE_MULT: [1, 1.25, 1.5], TRAINER_MULT: 1.5, LEVEL_DIFF: { per: 0.1, min: 0.25, max: 1.5 },
+  // D1128 (Vincent, Nov 3, 2026; PACING_REVIEW_OCT31 finding 08): after a win, each benched party Walkling gets this share
+  // of the XP it would earn at its own level (after the LEVEL_DIFF clamp), rounded down. Worn-out Walklings count too.
+  BENCH_SHARE: 0.5,
   SAME_TYPE: 1.25, CRIT: { chance: 1 / 16, spiritedChance: 1 / 10, mult: 1.5 }, RAND: [0.90, 1.00], DMG_DIV: 60, GLOW: 1.05,
   MOOD: { hungryAtk: 0.9, sulkySpd: 0.9, drowsyDef: 0.9, low: 25, spirited: 80, glowCare: 75, minBattleNrg: 10 },
   COST: { nrg: 3, food: 2, tiredNrg: 5, winJoy: 3 }, REGEN: { pctPer10Min: 10, restPct: 50 },   // tiredNrg = the faint cost (id kept)
@@ -111,6 +114,11 @@ function wildGuardDmg(dmg, foeHp, foeMaxHp, attLv, foeLv){
 function battleXpAward({ Lf, Lown, foeStage = 0, trainer = false }){
   const R = STAT_RULES, d = R.LEVEL_DIFF;
   return Math.round((4 + 2.5 * Lf) * R.STAGE_MULT[foeStage] * (trainer ? R.TRAINER_MULT : 1) * statClamp(1 + d.per * (Lf - Lown), d.min, d.max));
+}
+// D1128: the bench share of that award for a party Walkling that sat out: BENCH_SHARE of the clamped award, rounded down.
+function benchXpAward({ Lf, Lown, foeStage = 0, trainer = false }){
+  const R = STAT_RULES, d = R.LEVEL_DIFF;
+  return Math.floor((4 + 2.5 * Lf) * R.STAGE_MULT[foeStage] * (trainer ? R.TRAINER_MULT : 1) * statClamp(1 + d.per * (Lf - Lown), d.min, d.max) * R.BENCH_SHARE);
 }
 
 // §7. Mood from care stats (read at the start of each battle turn).

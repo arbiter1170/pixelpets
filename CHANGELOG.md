@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 22:05 ET: Test fix: cc_cottage_roof checks turf roofs on Cobblecrest's maps only (test only, no build stamp)
+- What changed and why: `tests/cc_cottage_roof.spec.js` ("cottage_e keeps the arch...", line 111) asserted that no building on any map uses `roof_turf`. The Weir Hut on `hw_cut` (D1591, merged in #301) does, so the test failed on main at 320, 375 and 390 from #301 on (#302 merged over it; main 9041f0d, build 20261103-1747). The check is meant to guard Cobblecrest (D910), so the query now walks only Cobblecrest's maps (`cobble*`, `cc_*`), asserts that list includes `cobblecrest` so it can never go empty, and still expects no turf roof there. No game code or data changes.
+- Files touched: `tests/cc_cottage_roof.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/fix-cottage-roof-scope`; no build stamp (test and docs only; build stays 20261103-1747).
+- Tests run and result (widths, checks): before, on main: `tests/cc_cottage_roof.spec.js` + `tests/weir_hut.spec.js` 3 failed (cottage_e test at 320/375/390, `["hw_cut.weir_hut"]`), 34 passed. After: 37 passed. Negative check: a scratch `roof_turf` on Cobblecrest's `cottage_w` fails the test at all three widths with `["cobblecrest.cottage_w"]` (reverted, not committed).
+- Decisions made (colour + reasoning): green; a test-only fix that keeps the Cobblecrest check whole and stops it reaching other towns. No new D or Q id.
+- Anything left unfinished: none.
+
 ## 2026-11-03 14:23 ET: Build: the Glimmerwell fleet follows the Nov 3 lore rulings (D1431, D1440, D1447)
 - What changed and why:
   - D1431 (red, SETTLED by Vincent, Tue Nov 3, 2026): Keeper-hold slips on the `?debug=1` fleet lot stay, but read as local and temporary, never as an order from the capital. In `glimmer_fleet.js` `LINES`: Glow Care's slip "CLOSED PENDING REVIEW. By order." -> "CLOSED PENDING LOCAL REVIEW."; the mast's "POWER CUT BY ORDER." -> "POWER CUT. LOCAL NOTICE."; Fleet Bay's "VEHICLES HELD BY ORDER." -> "VEHICLES HELD. LOCAL NOTICE." (all PLACEHOLDER until Story). The Keeper yard (the towed Cruiser) is unchanged.
@@ -13,13 +21,51 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): D1431, D1440, D1447 built as settled. Green (engineer): Bright Swap on a Keepers hold is "unchanged" rather than "closed for the night", the smallest change with no new line.
 - Anything left unfinished: the three local slip lines and Bright Swap's Keepers-hold state are PLACEHOLDER for Story.
 
-## 2026-11-03 10:11 ET: Glimmerwell fleet lines: June's pass (drafted by Claude in June's role, approved by the owner) (build 20261103-1918)
-- What changed and why: D1346 left every line on the `?debug=1` fleet lot as PLACEHOLDER for June. June is out, so Claude drafted her pass in her role: all 31 player lines in `glimmer_fleet.js` `LINES` (4 signs; doors, the four civilians, the mast and the stall per hold; the Cruiser; the Waiting Local; the debug `exit` sign unchanged). New spec §10b "Lines for the placements (D1341)": text only for the crackdown (Cruiser getaway, Concierge fly-by), the pick at dawn (Concierge over Juniper's camp, the Glimmer-pick east road, the Keepers-pick fly-by) and Act 2 (the quarry mast and bay, Glow Care), with open questions (Q-G1 to Q-G7, unnumbered for the Chief of Staff). Spec PLACEHOLDER notes now read "June's pass (drafted by Claude in June's role, Vincent to approve)". A sub-agent no-new-facts review found no CHIP_SECRECY or wording breach; its 2 must-fix and 6 should-fix notes are applied. A second sub-agent then checked the copy against the design repo (STORY.md, CHIP_SECRECY.md, June's drafts in story/drafts/): four line fixes ("partner" is the in-game word for a Walkling, so the Glow Care sign drops it; the Mast Tech's "a year" becomes "since it went up"; Juniper's two §10b lines no longer repeat her own Beat 1 and P6g lines), Q-G1 to Q-G5 annotated with canon citations, and two new open questions (Q-G6: the word "relay" on a sign both paths see; Q-G7: Episode 1 `quarry_bought` vs the Act 2 placement). Q-G3 is then answered as Story's pick under D1341: Glow Care goes to Brightgate (§10's old "Cobblecrest or Brinewick" named Episode 1 towns), by default as the street front of CHIP_SECRECY's planned Tuning wing at Brightgate HQ (Iris to confirm, option A or B); Q-G7 is marked red for Vincent, since it amends D1341's wording. After main's B-12 (D1087: no mint for Glimmerwell), the §10b dawn line's "Mint light" becomes "A soft wine light", matching the Concierge's wine pool.
-- Files touched: `glimmer_fleet.js` (`LINES` and its header comment only), `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md`, `handoff/shots/glimmer_fleet_lines/`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: claude/glimmer-fleet-lines-june, build 20261103-1918.
-- Tests run and result (widths, checks): `tests/glimmer_fleet.spec.js` at 390 and 320: `PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0` each, `RTDB_RULES RESULT: PASS`; `node tools/scans/run.js`: all PASS (wording, decisions, symlinks, gamejs_map, test_mistakes).
-- Decisions made (colour + reasoning): the owner approved the copy (Tue Nov 3, 2026) and settled Q-G3 as option A (Glow Care is the Brightgate street front of the planned Tuning wing). Q-G7 (red) is deferred to before the Cobblecrest build. Q-G1, Q-G2, Q-G4, Q-G5 and Q-G6 stay open with their defaults in spec §10b.
-- Anything left unfinished: Iris's sign-off on voice; the design spec POST_TRIAL_CRACKDOWN §10 ("Glimmerwell in this quest is only Juniper") needs Design to add the D1341 Cruiser and Concierge. Each D1341 placement is still its own build.
+## 2026-11-03 13:06 ET: Build: the Keeper anthem, "Every Roof a Lantern" (KEEPER_ANTHEM v0.2.1, D1375-D1384, D1419-D1423)
+- What changed and why:
+  - D1375, D1377, D1421 (settled by Vincent; design `specs/KEEPER_ANTHEM.md` v0.2.1, master 52f62a2): three new loops in `sfx.js` `MUSIC`, pasted from the spec literal (§3), all one original melody, synthesised at runtime, no audio file:
+    - `anthem_march`: B-flat major, 120 bpm, 16 bars, 32 s; square lead in octaves, oom-pah bass, snare-led march kit; it swells from far off.
+    - `anthem_dark`: the same tune in B-flat minor, 64 bpm, 60 s; one triangle voice over a held drone that grinds under the last cadence.
+    - `anthem_hall`: the march's tune and bass, B-flat major, 80 bpm, 48 s; one soft voice for indoors.
+  - D1381 engine (M1-M4, `sfx.js`): a voice `double` (octaves), a voice `gate` (the drone rings past its slot), a per-track `swell` (a gain and a lowpass in front of the track's own bus, only on a fresh `music()` that is not `near`; the shared bus, the Music volume, the stinger duck and the fade act after it), `musicCheck()` / `musicSpec()` know the new fields, and a read-only `PPSound.musicSwell` for tests. Every other loop plays exactly as before.
+  - D1381 scene hooks (M6-M8, `game.js`): `["music", id, { fadeOut, fadeIn, minDelay, near, keep }]` (plain `["music", id]` is 180 / 140 ms as before); a `keep` cue plays on through a scene `warp` (not under SKIP, D1384); `cueFactionMusic()` skips a scene that opens with its own `music` step.
+  - D1420, D1422, D1423 (M10-M11): with the city on (`HC_CITY_V2`, still false; preview `?debug=1&hccity=2`), Sky-Dock Command and the Keeper Barracks play `anthem_hall` day and night on either side, and each has one framed-sheet sign: "[PLACEHOLDER] A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem." (D1419). `applyHcCity()` reads a new `roomPatch` key; `tools/build_hc_city.py` writes it. `data/highcharity.json` is unchanged, so with the city off both rooms keep `charity`.
+  - The parade (`hc_parade`, PR #286) is untouched: its `music` steps now find `anthem_march` and `anthem_dark`.
+  - Previews: `handoff/audio/keeper_anthem/{anthem_march,anthem_dark,anthem_hall}.wav`, one loop each, rendered from the game's own `sfx.js` by `tools/render_music.js` (an OfflineAudioContext in headless Chromium), with `report.json` comparing them to Design's reference renders.
+- Files touched:
+  - code and data: `sfx.js`, `game.js`, `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tools/GAMEJS_MAP.txt`, `tools/render_music.js` (new, dev only);
+  - tests: `tests/keeper_anthem.spec.js` (new), `tests/README.md`;
+  - previews: `handoff/audio/keeper_anthem/` (new), `handoff/shots/keeper_anthem/` (new; both rooms at 390 and 320);
+  - docs: `CHANGELOG.md`, `OPEN_DECISIONS.md` (D1419-D1423 reserved, next free D1424), `archive/DECISIONS_SETTLED.md` (D1375-D1384, D1419-D1423), plus the build stamp.
+- Commit(s) + build id: claude/keeper-anthem-build, build 20261103-1258, restamped 20261103-2208 after merging main (a6a3732). Built from design `master` 52f62a2 (KEEPER_ANTHEM v0.2.1).
+- Tests run and result (widths, checks): `tests/keeper_anthem.spec.js` (T1-T22) with the music, city, Brinewick and iOS specs at 320, 375 and 390: 177 passed, 0 failed; the full suite in the PR. Zero console errors. Save `v` 2, no new key. Design `node specs/keeper_anthem_render.js --no-wav` PASS; the in-game data equals the spec literal.
+- Decisions made (colour + reasoning):
+  - All fifteen rows are built as settled. No new decision id.
+  - Green (engineer): the swell's two nodes are disconnected with the bus when a track stops (Safari keeps connected nodes); the sheet uses the default sign art (no new art, D1423).
+- Anything left unfinished:
+  - Vincent hears the cues and sees the sheet previews before this merges (DRAFT).
+  - T22: at 320 and 375 the room draws at 2x, so the sheet's tile is 32 px, like every map tile there; it also opens from the 44 px TALK button. At 390 the tile is 48 px.
+  - The parade's own option steps (`keep`, the 2.5 fades, `near` on a reload) are #286's to add; the cues play there as plain steps today.
+  - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (firebase-tools ignores NO_PROXY).
+## 2026-11-03 19:59 ET: Old-name fold runs once per save, so an unfavourite or a trust drop sticks
+- What changed and why:
+  - QA (Nov 3, 2026): `normalizeV2` copied each old name in `FOLD_KEYS` (Ash, Fen, Hale, Tobin, Hollis, Quinn, Imogen, Marisol) to its ranked key in `phoneBook.met`, `phoneBook.fav` and `rep` on every load while the new key was absent. Play deletes the new key (unfavourite; trust back at base is stored sparse), and the old key stays on disk, so the next load put the removed mark back (an old `rep.Fen = 60` dropped to 50 came back as 60; an unfavourited Cadet Sefton came back on).
+  - `save.js` now writes an additive `flags['fold.<old name>'] = true` the first time it folds a name that has an old key, and skips that name after. Old keys are never deleted; a save holding both keys keeps the new key; a fresh save gets no marks; `normalizeV2` stays idempotent. A save that folded before this fix has no mark yet, so it folds once more on its next load and then never again. Save stays `pixelpets.save.v2`, `v` 2.
+  - `FOLD_KEYS` stays a hand-kept copy of `rep.js` `REP_CANON` (no load-order change); a new test checks the two match.
+- Files touched: `save.js`, `tests/name_fold.spec.js` (new), `tests/README.md`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`, build stamp (`index.html`, `version.json`).
+- Commit(s) + build id: claude/fix-name-fold-refill, build 20261103-1959, restamped 20261103-2158 after merging main with #305.
+- Tests run and result (widths, checks): `tests/name_fold.spec.js` at 320, 375 and 390: 9 passed; its unfavourite and trust-drop tests fail on main without the `save.js` change (fav back to true; trust 60, expected 50). With `npc_ranks`, `side_badge`, `day1_save_kinds`, `reputation`, `save_copy` and `loop_save_sw`: 153 passed, 0 failed, zero console errors (run with `npx playwright test --workers=1`; `npm run test:agent` could not run in the cloud sandbox, no npm network).
+- Decisions made (colour + reasoning): green (engineer): the fold mark lives in `flags` (already free-form and additive) instead of a new top-level field; it is set only when an old key exists so new saves stay clean.
+## 2026-11-03 19:56 ET: Debug previews never reach the cloud save; ?hall2=1 needs debug to stick
+- What changed and why:
+  - QA pass (Nov 3): the High Charity city preview and the Glimmerwell preview lot already held the local save, but the cloud hook in `game.js` (`getState`) ignored both, so a signed-in `?debug=1` tester could upload preview state (for example the Act 5 checkpoint) and a second device would adopt it. New `previewActive()` (the city preview, the open lot, or `world.map` `gw_preview`) is now used by `save()`, by the cloud `getState` hook (null while a preview is open) and by the cloud `busy` hook (no compare, so no adopt reload, under a preview). `cloud.js` already treats a null state as "nothing to upload"; it is unchanged.
+  - `?hall2=1` was stored in sessionStorage even without debug, so a later `?debug=1` in the same tab turned the contested Hall on unasked. The key is now only written or cleared with debug on, and a debug-off load clears it, as `readHcCityPref` does.
+  - `HC_STREET_SOLID_BAYS` / `HC_TANK_POSTS` / `HC_GOV_HOUSE` left as they are (votes pending).
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `tests/cloud_stub.js` (new), `tests/hc_city_v2.spec.js`, `tests/glimmer_fleet.spec.js`, `tests/trial_hall_contested.spec.js`, `tests/README.md`, `CHANGELOG.md`, build stamp.
+- Commit(s) + build id: claude/fix-preview-cloud-hole, build 20261103-1956.
+- Tests run and result (widths, checks): the three new checks fail on main and pass with the fix; `cloud_link`, `cloud_off`, `glimmer_fleet`, `hc_city_v2`, `hc_court_move` and `trial_hall_contested` at 320, 375 and 390: 122 passed, 16 skipped (tagged @slow / single-width), 0 failed, no retries; zero console errors. The cloud checks run the real `cloud.js` on `?cloud=block` with the Firebase SDK stubbed; nothing signs in or writes to `walklings-4cc89`. Scans: wording, decisions, symlinks, gamejs_map, test_mistakes PASS. Save unchanged (`pixelpets.save.v2`, `v` 2, no new field).
+- Decisions made (colour + reasoning): green (engineer): the cloud `busy` hook also counts a preview, so a cloud compare cannot adopt and reload mid-preview (a null state would otherwise read as "no game yet").
+- Anything left unfinished: none.
 
 ## 2026-11-03 17:05 ET: No more mint for Glimmerwell: text and art go wine (B-12; D1087, D1448)
 - What changed and why:
@@ -160,6 +206,137 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - The HC_PARADE scene itself (the speech staging, Muster Road closed between two tanks) is not built.
   - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (see the PR).
 
+## 2026-11-03 10:11 ET: Glimmerwell fleet lines: June's pass (drafted by Claude in June's role, approved by the owner) (build 20261103-1918)
+- What changed and why: D1346 left every line on the `?debug=1` fleet lot as PLACEHOLDER for June. June is out, so Claude drafted her pass in her role: all 31 player lines in `glimmer_fleet.js` `LINES` (4 signs; doors, the four civilians, the mast and the stall per hold; the Cruiser; the Waiting Local; the debug `exit` sign unchanged). New spec §10b "Lines for the placements (D1341)": text only for the crackdown (Cruiser getaway, Concierge fly-by), the pick at dawn (Concierge over Juniper's camp, the Glimmer-pick east road, the Keepers-pick fly-by) and Act 2 (the quarry mast and bay, Glow Care), with open questions (Q-G1 to Q-G7, unnumbered for the Chief of Staff). Spec PLACEHOLDER notes now read "June's pass (drafted by Claude in June's role, Vincent to approve)". A sub-agent no-new-facts review found no CHIP_SECRECY or wording breach; its 2 must-fix and 6 should-fix notes are applied. A second sub-agent then checked the copy against the design repo (STORY.md, CHIP_SECRECY.md, June's drafts in story/drafts/): four line fixes ("partner" is the in-game word for a Walkling, so the Glow Care sign drops it; the Mast Tech's "a year" becomes "since it went up"; Juniper's two §10b lines no longer repeat her own Beat 1 and P6g lines), Q-G1 to Q-G5 annotated with canon citations, and two new open questions (Q-G6: the word "relay" on a sign both paths see; Q-G7: Episode 1 `quarry_bought` vs the Act 2 placement). Q-G3 is then answered as Story's pick under D1341: Glow Care goes to Brightgate (§10's old "Cobblecrest or Brinewick" named Episode 1 towns), by default as the street front of CHIP_SECRECY's planned Tuning wing at Brightgate HQ (Iris to confirm, option A or B); Q-G7 is marked red for Vincent, since it amends D1341's wording. After main's B-12 (D1087: no mint for Glimmerwell), the §10b dawn line's "Mint light" becomes "A soft wine light", matching the Concierge's wine pool.
+- Files touched: `glimmer_fleet.js` (`LINES` and its header comment only), `handoff/specs/GLIMMERWELL_VEHICLES_BUILDINGS.md`, `handoff/shots/glimmer_fleet_lines/`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/glimmer-fleet-lines-june, build 20261103-1918.
+- Tests run and result (widths, checks): `tests/glimmer_fleet.spec.js` at 390 and 320: `PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0` each, `RTDB_RULES RESULT: PASS`; `node tools/scans/run.js`: all PASS (wording, decisions, symlinks, gamejs_map, test_mistakes).
+- Decisions made (colour + reasoning): the owner approved the copy (Tue Nov 3, 2026) and settled Q-G3 as option A (Glow Care is the Brightgate street front of the planned Tuning wing). Q-G7 (red) is deferred to before the Cobblecrest build. Q-G1, Q-G2, Q-G4, Q-G5 and Q-G6 stay open with their defaults in spec §10b.
+- Anything left unfinished: Iris's sign-off on voice; the design spec POST_TRIAL_CRACKDOWN §10 ("Glimmerwell in this quest is only Juniper") needs Design to add the D1341 Cruiser and Concierge. Each D1341 placement is still its own build.
+
+## 2026-11-03 08:12 ET: Build: Fen's pacing (D1128): the bench XP share and Fen's challenge hint
+- What changed and why: D1128 is built as Vincent settled it (Nov 3, 8:07 AM ET, from the research).
+  - **Bench XP share.** After each foe is beaten or befriended, every other Walkling in the holder's own party gets half of the XP it would earn at its own level: after the level-gap clamp, rounded down (`STAT_RULES.BENCH_SHARE` 0.5, `benchXpAward` in `stats.js`, `awardFoe` in `game.js`).
+    - Worn-out Walklings get it too.
+    - The Walkling just befriended gets nothing for its own capture.
+    - Caps hold any overflow in the existing `bxHeld`, and bench level-ups show on the end panel.
+    - Only the local party is paid.
+  - **Fen's challenge hint.** While the lead is below Lv 12, Fen's Trial panel adds one line before "Begin the trial?": "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first." It is PLACEHOLDER for June, and it never blocks.
+  - Fen's team (12/13/14) and her 420-Acorn purse are unchanged.
+- Files touched: `stats.js`, `game.js`, `tools/GAMEJS_MAP.txt`, `tests/fen_pacing.spec.js` (new), `tests/maps_b8.spec.js` (Fen's panel now has the hint line before the choice when the lead is below Lv 12), `tests/README.md`, `CHANGELOG.md`, `handoff/shots/fen_pacing_d1128/`, plus the build stamp.
+- Commit(s) + build id: claude/fen-pacing-d1128, build 20261103-1948 (first stamped 20261103-0821; restamped after each catch-up with main: 656ae76, 6844bb7, 9041f0d).
+- Tests run and result (widths, checks):
+  - `tests/fen_pacing.spec.js`: 12 of 12 passed at 320, 375 and 390.
+  - 19 battle, level and Fen suites (level_grow, battle_no_reload, day1_flow, maps_b8, glimmer_fernbrook, match_marker, rematch_party, deploy_held, battle_tips_once, fetch_line, arbiter_units, five_answer, hushwater, brinewick, crash_growup_people, cue_rail, qa_gaps, art_pass): 283 passed, 2 failed.
+    - `maps_b8` Fen panel: fixed here (the hint line), and the re-run passed.
+    - `rematch_party:316`: fails the same way on clean main 8cd1510.
+  - After the main catch-up (656ae76, build 20261103-1032): fen_pacing, maps_b8, day1_flow, level_grow, battle_no_reload, trial_hall_contested, seals_both_paths, glimmer_fernbrook, qa_gaps, deploy_held, battle_tips_once and match_marker at 320, 375 and 390: 173 passed, 0 failed, 20 skipped (width-gated).
+  - After the third catch-up (9041f0d: #290-#302; build 20261103-1948): the same four suites, 36 passed, 0 failed, 4 skipped.
+  - After the second catch-up (6844bb7, #287; build 20261103-1200): fen_pacing, maps_b8, level_grow and battle_no_reload at 320, 375 and 390: 36 passed, 0 failed, 4 skipped (width-gated).
+  - Scans pass.
+- Shots (before = main, after = this branch, at 390 and 320): `handoff/shots/fen_pacing_d1128/` (`compare-390.png`, `compare-320.png`).
+- Decisions made (colour + reasoning): D1128 (red), as settled. No new ids. Save stays `pixelpets.save.v2`, `v` 2, no new field.
+- Anything left unfinished:
+  - Nina's Fen test (one clean run of the new flow, 12 tries at Fen, pass at 6 or more wins). If it fails, Fen drops one level to 11/12/13, and the hint line and its threshold move with her.
+  - GROWTH_PACING's sim re-run (Design).
+
+## 2026-11-03 3:20 PM ET: B-3: RENDEZVOUS_VINCENT's Act 1 list is unlabelled (D1428), docs only
+- What changed and why: Vincent settled D1428 (default A, Tue Nov 3, 2026): the speech's draft line is dropped. In `handoff/specs/RENDEZVOUS_VINCENT.md` the Keeper shift's sheet is now an unlabelled list of holders with Seals (no "roll" heading, no "call-up", no "muster"), NPC Vincent's "That's mustering." is cut (PLACEHOLDER), and the spec no longer seeds the later speech line (the two "HC_PARADE S2" links are gone). Open question 4 drops "the word draft waits". Ids D1395-D1410 unchanged.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/b3-rendezvous-roll`; docs only, no build bump.
+- Tests run and result (widths, checks): docs only; wording scan PASS.
+- Decisions made (colour + reasoning): D1428 red, settled by Vincent. No new id.
+- Anything left unfinished: Story's wording for the list and Vincent's line (PLACEHOLDER).
+
+## 2026-11-03 9:56 AM ET: Spec note: RENDEZVOUS_VINCENT merged with WARDEN_SUMMONS, and the build split (Vincent), docs only
+- What changed and why: Vincent ruled that RENDEZVOUS_VINCENT wins over the crackdown branch's WARDEN_SUMMONS on the outcome:
+  - a phone call;
+  - a distraught Ilse who sends the holder to Vincent;
+  - the pick after the report.
+  WARDEN_SUMMONS's town lines and its old-save guard are kept, and the build reuses its flags (`story.warden_called`, `story.warden_met`). The crackdown session builds the call and the debrief. This session builds the rendezvous, the shifts and the report on top of that.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): Vincent's call (merge, split). No new ids.
+- Anything left unfinished:
+  - The crackdown branch's ids (D1333-D1346) clash with #268's settled D1333-D1347. That session has been asked to renumber from D1411.
+
+## 2026-11-03 8:38 AM ET: Decisions: Vincent approves every RENDEZVOUS_VINCENT default (D1397-D1410), docs only
+- What changed and why: Vincent approved all defaults for the Vincent quest (two trial shifts, the stream-bank meeting, the Keeper call-up roll and the Glimmerwell ledger as the secrets, the name kept, Fen's lean unchanged, and the rest of §7). The 14 rows move to the archive, and the spec marks them SETTLED. D1396 stays open until the quest is built.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1397-D1410 settled by Vincent. No new ids.
+- Anything left unfinished:
+  - The build. It waits on the crackdown (POST_TRIAL_CRACKDOWN, being built in another session) and on Vincent's choice of builder.
+
+## 2026-11-03 08:30 ET: Spec: RENDEZVOUS_VINCENT v0.1, Ilse's call, the Vincent rendezvous and the road to the pick (D1396; ids D1397-D1410), docs only
+- What changed and why: Vincent asked for the post-crackdown quest to be scoped (D1395, D1396). The default shape is two trial shifts:
+  - Ilse phones the holder home and debriefs them, distraught at the President.
+  - Vincent, a Glimmerwell field agent who stands with neither side, meets the holder at the Route 1 stream bank.
+  - The holder works one shift for each side and sees what each keeps quiet:
+    - the Keepers: a call-up roll of Seal holders sent from High Charity, with no copies to the Wardens;
+    - Glimmerwell: a buy-back ledger of old Seals, a Walkling that answers a beat late after a free check-up, and a "Partners only" door. The chip is never named.
+  - The built pick at the orchard gate runs after the report.
+  - No new room, town or route. All copy is PLACEHOLDER.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md` (new), `OPEN_DECISIONS.md` (D1397-D1410 reserved and opened; next free D1411), `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1397-D1410: 8 red, 4 yellow, 2 green, each with a default (spec §7). Nothing is built before Vincent rules.
+- Anything left unfinished: Vincent's rulings, Story's copy, and Design's check of canon and the UNVERIFIED tiles.
+
+## 2026-11-03 08:07 ET: Decisions: Vincent settles D1128 (Fen's pacing) as the research recommends, docs only
+- What changed and why: D1128 settled.
+  - Keep the bench XP share at 50%.
+  - Keep Fen at 12/13/14 and test, cutting one level only if the test fails.
+  - The hint goes on Fen's challenge, when the lead is below Lv 12, and suggests a second Walkling.
+  - The payout stays at 420 Acorns.
+  - The build is on its own branch.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1128 (red) settled by Vincent.
+- Anything left unfinished: the build (claude/fen-pacing-d1128) and Nina's Fen test.
+
+## 2026-11-03 08:05 ET: Decisions: the curfew runs through dawn; after the crackdown, Ilse's call and the Vincent rendezvous lead to the pick (D1200, D1203, D1395, D1396), docs only
+- What changed and why:
+  - D1200 settled: the Fernbrook curfew runs through dawn.
+  - D1203 amended and D1395 settled: the pick no longer happens at dawn. When the crackdown ends, Warden Ilse phones the holder home to debrief, distraught at the President's actions.
+  - D1396, new and open: Ilse sends the holder to rendezvous with Vincent, an unaligned Glimmerwell agent who hints at the chip and opposes the Keepers' martial order. The quest should feel like going undercover to see both factions' secrets, and it starts the pick. It needs a spec first.
+  - D1159 confirmed by Vincent (recorded on #277).
+- Files touched: `OPEN_DECISIONS.md` (D1395-D1396 reserved, first numbered D1353-D1354 and moved off Design's HC_PARADE block; next free D1397), `archive/DECISIONS_SETTLED.md`, `handoff/specs/POST_TRIAL_CRACKDOWN.md`, `BACKLOG.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning):
+  - D1200 and D1395 (red) settled by Vincent; D1203 amended.
+  - D1396 (red) open; spec first.
+  - Id check: `claude/high-charity-phase1-k7q2hc` (unmerged) uses D1350-D1352, which collides on D1350 with #277. Reported, not renumbered.
+- Anything left unfinished: the D1396 quest spec; D1128 (research done, awaiting Vincent).
+
+## 2026-11-03 07:52 ET: Decisions: Vincent's rulings on the open red rows (docs only)
+- What changed and why: Vincent answered the open red list. Settled:
+  - D1248 and D1250: the Fernbrook homes (already merged in #267 and #273) are approved.
+  - D1199: a Seal gives the town's voice, and the lore implies many contested for the Seals and lost.
+  - D1201: the Seal ban, with lots of lore and dialogue: NEWS, Ribbit, and Keeper-town NPCs on their next talk when no priority line fires.
+  - D1202: the tank look is the default.
+  - D1203: first light.
+  - D1173: no town moves while the holder is undecided.
+  - D1140: stuck holders are re-armed.
+  - D1034, D1035, D1038 and D1040: the RPG Marks are discarded for now.
+  - D1317: the Hall Stone room is approved (rule 9 previews still first).
+  - D1322: no status effects before Episode 1.
+  - D1198: the Commander keeps a PLACEHOLDER name.
+  - D1020-D1023 and D1029: closed as superseded by #258.
+  - Parked: D1160 and D1319, in the new `handoff/backlog/REVISIT_LATER.md`, which also lists the placeholder names to fill later.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/backlog/REVISIT_LATER.md` (new), `handoff/maps/FERNBROOK_HOMES.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `handoff/specs/POST_TRIAL_CRACKDOWN.md`, `handoff/specs/CORE_LOOP_HOOK_AUDIT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only, no build stamp.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): the red rows above, settled by Vincent in his own words (quoted in the archive). No new ids.
+- Anything left unfinished:
+  - D1128 (Fen's pacing): a research report comes first.
+  - Still open with Vincent: D1200 (curfew), D1044 (shadows), D971, D1000, D1087.
+  - D1159 and D1348-D1350 are recorded on #277.
+
 ## 2026-11-03 07:05 ET: Build: the contested Fernbrook Trial Hall behind a flag (TRIAL_HALL_FERNBROOK_MAP, D1189-D1196), and "Fernbrook Trial Hall" everywhere (D1192)
 - What changed and why:
   - The contested Hall from #263, with Vincent's rulings of Nov 2, 10:19 PM ET (#264):
@@ -283,6 +460,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `tests/npc_ranks.spec.js` and `tests/day1_flow.spec.js` at 320, 375 and 390 (45 passed); full suite at 390 (see the PR). Playwright ran with the box's Chromium; `npm run test:agent` stops at its RTDB rules precheck here (the local emulator cannot load its rules through the sandbox proxy, the same as #262). `node tools/scans/run.js` passes.
 - Decisions made (colour + reasoning): D1159 settled (red; the cleared task). The hosts part of D1160 is settled. New open rows: D1348 (red: civilians whose names still carry "Keeper" or "Watch"), D1349 (red: Warden Teodor runs a shop), D1350 (red: "Rowan" is on Design's franchise list). Green: "Sefton" was checked against every game and design file and a web search.
 - Anything left unfinished: D1348-D1350, the rest of D1160, and Story's final name for the cadet (D1186).
+
+## 2026-11-03 01:19 ET: Banned-words sweep: one TV line, a stale GYM sign in a build script, and new words in the wording scan
+
+- What changed and why: a sweep of player text in `data/*.json` and `game.js` for trainer, lowercase keeper, coins, gym, TV, rival (meaning Rook), franchise names, Orokin and bellgold. Ids, keys and `{tokens}` were left alone. Two hits, both fixed to the house word: the dream TV prop in `data/mahopac.json` (`dream_tv`) now reads "The wire set hums. A ball game, with the sound turned low." and `tools/build_highcharity.py` no longer spells the `hc_gym` sign "TRIAL GYM": it now matches the live sign Design signed in STORY v0.5.1 ("DOJO · ..."). The script is now synced to the live `data/highcharity.json`: it had nine other stale lines (the Lantern House sign and note, the dock guard and the sky-dock console after the council, the `hc_gym_in` room name Dojo, the Seal line in the Dojo, the council scene's three lines, and the `lanternfly` stock item), all hand-edited in the JSON by STORY_COPY_FIX and COPY_FIX_2. Running `python3 tools/build_highcharity.py` now rewrites the JSON byte-for-byte, so the live file is unchanged. trainer, keeper, coins: no hits in player text (the scan already caught them). Every `rival` left is an id, a music slot or the `{rival}` token. No Orokin, bellgold or franchise name is in player text. The wording scan (`tools/scans/wording.js`) now fails on gym, TV/television, rival, Orokin, bellgold and a list of franchise names (stored as char codes like the toy brand, so the repo never spells them; accents folded). The names are checked in every string, so a one-word speaker label counts. `{tokens}` are masked before the check, and the art-only `furniture` catalogue in `data/interiors.json` is skipped (the game never reads it). The selftest proves each new reason.
+- Files touched: `data/mahopac.json`, `data/mapdata.js` (regenerated), `tools/build_highcharity.py`, `tools/scans/wording.js`, `tools/scans/selftest.js`, `index.html` and `version.json` (build stamp), `CHANGELOG.md`.
+- Commit(s) + build id: build 20261103-0116.
+- Tests run and result (widths, checks): `node tools/scans/run.js` all PASS; `node tools/scans/selftest.js` PASS; `tests/dream_toy.spec.js` and `tests/mahopac.spec.js` at 320 and 390, 15 passed; a scratch check tapped the wire set in `dream_2004` at 320, 375 and 390 (reduced motion, zero console errors): the line shows in full on two lines.
+- Decisions made (colour + reasoning): green. Text only; the scan words come from the house list. Accord is not banned: D1241 cleared "Judas Accord" for player text, and the selftest proves the name passes. No decision id.
+- Anything left unfinished: none.
 
 ## 2026-11-03 01:14 ET: Glimmerwell fleet ids move to D1333-D1347; main merged in (build 20261103-0114)
 - What changed and why: the fleet's D1295-D1309 collided with Design's HCT (D1295-D1305) and High Charity Trial Hall (D1306-D1311) blocks. Renumbered in order to the first free block after Design's SEALS_BOTH_PATHS (D1323-D1332): D1295 is now D1333, through D1309, now D1347. Changed in `OPEN_DECISIONS.md` (header and the fifteen rows), the spec (§1, §14 and its renumber note), `glimmer_fleet.js`, `game.js` (two comments), `BACKLOG.md`, `tests/README.md`, `tests/glimmer_fleet.spec.js` and this file's fleet entries. Main a726e94 (#270, #271, #272, #273) merged in.
