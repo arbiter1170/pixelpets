@@ -98,10 +98,10 @@ test('every mouth warps to its partner one tile inward, and back (tap-walk on th
   const mouths = await page.evaluate(() => {
     const out = [];
     for (const id of ['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college'])
-      for (const o of WORLD[id].objs) if (o.kind === 'warp' && /_2$/.test(o.id) && /^m_c/.test(o.id)) out.push({ map: id, id: o.id, x: o.x, y: o.y, to: o.to, tx: o.tx, ty: o.ty, w: WORLD[id].w, h: WORLD[id].h });
+      for (const o of WORLD[id].objs) if (o.kind === 'warp' && /_2$/.test(o.id) && /^m_c/.test(o.id) && o.to !== 'route4_reeds') out.push({ map: id, id: o.id, x: o.x, y: o.y, to: o.to, tx: o.tx, ty: o.ty, w: WORLD[id].w, h: WORLD[id].h });
     return out;
   });
-  expect(mouths.length).toBe(12);   // six paired mouths, both ends
+  expect(mouths.length).toBe(12);   // six paired mouths, both ends (the river road's north mouth m_c1_n: route_to_governor.spec.js)
   for (const m of mouths) {
     // stand one tile inside the middle cell and step onto it
     const dir = m.y === 0 ? 'up' : m.y === m.h - 1 ? 'down' : m.x === 0 ? 'left' : 'right';

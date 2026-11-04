@@ -3591,6 +3591,27 @@ const WEIR_HUT_ART = {
     weir_oil_lamp: [["................", "................", "......dddd......", ".......dd.......", "......dmmd......", ".....dwyywd.....", ".....dyooyyd....", ".....dyoyyd.....", ".....dwyywd.....", "......dmmd......", ".....dddddd.....", "................", "...hhhhhhhhhh...", "..hmmmmmmmmmmh..", "..mmmmmmmmmmmm..", "................"]],
   },
 };
+// ROUTE_TO_GOVERNOR E6/E7 (D1869, yellow, settled): Route 4's three new tiles (y reeds, h drystone wall, l mown lawn) and its
+// roadside props, PAL keys only, drawn from the packet's descriptions. water_trough and notice_board reuse built art.
+const ROUTE4_ART = {
+  tiles: {
+    y: ["gggtggglggggtggg", "gglgggtyggglgtgg", "ggyggggyggtyggyg", "gtygglgyggtyglyg", "gtyggyglgttygyyg", "gtlggygygltyggyl", "ttlgtygygltylgyl", "ttytlyglgyttytyl", "gtytyyglgytltlyg", "gtltylgytyltylyg", "ttylyytlyyltyyyt", "tlyttyyttyltlyyt", "ttlttlyttlttltyt", "ttttttttttttttlt", "gtttgtttttgtttgt", "gggggggggggggggg"],
+    h: ["dhhhdmmmhdhhhmmd", "hhwhdmhmhdhwhhmd", "hhhmdmmmmdhhhmmd", "dddddddddddddddd", "mmdhhhhmdmmmhhhd", "mhdhwhhmdmlmhwhd", "mmdhhhmmdmmmhhmd", "dddddddddddddddd", "hhhmdmmmhhdhhhmd", "hwhmdmlmhwdhhmmd", "hhmmdmmmmhdhmmmd", "dddddddddddddddd", "mmhhhdmmmhhhdmmm", "mlhwhdmhmwhhdmhm", "mmhhmdmmmhhmdmmm", "kkkkkkkkkkkkkkkk"],
+    l: ["gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt"],
+  },
+  art: {
+    milestone: ["................", "................", "................", "....dddddddd....", "....hwwhhhhm....", "....hwhhhhhm....", "....hmmmmhhm....", "....hhhhhhhm....", "....hmmmhhhm....", "....hhhhhhhm....", "....hmmmmhhm....", "....hhhhhhhm....", "....hhhhhhhm....", "...dhhhhhhhmd...", "...gddddddddg...", "................"],
+    finger_post: ["................", "................", ".......ddd......", ".......dod......", "..dddddddoddd...", ".dyyyyyyyyyyyd..", "dyoooooooooood..", ".dyyyyyyyyyyyd..", "..dddddddoddd...", ".......dod......", "...ddddddodddd..", "..dyyyyyyyyyyyd.", "..dooooooooooood", "..dyyyyyyyyyyyd.", "...ddddddodddd..", ".......dod......", ".......dod......", ".......dod......", "......ddoddd....", "......dyyyyd....", "......doooodd...", "......dyyyyd....", "......ddoddd....", ".......dod......", ".......dod......", ".......dod......", ".......dod......", ".......dod......", ".......dod......", "......ddoddd....", ".....gddddddg...", "................"],
+    road_bar: ["................", "................", "................", "................", ".kk..........kk.", ".dk..........dk.", "kkkkkkkkkkkkkkkk", "krrrrwwwwrrrrwwk", "krrrrwwwwrrrrwwk", "kkkkkkkkkkkkkkkk", ".dk..........dk.", ".dk..........dk.", ".dk..........dk.", ".dk..........dk.", "kdkk........kdkk", "................"],
+    gate_arch_post: ["................", "....kkkkkkkk....", "...khhhhhhhhk...", "...kmmmmmmmmk...", "....kyyyyyyk....", "....kyooooyk....", "....kyooooyk....", "....kkyyyykk....", "....khhhhhhk....", "....khwhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khwhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khhhhhmk....", "....khwhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "...khhhhhhhmk...", "...kmmmmmmmmk...", "..khhhhhhhhhmk..", "..kmmmmmmmmmmk..", "..kkkkkkkkkkkk..", "................"],
+    capital_roofs: ["....................y...........", "...................yoy..........", "....y.............kkkkk.........", "...yoy...........krrrrrk........", "..kkkkk.........krrprrrrk.......", ".krrrrrk.......krrrrrrprrk......", "krrprrrrk.....krprrrrrrrrrk.....", "krrrrrprk....krrrrrprrrrrrrk....", "kprrrrrrrk..krrrrrrrrrrprrrrk...", "kCCCCCCCCk..kCCCCCCCCCCCCCCCk...", "kCyCCCyCCk..kCCyCCCCCyCCCCyCk...", "kCyCCCyCCk..kCCyCCCCCyCCCCyCk...", "kCCCCCCCCk..kCCCCCCCCCCCCCCCk...", "kkkkkkkkkk..kkkkkkkkkkkkkkkkk...", "................................", "................................"],
+    capital_spire: [".......k........", ".......krr......", ".......krrr.....", ".......krr......", ".......k........", "......kmk.......", "......kmk.......", ".....kmhmk......", ".....kmhmk......", "....kmhhhmk.....", "....kmhhhmk.....", "...kmhhhhhmk....", "...kCCCCCCCk....", "...kCyCCCyCk....", "...kCCCCCCCk....", "...kkkkkkkkk...."],
+    reed_clump: ["................", "......y.....y...", "......y..y..y...", "...y..l..y..l...", "...y..l..l..l...", "...l..l..l.yl...", "...l.ll..l.ll...", "...llgl.ll.lg...", "...lglg.lg.lg...", "..lglgglgglgg...", "..gtgtggtgtgtl..", "..tgtgttgtgtgt..", "..ttgttttgttt...", "...tttttttttt...", "....dddddddd....", "................"],
+    clipped_tree: ["................", "................", "......kkkk......", "....kkggggkk....", "...kggllggggk...", "..kgglgggggtgk..", "..kglggggggtgk..", ".kgggggggggtttk.", ".kgggggggggtttk.", ".kggggggggttttk.", "..kgggggggtttk..", "..ktggggtttttk..", "...kttttttttk...", "....kkttttkk....", "......kkkk......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", "......kdpk......", ".....kmmmmk.....", "....khhhhhhk....", "....khwhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....kkkkkkkk....", "................", "................", "................", "................"],
+    bin_tipped: ["................", "................", "................", "................", "................", "..kkkkkkkk......", ".kmmmmmmmhk.....", ".kmhhhhhhhkk....", ".kmhhhhhhhkdk...", ".kmmmmmmmhkdk...", "..kkkkkkkkkk....", "................", "..y.y.y..o.o.ww.", "..yyyyy..ooo.ww.", ".kkkkkkkkkkkkkk.", "................"],
+    withy_bundle: ["................", "................", "................", ".....o.y.o......", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "...gooyoyoog....", "................"],
+  },
+};
 function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
@@ -3626,6 +3647,10 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   // Blink is the sit grid with the two dark eye pixels closed. Design did not ship a blink grid.
   if (LIZZY_ART.art.buddy_sit) A.buddy_blink = paint(LIZZY_ART.art.buddy_sit.map(r => r.replace(/k/g, 'y')));
   for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
+  // ROUTE_TO_GOVERNOR: the new tiles by map char, the props, and the built trough tile as a prop (the fold's rest).
+  for (const [k, rows] of Object.entries(ROUTE4_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  for (const [k, rows] of Object.entries(ROUTE4_ART.art)) if (!A[k]) A[k] = paint(rows);
+  if (!A.water_trough && T.water_trough) A.water_trough = T.water_trough;
   addCrackdownArt(T, A, paint);   // POST_TRIAL_CRACKDOWN + LANTERN_HOUSE_FERNBROOK draft art
 }
 // E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).

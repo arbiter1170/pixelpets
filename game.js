@@ -3944,6 +3944,9 @@ function applyHcCity(W){
   }
   for (const [id, ln] of Object.entries(V.linesPatch || {}))
     for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o.id === id) o.lines = Object.assign({}, o.lines || {}, ln);
+  // ROUTE_TO_GOVERNOR §5.9 (D1853): a warp outside the city that names a `city` target (the river road's Charter Hill gate) lands
+  // there while the city is on; with the city off it keeps its plain target (Lantern Square's coach gate).
+  for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o && o.city && W[o.city.to]) Object.assign(o, o.city);
 }
 const WORLD = (() => {
   const W = JSON.parse(JSON.stringify(MD.maps_slice.maps));
@@ -4945,7 +4948,8 @@ function cond(c, live, o){
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = hasSeal(c.slice(5));
   else if (/^seals>=\d+$/.test(c)) v = sealsHeld() >= +c.slice(7);   // D1329: Seals held, tags never count
-  else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
+  else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;
+  else if (c.startsWith('map:')) v = !!WORLD[c.slice(4)];   // ROUTE_TO_GOVERNOR: a map this build has (Kilnmouth's road lands later)   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
@@ -12982,7 +12986,7 @@ const ML_SECTION = {
 };
 const ML_CHIPS = { hm_flats_lobby: 'LOBBY', hm_flats_5: '5B', sm_yard: 'YARD', sm_tunnel: 'TUNNEL', sm_hold: 'HOLD', sm_den: 'DEN' };
 const ML_LABEL = { hc_gym_in: 'DOJO' };
-const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K' };
+const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K', y: 't', h: 'm', l: 'g' };   // y h l: ROUTE_TO_GOVERNOR's reeds, drystone wall, mown lawn
 const mapLayers = { ready: false, byId: {}, byFloor: {} };
 let regionBackdropImg = null;
 let mapPinSig = '';
