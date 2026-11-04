@@ -1,0 +1,33 @@
+{
+  "spec": "WALK_BESIDE v0.1 (design repo, private): the Keepers' first word, the cut shown on screen, the hold lines and the walk-beside mechanic. Decisions D1960-D1979.",
+  "_about": "Ours, not a design copy. Act 1: the Weir Hut lantern's story.chi_done line (objPatch, ahead of the built else), and two one-step runs chained after their settled ACT1_KEEPER_JOIN scenes (sceneTails: the report to Jacob Chi, chi_report; the dusk watch, night_watch). No settled step is edited. Save stays pixelpets.save.v2, v 2: every flag here is an additive story.* key, nothing is written at load. Every line is PLACEHOLDER until Story signs it (D1960-D1979).",
+  "_placeholders": {
+    "note": "PLACEHOLDER copy (Story to sign): every player line in this file. The speaker key 'Vincent Chi' is the raw cast key; it shows as Jacob Chi (NAMES_PASS D1730, display only).",
+    "paths": ["objPatch", "scenes"]
+  },
+  "flags": {
+    "story.chi_done": "READ ONLY here. ACT1_KEEPER_JOIN 5g: the report to Jacob Chi. Uncovers the Weir Hut lantern and chains wb_chi_lantern after chi_report (D1970)."
+  },
+  "objPatch": {
+    "_note": "WALK_BESIDE §4.1 (D1970): one new key on the Weir Hut's old Keeper lantern, ahead of the built else (unchanged).",
+    "weir_keeper_lantern": {
+      "linesFirst": {
+        "story.chi_done": "The cloth is off the old lantern. Scratched on the base: WHERE THEY STOP, STOP."
+      }
+    }
+  },
+  "sceneTails": {
+    "_note": "WALK_BESIDE §4.1 (D1970): each a one-step run after its settled scene. chi_report ends once chi_hub returns (That's all sets story.chi_done); the guard keeps an interrupted report from playing it early.",
+    "chi_report": [["if", "story.chi_done", [["run", "wb_chi_lantern"]]]],
+    "night_watch": [["run", "wb_scout_watch"]]
+  },
+  "scenes": {
+    "wb_chi_lantern": [
+      ["say", "", "Jacob Chi lifts the cloth off the old lantern on the shelf."],
+      ["say", "Vincent Chi", "Scouts learned the long version once. Nobody asks for it now."]
+    ],
+    "wb_scout_watch": [
+      ["say", "Keeper Scout", "Walk beside, not ahead. Tonight that meant I stood here and wrote it down."]
+    ]
+  }
+}
