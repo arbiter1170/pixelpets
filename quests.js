@@ -264,7 +264,10 @@
       target: { map: 'cobblecrest', x: 25, y: 7 } },
     // ACT1_KEEPER_JOIN §9.3 (D1548): a moved old save that finished the Signal Review skips the Lantern Council. D1562: a new
     // save plays the Signal Review undercover, then the Council after Ilse's recall (side keepers again), so it sees both.
-    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'], skipIf: ['story.gb_done & story.ilse_call_old'], noImply: true,
+    // D2020 (v0.1.6, default): a recalled holder (story.cover=glimmer plus story.cover_done) meets the Council in High Charity
+    // after the Governor (story.hc_gov_met), not straight after the recall. An old save moved at load sets cover_done with no
+    // story.cover, so its Council stays open as before (O5).
+    { id: 'hc_council', when: ['!story.side=glimmer', '!story.cover=glimmer | !story.cover_done | story.hc_gov_met'], done: ['story.hc_council_done'], skipIf: ['story.gb_done & story.ilse_call_old'], noImply: true,
       text: 'High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', place: 'High Charity, sky-dock',
       target: { map: 'hc_command_in', x: 2, y: 3 } },
     { id: 'gb_invite', when: ['story.side=glimmer'], done: ['story.gb_invited'],

@@ -2,7 +2,7 @@
  "spec": "ACT1_KEEPER_JOIN v0.1.1 (design repo, private): the Wickerglen investigation, the orchard lean and the Keeper join",
  "_about": "Ours, not a design copy. After the crackdown's dawn release Ilse sends the holder to Vincent Chi (the debrief's last lines live in detail_zz_crackdown.json). Route 2 opens on story.warden_met (D1551) so the holder can reach Wickerglen; Imogen's battle and the lit lamps wait for the enrolment (r2_lead is hidden on a crackdown save until story.keeper_cadet). An old save (no crackdown) reads every gate as before. Save stays pixelpets.save.v2; every flag here is a new additive story.* key.",
  "_placeholders": {
-  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Every line in this file is a placeholder, including the Constable's name. 'Eleven' Walklings is a PLACEHOLDER number; Vincent Chi's name check is pending (D1524); the jar line and his lean line (story.lean_keep) are the engineer's draft. D1562: the enrolment's lanyard line (no question) and the post-recall Lantern Council lines are the engineer's draft until §4.7 and §4.9 are rewritten.",
+  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Every line in this file is a placeholder, including the Constable's name. 'Eleven' Walklings is a PLACEHOLDER number; Vincent Chi's name check is pending (D1524); the jar line and his lean line (story.lean_keep) are the engineer's draft. D1562: the enrolment's lanyard line (no question) and the post-recall Lantern Council lines are the engineer's draft until §4.7 and §4.9 are rewritten. v0.1.6: 9e (the last line of recall, cadet_sendoff and rpt_old) is the packet's re-voiced PLACEHOLDER.",
   "paths": [
    "scenes",
    "looks.chi",
@@ -102,7 +102,7 @@
   }
  },
  "objPatch": {
-  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights. Vincent Chi's body (chi_hut) and the first-step trigger (chi_hut_first, scene chi_meet) come with the weir hut room (WEIR_HUT, detail_zz_weir_hut.json); his lines are keyed here. 4.6-4.7 (D1510, D1511, D1553): the lean waits for Vincent Chi's report on a crackdown save; Tobin's battle stands for an Open lean; Ilse enrols at the Lodge; the lanyard face takes effect at Juniper (either body). D1561: a Glimmerwell-held Fernbrook keeps one Keeper post; the Constable at the plaza post (K1's fbplaza:post) says why.",
+  "_note": "D1551: Route 2 opens on story.warden_met for the investigation (fernbrook_rooms.json restates fb_east after every detail patch, so the gate is patched here, last). r2_lead and the glen's intro wait for the enrolment on a crackdown save. D1555: the lamps carry the Keeper slip between Ilse's second call and the Heights. Vincent Chi's body (chi_hut) and the first-step trigger (chi_hut_first, scene chi_meet) come with the weir hut room (WEIR_HUT, detail_zz_weir_hut.json); his lines are keyed here. 4.6-4.7 (D1510, D1511, D1553): the lean waits for Vincent Chi's report on a crackdown save; Tobin's battle stands for an Open lean; Ilse enrols at the Lodge; the lanyard face takes effect at Juniper (either body). D1561: a Glimmerwell-held Fernbrook keeps one Keeper post; the Constable at the plaza post (K1's fbplaza:post) says why. D2020 (Vincent, default): a recalled holder (story.cover=glimmer plus story.cover_done) meets the Lantern Council in High Charity only after the Governor (story.hc_gov_met); until then the Sky-Dock trigger stays off and Captain Lumen says his plain line. An old save moved at load (story.cover_done, no story.cover) keeps its Council as before (O5).",
   "fb_east": {
    "when": [
     "story.seal1",
@@ -212,6 +212,19 @@
   "fbp_constable": {
    "linesFirst": {
     "fbplaza:post": "We pulled back to the post after the curfew. We're still here."
+   }
+  },
+  "hc_council_trig": {
+   "whenAdd": [
+    "!story.cover=glimmer | !story.cover_done | story.hc_gov_met"
+   ]
+  },
+  "hc_lumen": {
+   "linesBefore": {
+    "anchorKey": "story.cobble_end&!story.side=glimmer",
+    "add": {
+     "story.cover=glimmer & story.cover_done & !story.hc_gov_met & !story.hc_council_done": "Lantern ships. No thunder, no guns."
+    }
    }
   }
  },
@@ -1154,7 +1167,7 @@
    [
     "say",
     "Warden Ilse",
-    "Captain Lumen has asked for you. The capital is waiting, Cadet."
+    "That's their work done. Don't go yet, Cadet. Something came for you."
    ]
   ],
   "cadet_sendoff": [
@@ -1216,7 +1229,7 @@
    [
     "say",
     "Warden Ilse",
-    "Captain Lumen has asked for you. The capital is waiting, Cadet."
+    "That's their work done. Don't go yet, Cadet. Something came for you."
    ]
   ],
   "hc_council": [
@@ -1411,7 +1424,7 @@
      [
       "say",
       "Warden Ilse",
-      "Captain Lumen has asked for you. The capital is waiting, Cadet."
+      "That's their work done. Don't go yet, Cadet. Something came for you."
      ]
     ]
    ],

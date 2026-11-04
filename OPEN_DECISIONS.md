@@ -96,6 +96,8 @@ D1520-D1544 reserved: Design, Vincent's 25 answers on the new Act 1 (design spec
 
 D1545-D1589 reserved: Design, ACT1_KEEPER_JOIN v0.1 (design specs/ACT1_KEEPER_JOIN.md); D1545-D1562 used and settled by Vincent (D1546 B, D1561 the Fernbrook post, D1562 always undercover); D1563-D1589 held. D1590-D1599 reserved: WEIR_HUT. D1700-D1702: Ilse's arc (D1700 built here). Next free id is D1600 (design repo owns D1600 and above).
 
+D2020: Design, ACT1_KEEPER_JOIN v0.1.6 (design specs/ACT1_KEEPER_JOIN.md §13): where the Lantern Council plays for a recalled holder. Settled by Vincent, Wed Nov 4, 2026, on the default (High Charity, after the Governor); built in claude/recall-9e-council.
+
 Next free id is D1600.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 

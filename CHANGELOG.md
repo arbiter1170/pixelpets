@@ -2,6 +2,17 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 02:30 ET: The recall's last line leads into Ilse's posting; the Lantern Council waits for the Governor (ACT1_KEEPER_JOIN v0.1.6; D2020)
+- What changed and why:
+  - 9e re-voiced (packet v0.1.6, PLACEHOLDER). The last line of `recall`, `cadet_sendoff` and `rpt_old` (its `story.ep1_end` branch) is now Warden Ilse's "That's their work done. Don't go yet, Cadet. Something came for you." It no longer sends the holder to Captain Lumen and the capital before the posting. The posting itself (`a2_posting`) comes with the Act 2 opener (#312); until then nothing on main points the holder anywhere after the recall.
+  - D2020 (Vincent, Wed Nov 4, default): a recalled holder (`story.cover=glimmer` plus `story.cover_done`) meets the Lantern Council in High Charity after the Governor (`story.hc_gov_met`), not straight after the recall. The `hc_council` row's `when` gains `!story.cover=glimmer | !story.cover_done | story.hc_gov_met`; the Sky-Dock trigger `hc_council_trig` gets the same condition and Captain Lumen says his plain line until then (both by `objPatch` in `data/detail_zz_keeper_join.json`, no edit to `data/highcharity.json`).
+  - Old saves: the old-save move at load also writes `story.cover_done` (with no `story.cover`), so it is not read as a recall. A moved save mid-finale (O5) keeps the Council as its next step, and the plain Cadet's Council (before the coast road) is unchanged.
+- Files touched: `data/detail_zz_keeper_join.json`, `quests.js`, `data/mapdata.js` (generated), `tests/act1_keeper_join.spec.js`, `OPEN_DECISIONS.md` (the D2020 note), `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/recall-9e-council, build 20261104-0224.
+- Tests run and result (widths, checks): see the PR. `act1_keeper_join` (T12/T13 and O1-O11), `lantern_council`, `standing`, `quest_multi`, `highcharity`, at 320, 375 and 390, Modern controls.
+- Decisions made (colour + reasoning): D2020 red, settled by Vincent on the default and built as written, except for the recall key. The packet's literal `!story.cover_done` would also hide the Council for moved old saves (the move writes `cover_done`) and strand O5 with the road shut. So the key names the recall's own pair (`cover=glimmer` plus `cover_done`). Green (engineer): Lumen's waiting line reuses his existing plain line ("Lantern ships. No thunder, no guns."), so there is no new copy.
+- Anything left unfinished: the `run` from 9e into `a2_posting` on the same visit lands once #312 is on main (the scene is not on main yet, and a `run` of an unknown scene fails boot). Until then the posting plays on the next talk to Ilse, which is the packet's fallback.
+
 ## 2026-11-04 03:30 ET: Placeholder names pass: display-only renames (NAMES_PASS; D1730-D1769)
 - What changed and why:
   - Vincent settled the placeholder-names pass (D1730-D1769, every row on its default except D1730: the Weir Hut NPC is shown as **Jacob Chi**). A rename is display only (D1768): the cast `label`, or `rank` + `given` for a ranked Keeper, in `data/reputation.json`, plus every player line that said the old name. Raw speaker names, NPC ids, cast keys, `S.rep` and phone-book keys, flags and save keys do not change, so old saves load and show the new names with no fold.
