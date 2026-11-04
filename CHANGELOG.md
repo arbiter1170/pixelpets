@@ -35,6 +35,18 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): green, mine: the coach tile moves four columns east because the spec only fixes it "one tile south of the east-west path", and the nook at (16,9) is the nearest open spot that is not a through lane. D1437 built as settled. No new decision id. No new flag or save field.
 - Anything left unfinished: none.
 
+## 2026-11-03 23:23 ET: Build: the endings readers and the report skip (REPORTS_AND_ENDINGS v0.1.1 core E1; REPORT_FLAGS; D1620-D1629, D1720, D1725, D1726 B)
+- What changed and why:
+  - `standing.js`: the pure readers `pathOf`, `trustOf`, `presOptions`, `ilseCanTurn`, `endingOf` (§3.3), the fixed report list `RPT` (`story.rpt_1`-`_6`, told / kept; D1720: never a prefix scan, so `story.rpt_gov` and `story.rpt_old_seen` stay guards) and the eight ending ids `ENDINGS`. Nothing is stored; no ending scene is built. R6 is now a letter after the third sitting (D1726 B); the readers only count the flag, so the timing changes nothing here.
+  - `reportsOpen` skips on `story.switched_a3` or `story.warden_cut`, never `story.switches` (D1725): an old save moved to the Keepers keeps its reports even if it carries a switch from Rook's old offer.
+  - `switchSide` writes `story.switched_a3` on a switch to Glimmerwell from Act 3 on (§9), so an Act 3 switch still stops the reports.
+  - `canSwitch` says `closed` once `story.solvane_met` is set (D1625; nothing writes it yet).
+- Files touched: `standing.js`, `game.js` (`switchSide`), `tools/GAMEJS_MAP.txt`, `tests/endings.spec.js` (new).
+- Commit(s) + build id: claude/act2-opener, build 20261103-2323.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1620-D1629 settled by Vincent, readers as written; D1725 (yellow, settled) applied to `reportsOpen`; D1726 B noted (no reader change).
+- Anything left unfinished: E2-E5 (R4-R6 scenes, the President's office buttons, Ilse's talks, the eight epilogues and `story.ending`) are later packets'. ILSE_ARC's `ilseFails` / `ilseTurns` will refine `ilseCanTurn`.
+
 ## 2026-11-03 22:45 ET: Build: the weir hut gets its own room music, `weir` (SCENE_MUSIC v0.1 slice 1, D1898), build 20261103-2241
 - What changed and why:
   - Vincent asked for music for the story's big scenes, with a spec first. Design wrote SCENE_MUSIC v0.1 (design repo, branch `claude/scene-music`, commit ee3e2ee): a small set of short motifs and a cue for each big scene. Only one of those scenes is on main today, the weir hut, so this PR builds that one cue.
@@ -46,6 +58,19 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): see the PR body (`tests/scene_music.spec.js` T1-T8 at 320/375/390, plus the weir hut, music, anthem, faction-music and data-integrity specs).
 - Decisions made (colour + reasoning): D1898 (red, Vincent): the hut's room loop is `weir`; this PR merges only after his yes on the preview. D1905-D1909 (green): plain data format, built fades, the test rows, build order, no iPhone audio change. The other SCENE_MUSIC rows (D1890-D1897, D1899-D1904) are for scenes not on main and are not built here.
 - Anything left unfinished: the cues for the crackdown, the enrolment and recall, and the Act 2 opener are follow-ups for those PRs (listed in the PR body).
+
+## 2026-11-03 22:42 ET: Build: Act 2 cover story, the opening slices: Mom's Supper and Juniper's point (ACT2_COVER_STORY v0.1.1; D1680-D1699, D1921)
+- What changed and why:
+  - Mom's "Supper" (C-M, D1682): on the first step out of the Lodge after the posting, Mom waits at the gate (a temporary body), says m1 and walks home ahead; in your room the drawer (the chest) plays the rest: the lanyards, Hattie's post, and "Tell the truth" / "Cover story" / "Say nothing" (D1681) writing `story.cv_mom` told / cover / quiet. Talking to Mom at your door plays the same scene. Fallback: the first step inside home for a save that never passed the gate. An interrupted scene writes nothing and replays.
+  - Mom's repeats per answer, before her plain line (her Act 1 keys still win); told: one built `heal_snack` a day at home ("Maze packed this for {pet}."), guard `story.cv_mom_day` (the day key, cleared on the day roll; D1696).
+  - Old saves (D1695): the system keys on a lanyard past, `story.cover=glimmer | seal:seal_glim_1`. A moved Keepers-pick save hears the pin line, no choice, `story.cv_mom` quiet.
+  - D1921 C (Vincent, Nov 4: what happened to Dad stays unsaid): Mom's lines are ACT2_COVER_STORY v0.1.3's, which claim nothing about him: the pin line "A Keeper pin. Look at you. Sit down before supper goes cold." and the cover answer's "Hm. A better offer. They always sound good at the door." (v0.1.3's third rewrite, Mom after a switch, is Act 3 and not built).
+  - Juniper's optional point (D1688) on her Fernbrook body in Act 2, for a lanyard past: the same three choices; truth: `story.sway_fernbrook` +1 (clamped) and she and her stand leave the plaza; `story.cv_juniper`.
+- Files touched: `data/detail_zzz_act2_cover.json` (new), `data/mapdata.js`, `game.js` (the snack's day guard), `tools/GAMEJS_MAP.txt`, `quests.js` (NOT_STEPS), `tests/act2_cover_story.spec.js` (new), `tests/governor_meeting.spec.js` (Modern taps, steadier line reader), `handoff/shots/act2_opener/`.
+- Commit(s) + build id: claude/act2-opener, build 20261103-2242.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1680-D1699 settled by Vincent, built where their beat exists; D1921 C applied. Green (engineer): `story.cv_mom_walk` (Mom walked home ahead) so Supper survives the walk; the drawer is the room's chest (no new art); the snack guard holds the day key, as Buddy's pat does; Juniper leaves with her stand on truth.
+- Anything left unfinished: waits for its beat: Lizzy's scene and her copy (C-L, after B9's `story.ilse_paper_ask`; the copy is inside R4, B11), Rook's point (B5, Brightgate), Lumen's (B7, the first sitting), Fen's (B8, her turn), Ilse's B9 reaction line, the barks, Block News, Ribbit and the town board items (slice 4), Mom's slip chain (needs Rook at B5), the Act 3 echoes. Every new line is PLACEHOLDER. The packet's told repeat for Mom is 41 characters against its own 40 limit (kept verbatim).
 
 ## 2026-11-03 22:29 ET: Battle scenes for the maps built Nov 3: the Weir Hut on the Cut, the plaza fountain in Fernbrook (BATTLE_BACKDROPS, D1009)
 - What changed and why:
@@ -60,6 +85,20 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): see the PR body.
 - Decisions made (colour + reasoning): D1009 (red, settled Oct 31) built as settled: each scene from its own map's tiles, props and PAL, landmarks clear of the boxes. Green (engineer): the hut stands on the near bank (its door faces the viewer, as on the map); short screens get the weir-plank deck rather than losing the hut.
 - Anything left unfinished: none on main. Scenes for places designed but not built (Brightgate, the Muster Hall, Galehaven, the Long Climb, Kilnmouth) are recipes in Design's packet until their maps land.
+
+## 2026-11-03 22:18 ET: Build: Act 2 opens: Ilse's call, the posting, the Governor meeting and the report hook (GOVERNOR_MEETING v0.2.1; D1469-D1475)
+- What changed and why:
+  - Ilse's Act 2 Keeper1 call (`a2_ilse_call`, a story call) on the first free outdoor step after the Episode 1 card, for a Cadet who is not a cover holder. A cover holder (every new save, D1562) gets the join packet's recall call instead, which now also writes `story.a2_called`: one call (§4.1).
+  - The posting (`a2_posting`) at the Lodge, after the join packet's recall, R3 send-off and old-save talk (the next talk; `linesBefore` anchored on the enrolment key), and her repeat line. Sets `story.gov_posted`.
+  - The Governor's House door now also needs `story.gov_posted` (D1473); the desk Keeper's line; the meeting `hc_gov_meet` (`tools/build_hc_city.py`, the city preview): he walks round the chute end of his desk, gives the Kilnmouth assignment, and, only with Fernbrook's ledger seen (`story.shift_g`), offers "Tell him about the ledger" / "Keep it to myself" (`story.gov_told` told / kept). Sets `story.km_assigned` and the existing `story.hc_gov_met` (D1459, not duplicated). His repeat line. The builder fails on any `hc_gov_meet` variant and now checks nested says and choice labels.
+  - The optional report `a2_report_gov` at the Lodge (D1474), told / kept / unset lines, `story.rpt_gov`; a side pointer "How it went".
+  - Quest rows `gov_post`, `gov_meet` and a holding row `a2_hold` ("Await your next orders.", waits on Kilnmouth's `story.km_arrived`, which nothing sets yet). Route hook: a comment above `gov_meet` (quests.js) and `_route_hook` in the data mark where a walkable route to the Governor would replace the first coach ride.
+  - Three `?debug=1` places: `a2_start`, `a2_posted`, `a2_met`.
+- Files touched: `data/detail_zzz_act2_opener.json` (new), `data/detail_zz_keeper_join.json` (the recall call writes `story.a2_called`), `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `data/mapdata.js`, `quests.js`, `game.js` (debug places), `tools/GAMEJS_MAP.txt`, `tests/governor_meeting.spec.js` (new), `tests/hc_city_v2.spec.js`, `tests/standing.spec.js`, `tests/act1_keeper_join.spec.js` (O8's next step is now `gov_post`).
+- Commit(s) + build id: claude/act2-opener (base claude/act1-keeper-join, #303), build 20261103-2218.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1469-D1475 settled by Vincent, built as written. Green (engineer): the recall call writes `story.a2_called` (one call); the report key and side pointer also skip on `story.switched_a3` / `story.warden_cut` (D1725's rule); the ledger choice's prompt is step 7a's own line; quest targets point at Ilse's tile (5,3) like the other Lodge rows; `gov_meet`'s place is "Governor's House" (24-character limit); the holding row replaces §6.3's "The road to Kilnmouth opens in a later update." (pacing audit: never point at an unbuilt town).
+- Anything left unfinished: every new line is PLACEHOLDER for Story. The meeting plays in the High Charity city preview (`?debug=1&hccity=2`) until HC_CITY_V2 ships. T8 (the parade on the next coach arrival) waits for #296. Lumen's lead-in stays held (D1470); nothing here writes `story.thr_chip_rumour`.
 
 ## 2026-11-03 18:32 ET: Build: the Act 1 Keeper join: Vincent Chi, the Wickerglen shifts, the orchard lean, the enrolment, the reports, the recall and the old-save move (ACT1_KEEPER_JOIN K3-K9; D1545-D1562, D1674, D1700)
 - What changed and why:

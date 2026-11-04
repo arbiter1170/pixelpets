@@ -1,0 +1,69 @@
+{
+ "spec": "GOVERNOR_MEETING v0.2.1 (design repo, private; D1469-D1475): Act 2 opens with Warden Ilse's call, the posting at the Lodge and the optional report after the Governor meeting. The meeting itself is hc_gov_meet in tools/build_hc_city.py.",
+ "_about": "Ours, not a design copy. Applied after detail_zz_keeper_join.json (the file name sorts after it), so the Lodge keys below land after the join packet's old-save talk, the recall and the plain Cadet's send-off (linesBefore anchors on the enrolment key). Save stays pixelpets.save.v2, v 2; every flag here is a new additive story.* key. No @glimmer variant of these scenes exists (D1543, D1473).",
+ "_placeholders": {
+  "note": "PLACEHOLDER copy (Story/June to replace; GOVERNOR_MEETING §4 and §6.1 lines, OPEN_DECISIONS rows D1469-D1475). Every line in this file is a placeholder.",
+  "paths": ["scenes", "objPatch"]
+ },
+ "_route_hook": "GOVERNOR_MEETING §0 (settled): the Cadet takes the Lantern Coach to High Charity. A walkable route to the Governor is being designed separately (ROUTE_TO_GOVERNOR); when it lands, the posting's line 4 and the gov_meet quest row (quests.js) are the two places that name the coach.",
+ "flags": {
+  "story.a2_called": "§4.1: Ilse's Act 2 Keeper1 call answered (the recall call writes it too: one call for a cover holder)",
+  "story.gov_posted": "§4.2: the posting at the Lodge; opens the Governor's House door (D1473)",
+  "story.km_assigned": "§5 step 9: the Governor's assignment, Kilnmouth (written by hc_gov_meet)",
+  "story.gov_told": "§5 step 7b (D1472): told / kept; unset when no ledger was seen. Lines only, never a report",
+  "story.rpt_gov": "§6.1 (D1474): the optional Lodge report after the meeting; its own guard, not a numbered report"
+ },
+ "calls": [
+  {
+   "id": "a2_ilse_call",
+   "when": ["story.ep1_end", "story.keeper_cadet", "story.phone_got", "!story.a2_called", "!story.gov_posted", "!story.cover=glimmer"],
+   "scene": "a2_ilse_call",
+   "_note": "§4.1 (D1469): the first free outdoor step after the Episode 1 card. A cover holder (story.cover=glimmer, every new save under D1562) gets the join packet's recall call instead, which also writes story.a2_called: one call."
+  }
+ ],
+ "scenes": {
+  "a2_ilse_call": [
+   ["say", "", "Your Keeper1 buzzes in your pocket. WARDEN ILSE."],
+   ["choice", "Warden Ilse is calling.", [
+    ["Answer", [
+     ["say", "Warden Ilse", "Cadet {name}. Well done at Brinewick. Come home to the Lodge. You have a posting."],
+     ["say", "Warden Ilse", "Not on the wire. Come home."],
+     ["setFlag", "story.a2_called", true]
+    ]]
+   ], "Warden Ilse"]
+  ],
+  "a2_posting": [
+   ["say", "Warden Ilse", "Sit, Cadet. Brinewick reached me before you did. Good work, and quiet work. I like both."],
+   ["say", "Warden Ilse", "The Governor's office asked for a Cadet. One who can listen. I gave them you."],
+   ["say", "Warden Ilse", "A civil posting. You answer to his office, and to me. Nobody else signs for you."],
+   ["say", "Warden Ilse", "Take the coach to High Charity. The Governor's House, on Charter Hill. They'll let you in now."],
+   ["say", "Warden Ilse", "And {name}? Come home after. Tell me what he asks. In person, not on the wire."],
+   ["setFlag", "story.gov_posted", true]
+  ],
+  "a2_report_gov": [
+   ["say", "Warden Ilse", "Kilnmouth. The springs and the seat. He gave a new Cadet a whole town. Interesting."],
+   ["say", "Warden Ilse", "The tower's permit is in order. I keep hearing that, from people who never ask who signed it."],
+   ["if", "story.gov_told=told", [
+    ["say", "Warden Ilse", "You told him about the ledger. Then we'll see where his asking goes, and who answers."]
+   ]],
+   ["if", "story.gov_told=kept", [
+    ["say", "Warden Ilse", "You kept the ledger back. Good. Paper travels further than people think."]
+   ]],
+   ["say", "Warden Ilse", "Go on to Kilnmouth. And come home after. This is still your home."],
+   ["setFlag", "story.rpt_gov", true]
+  ]
+ },
+ "objPatch": {
+  "_note": "§4.2 and §6.1: Ilse's Act 2 keys go after the join packet's rpt_old, recall and cadet_sendoff keys (so an old save's Lodge talk, the recall and the plain Cadet's R3 always play first; the posting plays on the next talk, T6) and before its Act 1 keys and the built story.dream_woke line.",
+  "ilse_lodge_after": {
+   "linesBefore": {
+    "anchorKey": "story.ilse_call2 & !story.keeper_cadet",
+    "add": {
+     "story.ep1_end & story.keeper_cadet & !story.side=glimmer & !story.gov_posted": "@a2_posting",
+     "story.gov_posted & !story.hc_gov_met": "The Governor's House, on Charter Hill. Go on, Cadet.",
+     "story.hc_gov_met & !story.rpt_gov & !story.switched_a3 & !story.warden_cut": "@a2_report_gov"
+    }
+   }
+  }
+ }
+}

@@ -38,7 +38,8 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // WEIR_HUT (D1590-D1599): the hut door, its mat, the first-step trigger, and 27 talk taps (Vincent Chi, 14 room props, eight
     // jar shelves (one shows per sill tile at a time), the lamp, barrel and nets outside) add door 1, warp 1, trigger 1, talk 27.
     // ACT1_KEEPER_JOIN: +7 talk (Imogen's and the Keeper Scout's Wickerglen bodies, the Constable, three lamp lines, the ledger crate).
-    door: 49, warp: 101, sign: 97, talk: 812, scene: 40, trigger: 44, board: 7,
+    // ACT2_COVER_STORY (#312): Mom at the Lodge gate and at your door add talk 2; the gate step and the home fallback add trigger 2.
+    door: 49, warp: 101, sign: 97, talk: 814, scene: 40, trigger: 46, board: 7,
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.

@@ -4455,6 +4455,8 @@ function switchSide(to, opts){
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
   S.flags['story.switch_via'] = 'rook';
+  // REPORTS_AND_ENDINGS §9 (D1629, D1725): only a switch from Act 3 on makes the switcher's path and stops the reports.
+  if (to === SC_STANDING.switch.oneWay && actNow(false) >= SC_STANDING.switch.openAct) S.flags['story.switched_a3'] = true;
   noteRepJoin();   // D178: the side you left, met people only, once per switch
   syncSide(); save();
   return true;
@@ -9988,9 +9990,10 @@ async function execStep(st){
       return;
     }
     case 'setFlag': {
-      const v = b === '$line' ? sc.vars.line : b;
+      let v = b === '$line' ? sc.vars.line : b;
       // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
       const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
+      if (a === 'story.cv_mom_day' && v) v = dayKey(Date.now());   // ACT2_COVER_STORY D1696: the day Mom last packed the snack
       sc.view.flags[a] = v; pend(() => {
         const was = S.flags[a];
         const prevSeals = sealCount();
@@ -11378,6 +11381,7 @@ function fadeTick(sample){
     if (!S.flags['daily.buddy_pat']) S.flags['daily.buddy_pat'] = d;
     else if (S.flags['daily.buddy_pat'] !== d) { delete S.flags['story.buddy_pat_today']; delete S.flags['daily.buddy_pat']; }
   } else if (S.flags && S.flags['daily.buddy_pat'] && S.flags['daily.buddy_pat'] !== d) delete S.flags['daily.buddy_pat'];
+  if (S.flags && S.flags['story.cv_mom_day'] && S.flags['story.cv_mom_day'] !== d) delete S.flags['story.cv_mom_day'];   // D1696: one snack a day
   bossRestTick(d); openRoad3();
   for (const p of allPets()) {
     if (!isFaded(p)) continue;
@@ -18405,6 +18409,17 @@ const DEBUG_EXTRAS = {
     kj_recall: { place: 'After Brinewick (recall)', text: 'Ilse calls the Cadet home.', map: 'brinewick', x: 6, y: 13, facing: 'down', flags: LAN.concat(['story.seal2', 'story.gb_done', 'story.route3_open', 'story.reached_brinewick', 'story.seal3', 'story.ep1_end']) },
     kj_old_glimmer: { place: 'Old Glimmer save (moved)', text: 'A save that picked Glimmerwell.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side=glimmer', 'story.side_pick_done']) },
     kj_old_keepers: { place: 'Old Keepers save (moved)', text: 'A save that picked the Keepers.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side_pick_done', 'story.orchard_cleared']) },
+  });
+  // GOVERNOR_MEETING §6.5 (D1475): three Act 2 places. A new save is a cover holder (D1562), recalled after Brinewick and past
+  // the Lantern Council, so the recall call stands in for Ilse's Act 2 call. The House is in the city preview (?hccity=2) only.
+  const A2 = LAN.concat(['story.seal2', 'story.gb_done', 'story.route3_open', 'story.reached_brinewick', 'story.seal3', 'story.ep1_end',
+    'story.ilse_call3', 'story.a2_called', 'story.side=keepers', 'story.cover_done', 'story.rpt_3=told', 'story.hc_council_done']);
+  const door = HC_V2_ON ? { map: 'hc_civic', x: 32, y: 16, facing: 'up' } : { map: 'hearthmoor', x: 11, y: 7, facing: 'down' };
+  Object.assign(DEBUG_EXTRAS, {
+    a2_start: { place: 'Act 2 start (Cadet, after the card)', text: 'Ilse gives the posting.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up', flags: A2 },
+    a2_posted: Object.assign({ place: 'Act 2 posted', text: "The Governor's House opens.", flags: A2.concat(['story.gov_posted']) }, door),
+    a2_met: { place: 'Act 2 met, ledger told', text: 'Ilse hears how it went.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up',
+      flags: A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.gov_told=told', 'story.shift_g']) },
   });
 }
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
