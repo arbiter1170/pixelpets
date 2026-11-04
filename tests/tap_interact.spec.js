@@ -42,7 +42,8 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // ROUTE_TO_GOVERNOR (#315): Route 4, its sightings and the north road add warp 22, sign 7, talk 19, scene 1, trigger 6,
     // trainer 3, pickup 4, wild 3 (recounted on the merged tree, Wed Nov 4, 2026).
     // MAHOPAC_DREAMS (#314): the lens room adds talk 2 (Mom and Warden Ilse at the lens) and sign 1 (the sill).
-    door: 49, warp: 123, sign: 105, talk: 835, scene: 41, trigger: 52, board: 7,
+    // WALK_BESIDE (#324): Archivist Mo at the Lodge steps adds talk 1 and the steps' trigger adds trigger 1 (both behind story.cab_seat).
+    door: 49, warp: 123, sign: 105, talk: 836, scene: 41, trigger: 53, board: 7,
     trainer: 31, pickup: 21, wild: 12, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.

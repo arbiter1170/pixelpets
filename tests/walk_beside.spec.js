@@ -527,7 +527,8 @@ test.describe('WALK_BESIDE the mechanic (D1973-D1979)', () => {
 // Slice 4: scenes whose triggers belong to unbuilt beats, built behind their real flags (inert in normal play) and proved here on
 // seeded saves: the charter, Mo's cut at the Lodge steps, the springs stop, the Act 3-5 lines, the Summit line, the ending cards.
 const S4 = { 'story.reached_route1': true, 'story.reached_fernbrook': true, 'story.side_pick_done': true, 'story.keeper_cadet': true, 'story.ilse_call_old': true, 'story.met_mo': true };
-const ACT2 = Object.assign({}, S4, { 'story.ep1_end': true, 'story.cab_seat': true });
+// story.a2_called: Ilse's Act 2 call (#312) is already answered, so the first outdoor step past the Episode 1 card plays nothing else.
+const ACT2 = Object.assign({}, S4, { 'story.ep1_end': true, 'story.a2_called': true, 'story.cab_seat': true });
 const sayTexts = lines => lines.filter(l => l[0] !== '>').map(l => l[1]);
 const CHOICE_MIN = 44;
 
@@ -652,7 +653,7 @@ test.describe('WALK_BESIDE scenes behind their flags (D1960-D1969, D1978)', () =
   });
 
   test('WB-T12: in normal play nothing waits or plays: no Mo, no trigger, no row without story.cab_seat', async ({ page }) => {
-    await boot(page, save(Object.assign({}, S4, { 'story.ep1_end': true }), { map: 'hearthmoor', x: 15, y: 8, facing: 'up', respawn: 'hearthmoor' }));
+    await boot(page, save(Object.assign({}, S4, { 'story.ep1_end': true, 'story.a2_called': true }), { map: 'hearthmoor', x: 15, y: 8, facing: 'up', respawn: 'hearthmoor' }));
     expect(await page.evaluate(() => PixelPets.mapObjs.map(o => o.id))).not.toContain('hm_mo_steps');
     expect((await page.evaluate(() => PixelPets.walkStep('up'))).scene).toBe(false);
     expect(await page.evaluate(() => PixelPets.quest && PixelPets.quest.id)).not.toBe('wb_cut');
