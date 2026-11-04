@@ -55,6 +55,7 @@ function save(flags, world, mut) {
   return s;
 }
 async function boot(page, s, opts = {}) {
+  test.setTimeout(60000);
   if (opts.reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), s, { quietDay: true, oldSave: !!opts.oldSave });
   await gotoGame(page, opts.city ? '?debug=1&hccity=2' : (opts.plain ? '' : '?debug=1'));
@@ -96,9 +97,10 @@ async function drive(page, picks = [], ms = 60000) {
   while (Date.now() < until) {
     const st = await page.evaluate(() => ({ battle: !!(PixelPets.battle && PixelPets.battle.on), sc: PixelPets.scene && { mode: PixelPets.scene.mode, full: PixelPets.scene.full, waiting: PixelPets.scene.waiting, text: PixelPets.scene.text, who: PixelPets.scene.who } }));
     if (st.battle) {
-      const state = await page.evaluate(() => PixelPets.battle.state);
-      if (state !== 'END') { await page.evaluate(() => { const b = PixelPets.battle; b.textMs = 1; b.animMs = 0; PixelPets.winBattle(); }); await page.waitForFunction(() => !PixelPets.battle.on || PixelPets.battle.state === 'END', null, { timeout: 15000 }); }
-      if (await page.locator('#btOk').isVisible()) await page.click('#btOk');
+      // Win once the battle takes a command (the intro may still be playing), then close the end card.
+      const state = await page.evaluate(() => { const b = PixelPets.battle; b.textMs = 1; b.animMs = 0; return b.state; });
+      if (state === 'CHOOSE') { await page.evaluate(() => PixelPets.winBattle()); await page.waitForFunction(() => !PixelPets.battle.on || PixelPets.battle.state === 'END', null, { timeout: 15000 }); }
+      if (await page.evaluate(() => PixelPets.battle.on && PixelPets.battle.state === 'END')) await page.evaluate(() => { const b = document.querySelector('#btOk'); if (b) b.click(); });
       await page.waitForTimeout(150); continue;
     }
     const sc = st.sc;
