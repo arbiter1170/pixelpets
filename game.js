@@ -6100,7 +6100,11 @@ function tryStep(d){
     S.world.facing = dn; clearMoves(); sfx('denied');
     const door = lanternDoorHere(); runSteps(placeSteps(door), { npc: door }); return;
   }
-  if (warpBlocked(nx, ny)) { S.world.facing = dn; return; }   // the gate trigger one tile earlier tells you why
+  if (warpBlocked(nx, ny)) {   // the gate trigger one tile earlier tells you why; CABINET 1b: or the warp's own `deny`, on the bump
+    S.world.facing = dn; const wb = warpAt(nx, ny);
+    if (wb && wb.deny) { clearMoves(); sfx('denied'); runSteps([['say', '', denyLine(wb)]]); }
+    return;
+  }
   const w = wildAt(nx, ny);
   if (w) { if (p && w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
   walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0; walk.hop = false; closePartnerTray();
@@ -12832,7 +12836,7 @@ const REGION_MAP = {
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_civic: 'highcharity', hc_exchange: 'highcharity', hc_waterfront: 'highcharity', hc_college: 'highcharity',   // HIGH_CHARITY_LAYOUT: one node for every chunk (D1275)
-    hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_3: 'highcharity',
+    hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_2: 'highcharity', hc_gov_3: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
@@ -18598,6 +18602,16 @@ if (HC_V2_ON) {
     hc2_news: { place: 'HC Block News House', text: 'Front hall and wire room.', map: 'hc_news_1', x: 7, y: 14, facing: 'up', flags: HC_F },
     hc2_gov: { place: "HC Governor's House (Act 2)", text: 'Keepers path, Act 2, the Governor.', map: 'hc_gov_1', x: 7, y: 14, facing: 'up', flags: ACT2 },
     hc2_pres: { place: "HC President's rooms (Act 5)", text: 'Keepers path, Act 5.', map: 'hc_gov_3', x: 2, y: 12, facing: 'up', flags: ACT5 },
+  });
+  // CABINET_AND_COUNCILS 1b (§6 debug places): the lead-in in the lobby, the room before the first sitting, and seated (town).
+  // Kilnmouth (1a) and K2a are not built yet, so these write the flags they would have set.
+  const KMREP = ACT2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.hc_parade_seen', 'story.km_reported']);
+  Object.assign(DEBUG_EXTRAS, {
+    hc2_cab_lead: { place: 'HC Kilnmouth reported', text: 'Act 2: Captain Lumen in the lobby (the lead-in).', map: 'hc_gov_1', x: 7, y: 14, facing: 'up', flags: KMREP },
+    hc2_cab_room: { place: 'HC Cabinet Room (S1 waits)', text: 'Act 2: the seat, K2a played, S1 at the twelfth chair.', map: 'hc_gov_2', x: 1, y: 3, facing: 'down',
+                    flags: KMREP.concat(['story.thr_chip_rumour', 'story.pres_cabinet_first', 'story.km_names=3']) },
+    hc2_cab_town: { place: 'HC Cabinet seated, town', text: 'Act 2: after S1, the Bathkeeper named.', map: 'hc_gov_2', x: 1, y: 3, facing: 'down',
+                    flags: KMREP.concat(['story.thr_chip_rumour', 'story.pres_cabinet_first', 'story.cab_seat', 'story.km_seat_pick=town', 'story.km_seat_filled']) },
   });
 }
 // A checkpoint past a Hall means the match route: the Seal, plus the tag on the Glimmer path (SEALS_BOTH_PATHS §4.7).

@@ -50,6 +50,7 @@
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
     'story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',   // HIGH_CHARITY_LAYOUT §11 hooks
     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
+    'story.cab_seat', 'story.km_seat_filled',   // CABINET_AND_COUNCILS §6 (1b): S1 writes them beside the chain step story.km_seat_pick
     'story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen',   // HC_PARADE (D1365): beats inside the parade scene (city only); story.hc_greeted stays the step
     'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue',   // High Charity and Mahopac bits; neither is a main-chain step
     // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
@@ -347,6 +348,16 @@
     // Kilnmouth packet's first flag (B2: story.km_arrived), which nothing sets yet; that packet replaces this row.
     { id: 'a2_hold', when: ['story.km_assigned'], done: ['story.km_arrived'],
       text: 'Await your next orders.', place: 'The Amberwild' },
+    // CABINET_AND_COUNCILS v0.2.2 §4.3 (1b): after the Kilnmouth report-back (story.km_reported, the Kilnmouth packet's K6, 1a), Lumen's
+    // lead-in in the Governor's House lobby, then the stair to the Cabinet Room and the twelfth chair. S1 plays there once K2a has
+    // (story.pres_cabinet_first; K2a waits on the parade). Keepers path only. Text PLACEHOLDER (OPEN_DECISIONS, CABINET 1b rows).
+    { id: 'cab_lead', when: ['story.km_reported', '!story.side=glimmer'], done: ['story.thr_chip_rumour'],
+      npc: 'Captain Lumen', npcIds: ['cab_lumen_lobby'],
+      text: "Captain Lumen is waiting in the lobby of the Governor's House.", place: "Governor's House",
+      target: { map: 'hc_gov_1', x: 4, y: 3 } },
+    { id: 'cab_seat', when: ['story.thr_chip_rumour', '!story.side=glimmer'], done: ['story.km_seat_pick'],
+      text: "Take the stair in the Governor's House up to the Cabinet Room. A chair is set for you.", place: 'Cabinet Room',
+      target: { map: 'hc_gov_2', x: 6, y: 8 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];

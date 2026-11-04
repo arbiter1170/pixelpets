@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'hc_city_v2.json')
 WALK = set('gPCZADsf')
 SOLID = set('TRHUMwF')
-RWALK = set('.=m')          # room floor, rug, mat
+RWALK = set('.=m-+*')       # room floor, rug, mat; - + * are the Cabinet Room's runner (CABINET 1b)
 fails, notes = [], []
 
 def fail(msg): fails.append(msg)
@@ -94,6 +94,23 @@ TXT = {
     'fish': "The stalls are packed away for now.",              # PLACEHOLDER
     'gallery': "[PLACEHOLDER] The gallery stair is roped off for now.",
     'apt_b': None,                                              # kept text
+    # CABINET_AND_COUNCILS v0.2.2 phase 1b. thr_cabinet_lead is CHIP_HINTS' four SIGNED lines (D1470: unchanged). The rest is the
+    # packet's v0.1 words, which Story's CABINET_LINES (draft, D2152) keeps as written: PLACEHOLDER until Design signs that file.
+    'lead_1': "Sit a moment, {name}. A new report on the lamps came in this morning. Half of it was gone by noon.",
+    'lead_2': "People tell us their Walklings come home quiet. A week later, the same people won't say a word.",
+    'lead_3': "The Governor wants you at the cabinet table in High Charity. Take the seat. Keep your ears open.",
+    'lead_4': "Every case on those lamps reaches the Court empty. Ask yourself who empties them.",
+    'cab_deny': "Cabinet in session. Members only.",               # L1
+    'cab_plate': "A brass plate: FOR A HOLDER OF THE ROLL.",        # L2
+    'cab_board_6': "KILNMOUTH: 6 OF 7",                             # B1 (CABINET §4.1 T2)
+    'cab_board_7': "KILNMOUTH: 7 OF 7",                             # B2
+    's1_ask': "First matter. Kilnmouth's empty seat. Our Cadet went and listened. Cadet, whose name?",
+    's1_town': "The Bathkeeper", 's1_cmdr': "The Commander's pick", 's1_co': "The works foreman", 's1_wait': "Not yet",
+    's1_3a': "The town's own name. Well. Order will follow, I'm sure.",
+    's1_3b': "A Keeper's man. Good. Order first.",
+    's1_3c': "A sensible name. Kilnmouth will be warm by spring.",
+    's1_3d': "Then go back and listen. The matter waits for you.",
+    's1_4': "Then it's confirmed. Take the letter to the Reeve, Cadet.",
 }
 # District signposts one tile inside each mouth (names are placeholders until Story's name check, D1277).
 DISTRICT = {'highcharity': 'LANTERN SQUARE', 'hc_civic': 'CHARTER HILL', 'hc_exchange': 'EXCHANGE QUARTER',
@@ -115,7 +132,7 @@ LOOKS = {
 SPEAKERS = {'Child': 'hc_child', 'Parent': 'hc_parent', 'Old holder': 'hc_oldholder', 'Dockhand': 'hc_dockhand',
             'Editor': 'hc_editor', 'Keeper reader': 'clerk', 'The President': 'hc_president', 'Aide': 'hc_aide',
             'Commander': 'captain', 'Duty Keeper': 'officer', 'Governor Merriden': 'hc_governor', 'Visitor': 'hc_visitor',
-            'Resident': 'hc_resident'}
+            'Resident': 'hc_resident', 'Captain Lumen': 'captain'}
 
 # ---------- helpers ----------
 def nbrs(x, y, w, h):
@@ -696,9 +713,10 @@ def room_check(rid, r, arrival, targets):
 def P(oid, x, y, sprite, **kw): return dict({'kind': 'prop', 'id': oid, 'x': x, 'y': y, 'sprite': sprite}, **kw)
 def D(oid, x, y, sprite, **kw): return dict({'kind': 'decal', 'id': oid, 'x': x, 'y': y, 'sprite': sprite}, **kw)
 def N(oid, name, look, x, y, facing='down', **kw): return dict({'kind': 'npc', 'id': oid, 'name': name, 'look': look, 'x': x, 'y': y, 'facing': facing, 'still': True}, **kw)
-def S_(oid, x, y, text, sprite=None):
+def S_(oid, x, y, text, sprite=None, **kw):
     o = {'kind': 'sign', 'id': oid, 'x': x, 'y': y, 'text': text}
     if sprite: o['sprite'] = sprite
+    o.update(kw)
     return o
 
 ROOMS = {}
@@ -762,18 +780,29 @@ objs.append(N('hc_reader', 'Keeper reader', 'clerk', 1, 6, 'right', lines={'else
 ROOMS['hc_news_2'] = room('hc_news_2', 'Block News House', 'hc_news', 'hc_exchange', g, 'hc_news_2', objs, (11, 12))
 
 # hc_gov_1, lobby and the Governor's office, 16x16 (§7.3 floor 1). Keepers path, Act 2 on (D1426, D1439, layout v0.4
-# §5.3): the door, Governor Merriden and the ORDERS DOWN chute (HB12) open with GOV1. The stair goes to floor 3 in phase 1
-# (the Cabinet Room, floor 2, is phase 2 and follows GOV1 when built); the President's rooms stay Keepers path, Act 5, after
-# meeting the Governor (story.hc_gov_met, PLACEHOLDER flag).
+# §5.3): the door, Governor Merriden and the ORDERS DOWN chute (HB12) open with GOV1. CABINET_AND_COUNCILS 1b: the stair goes to
+# the Cabinet Room (floor 2), open on the seat's key (CAB, §4.3, D1465 moved there) or on GOV3, so an Act 5 save from before the
+# cabinet still reaches the President's rooms (floor 3) through it. A blocked stair says its deny on the bump.
 part = lambda: '#' + '.' * 8 + '#' + '.' * 5 + '#'
 g = ['#' * 16, '#' + 'W' * 14 + '#'] + [part() for _ in range(3)] + ['#' + '.' * 14 + '#'] * 2 + [part() for _ in range(8)] + ['#######m########']
 GOV3 = '!story.side=glimmer & story.act>=5 & story.hc_gov_met'
+CAB = '!story.side=glimmer & story.thr_chip_rumour & story.hc_parade_seen'     # CABINET §4.3: the room opens
+STAIR2 = CAB + ' | ' + GOV3
+LEAD = ['!story.side=glimmer', 'story.km_reported', '!story.thr_chip_rumour']   # CABINET §4.3: the lead-in's key
+SIT1 = ['!story.side=glimmer', 'story.pres_cabinet_first', '!story.km_seat_pick']   # S1's key (K2a's flag; K2a waits on the parade)
 objs = [{'kind': 'warp', 'id': 'hc_gov_1_mat', 'x': 7, 'y': 15, 'to': 'hc_civic', 'tx': 32, 'ty': 16, 'facing': 'down'},
-        {'kind': 'warp', 'id': 'hc_gov_up', 'x': 1, 'y': 2, 'to': 'hc_gov_3', 'tx': 2, 'ty': 12, 'facing': 'up', 'need': GOV3},
+        {'kind': 'warp', 'id': 'hc_gov_up', 'x': 1, 'y': 2, 'to': 'hc_gov_2', 'tx': 1, 'ty': 3, 'facing': 'down', 'need': STAIR2,
+         'deny': TXT['cab_deny']},
         D('hc2_gov_stair_1', 1, 2, 'stair_flight')]
 objs += [P(f'hc2_lobbydesk_{x}', x, 9, 'keep_desk', name='the Keeper desk') for x in (2, 3, 4)]
 objs.append(N('hc_gov_keeper_a', 'Keeper', 'officer', 3, 8, 'down', lines={'story.gov_posted & !story.hc_gov_met': TXT['gov_desk'], 'else': 'Welcome to the Governor\'s House, holder.'}))
-objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={STAIR2: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+# CABINET §4.3 (D1470 = A): Lumen's lead-in, four SIGNED lines, on a Captain Lumen body in the lobby (default staging), keyed after
+# the Kilnmouth report-back. It is the only setter of story.thr_chip_rumour; the body leaves once it is set.
+LUMEN = 'Captain Lumen'
+SC['thr_cabinet_lead'] = [['say', LUMEN, TXT['lead_1']], ['say', LUMEN, TXT['lead_2']], ['say', LUMEN, TXT['lead_3']],
+                          ['say', LUMEN, TXT['lead_4']], ['setFlag', 'story.thr_chip_rumour', True]]
+objs.append(N('cab_lumen_lobby', LUMEN, 'captain', 4, 3, 'down', when=LEAD, lines={'else': '@thr_cabinet_lead'}))
 objs += [P(f'hc2_govdesk_{x}', x, 4, 'keep_desk', name="the Governor's desk") for x in (11, 12)]
 SC['hc2_chute'] = [['say', '', TXT['hb12_chute']], ['setFlag', 'story.hc_chute', True]]
 objs.append(P('hc_chute_mouth', 13, 4, 'hc_chute_mouth', name='the ORDERS DOWN chute', scene='hc2_chute', lines={'else': TXT['hb12_chute']}))
@@ -798,9 +827,69 @@ objs.append(N('hc_governor', GM, 'hc_governor', 12, 3, 'down', when=['story.act>
 objs += [P('hc2_gov_flag_w', 10, 2, 'banner_keeper'), P('hc2_gov_flag_e', 14, 2, 'banner_keeper')]
 ROOMS['hc_gov_1'] = room('hc_gov_1', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_1', objs, (7, 14))
 
+# hc_gov_2, the Cabinet Room, 14x12 (§7.3 floor 2; CABINET_AND_COUNCILS v0.2.2 §4.1-§4.3, phase 1b). Rule 9: Vincent approved the
+# previews (Wed Nov 4, 2026: 14x12, the seat tells as drawn, a third floor tile); the placements are the layout draft's (§3-§5).
+# Reached by stairs only: down to floor 1 (1,2), up to floor 3 (1,10, GOV3). The long table (3x5 slices) with twelve chairs, even
+# seats west at the Governor's right hand; the twelfth is a walkable decal and S1's trigger. Tells as drawn: the Treasury's folder
+# with its `r` ribbon (table slice 2), Roads and Coaches' newer chair (seat 4). The members sit as bodies only at a sitting.
+g = ['#' * 14, '#' + 'W' * 12 + '#', '#' + '.' * 12 + '#'] + ['#..=' + '.' * 9 + '#' for _ in range(5)] + \
+    ['#..+--*......#', '#' + '.' * 12 + '#', '#' + '.' * 12 + '#', '#' * 14]
+objs = [{'kind': 'warp', 'id': 'hc_gov2_down', 'x': 1, 'y': 2, 'to': 'hc_gov_1', 'tx': 2, 'ty': 2, 'facing': 'right'},
+        {'kind': 'warp', 'id': 'hc_gov2_up', 'x': 1, 'y': 10, 'to': 'hc_gov_3', 'tx': 2, 'ty': 12, 'facing': 'up', 'need': GOV3},
+        D('hc2_gov_stair_2', 1, 2, 'stair_flight'), D('hc2_gov_stair_2up', 1, 10, 'stair_flight')]
+# the wall face (row 1): the order paper, the seating board (B1, B2), the towns map, the chute pipe, the OUT slot, a clock
+objs += [D('cab_order_paper', 3, 1, 'pa_notice_pins'),
+         D('cab_seat_board', 4, 1, 'cab_seat_board', when=['!story.km_seat_filled']),
+         D('cab_seat_board_full', 4, 1, 'cab_seat_board_full', when=['story.km_seat_filled']),
+         S_('cab_board_6', 4, 1, TXT['cab_board_6'], 'none', when=['!story.km_seat_filled']),
+         S_('cab_board_7', 4, 1, TXT['cab_board_7'], 'none', when=['story.km_seat_filled'])]
+objs += [D(f'cab_towns_map_{i}', 5 + i, 1, f'cab_towns_map_{i}') for i in range(3)]
+objs += [D('cab_chute_pipe', 8, 1, 'cab_chute_pipe'), D('cab_out_slot', 9, 1, 'cab_out_slot'), D('cab_clock', 11, 1, 'pa_clock_round')]
+# the floor: the charter case, records, the flag, the gallery and its ends, the sideboard, the minutes desk, the tall clock
+objs += [P('cab_charter', 2, 2, 'cab_charter_case', name="the Keepers' charter"), P('cab_records', 1, 6, 'pc_records', name='records'),
+         P('cab_flag_w', 1, 8, 'pc_flag_stand', name='a flag'), P('cab_plant', 12, 2, 'pv_fern', name='a fern'),
+         P('cab_ballot', 12, 8, 'pc_ballot_box', name='a ballot box'), P('cab_clock_tall', 12, 10, 'pn_clock_tall', name='a tall clock'),
+         P('cab_sideboard_0', 5, 10, 'cab_sideboard_0', name='a sideboard'), P('cab_sideboard_1', 6, 10, 'cab_sideboard_1', name='a sideboard'),
+         P('cab_minutes_desk_0', 9, 10, 'pc_clerk_desk_0', name='the minutes desk'), P('cab_minutes_desk_1', 10, 10, 'pc_clerk_desk_1', name='the minutes desk')]
+objs += [P(f'cab_rail_{y}', 11, y, 'pc_rail', name='the gallery rail') for y in (3, 4, 6, 7, 8)]
+objs.append(D('cab_rail_gate', 11, 5, 'pc_rail_gate'))
+objs += [P(f'cab_gallery_{y}', 12, y, 'cab_gallery_chair', name='a gallery chair') for y in (3, 4, 6, 7)]
+# the table (x 5-7, y 3-7); slice 13 is the twelfth place, set: its tap reads the twelfth chair's plate (L2)
+for i in range(15):
+    x, y = 5 + i % 3, 3 + i // 3
+    kw = {'name': 'the twelfth place', 'lines': {'else': TXT['cab_plate']}} if i == 13 else {'name': 'the cabinet table'}
+    objs.append(P(f'cab_table_{i}', x, y, f'cab_table_{i}', **kw))
+CAB_SEATS = {1: (6, 2), 2: (4, 3), 3: (8, 3), 4: (4, 4), 5: (8, 4), 6: (4, 5), 7: (8, 5), 8: (4, 6), 9: (8, 6), 10: (4, 7), 11: (8, 7), 12: (6, 8)}
+for n, (x, y) in CAB_SEATS.items():
+    if n == 1: objs.append(P('cab_chair_1', x, y, 'cab_chair_head', name="the Governor's chair"))
+    elif n == 12: objs.append(D('cab_chair_12', x, y, 'cab_chair_up'))
+    else: objs.append(P(f'cab_chair_{n}', x, y, 'cab_chair_r_new' if n == 4 else 'cab_chair_r' if x == 4 else 'cab_chair_l', name='a cabinet chair'))
+# S1 (§4.5, v0.1 settled): K2a sets story.pres_cabinet_first and plays on entering; K2a waits on the parade (#296), so S1 is built
+# behind its flag. The holder walks the runner to the twelfth chair (10 steps, D1985) and S1 plays there. Flags are written at the
+# end of a pick (the packet's "each pick sets"), so "Not yet" and an interrupted sitting write nothing and replay.
+PRES = 'The President'
+def s1_pick(line, pick):
+    return [['say', PRES, line], ['say', GM, TXT['s1_4']], ['setFlag', 'story.cab_seat', True],
+            ['setFlag', 'story.km_seat_pick', pick], ['setFlag', 'story.km_seat_filled', True]]
+SC['cab_s1'] = [
+    ['choice', TXT['s1_ask'], [
+        [TXT['s1_town'], s1_pick(TXT['s1_3a'], 'town'), None, 'story.km_names>=3'],
+        [TXT['s1_cmdr'], s1_pick(TXT['s1_3b'], 'commander')],
+        [TXT['s1_co'], s1_pick(TXT['s1_3c'], 'company')],
+        [TXT['s1_wait'], [['say', GM, TXT['s1_3d']]], None, 'story.km_names<3'],
+    ], GM],
+]
+objs.append({'kind': 'trigger', 'id': 'cab_seat12', 'x': 6, 'y': 8, 'r': 0, 'when': SIT1, 'scene': 'cab_s1'})
+# the sitting's bodies (S1): the Governor at the head, Captain Lumen in the Keepers' chair, the President at the Governor's shoulder
+# (K2a's staging, behind its flag). Lighter C's three company bodies (seats 3, 4, 9) are phase 1c.
+objs += [N('cab_governor', GM, 'hc_governor', 6, 2, 'down', when=SIT1), N('cab_lumen', LUMEN, 'captain', 4, 3, 'right', when=SIT1),
+         N('cab_president', PRES, 'hc_president', 7, 2, 'down', when=SIT1)]
+objs.append(N('hc_gov2_keeper', 'Keeper', 'officer', 2, 10, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+ROOMS['hc_gov_2'] = room('hc_gov_2', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_2', objs, (1, 3), wall={'windows': [10, 12]})
+
 # hc_gov_3, the President's rooms, 12x14 (§7.3 floor 3). No Summit staging here (X7).
 g = ['#' * 12, '#' + 'W' * 10 + '#'] + ['#' + '.' * 10 + '#' for _ in range(6)] + ['#.=======..#'] + ['#' + '.' * 10 + '#' for _ in range(4)] + ['#' * 12]
-objs = [{'kind': 'warp', 'id': 'hc_gov_down', 'x': 1, 'y': 12, 'to': 'hc_gov_1', 'tx': 2, 'ty': 2, 'facing': 'right'},
+objs = [{'kind': 'warp', 'id': 'hc_gov_down', 'x': 1, 'y': 12, 'to': 'hc_gov_2', 'tx': 1, 'ty': 9, 'facing': 'up'},   # CABINET 1b: via floor 2
         D('hc2_gov_stair_3', 1, 12, 'stair_flight')]
 objs += [D(f'hc2_letters_{x}', x, 1, 'hc_thanks_letters') for x in (1, 3, 7, 9)]
 objs += [P('hc2_pres_desk_w', 6, 3, 'keep_desk', name='the desk'), P('hc2_pres_plate', 7, 3, 'hc_desk_plate', name='THE PRESIDENT', lines={'else': 'A desk plate: THE PRESIDENT.'}),
@@ -825,7 +914,9 @@ TARGETS = {
     'hc_lantern_in': ((8, 20), {'mat': (8, 21), 'ines': (7, 15), **{f'bed{i}': (x + 1, y) for i, (x, y) in enumerate(beds)}}),
     'hc_news_1': ((7, 14), {'mat': (7, 15), 'stair': (12, 12), 'editor': (7, 8), 'spike': (11, 8)}),
     'hc_news_2': ((11, 12), {'stair': (12, 12), 'reader': (1, 7), 'tray': (6, 8)}),
-    'hc_gov_1': ((7, 14), {'mat': (7, 15), 'stair': (1, 2), 'governor_front': (12, 5)}),
+    'hc_gov_1': ((7, 14), {'mat': (7, 15), 'stair': (1, 2), 'governor_front': (12, 5), 'lumen_front': (4, 4)}),
+    'hc_gov_2': ((1, 3), {'stair_down': (1, 2), 'stair_up': (1, 10), 'arrive_up': (1, 9), 'seat12': (6, 8), 'governor_side': (5, 2),
+                          'charter_front': (2, 3), 'gallery': (12, 5), 'board_front': (4, 2), 'keeper_front': (2, 9)}),
     'hc_gov_3': ((2, 12), {'stair': (1, 12), 'president_front': (7, 4) if False else (5, 4), 'cups': (3, 10), 'stamp': (10, 11)}),
 }
 # kept room objects count as blockers for the room checks
@@ -870,7 +961,7 @@ for sid in SC:
 
 # ---------- the reputation cast (every named body needs an entry; only added while the city is on) ----------
 # D1439: the Governor is a civil post, not a Keeper; the cast has no civil value, so he takes 'none' (as civilians do)
-KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk'}
+KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk', 'Captain Lumen'}
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
 CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
@@ -924,7 +1015,7 @@ out = {
     'castAt': PARADE['castAt'],
     'notStepFlags': ['story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',
                      'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
-                     'story.gov_told'] + PARADE['notStepFlags'],   # GOVERNOR_MEETING §6.2; story.km_assigned is the gov_meet chain step
+                     'story.gov_told', 'story.cab_seat', 'story.km_seat_filled'] + PARADE['notStepFlags'],   # + CABINET §6 (1b)   # GOVERNOR_MEETING §6.2; story.km_assigned is the gov_meet chain step
 }
 for n in notes: print('note:', n)
 if fails:
