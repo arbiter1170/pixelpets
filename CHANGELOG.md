@@ -2,7 +2,7 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-03 16:54 ET: HC_PARADE, the first arrival in High Charity: the parade, the President's speech and the street battles, behind HC_CITY_V2 (DRAFT; build 20261103-1654)
+## 2026-11-03 22:25 ET: HC_PARADE, the first arrival in High Charity: the parade, the President's speech and the street battles, behind HC_CITY_V2 (DRAFT; build 20261103-2225)
 - What changed and why: the owner asked for Design's HC_PARADE packet (design `specs/HC_PARADE.md` v0.2, master 0523db6; D1353-D1369 all settled, the reds by Vincent). A holder's first arrival on Lantern Square now plays `hc_parade` instead of `hc_gate` (city preview only): Keeper Officers put the holder behind a cordon with a crowd, a parade passes in six waves (two rotor craft, two Officer columns, two Keeper tanks, the President's car with one gloved hand at the window and a clap on cue, a last tank and column), the crowd follows to Charter Hill, where Muster Road is closed between two tanks and the President (half-seen, no portrait) gives the seven-line speech from the Keeper High Court's steps, then three street battles: the holder and an ally against two foes, picked at random from the guards and the vest-wearing supporters (Keepers path: a guard beside you; Glimmer path: a supporter, then the run west to Lantern Quay). A loss restarts the same battle with the team restored. The Court on the Parade's south half (D1354) is main's #287 (layout v0.3); the parade stages on it. The rotor craft are Design's ROTOR_CRAFT v0.1.1 draft frames (D1385-D1394), carried in by the build tool and flown per its §6 choreography. Engine: E7 flying layer, E8 `emoteAll`, E10 `load` triggers (resume on map load), plus `hide`, straight-lane and ghost walks, no-portrait lines and `hcFight`. E1-E5 come from `claude/post-trial-crackdown`, merged into this branch (no PR existed for it). Normal play and plain `?debug=1` are unchanged: everything lives in `data/hc_city_v2.json` and installs only while the city is on; the new art is built on first draw.
 - Files touched: `tools/hc_parade.py` (new), `tools/build_hc_city.py` (the parade hook-up; the Court move itself came from main #287, layout v0.3), `data/hc_city_v2.json` and `.js`, `game.js`, `sprites.js` (`addHcParadeArt`), `quests.js` (NOT_STEPS), `tests/hc_parade.spec.js` (new), `tests/README.md`, `handoff/maps/HC_PARADE.md` (new: beat sheet, inspiration briefs, PLACEHOLDER list), `handoff/maps/HC_CITY_V2.md`, `handoff/shots/hc_parade/` (beat stills and before/after at 390 and 320), `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`; plus the merged crackdown branch.
 - Commit(s) + build id: claude/hc-parade, build 20261103-1654.
@@ -11,7 +11,8 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Owner's direction in review (Tue Nov 3): the supporters' vests move from mint to Glimmerwell's locked set (wine `V`, soot `N` trim; AGENTS rule 11); the President goes back into the Court before the battles (as built); a new `["camera", id]` scene step makes the view ride with the President's car on both maps and then follow him until he is in view, holding him through the speech, and hands back to the holder before the battles (a 400 ms ease; reduced motion and SKIP cut). `tests/hc_parade.spec.js` checks the camera order and the vest palette (48/48 at 320, 375 and 390).
 - Preview review (Vincent, relayed by the HC_PARADE design session, Tue Nov 3): every preview re-shot with each line fully typed (every line of both paths at 390 and 320, plus the beats and storyboards); the crowd at the Court is denser (26 strips plus 6 that close in behind the car; people stay at 23 of 24); the President's car is a 64x32 armoured car with a raised glove at the rear window. Also fixed: two of the car's four guards on the Square were never cast (a stray comment from the camera change).
 - Catch-up with main 1bafad7 (#290, #297, #291, #294): `index.html` now loads `glimmer_fleet.js` again (an earlier merge on this branch took this branch's `index.html` and dropped main's #268 tag; `glimmer_fleet.spec.js` caught it). With hc_parade, hc_court_move, hc_city_v2, post_trial_crackdown, memory_walk, npc_ranks, intro_cutscene, highcharity, act_number, public_lore_scrub, standing, story_copy_fix and glimmer_fleet: all pass at 320, 375 and 390.
-- Anything left unfinished: Pia's art for every PLACEHOLDER row (and her redraw of the rotor frames); Story's words; the KEEPER_ANTHEM cues (silent placeholders); at ship time `save.js` must size the city's maps. DRAFT until Vincent says yes to the previews.
+- Catch-up with main ed67d74 and 47fb0c6 (#289 the Keeper anthem, #304, #305, the Weir Hut, #285 Fen's pacing), merge commits only: the parade now uses the anthem's steps (KEEPER_ANTHEM v0.2.1 §6.4): `anthem_march` opens the parade and carries across the warp (`keep`), an E10 replay of Part 2 opens on it (`near`), and 2.5 hands off to `anthem_dark` (fade out 900 ms, at least 1600 ms, fade in 2400 ms) after the guard's step, before "Citizen. Back.". `tap_interact` counts add the crackdown's and the Weir Hut's; the archive records D1198 and D1200-D1203 once (#278's bullets); OPEN_DECISIONS drops D1199 (settled in #278). hc_parade, tap_interact, keeper_anthem, hc_city_v2, hc_court_move, post_trial_crackdown, glimmer_fleet and weir_hut: 228 passed at 320, 375 and 390 on the ed67d74 merge.
+- Anything left unfinished: Pia's art for every PLACEHOLDER row (and her redraw of the rotor frames); Story's words; at ship time `save.js` must size the city's maps. DRAFT until Vincent says yes to the previews.
 
 
 ## 2026-11-03 08:50 ET: POST_TRIAL_CRACKDOWN built: the Keeper tanks, the Lantern House night, Warden Ilse's call and debrief (build 20261103-1156)
@@ -27,6 +28,14 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Recorded in play: `handoff/shots/post_trial_crackdown/build/` (390 stills of each beat and the tank arrival GIF). Day 1's Two Lights trigger by the Lantern House door stays off after the crackdown.
 - Vincent's clarification ("only change is the pick doesn't happen right when the curfew ends"): the curfew order is back to the spec (until the pick), and the pitches, posts, notice, `juniper_east` and the curfew whereabouts are built.
 - Anything left unfinished: June's lines (D1208), Pia's art, the real Warden quest (WARDEN_SUMMONS), the keyed lines on the trip home (D1417).
+
+## 2026-11-03 22:05 ET: Test fix: cc_cottage_roof checks turf roofs on Cobblecrest's maps only (test only, no build stamp)
+- What changed and why: `tests/cc_cottage_roof.spec.js` ("cottage_e keeps the arch...", line 111) asserted that no building on any map uses `roof_turf`. The Weir Hut on `hw_cut` (D1591, merged in #301) does, so the test failed on main at 320, 375 and 390 from #301 on (#302 merged over it; main 9041f0d, build 20261103-1747). The check is meant to guard Cobblecrest (D910), so the query now walks only Cobblecrest's maps (`cobble*`, `cc_*`), asserts that list includes `cobblecrest` so it can never go empty, and still expects no turf roof there. No game code or data changes.
+- Files touched: `tests/cc_cottage_roof.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/fix-cottage-roof-scope`; no build stamp (test and docs only; build stays 20261103-1747).
+- Tests run and result (widths, checks): before, on main: `tests/cc_cottage_roof.spec.js` + `tests/weir_hut.spec.js` 3 failed (cottage_e test at 320/375/390, `["hw_cut.weir_hut"]`), 34 passed. After: 37 passed. Negative check: a scratch `roof_turf` on Cobblecrest's `cottage_w` fails the test at all three widths with `["cobblecrest.cottage_w"]` (reverted, not committed).
+- Decisions made (colour + reasoning): green; a test-only fix that keeps the Cobblecrest check whole and stops it reaching other towns. No new D or Q id.
+- Anything left unfinished: none.
 
 ## 2026-11-03 13:06 ET: Build: the Keeper anthem, "Every Roof a Lantern" (KEEPER_ANTHEM v0.2.1, D1375-D1384, D1419-D1423)
 - What changed and why:
@@ -213,6 +222,129 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - The HC_PARADE scene itself (the speech staging, Muster Road closed between two tanks) is not built.
   - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (see the PR).
 
+## 2026-11-03 08:12 ET: Build: Fen's pacing (D1128): the bench XP share and Fen's challenge hint
+- What changed and why: D1128 is built as Vincent settled it (Nov 3, 8:07 AM ET, from the research).
+  - **Bench XP share.** After each foe is beaten or befriended, every other Walkling in the holder's own party gets half of the XP it would earn at its own level: after the level-gap clamp, rounded down (`STAT_RULES.BENCH_SHARE` 0.5, `benchXpAward` in `stats.js`, `awardFoe` in `game.js`).
+    - Worn-out Walklings get it too.
+    - The Walkling just befriended gets nothing for its own capture.
+    - Caps hold any overflow in the existing `bxHeld`, and bench level-ups show on the end panel.
+    - Only the local party is paid.
+  - **Fen's challenge hint.** While the lead is below Lv 12, Fen's Trial panel adds one line before "Begin the trial?": "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first." It is PLACEHOLDER for June, and it never blocks.
+  - Fen's team (12/13/14) and her 420-Acorn purse are unchanged.
+- Files touched: `stats.js`, `game.js`, `tools/GAMEJS_MAP.txt`, `tests/fen_pacing.spec.js` (new), `tests/maps_b8.spec.js` (Fen's panel now has the hint line before the choice when the lead is below Lv 12), `tests/README.md`, `CHANGELOG.md`, `handoff/shots/fen_pacing_d1128/`, plus the build stamp.
+- Commit(s) + build id: claude/fen-pacing-d1128, build 20261103-1948 (first stamped 20261103-0821; restamped after each catch-up with main: 656ae76, 6844bb7, 9041f0d).
+- Tests run and result (widths, checks):
+  - `tests/fen_pacing.spec.js`: 12 of 12 passed at 320, 375 and 390.
+  - 19 battle, level and Fen suites (level_grow, battle_no_reload, day1_flow, maps_b8, glimmer_fernbrook, match_marker, rematch_party, deploy_held, battle_tips_once, fetch_line, arbiter_units, five_answer, hushwater, brinewick, crash_growup_people, cue_rail, qa_gaps, art_pass): 283 passed, 2 failed.
+    - `maps_b8` Fen panel: fixed here (the hint line), and the re-run passed.
+    - `rematch_party:316`: fails the same way on clean main 8cd1510.
+  - After the main catch-up (656ae76, build 20261103-1032): fen_pacing, maps_b8, day1_flow, level_grow, battle_no_reload, trial_hall_contested, seals_both_paths, glimmer_fernbrook, qa_gaps, deploy_held, battle_tips_once and match_marker at 320, 375 and 390: 173 passed, 0 failed, 20 skipped (width-gated).
+  - After the third catch-up (9041f0d: #290-#302; build 20261103-1948): the same four suites, 36 passed, 0 failed, 4 skipped.
+  - After the second catch-up (6844bb7, #287; build 20261103-1200): fen_pacing, maps_b8, level_grow and battle_no_reload at 320, 375 and 390: 36 passed, 0 failed, 4 skipped (width-gated).
+  - Scans pass.
+- Shots (before = main, after = this branch, at 390 and 320): `handoff/shots/fen_pacing_d1128/` (`compare-390.png`, `compare-320.png`).
+- Decisions made (colour + reasoning): D1128 (red), as settled. No new ids. Save stays `pixelpets.save.v2`, `v` 2, no new field.
+- Anything left unfinished:
+  - Nina's Fen test (one clean run of the new flow, 12 tries at Fen, pass at 6 or more wins). If it fails, Fen drops one level to 11/12/13, and the hint line and its threshold move with her.
+  - GROWTH_PACING's sim re-run (Design).
+
+## 2026-11-03 3:20 PM ET: B-3: RENDEZVOUS_VINCENT's Act 1 list is unlabelled (D1428), docs only
+- What changed and why: Vincent settled D1428 (default A, Tue Nov 3, 2026): the speech's draft line is dropped. In `handoff/specs/RENDEZVOUS_VINCENT.md` the Keeper shift's sheet is now an unlabelled list of holders with Seals (no "roll" heading, no "call-up", no "muster"), NPC Vincent's "That's mustering." is cut (PLACEHOLDER), and the spec no longer seeds the later speech line (the two "HC_PARADE S2" links are gone). Open question 4 drops "the word draft waits". Ids D1395-D1410 unchanged.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/b3-rendezvous-roll`; docs only, no build bump.
+- Tests run and result (widths, checks): docs only; wording scan PASS.
+- Decisions made (colour + reasoning): D1428 red, settled by Vincent. No new id.
+- Anything left unfinished: Story's wording for the list and Vincent's line (PLACEHOLDER).
+
+## 2026-11-03 9:56 AM ET: Spec note: RENDEZVOUS_VINCENT merged with WARDEN_SUMMONS, and the build split (Vincent), docs only
+- What changed and why: Vincent ruled that RENDEZVOUS_VINCENT wins over the crackdown branch's WARDEN_SUMMONS on the outcome:
+  - a phone call;
+  - a distraught Ilse who sends the holder to Vincent;
+  - the pick after the report.
+  WARDEN_SUMMONS's town lines and its old-save guard are kept, and the build reuses its flags (`story.warden_called`, `story.warden_met`). The crackdown session builds the call and the debrief. This session builds the rendezvous, the shifts and the report on top of that.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): Vincent's call (merge, split). No new ids.
+- Anything left unfinished:
+  - The crackdown branch's ids (D1333-D1346) clash with #268's settled D1333-D1347. That session has been asked to renumber from D1411.
+
+## 2026-11-03 8:38 AM ET: Decisions: Vincent approves every RENDEZVOUS_VINCENT default (D1397-D1410), docs only
+- What changed and why: Vincent approved all defaults for the Vincent quest (two trial shifts, the stream-bank meeting, the Keeper call-up roll and the Glimmerwell ledger as the secrets, the name kept, Fen's lean unchanged, and the rest of §7). The 14 rows move to the archive, and the spec marks them SETTLED. D1396 stays open until the quest is built.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1397-D1410 settled by Vincent. No new ids.
+- Anything left unfinished:
+  - The build. It waits on the crackdown (POST_TRIAL_CRACKDOWN, being built in another session) and on Vincent's choice of builder.
+
+## 2026-11-03 08:30 ET: Spec: RENDEZVOUS_VINCENT v0.1, Ilse's call, the Vincent rendezvous and the road to the pick (D1396; ids D1397-D1410), docs only
+- What changed and why: Vincent asked for the post-crackdown quest to be scoped (D1395, D1396). The default shape is two trial shifts:
+  - Ilse phones the holder home and debriefs them, distraught at the President.
+  - Vincent, a Glimmerwell field agent who stands with neither side, meets the holder at the Route 1 stream bank.
+  - The holder works one shift for each side and sees what each keeps quiet:
+    - the Keepers: a call-up roll of Seal holders sent from High Charity, with no copies to the Wardens;
+    - Glimmerwell: a buy-back ledger of old Seals, a Walkling that answers a beat late after a free check-up, and a "Partners only" door. The chip is never named.
+  - The built pick at the orchard gate runs after the report.
+  - No new room, town or route. All copy is PLACEHOLDER.
+- Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md` (new), `OPEN_DECISIONS.md` (D1397-D1410 reserved and opened; next free D1411), `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1397-D1410: 8 red, 4 yellow, 2 green, each with a default (spec §7). Nothing is built before Vincent rules.
+- Anything left unfinished: Vincent's rulings, Story's copy, and Design's check of canon and the UNVERIFIED tiles.
+
+## 2026-11-03 08:07 ET: Decisions: Vincent settles D1128 (Fen's pacing) as the research recommends, docs only
+- What changed and why: D1128 settled.
+  - Keep the bench XP share at 50%.
+  - Keep Fen at 12/13/14 and test, cutting one level only if the test fails.
+  - The hint goes on Fen's challenge, when the lead is below Lv 12, and suggests a second Walkling.
+  - The payout stays at 420 Acorns.
+  - The build is on its own branch.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1128 (red) settled by Vincent.
+- Anything left unfinished: the build (claude/fen-pacing-d1128) and Nina's Fen test.
+
+## 2026-11-03 08:05 ET: Decisions: the curfew runs through dawn; after the crackdown, Ilse's call and the Vincent rendezvous lead to the pick (D1200, D1203, D1395, D1396), docs only
+- What changed and why:
+  - D1200 settled: the Fernbrook curfew runs through dawn.
+  - D1203 amended and D1395 settled: the pick no longer happens at dawn. When the crackdown ends, Warden Ilse phones the holder home to debrief, distraught at the President's actions.
+  - D1396, new and open: Ilse sends the holder to rendezvous with Vincent, an unaligned Glimmerwell agent who hints at the chip and opposes the Keepers' martial order. The quest should feel like going undercover to see both factions' secrets, and it starts the pick. It needs a spec first.
+  - D1159 confirmed by Vincent (recorded on #277).
+- Files touched: `OPEN_DECISIONS.md` (D1395-D1396 reserved, first numbered D1353-D1354 and moved off Design's HC_PARADE block; next free D1397), `archive/DECISIONS_SETTLED.md`, `handoff/specs/POST_TRIAL_CRACKDOWN.md`, `BACKLOG.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning):
+  - D1200 and D1395 (red) settled by Vincent; D1203 amended.
+  - D1396 (red) open; spec first.
+  - Id check: `claude/high-charity-phase1-k7q2hc` (unmerged) uses D1350-D1352, which collides on D1350 with #277. Reported, not renumbered.
+- Anything left unfinished: the D1396 quest spec; D1128 (research done, awaiting Vincent).
+
+## 2026-11-03 07:52 ET: Decisions: Vincent's rulings on the open red rows (docs only)
+- What changed and why: Vincent answered the open red list. Settled:
+  - D1248 and D1250: the Fernbrook homes (already merged in #267 and #273) are approved.
+  - D1199: a Seal gives the town's voice, and the lore implies many contested for the Seals and lost.
+  - D1201: the Seal ban, with lots of lore and dialogue: NEWS, Ribbit, and Keeper-town NPCs on their next talk when no priority line fires.
+  - D1202: the tank look is the default.
+  - D1203: first light.
+  - D1173: no town moves while the holder is undecided.
+  - D1140: stuck holders are re-armed.
+  - D1034, D1035, D1038 and D1040: the RPG Marks are discarded for now.
+  - D1317: the Hall Stone room is approved (rule 9 previews still first).
+  - D1322: no status effects before Episode 1.
+  - D1198: the Commander keeps a PLACEHOLDER name.
+  - D1020-D1023 and D1029: closed as superseded by #258.
+  - Parked: D1160 and D1319, in the new `handoff/backlog/REVISIT_LATER.md`, which also lists the placeholder names to fill later.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `handoff/backlog/REVISIT_LATER.md` (new), `handoff/maps/FERNBROOK_HOMES.md`, `handoff/specs/DAY1_TRIAL1_FLOW.md`, `handoff/specs/POST_TRIAL_CRACKDOWN.md`, `handoff/specs/CORE_LOOP_HOOK_AUDIT.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/vincent-rulings-nov3; docs only, no build stamp.
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): the red rows above, settled by Vincent in his own words (quoted in the archive). No new ids.
+- Anything left unfinished:
+  - D1128 (Fen's pacing): a research report comes first.
+  - Still open with Vincent: D1200 (curfew), D1044 (shadows), D971, D1000, D1087.
+  - D1159 and D1348-D1350 are recorded on #277.
+
 ## 2026-11-03 07:05 ET: Build: the contested Fernbrook Trial Hall behind a flag (TRIAL_HALL_FERNBROOK_MAP, D1189-D1196), and "Fernbrook Trial Hall" everywhere (D1192)
 - What changed and why:
   - The contested Hall from #263, with Vincent's rulings of Nov 2, 10:19 PM ET (#264):
@@ -336,6 +468,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `tests/npc_ranks.spec.js` and `tests/day1_flow.spec.js` at 320, 375 and 390 (45 passed); full suite at 390 (see the PR). Playwright ran with the box's Chromium; `npm run test:agent` stops at its RTDB rules precheck here (the local emulator cannot load its rules through the sandbox proxy, the same as #262). `node tools/scans/run.js` passes.
 - Decisions made (colour + reasoning): D1159 settled (red; the cleared task). The hosts part of D1160 is settled. New open rows: D1348 (red: civilians whose names still carry "Keeper" or "Watch"), D1349 (red: Warden Teodor runs a shop), D1350 (red: "Rowan" is on Design's franchise list). Green: "Sefton" was checked against every game and design file and a web search.
 - Anything left unfinished: D1348-D1350, the rest of D1160, and Story's final name for the cadet (D1186).
+
+## 2026-11-03 01:19 ET: Banned-words sweep: one TV line, a stale GYM sign in a build script, and new words in the wording scan
+
+- What changed and why: a sweep of player text in `data/*.json` and `game.js` for trainer, lowercase keeper, coins, gym, TV, rival (meaning Rook), franchise names, Orokin and bellgold. Ids, keys and `{tokens}` were left alone. Two hits, both fixed to the house word: the dream TV prop in `data/mahopac.json` (`dream_tv`) now reads "The wire set hums. A ball game, with the sound turned low." and `tools/build_highcharity.py` no longer spells the `hc_gym` sign "TRIAL GYM": it now matches the live sign Design signed in STORY v0.5.1 ("DOJO · ..."). The script is now synced to the live `data/highcharity.json`: it had nine other stale lines (the Lantern House sign and note, the dock guard and the sky-dock console after the council, the `hc_gym_in` room name Dojo, the Seal line in the Dojo, the council scene's three lines, and the `lanternfly` stock item), all hand-edited in the JSON by STORY_COPY_FIX and COPY_FIX_2. Running `python3 tools/build_highcharity.py` now rewrites the JSON byte-for-byte, so the live file is unchanged. trainer, keeper, coins: no hits in player text (the scan already caught them). Every `rival` left is an id, a music slot or the `{rival}` token. No Orokin, bellgold or franchise name is in player text. The wording scan (`tools/scans/wording.js`) now fails on gym, TV/television, rival, Orokin, bellgold and a list of franchise names (stored as char codes like the toy brand, so the repo never spells them; accents folded). The names are checked in every string, so a one-word speaker label counts. `{tokens}` are masked before the check, and the art-only `furniture` catalogue in `data/interiors.json` is skipped (the game never reads it). The selftest proves each new reason.
+- Files touched: `data/mahopac.json`, `data/mapdata.js` (regenerated), `tools/build_highcharity.py`, `tools/scans/wording.js`, `tools/scans/selftest.js`, `index.html` and `version.json` (build stamp), `CHANGELOG.md`.
+- Commit(s) + build id: build 20261103-0116.
+- Tests run and result (widths, checks): `node tools/scans/run.js` all PASS; `node tools/scans/selftest.js` PASS; `tests/dream_toy.spec.js` and `tests/mahopac.spec.js` at 320 and 390, 15 passed; a scratch check tapped the wire set in `dream_2004` at 320, 375 and 390 (reduced motion, zero console errors): the line shows in full on two lines.
+- Decisions made (colour + reasoning): green. Text only; the scan words come from the house list. Accord is not banned: D1241 cleared "Judas Accord" for player text, and the selftest proves the name passes. No decision id.
+- Anything left unfinished: none.
 
 ## 2026-11-03 01:14 ET: Glimmerwell fleet ids move to D1333-D1347; main merged in (build 20261103-0114)
 - What changed and why: the fleet's D1295-D1309 collided with Design's HCT (D1295-D1305) and High Charity Trial Hall (D1306-D1311) blocks. Renumbered in order to the first free block after Design's SEALS_BOTH_PATHS (D1323-D1332): D1295 is now D1333, through D1309, now D1347. Changed in `OPEN_DECISIONS.md` (header and the fifteen rows), the spec (§1, §14 and its renumber note), `glimmer_fleet.js`, `game.js` (two comments), `BACKLOG.md`, `tests/README.md`, `tests/glimmer_fleet.spec.js` and this file's fleet entries. Main a726e94 (#270, #271, #272, #273) merged in.

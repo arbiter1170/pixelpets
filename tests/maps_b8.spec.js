@@ -327,6 +327,9 @@ test('Amos rests the party and Fen starts the trial @w1', async ({ page }) => {
   await advanceSay(page);
   await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.text)).toContain('Win my Seal and your Walklings can grow higher than Lv 15.');
   await advanceSay(page);
+  // D1128: this save's lead is below Lv 12, so Fen's level hint comes before the choice (tests/fen_pacing.spec.js covers it).
+  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.text)).toContain('My Walklings are Lv 12 to 14.');
+  await advanceSay(page);
   await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.mode === 'choice')).toBeTruthy();
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   const fen = await page.locator('#sbChoices button').allTextContents();
