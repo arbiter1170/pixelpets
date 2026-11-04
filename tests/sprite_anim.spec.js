@@ -51,7 +51,9 @@ test('SPRITE_ANIM T1: every frame of every form renders 18x18 in PAL, rows are 1
   await boot(page);
   const r = await page.evaluate(() => {
     const pal = new Set(Object.values(PAL).map((h) => h.toLowerCase())), bad = [];
-    const dim = new Set(['w', 'h', 'm', 'd', 'k'].map((c) => PAL[c].toLowerCase()));   // the faded state (FADE_KEY) plus eyes and outline
+    // the faded state: FADE_KEY's targets plus eyes and outline, and any key FADE_KEY leaves alone (as fadedStage does, e.g. F)
+    const dim = new Set(['w', 'h', 'm', 'd', 'k'].map((c) => PAL[c].toLowerCase()));
+    for (const k in PAL) if (!(k in SA.fade.key)) dim.add(PAL[k].toLowerCase());
     let frames = 0, forms = 0;
     SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
       const row = SPRITE_ANIM[sp.id + '/' + k];
@@ -86,7 +88,7 @@ test('SPRITE_ANIM T1: every frame of every form renders 18x18 in PAL, rows are 1
   expect(r.forms).toBe(SPECIES_FORMS);
   expect(r.frames).toBe(SPECIES_FORMS * 5 * 2 * 3);
 });
-const SPECIES_FORMS = 75;   // 25 lines x 3 stages on main; the four Route 4 lines (#315) add 12 in a follow-up
+const SPECIES_FORMS = 87;   // 29 lines x 3 stages on main (the four Route 4 lines from #315 included)
 
 test('SPRITE_ANIM T2: OFF is today\'s draw, pixel for pixel; FULL and CALM differ only where a frame is posed', async ({ page }) => {
   await boot(page, { effects: 'off' });

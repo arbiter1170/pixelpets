@@ -50,8 +50,8 @@ test('the five lines are attune bosses, stay out of the wild, and keep the journ
     expect(new Set(r.names).size).toBe(1);            // one name across all three tiers
     expect(r.totals).toEqual([192, 256, 320]);
   }
-  expect(info.lastId).toBe('humwisp');
-  expect(info.forms).toBe(75);
+  expect(info.lastId).toBe('jugwasp');
+  expect(info.forms).toBe(87);
   expect(info.v).toBe(2);
 
   await page.evaluate(() => PixelPets.showTab('col'));
@@ -61,7 +61,7 @@ test('the five lines are attune bosses, stay out of the wild, and keep the journ
     bossCells: document.querySelectorAll('#dexGrid [data-form^="tallybat/"]').length,
     row: document.querySelector('#dexBoss') ? document.querySelector('#dexBoss').hidden : null,
   }));
-  expect(grid.header).toContain('Out there 57');
+  expect(grid.header).toContain('Out there 69');
   expect(grid.bossCells).toBe(0);
   expect(grid.row).toBe(true);                         // hidden until the branch opens or one is met
 });
