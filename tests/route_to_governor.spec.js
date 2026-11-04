@@ -177,7 +177,7 @@ test.describe('ROUTE_TO_GOVERNOR: the coach, the gap and Route 4 (D1854, D1866, 
     const ids = await objIds(page);
     expect(ids).not.toContain('hm_to_hc');
     expect(ids).toEqual(expect.arrayContaining(['hm_coach_road_w', 'hm_coach_road_e']));
-    await tapTile(page, 11, 9);   // Modern: tap Porter Bram
+    await tapTile(page, 15, 9);   // Modern: tap Porter Bram (#313 moved him from 11,9 to 15,9 with the coach)
     await expect.poll(() => sceneId(page), { timeout: 15000 }).not.toBeNull();
     expect(says(await drive(page))).toEqual(["Not this trip, Cadet. Governor's orders: you walk the coach road north."]);
     const q = await quest(page);

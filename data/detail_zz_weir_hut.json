@@ -10,6 +10,7 @@
    "outdoor": "hw_cut",
    "door": "hw_weir_hut",
    "backdrop": "town",
+   "music": "weir",
    "w": 10,
    "h": 12,
    "spawns": null,
