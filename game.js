@@ -5155,7 +5155,7 @@ function tileOk(mapId, x, y, selfId){
   const sk = m.skin && SKINS[m.skin];
   const walks = (sk && sk.walk && sk.walk[ch] != null) ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk;
   if (!walks) return false;
-  return !(m.objs || []).some(o => BLOCK_KINDS[o.kind] && o.x === x && o.y === y && o.id !== selfId && !SCHED[o.name]
+  return !(m.objs || []).some(o => BLOCK_KINDS[o.kind] && o.x === x && o.y === y && o.id !== selfId && !(o._schedKey || SCHED[o.name])
     && !(o.when && [].concat(o.when).some(c => String(c).indexOf('away:') >= 0)));
 }
 function standRow(bag, row){
@@ -5220,16 +5220,17 @@ function intentRow(name){
   return bag.rows[bag.rows.length - 1] || null;
 }
 function clockSpot(name){ return placedRow(name); }
+function schedKeyOf(o){ return o ? (o._schedKey || o.name) : null; }   // the body's own bag (a name two towns share has one bag per body)
 function schedHere(o){
-  const bag = o && SCHED[o.name];
+  const bag = o && SCHED[schedKeyOf(o)];
   if (!bag || !bag.byId[o.id]) return true;
-  const row = placedRow(o.name);
+  const row = placedRow(schedKeyOf(o));
   return !!(row && row.bodyId === o.id);
 }
 function schedPos(o){
-  const bag = o && SCHED[o.name];
+  const bag = o && SCHED[schedKeyOf(o)];
   if (!bag || !bag.byId[o.id]) return null;
-  const row = placedRow(o.name);
+  const row = placedRow(schedKeyOf(o));
   if (!row || row.bodyId !== o.id) return null;
   return { x: row.x, y: row.y, facing: row.facing };
 }
@@ -5250,14 +5251,22 @@ function wireSchedules(){
   }
   // A shared name is not enough. Overlay maps reuse Pip and Wren; only the body that carries the
   // rows, and bodies that stand on a row's map (Buddy follows Lizzy's maps), join the schedule.
-  const rowsOf = {}, mapsOf = {};
+  // Two towns can both schedule a generic "Child" or "Parent" (Brightgate and the High Charity preview): when more than one
+  // body carries rows under one name, each gets its own bag keyed `name#id`, and a body without rows joins the bag whose
+  // maps hold its map. Every body records its bag (`_schedKey`), so schedHere/schedPos read it by body, not by name.
+  const srcCount = {};
+  for (const [, o] of named) if (Array.isArray(o.schedule)) srcCount[o.name] = (srcCount[o.name] || 0) + 1;
+  const keyOf = o => srcCount[o.name] > 1 ? o.name + '#' + o.id : o.name;
+  const rowsOf = {}, mapsOf = {}, keysOf = {};
   for (const [mapId, o] of named) {
     if (!Array.isArray(o.schedule)) continue;
-    rowsOf[o.name] = o.schedule.map(r => ({
+    const k = keyOf(o);
+    (keysOf[o.name] || (keysOf[o.name] = [])).push(k);
+    rowsOf[k] = o.schedule.map(r => ({
       when: r.when || '', map: r.map || null, x: r.x | 0, y: r.y | 0, facing: r.facing || null,
       notDrawn: !r.map, state: r.state || null, place: typeof r.place === 'string' ? r.place : null,
     }));
-    const maps = mapsOf[o.name] || (mapsOf[o.name] = new Set());
+    const maps = mapsOf[k] || (mapsOf[k] = new Set());
     const n = CLOCK_NUDGE[o.id];
     for (const r of o.schedule) {
       let map = r.map || null;
@@ -5266,17 +5275,19 @@ function wireSchedules(){
     }
     maps.add(mapId);
   }
-  if (mapsOf.Lizzy) mapsOf.Buddy = new Set(mapsOf.Lizzy);
+  if (mapsOf.Lizzy) { mapsOf.Buddy = new Set(mapsOf.Lizzy); if (!keysOf.Buddy) keysOf.Buddy = ['Buddy']; }
   for (const [mapId, o] of named) {
-    const maps = mapsOf[o.name];
-    if (!maps) continue;
-    if (!Array.isArray(o.schedule) && !maps.has(mapId)) continue;
-    const bag = SCHED[o.name] || (SCHED[o.name] = { rows: null, sourceId: null, onMap: {}, byId: {}, hold: null, follow: null });
+    const keys = keysOf[o.name];
+    if (!keys) continue;
+    const k = Array.isArray(o.schedule) ? keyOf(o) : keys.find(g => mapsOf[g] && mapsOf[g].has(mapId));
+    if (!k) continue;
+    const bag = SCHED[k] || (SCHED[k] = { rows: null, sourceId: null, onMap: {}, byId: {}, hold: null, follow: null });
     bag.onMap[mapId] = o;
     bag.byId[o.id] = o;
+    o._schedKey = k;
     if (Array.isArray(o.schedule) && !bag.rows) {
       bag.sourceId = o.id;
-      bag.rows = rowsOf[o.name];
+      bag.rows = rowsOf[k];
       bag.sleepWhen = o.sleepWhen || null;
     }
   }
@@ -5298,11 +5309,19 @@ wireSchedules();
 // DAY1_TRIAL1_FLOW (Vincent, Nov 2, 2026): a step with `npc` points at that person's body where it stands now, so the
 // holder never hunts. A scheduled person (SCHED rows) uses placedRow; anyone else is found by name (or `npcIds`) among the
 // bodies present in WORLD, this map first. The step's own target stays the fallback. Read only; nothing is saved.
+// `npcIds` naming the body that carries the rows picks that body's own schedule, so a name two towns share (Brightgate's
+// and the city's Child) cannot pick the other town; a bare name shared by two scheduled bodies has no bag and is scanned.
+function schedKeyOfIds(ids){
+  if (!ids) return null;
+  for (const id of ids) for (const [k, bag] of Object.entries(SCHED)) if (bag.rows && bag.sourceId === id) return k;
+  return null;
+}
 const npcSpotCache = new Map();   // name|ids|map -> { t, mid, o }: which body, re-read for its live tile (the cue runs every frame)
 const NPC_SPOT_MS = 400;
 function npcSpot(name, ids){
   if (!name || !S) return null;
-  if (!ids && SCHED[name] && SCHED[name].rows) { const r = placedRow(name); return r ? { map: r.map, x: r.x, y: r.y, place: r.place || CLOCK_PLACE[r.map] || null } : null; }
+  const sk = ids ? schedKeyOfIds(ids) : (SCHED[name] && SCHED[name].rows ? name : null);
+  if (sk) { const r = placedRow(sk); return r ? { map: r.map, x: r.x, y: r.y, place: r.place || CLOCK_PLACE[r.map] || null } : null; }
   const key = name + '|' + (ids || []).join(',') + '|' + (CUR ? CUR.id : ''), t = performance.now();
   let hit = npcSpotCache.get(key);
   if (!hit || t - hit.t > NPC_SPOT_MS || (hit.o && !present(hit.o))) {

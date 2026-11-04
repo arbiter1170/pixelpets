@@ -170,7 +170,12 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - Battle backdrops (BATTLE_BACKDROPS_ACT2 §4): Charter Hill and the Exchange stop drawing the Square's scene; each has its
     own in its district's colours, with its landmark on the far layer (the Keeper High Court; Block News House and its mast).
     With the city on, the Square's scene adds the Muster Hall, the one dark roof. Normal play's scenes are unchanged.
-- Files touched: `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tests/high_charity_v04.spec.js` (new),
+  - Merge fix (Wed Nov 4, 2026, build 20261104-1325): Brightgate (#316) also schedules a "Child" and a "Parent", and the clock
+    kept one schedule per display name, so with the city on one town's pair walked the other's rows. `wireSchedules` (game.js)
+    now gives each scheduled body its own bag (`name#id`) when two share a name; schedHere, schedPos and tileOk read the body's
+    bag, and `npcSpot(name, npcIds)` uses the schedule of the body its ids name (no quest step names a scheduled body today,
+    so no cue changes). §8.2 looks people up by NPC id and checks Brightgate's pair keeps its own rows. Labels unchanged.
+- Files touched: `game.js` (schedules by body), `tools/GAMEJS_MAP.txt`, `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tests/high_charity_v04.spec.js` (new),
   `tests/hc_court_move.spec.js`, build stamp files.
 - Commit(s) + build id: claude/high-charity-v04, one commit per slice; build 20261104-0227 (slice 1), 20261104-0306 (slice 2), 20261104-0318 (merge of main with #313), 20261104-0336 (slice 3), 20261104-0341 (slice 4).
 - Tests run and result (widths, checks): in the PR.

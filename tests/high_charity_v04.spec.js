@@ -19,6 +19,7 @@ trackErrors(test, expect);
 const CHUNKS = ['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college'];
 const BUILT_ROOMS = ['hc_lantern_in', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_3'];
 const DATA = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'hc_city_v2.json'), 'utf8'));
+const BRIGHTGATE = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'detail_zzzzz_brightgate.json'), 'utf8'));
 const SHOTS = path.join(__dirname, '..', 'test-results', 'high_charity_v04');
 
 function save(opts = {}) {
@@ -175,23 +176,28 @@ test('§13.1: the layout checker passes over the merged game WORLD for all five 
 test('§8.2 scheduled townsfolk: each body stands on its row\'s map and tile by phase, goes home after, and shows its label', async ({ page }) => {
   test.setTimeout(90000);
   await boot(page);
+  // Looked up by NPC id, not display name: generic labels repeat across towns (Brightgate, #316, also schedules a Child and a
+  // Parent), and the game keeps one schedule per body when a name is shared.
   const rows = {};
-  for (const m of Object.values(DATA.maps)) for (const o of m.objs) if (o.schedule) rows[o.name] = { id: o.id, rows: o.schedule };
-  expect(Object.keys(rows).sort()).toEqual(['Child', 'Dockhand B', 'Exchange Clerk', 'Office worker', 'Old holder', 'Parent', 'Shopper', 'Student A', 'Student B']);
+  for (const m of Object.values(DATA.maps)) for (const o of m.objs) if (o.schedule) rows[o.id] = { name: o.name, rows: o.schedule };
+  expect(Object.values(rows).map(r => r.name).sort()).toEqual(['Child', 'Dockhand B', 'Exchange Clerk', 'Office worker', 'Old holder', 'Parent', 'Shopper', 'Student A', 'Student B']);
+  // Brightgate's own Child and Parent keep their rows while the city preview is on (same names, other town)
+  for (const m of Object.values(BRIGHTGATE.maps)) for (const o of m.objs || []) if (o.schedule && (o.name === 'Child' || o.name === 'Parent')) rows[o.id] = { name: o.name, rows: o.schedule };
+  expect(Object.keys(rows)).toEqual(expect.arrayContaining(['hc_child', 'hc_parent', 'bg_sched_3_0', 'bg_sched_4_0']));
   const at = { dawn: ['tue', 6, 0], day: ['tue', 11, 0], dusk: ['tue', 19, 0], night: ['tue', 23, 30] };
   for (const [phase, t] of Object.entries(at)) {
     await page.evaluate(t => { PixelPets.clock.freeze(true); PixelPets.clock.set(...t); }, t);
-    for (const [name, r] of Object.entries(rows)) {
+    for (const [id, r] of Object.entries(rows)) {
       const want = r.rows.find(row => !row.when || row.when.split('|').includes('phase:' + phase));
-      const got = await page.evaluate(n => PixelPets.npcSpot(n), name);
-      const tag = name + ' at ' + phase;
+      const got = await page.evaluate(([n, i]) => PixelPets.npcSpot(n, [i]), [r.name, id]);
+      const tag = r.name + ' (' + id + ') at ' + phase;
       if (!want.map) { expect(got && got.map ? got.map : null, tag).toBeNull(); continue; }
       expect(got && [got.map, got.x, got.y], tag).toEqual([want.map, want.x, want.y]);
     }
   }
   // a body is drawn only on its live row's map: Student A at dusk is on the Square, not the Quad
   await page.evaluate(() => PixelPets.clock.set('tue', 19, 0));
-  const a = DATA.maps.highcharity.objs.find(o => o.name === 'Student A');
+  const a = DATA.maps.highcharity.objs.find(o => o.id === 'hc_student_a_highcharity');
   await page.evaluate(([x, y]) => PixelPets.goto('highcharity', x, y + 1, 'up'), [a.x, a.y]);
   await settle(page);
   expect(await page.evaluate(id => (PixelPets.objPos(id) || {}).present, a.id)).toBe(true);
