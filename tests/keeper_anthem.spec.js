@@ -161,7 +161,7 @@ test.describe('KEEPER_ANTHEM', () => {
       const fnv = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return ('0000000' + h.toString(16)).slice(-8); };
       const out = { hash: {}, extra: [] };
       for (const id of PPSound.musicIds()) {
-        if (anthem.includes(id)) continue;
+        if (anthem.includes(id) || id === 'weir') continue;   // weir: SCENE_MUSIC's Weir Hut loop, checked in tests/scene_music.spec.js T1
         const t = PPSound.musicSpec(id); out.hash[id] = fnv(JSON.stringify(t));
         if (t.swell || ['lead', 'bass'].some(v => t[v].double != null || t[v].gate != null)) out.extra.push(id);
       }

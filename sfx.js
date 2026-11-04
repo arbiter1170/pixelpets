@@ -267,7 +267,7 @@ const PPSound = (() => {
   };
   const MUSIC = {
     // SCENE_MUSIC v0.1 (design specs/SCENE_MUSIC.md §4.1, D1890-D1909): the scene loops and `hush`, pasted from the spec literal
-    // (the Weir Hut's `weir` is PR #309's). A scene picks one with its own ["music", id] step; `motifs` is for the design checker
+    // (the Weir Hut's `weir`, #309, is at the end of MUSIC). A scene picks one with its own ["music", id] step; `motifs` is for the design checker
     // only (musicSpec() does not copy it). `hush` is one bar of rests: ["music", "hush"] fades the loop out and plays nothing.
     curfew: { key: 'G minor', bpm: 80, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.45, motifs: ['suspense', 'keepers'],
       lead: { wave: 'triangle', gain: 0.15, notes: [
@@ -773,6 +773,22 @@ const PPSound = (() => {
         [41,2],[53,2],[48,2],[53,2],  [45,2],[57,2],[52,2],[57,2],
         [46,2],[58,2],[48,2],[60,2],  [41,2],[48,2],[41,2],[48,1],[52,1] ] },
       drums: ['k.hhs.hk','k.h.s.h.','k.hhs.hk','k.h.s.h.','k.hhs.hk','k.h.s.h.','k.hhs.hk','k.s.s.ss'] },
+    // SCENE_MUSIC v0.1 (design specs/SCENE_MUSIC.md §4.1, D1898): the Weir Hut's room loop. Suspense pedal, the Keeper anthem's head
+    // in the minor, and the call once a loop. `motifs` is for the design checker only; nothing here reads it.
+    weir: { key: 'D minor', bpm: 72, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.3, motifs: ['suspense', 'keepers', 'call'],
+      lead: { wave: 'triangle', gain: 0.13, notes: [
+        [69,3],[74,1],[77,2],[74,2],          // 1 Dm  A D F D: the Keepers' head, minor, alone (the lantern under a cloth)
+        [76,3],[74,1],[73,4],                 // 2 A   E D C#
+        [0,4],[70,2],[69,2],                  // 3 Bb  . Bb A
+        [69,6],[0,2],                         // 4 A   A
+        [69,3],[74,1],[77,2],[79,2],          // 5 Dm  A D F G: the head again, reaching
+        [77,3],[76,1],[74,4],                 // 6 Dm  F E D
+        [0,2],[81,1],[82,1],[81,2],[0,2],     // 7 Gm  . A Bb A: the call, once (the lamps' hum)
+        [0,8] ] },                            // 8 A   breath
+      bass: { wave: 'triangle', gain: 0.2, notes: [
+        [50,2],[50,2],[51,2],[50,2],  [45,2],[45,2],[46,2],[45,2],  [46,2],[46,2],[47,2],[46,2],  [45,2],[45,2],[46,2],[45,2],
+        [50,2],[50,2],[51,2],[50,2],  [50,2],[50,2],[51,2],[50,2],  [43,2],[43,2],[44,2],[43,2],  [45,2],[45,2],[46,2],[45,1],[49,1] ] },
+      drums: ['k.....h.','...h....','.h......','....h..h','k.....h.','..h.....','.....h..','h...h...'] },
   };
   function musicCheck(){
     const bad = [];
