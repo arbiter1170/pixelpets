@@ -211,7 +211,7 @@ test('priced prompts keep the Acorn chip, and a buy shows the new total before t
   await page.locator('#sbChoices button', { hasText: 'Not yet' }).click();
   await finishScene(page);
 
-  // Keeper Amos explains healing (D618) instead of opening the rest panel. The bed above still prices the rest.
+  // Host Amos (raw key Keeper Amos) explains healing (D618) instead of opening the rest panel. The bed above still prices the rest.
   await stand(page, 'fb_lantern_in', 6, 4, 'up');
   await talk(page, 'amos');
   expect(await reachChoice(page)).toBe('Got all that?');

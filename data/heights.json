@@ -1323,7 +1323,7 @@
           "y": 2,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1334,7 +1334,7 @@
           "y": 2,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1462,7 +1462,7 @@
           "y": 10,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1473,7 +1473,7 @@
           "y": 10,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1484,7 +1484,7 @@
           "y": 12,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1495,7 +1495,7 @@
           "y": 12,
           "sprite": "lab_tank",
           "lines": {
-            "else": "The tank hums. Mint, still, very clean."
+            "else": "The tank hums. Calm, still, very clean."
           }
         },
         {
@@ -1528,7 +1528,7 @@
           "y": 17,
           "sprite": "lab_scanner",
           "lines": {
-            "else": "The scanner glows mint as you pass. It finds nothing."
+            "else": "The scanner glows softly as you pass. It finds nothing."
           }
         },
         {
@@ -1539,7 +1539,7 @@
           "y": 17,
           "sprite": "lab_scanner",
           "lines": {
-            "else": "The scanner glows mint as you pass. It finds nothing."
+            "else": "The scanner glows softly as you pass. It finds nothing."
           }
         },
         {
@@ -2970,7 +2970,7 @@
       [
         "say",
         "Cal",
-        "Dr. Ivo will say it slower, and mean it more. The label is honest."
+        "Dr. Weller will say it slower, and mean it more. The label is honest."
       ],
       [
         "say",

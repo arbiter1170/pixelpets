@@ -78,9 +78,11 @@ const HALL2_KEY = 'pixelpets.hall2';
 const HALL2_ON = (() => {
   if (HALL2_RELEASED) return true;
   let on = false;
+  // Without debug the key is never stored, and any left over is cleared (as readHcCityPref), so a later ?debug=1 in this tab can't turn it on.
+  if (!DEBUG) { try { sessionStorage.removeItem(HALL2_KEY); } catch (e) {} return false; }
   try { const q = new URLSearchParams(location.search).get('hall2'); if (q === '1') sessionStorage.setItem(HALL2_KEY, '1'); else if (q === '0') sessionStorage.removeItem(HALL2_KEY); } catch (e) {}
   try { on = sessionStorage.getItem(HALL2_KEY) === '1'; } catch (e) {}
-  return DEBUG && on;
+  return on;
 })();
 /* HIGH_CHARITY_LAYOUT v0.2.1 phase 1 ("the capital, day one"; D1268, D1270-D1281). The five-chunk city lives in
    data/hc_city_v2.js (window.PP_HC_V2, built by tools/build_hc_city.py), outside MAPDATA. HC_CITY_V2 is the ship switch:
@@ -103,6 +105,11 @@ const HC_PREVIEW = HC_V2_ON && !HC_CITY_V2;
 if (HC_V2_ON) {   // the city's room skins and battle backdrops exist only while the city does
   if (typeof HC_CITY_SKINS !== 'undefined') { Object.assign(SKINS, HC_CITY_SKINS); Object.assign(HOUSE_SKINS, HC_CITY_SKINS); }
   if (window.BattleBG && BattleBG.enableCity) BattleBG.enableCity();
+}
+// HC_PARADE PLACEHOLDER balloons (city only): the crowd's clap on cue (E8) and the Officer's raised hand.
+if (HC_V2_ON && typeof GLYPH !== 'undefined') {
+  if (!GLYPH.emote_clap) GLYPH.emote_clap = ['.kkkkkkk.', 'kwwwwwwwk', 'kwywwwywk', 'kwwy.ywwk', 'kw3wkw3wk', 'kw33w33wk', 'kw33w33wk', 'kww3w3wwk', 'kwwwwwwwk', '.kwkkkkk.', '.kk......'];
+  if (!GLYPH.emote_hand) GLYPH.emote_hand = ['.kkkkkkk.', 'kwwwwwwwk', 'kw3w3w3wk', 'kw3w3w3wk', 'kw33333wk', 'kw3333wwk', 'kww333wwk', 'kww333wwk', 'kwwwwwwwk', '.kwkkkkk.', '.kk......'];
 }
 function writeDebugPref(on){ try { if (on) sessionStorage.setItem(DEBUG_KEY, '1'); else sessionStorage.removeItem(DEBUG_KEY); } catch(e) {} }
 function syncDebugQuery(on){
@@ -387,13 +394,17 @@ let resetting = false, gameReplaced = false;
 // Tell the player once per page load; the game keeps playing in memory.
 let saveFailTold = false;
 let hcPreviewTold = false;
+// A debug preview is open: the High Charity city preview (HC_CITY_V2) or the Glimmerwell preview lot (GLIMMERWELL_VEHICLES_BUILDINGS).
+// While it is, nothing writes the save, and the cloud hooks see no state, so preview play never uploads or adopts.
+function previewActive(){
+  return HC_PREVIEW || !!(window.PPFleet && PPFleet.holdSave()) || !!(S && S.world && S.world.map === 'gw_preview');
+}
 function save(){
   if (!S || readOnly || resetting) return;
-  if (HC_PREVIEW) {   // the city preview never writes the save (see HC_CITY_V2)
-    if (!hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
+  if (previewActive()) {
+    if (HC_PREVIEW && !hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
     return;
   }
-  if (window.PPFleet && PPFleet.holdSave()) return;   // GLIMMERWELL_VEHICLES_BUILDINGS: no write while the ?debug=1 preview lot is open
   S.last = Date.now(); if (DEBUG) S.debugSave = true;
   if (PPSave.writeV2(S) !== false || saveFailTold) return;
   saveFailTold = true;
@@ -3773,9 +3784,10 @@ function battleBgOn(){ return battleBgForce != null ? battleBgForce : BATTLE_BG_
 function battleSceneId(id = S && S.world.map){ return battleBgOn() && window.BattleBG && WORLD[id] && BattleBG.scenes[id] ? id : null; }
 function battleEnv(m, mode, wf = 0){
   const sk = m.skin && SKINS[m.skin];
-  return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream,
+  return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream, roofs: m.roofs || null,
     walk: ch => sk && sk.walk && sk.walk[ch] != null ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk,
-    tile: (ch, x, y) => cellImg(m, ch, x, y, wf), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; } };   // animated props: their first frame
+    tile: (ch, x, y) => cellImg(m, ch, x, y, wf), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; },   // animated props: their first frame
+    named: n => { const t = n && TILES[n]; return Array.isArray(t) ? t[0] : t || null; } };   // a roof-kit tile by its TILES name (roofs: roof, wall)
 }
 // Same cache as makeBackdrop (BD_CAP). Rooms ignore the sky, so one canvas serves every sky mode.
 function makeBattleBackdrop(id, H, mode, W = 56){
@@ -3907,6 +3919,7 @@ function applyObjPatch(W, patch){
       const P = JSON.parse(JSON.stringify(pt));
       if (P.when) o.when = P.when;
       if (P.whenAdd) o.when = [].concat(o.when || [], P.whenAdd);
+      if (P.need) o.need = P.need;   // MAHOPAC_DREAMS DA1: a warp's key, on whichever overlay's copy of it stands
       if (P.linesFirst) o.lines = Object.assign({}, P.linesFirst, o.lines || {});
       if (P.linesBefore && o.lines) {
         const out = {}, anchor = P.linesBefore.anchorKey in o.lines ? P.linesBefore.anchorKey : 'else';
@@ -3947,6 +3960,10 @@ function applyHcCity(W){
   }
   for (const [id, ln] of Object.entries(V.linesPatch || {}))
     for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o.id === id) o.lines = Object.assign({}, o.lines || {}, ln);
+  // KEEPER_ANTHEM M10 (D1420, D1423): a kept room's loop and added objects (anthem_hall and the framed sheet), city only.
+  for (const [rid, p] of Object.entries(V.roomPatch || {})) { const r = W[rid]; if (!r) continue;
+    if (p.music) r.music = p.music;
+    if (Array.isArray(p.add)) for (const o of p.add) if (!r.objs.some(x => x.id === o.id)) r.objs.push(JSON.parse(JSON.stringify(o))); }
   // ROUTE_TO_GOVERNOR §5.9 (D1853): a warp outside the city that names a `city` target (the river road's Charter Hill gate) lands
   // there while the city is on; with the city off it keeps its plain target (Lantern Square's coach gate).
   for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o && o.city && W[o.city.to]) Object.assign(o, o.city);
@@ -4049,7 +4066,8 @@ if (HALL2_ON) {
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 // Glimmerwell is the company faction. A Keeper hears them as the dark side: first meeting and their battles use the sinister loops.
-const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers', bw_dorian: 'glimmer', hall3_marisol: 'keepers' };
+// Hall Masters (Fen, Hale, Marisol) are neutral, faction `none`, as in data/reputation.json (D1437); their battles keep the trial loop.
+const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'none', hall2_hale: 'none', bw_dorian: 'glimmer', hall3_marisol: 'none' };
 for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
@@ -4955,6 +4973,10 @@ function cond(c, live, o){
   else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;
   else if (c.startsWith('map:')) v = !!WORLD[c.slice(4)];   // ROUTE_TO_GOVERNOR: a map this build has (Kilnmouth's road lands later)   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
+  // MAHOPAC_DREAMS: `talked:<id>` is a runtime mark for this map visit (a talk, or a scene's ["mark", id]); never saved.
+  else if (c.startsWith('talked:')) v = mapRT.talked.has(c.slice(7));
+  // MAHOPAC_DREAMS E1 (D1941): `lens:<moment>` asks PPStanding.lensMoment, the lens's first match, on the flags as the scene sees them.
+  else if (c.startsWith('lens:')) v = PPStanding.lensMoment(live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags) === c.slice(5);
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
   else if (c === 'enrol:ask') v = ENROL_CHOICE === 'ask';   // ACT1_KEEPER_JOIN D1562: the enrolment's pin-or-lanyard question
@@ -4979,6 +5001,7 @@ function needMet(need){
 }
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
 function present(o){
+  if (o._cutHide) return false;   // HC_PARADE: a scene's ["hide"] step keeps this body off the map until the scene ends
   if (o.cutGone) return false;   // a real map NPC a scene walked off a map edge (`walkTo ... {drop: true}`), until the scene ends
   if (o.when && !o.when.every(c => cond(c, false, String(c).indexOf('away:') >= 0 ? o : undefined))) return false;
   if (!schedHere(o)) return false;
@@ -5007,7 +5030,7 @@ function objPos(o){
   return mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
 }
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
-const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
+const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind] && !o.fly);   // HC_PARADE E7: a flyer never blocks
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
 // Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; that skin's walk table wins over TILE_DEF.
 // House skins use the same lookup (SKINS). A map with no skin keeps the shared tile table.
@@ -5527,7 +5550,9 @@ function liveContactSpot(name){
   return person.spots.find(s => present(s.o)) || null;
 }
 function whereNow(name){
-  if (name === 'Mom' || name === 'Dad') return wherePack('home', 'home', 'fixed');
+  // MAHOPAC_DREAMS G2 (D1949, D1921): Dad shows no place line (he is only ever met in the Mahopac dreams); Mom stays at home.
+  if (name === 'Dad') return null;
+  if (name === 'Mom') return wherePack('home', 'home', 'fixed');
   // DAY1_TRIAL1_FLOW (D1166): after her go-home talk Fen is away with the Keeper authorities until Lizzy's class is done.
   if (name === 'Master Fen' && S && S.flags['story.fen_sent_home'] && !S.flags['story.lizzy_class']) return wherePack('work', 'away on Keeper business', 'story');
   // POST_TRIAL_CRACKDOWN §7.2: under the curfew order (the crackdown until the pick) people are where the curfew put them.
@@ -6094,7 +6119,7 @@ function tryStep(d){
   }
   if (warpBlocked(nx, ny)) { S.world.facing = dn; return; }   // the gate trigger one tile earlier tells you why
   const w = wildAt(nx, ny);
-  if (w) { if (p && w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
+  if (w) { if (p && w.x === nx && w.y === ny && !w.beside) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly; one walking beside you only blocks (WALK_BESIDE R5)
   walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0; walk.hop = false; closePartnerTray();
   S.world.facing = dn;
   S.world.x = nx; S.world.y = ny;
@@ -6134,6 +6159,7 @@ function onLand(){
     updateHUD();
   }
   if (S.steps % 50 === 0 && !found) toast(S.steps + ' steps! Nice walk.');   // a find says more than the step count
+  besideStep();                              // WALK_BESIDE E3 (R4): a wild walking beside you takes its step
   const x = S.world.x, y = S.world.y;
   const wp = warpAt(x, y);
   if (wp && needMet(wp.need)) {
@@ -6444,7 +6470,7 @@ const ITEMS = {
   atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
   route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
   keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
-  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Keeper Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Wynne sells them.' },   // D1154, FPT Part A
+  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Host Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Brisa sells them.' },   // D1154, FPT Part A
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
@@ -6649,6 +6675,17 @@ function checkArriveTriggers(){
     if (o.kind !== 'trigger' || !o.arrive) continue;
     const inside = present(o) && Math.abs(o.x - x) + Math.abs(o.y - y) <= (o.r || 0);
     if (!inside || mapRT.trig[o.id]) continue;
+    mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
+  }
+  return false;
+}
+// HC_PARADE E10 (D1369): a trigger with `load: true` plays when its map loads (a boot or an arrival) while its `when` holds and the
+// holder stands within `r` (Part 2 of the parade, or the next street battle, after the app closed on Charter Hill).
+function checkLoadTriggers(){
+  if (!S || !CUR || scene || fade.busy || (battle && battle.on)) return false;
+  const x = S.world.x, y = S.world.y;
+  for (const o of CUR.objs) {
+    if (o.kind !== 'trigger' || !o.load || !present(o) || Math.abs(o.x - x) + Math.abs(o.y - y) > (o.r || 0)) continue;
     mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
   }
   return false;
@@ -7274,6 +7311,10 @@ function arriveAt(at){
   try { syncPlaceYield(true); } catch (e) {}
   try { noteMhcRestRoom(); } catch (e) {}
   try { sideBarArrive(); } catch (e) {}   // SIDE_BADGE: who holds the town or route you just walked into
+  if (CUR.objs.some(o => o.load)) {   // HC_PARADE E10: once the warp's fade has cleared, a `load` trigger on this map may play
+    const mid = CUR.id, tryLoad = n => { if (!CUR || CUR.id !== mid || scene) return; if (fade.busy && n < 40) { setTimeout(() => tryLoad(n + 1), 60); return; } checkLoadTriggers(); };
+    setTimeout(() => tryLoad(0), 0);
+  }
 }
 // DAY1_TRIAL1_FLOW: a door's `deny` may be keyed like npc lines ({ cond: line, else: line }); the first true key wins.
 function denyLine(dr){
@@ -7317,6 +7358,9 @@ function lanternAsk(who){
   }
   return null;
 }
+// D1128: Fen's challenge hint (below this lead level). PLACEHOLDER copy (Story).
+const FEN_HINT_LV = 12;
+const FEN_HINT_LINE = "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first.";
 function placeSteps(dr){
   if (dr.panel === 'lantern') {
     const who = dr.keeper || '';
@@ -7351,6 +7395,9 @@ function placeSteps(dr){
     const steps = [['say', pn.who || 'Master Fen', greet]];
     // F2 follows the greet while the first Seal is still open. The rematch line and the won line stay as they are.
     if (!rematchPending('hall1_fen') && !(S.flags && S.flags['story.seal1'])) steps.push(['say', pn.who || 'Master Fen', 'Win my Seal and your Walklings can grow higher than Lv 15. Roots first, then blossoms.']);
+    // D1128 (Vincent, Nov 3, 2026): a hint at the challenge (not the Hall door) while the lead is below Lv 12. It informs and
+    // never blocks: the choice below is the same. PLACEHOLDER copy for June.
+    if (pet() && levelOf(pet()) < FEN_HINT_LV) steps.push(['say', pn.who || 'Master Fen', FEN_HINT_LINE]);
     steps.push(['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]);
     return steps;
   }
@@ -7853,7 +7900,7 @@ function drawMap(t){
   tickGlides();
   // y-sorted so objects, creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
   const ents = wild.list.map(w => ({ y: w.fy, draw: () => drawWild(g, w, cx, cy, VW, VH, t) }));
-  for (const o of CUR.objs) if (present(o) && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
+  for (const o of CUR.objs) if (present(o) && !o.fly && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
     const q = objPos(o); ents.push({ y: (q.fy != null ? q.fy : q.y) - 0.02, draw: () => drawObj(g, o, cx, cy, VW, VH, t) });
   }
   if (auraMapOk() && p && p.aura) auraFrame(p.aura, t, 0); else { auraLive = 0; auraDrawn = 0; }
@@ -7867,6 +7914,7 @@ function drawMap(t){
   const fleetOn = !!(window.PPFleet && PPFleet.live(CUR.id));
   if (fleetOn) { PPFleet.drawGround(g, cx, cy, VW, VH, t); PPFleet.mapEnts(g, cx, cy, VW, VH, t).forEach(e => ents.push(e)); }
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
+  drawFlyers(g, cx, cy, VW, VH, t);           // HC_PARADE E7: the flying layer, over people and roofs
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
   if (fleetOn) PPFleet.drawAir(g, cx, cy, VW, VH, t);
   drawHqGlow(g, cx, cy);
@@ -8624,6 +8672,18 @@ function propArtKey(o){
   return o && o.sprite;
 }
 function propCullMargin(o){ const a = WART[o.sprite]; const w = a ? (a.width || (a[0] && a[0].width) || TS) : TS; return Math.max(0, (w - TS) / 2); }
+/* HC_PARADE E7 (D1369): a prop with `fly: true` (a Keeper rotor craft) draws after people and roofs, `alt` px above its cell,
+   and its `shadow` sprite sits on the ground cell below. It never blocks (BLOCK_KINDS skip it). Reduced motion holds frame 0. */
+function drawFlyers(g, cx, cy, VW, VH, t){
+  for (const o of CUR.objs) {
+    if (!o.fly || !present(o)) continue;
+    const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
+    if (X < -48 || X > VW + 48 || Y < -48 || Y > VH + 48) continue;
+    const sh = o.shadow && WART[o.shadow]; if (sh) g.drawImage(sh, X + 8 - sh.width / 2, Y + 14 - sh.height / 2);
+    let key = o.sprite; if (q.moving && WART[key + '_move']) key += '_move';
+    const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y - (o.alt != null ? o.alt : 24));
+  }
+}
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   const wide = o.ox ? 48 : 0;   // a 64 px tank or 32 px car drawn across its bay: cull by its full width
@@ -9498,6 +9558,7 @@ async function runSteps(steps, ctx = {}){
     vars: { tags: [], line: null, suggest: null }, skip: false, deferRespawn: false, toasts: [], boxes: 0 };
   if (unlock.on && unlock.id) { unlock.held = unlock.id; unlockClose(); }
   walk.target = walk.path = walk.arrive = walk.queued = null; dropAim(); wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
+  wbAbort();   // WALK_BESIDE R8 (c): a scene ends a walk beside silently
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   cueFactionMusic(ctx, steps);
@@ -9508,6 +9569,7 @@ async function runSteps(steps, ctx = {}){
 const GLIMMER_MEET = { glimmer1: 1, faded1: 1 };
 function cueFactionMusic(ctx, steps){
   if (!scene || !S || side() === 'glimmer') return;
+  if (Array.isArray(steps && steps[0]) && steps[0][0] === 'music') return;   // KEEPER_ANTHEM M8 (D1381): a scene that opens with its own cue keeps it
   const hit = (steps || []).find(st => Array.isArray(st) && st[0] === 'battle' && trainerFaction(st[1]) === 'glimmer');
   if (hit) {
     scene.musicCue = battleTrack('trainer', hit[1]);
@@ -9560,7 +9622,7 @@ function endScene(){
     else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
-  if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
+  if (cue && !(battle && battle.on) && (PPSound.musicWant === cue || (cue === 'hush' && !PPSound.musicWant))) {
     const back = trackFor(CUR); if (back && back !== cue) PPSound.music(back, { fadeOut: 400, fadeIn: 500 });
   }
   scheduleTutorial(true);
@@ -9575,7 +9637,8 @@ const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', m
   mom_wake: [{ id: 'mom_up', name: 'Mom', look: 'mom', map: 'hm_home_up' }] };   // PARTNER_DAY: Mom lives downstairs now
 // Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the holder).
 const CAST_AT_LOOK = { rook_walk: { name: 'Rook', look: 'rook' }, rook_walk_in: { name: 'Rook', look: 'rook' } };
-for (const k of DETAIL_KEYS) for (const [id, c] of Object.entries(MD[k].castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;   // POST_TRIAL_CRACKDOWN: data casts ({ name, look } or { sprite })
+for (const k of DETAIL_KEYS) for (const [id, c] of Object.entries(MD[k].castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;
+if (HC_V2_ON) for (const [id, c] of Object.entries(window.PP_HC_V2.castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;   // HC_PARADE casts (city only)   // POST_TRIAL_CRACKDOWN: data casts ({ name, look } or { sprite })
 function castOnSay(who, text){
   const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
   for (const c of cast) {
@@ -9606,9 +9669,14 @@ function expand(text){
   const p = viewPet(), sp = p ? SPECIES[spi(p)] : null, v = scene ? scene.vars : {};
   const line = (v && v.line) || flagOf('story.starter_line', true), rv = COUNTER[line] && SPECIES[SP_INDEX[COUNTER[line]]];
   const vals = { name: curName(true) || DEFAULT_PLAYER_NAME, player: curName(true) || DEFAULT_PLAYER_NAME, pet: viewPetName(), chip: chipLabel(), species: p ? nameOf(spi(p), p.stage) : '',
-    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '' };
-  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType)\}/g, (m, k) => vals[k]);
+    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '',
+    date: cardDate() };
+  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType|date)\}/g, (m, k) => vals[k]);
 }
+// MAHOPAC_DREAMS E3 (D1946): `{date}` is the device's date when the line shows, short month and day in capitals ("NOV 4"),
+// for the Mahopac epilogue card. Nothing is stored.
+const CARD_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+function cardDate(d){ d = d || new Date(); return CARD_MONTHS[d.getMonth()] + ' ' + d.getDate(); }
 function chipLabel(){
   const list = chippedPets();
   if (list.length) return petName(list[0]);
@@ -9664,7 +9732,28 @@ async function walkCast(paths){
 }
 // INTRO_CUTSCENE (D801-D809): scene staging. A walk or wait hides the text box but keeps the tap layer: the first tap
 // doubles the pace, the second ends the beat (D808). Casts and prop swaps last until the scene ends (cutReset).
-const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [], gone: [] };
+const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [], gone: [], cam: null, camEase: null };
+/* HC_PARADE (owner's direction, Tue Nov 3, 2026): ["camera", id] makes the view follow a scene actor (the President's car, then
+   the President) instead of the holder; ["camera", null] hands it back. A switch eases over 400 ms; reduced motion and SKIP cut.
+   The scene's end always returns the view to the holder (cutReset). */
+function cutCamPoint(){
+  let x = walk.fx, y = walk.fy;
+  const o = cutRT.cam && CUR ? CUR.objs.find(q => q.id === cutRT.cam) : null;
+  if (o) { const q = objPos(o); x = q.fx != null ? q.fx : q.x; y = q.fy != null ? q.fy : q.y; }
+  const e = cutRT.camEase;
+  if (e) {
+    const k = Math.min(1, (now() - e.t0) / 400);
+    if (k >= 1 || prefersReduced()) cutRT.camEase = null;
+    else { const m = 1 - (1 - k) * (1 - k); x = e.x + (x - e.x) * m; y = e.y + (y - e.y) * m; }
+  }
+  return { x, y };
+}
+function cutCamera(sc, id){
+  const p = cutCamPoint();
+  cutRT.camEase = cutFast(sc) ? null : { x: p.x, y: p.y, t0: now() };
+  cutRT.cam = id || null;
+  if (sc) (sc.camLog = sc.camLog || []).push(cutRT.cam);   // for the debug probe (hcParade)
+}
 function cutFast(sc){ return !!(sc && sc.skip) || signalCastFast(); }
 function cutVar(sc, v){
   if (typeof v !== 'string' || v[0] !== '$') return v;
@@ -9699,7 +9788,7 @@ function cutCastAt(sc, id, x, y, facing){
   if (!CUR || CUR.objs.some(o => o.id === id)) return;
   const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || CAST_AT_LOOK[id] || { id, name: '', look: 'villager' };
   if (c.sprite) {   // E1 (D1204): a cast entry with a sprite places a prop (a Keeper tank, its beam), not a person
-    pushCast({ kind: 'prop', id, sprite: c.sprite, x, y, cast: true });
+    pushCast(Object.assign({ kind: 'prop', id, sprite: c.sprite, x, y, cast: true }, c.fly ? { fly: true, shadow: c.shadow, alt: c.alt } : {}));
     mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' }; return;
   }
   pushCast(Object.assign({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true }, c.pet ? { pet: c.pet } : {}));
@@ -9709,13 +9798,73 @@ function cutProp(sc, id, sprite){
   const o = id && CUR && CUR.objs.find(q => q.id === id); if (!o || !sprite) return;
   cutRT.props.push({ o, sprite: o.sprite }); o.sprite = sprite;
 }
+function cutHide(what){
+  if (!CUR) return;
+  const ids = Array.isArray(what) ? new Set(what) : null;
+  const hit = o => ids ? ids.has(o.id) : (o.kind === 'npc' || o.kind === 'trainer' || (o.kind === 'prop' && /^hc_tank/.test(o.sprite || '')));
+  cutRT.hidden = cutRT.hidden || [];
+  for (const o of CUR.objs) if (!o.cast && !o._cutHide && hit(o)) { o._cutHide = true; cutRT.hidden.push(o); }
+}
+/* HC_PARADE §5 (D1359 the forced battles, D1360 the loss rule, D1361 the pick). ["hcFight", n, spec]: battle n of the street
+   battles. The ally and the two foes are picked at random from the side's pools (spec.pools[side].ally / .foe: cast ids on the
+   map), never the same actor twice in the series (scene.hcUsed). The ally fights beside the holder (TRAINERS ally, Bump only:
+   allyAct); the two foes take the field together (a group battle), level-matched to the lead within 1. A win sets
+   story.hc_sf_<n> and the foes are led off; a loss ends nothing: the ally's line, the team restored, the same battle again, no
+   Acorns lost and no flag set (the rematch mark is cleared). Picks are not saved: a reload picks again. Solo only (D1364). */
+let hcRng = Math.random;
+async function hcFight(sc, n, spec){
+  const flag = 'story.hc_sf_' + n; if (!spec || flagOf(flag, true)) return;
+  const sd = side() === 'glimmer' ? 'glimmer' : 'keepers', P = (spec.pools || {})[sd]; if (!P) return;
+  const used = sc.hcUsed = sc.hcUsed || new Set();
+  const live = id => CUR.objs.some(o => o.id === id && present(o));
+  const pick = (ids, k) => { const pool = (ids || []).filter(id => !used.has(id) && live(id)), out = [];
+    while (out.length < k && pool.length) out.push(pool.splice(Math.floor(hcRng() * pool.length), 1)[0]);
+    out.forEach(id => used.add(id)); return out; };
+  const [ally] = pick(P.ally, 1), foes = pick(P.foe, 2);
+  if (!ally || foes.length < 2) { console.warn('hcFight: pool too small for battle ' + n); return; }
+  sc.hcLast = { ally, foes };
+  const me = { x: S.world.x, y: S.world.y }, st = (spec.stage || {})[sd] || spec.stage || {};
+  const allyObj = CUR.objs.find(o => o.id === ally), home = allyObj ? Object.assign({}, objPos(allyObj)) : null;
+  const at = (d, i) => ({ x: me.x + d[i][0], y: me.y + d[i][1] });
+  const aAt = at(st.ally || [[-1, 0]], 0), fA = at(st.foe || [[-1, -2], [1, -2]], 0), fB = at(st.foe || [[-1, -2], [1, -2]], 1);
+  const G = { ghost: true };
+  await Promise.all([cutWalkTo(sc, ally, aAt.x, aAt.y, G), cutWalkTo(sc, foes[0], fA.x, fA.y, G), cutWalkTo(sc, foes[1], fB.x, fB.y, G)]);
+  if (!scene) return;
+  const allyName = P.allyName || 'Ally', lead = leadPet(), lv = Math.max(2, lead ? levelOf(lead) : 5);
+  if (P.call) await sayBox(allyName, expand(P.call));
+  if (!scene) return;
+  const team = (P.team || ['mole/1']), r = () => team[Math.floor(hcRng() * team.length)];
+  const tid = 'hc_sf_' + n, aid = 'hc_sf_ally';
+  TRAINERS[aid] = { name: allyName, team: [{ form: (P.allyTeam || team)[0], level: lv }], money: 0 };
+  TRAINERS[tid] = { name: P.foeName || 'Foe', group: true, ally: aid, faction: sd === 'keepers' ? 'glimmer' : 'keepers',
+    team: [{ form: r(), level: Math.max(2, lv + (hcRng() < 0.5 ? 0 : -1)) }, { form: r(), level: Math.max(2, lv + (hcRng() < 0.5 ? 0 : 1)) }],
+    lines: Object.assign({}, P.lines || {}) };
+  for (;;) {
+    commitPending(); save();
+    $('#ovScene').hidden = true;
+    const res = await new Promise(resolve => { if (!openBattle({ kind: 'trainer', trainerId: tid, mapIntro: true, onEnd: resolve })) resolve(null); });
+    if (!scene) return;
+    $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
+    if (res == null) throw ABORT;
+    if (res === 'win') break;
+    delete S.flags['rematch.' + trainerMusicId(tid)]; delete S.flags['rematch.' + tid];
+    S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); updateHUD(); save();   // D1360: the team is restored, nothing lost
+    await sayBox(allyName, expand(spec.again || 'Get up. Again.'));
+    if (!scene) return;
+  }
+  sc.view.flags[flag] = true; pend(() => { S.flags[flag] = true; }); commitPending(); save();
+  const off = spec.off || [-12, 0];
+  await Promise.all(foes.map((id, i) => { const q = CUR.objs.find(o => o.id === id); const p0 = q ? objPos(q) : me;
+    return cutWalkTo(sc, id, p0.x + off[0], p0.y + off[1] + i, { line: true, drop: true }); }));
+  if (scene && home) await cutWalkTo(sc, ally, home.x, home.y, G);   // the ally steps back into the line; the next pick comes forward
+}
 // Shortest 4-way path to (x, y), as pathBeside's BFS: walls and blockers stop it, the walker and its `with` do not.
-function cutPath(from, to, selfId, withId){
+function cutPath(from, to, selfId, withId, ghost){
   const free = (x, y) => {
     if (x === to.x && y === to.y) return !solidTile(x, y);
     if (selfId !== 'player' && x === S.world.x && y === S.world.y) return false;
     if (solidTile(x, y)) return false;
-    const b = blockerAt(x, y); return !b || b.id === selfId || b.id === withId;
+    const b = blockerAt(x, y); return !b || b.id === selfId || b.id === withId || (ghost && !!b.cast);   // HC_PARADE: a staging walk may pass other scene actors
   };
   const key = (x, y) => y * 64 + x, prev = new Map([[key(from.x, from.y), null]]), q = [[from.x, from.y]];
   while (q.length) {
@@ -9729,13 +9878,20 @@ function cutPath(from, to, selfId, withId){
   while (c && !(c[0] === from.x && c[1] === from.y)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); }
   return out;
 }
+// HC_PARADE: `{line: true}` walks a straight lane (x first, then y) through other walkers and kerbs: a parade column, a flyer.
+function cutLine(from, to){
+  const out = []; let x = from.x, y = from.y;
+  while (x !== to.x) { x += Math.sign(to.x - x); out.push({ x, y }); }
+  while (y !== to.y) { y += Math.sign(to.y - y); out.push({ x, y }); }
+  return out;
+}
 async function cutWalkTo(sc, who, x, y, opts){
   if (typeof x === 'string' || Array.isArray(x)) { opts = y; const t = Array.isArray(x) ? x : cutVar(sc, x); if (!t) return; x = t[0]; y = t[1]; }
   opts = opts && typeof opts === 'object' ? opts : {};
   fxStop();   // settle a cast's hop-in first (castPartner), or its settle() would snap the walker back mid-walk
   const isP = who === 'player', o = isP ? null : CUR.objs.find(q => q.id === who);
   if (!isP && !o) return;
-  const from = isP ? { x: S.world.x, y: S.world.y } : objPos(o), path = cutPath(from, { x, y }, who, opts.with);
+  const from = isP ? { x: S.world.x, y: S.world.y } : objPos(o), path = opts.line ? cutLine(from, { x, y }) : cutPath(from, { x, y }, who, opts.with, !!opts.ghost);
   if (!path) { console.warn('walkTo: no path for ' + who); return; }
   const mate = opts.with ? CUR.objs.find(q => q.id === opts.with) : null, fast = cutFast(sc);
   if (!fast) cutHold(true);
@@ -9766,8 +9922,9 @@ function cutStepPlayer(p, ms){            // the frame loop skips updateWalk whi
   })());
 }
 function cutReset(sc){
-  cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
+  cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true); cutRT.cam = null; cutRT.camEase = null;
   for (const p of cutRT.props) p.o.sprite = p.sprite; cutRT.props = [];
+  for (const o of cutRT.hidden || []) delete o._cutHide; cutRT.hidden = [];
   for (const o of cutRT.gone) delete o.cutGone; cutRT.gone = [];
   const box = $('#sbox'); if (box) box.hidden = false;
 }
@@ -9806,6 +9963,17 @@ async function readWalk(dir){
   await walkCast([{ id: 'gb_read_pet', steps: steps }]);
   if (dir === 'back') dropCastIds(['gb_read_pet']);
 }
+// MAHOPAC_DREAMS §8: SCENE_MUSIC (design, draft) names cues that have no loop yet. A built loop id plays as built; `hearth`
+// falls back to the room's own loop, `ledger` to `dream`, and `hush` to silence (a 900 ms fade) for the rest of the scene.
+// Any other unknown id does nothing, as before.
+const MUSIC_FALLBACK = { hearth: 'room', ledger: 'dream', hush: null };
+function musicStepId(a){
+  const ids = PPSound.musicIds();
+  if (ids.includes(a) || !(a in MUSIC_FALLBACK)) return a;
+  const f = MUSIC_FALLBACK[a];
+  if (f === 'room') return trackFor(CUR);
+  return f && ids.includes(f) ? f : null;
+}
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene; if (k === 'priceOn') { document.body.classList.add('price-on'); return; }
   switch (k) {
@@ -9821,7 +9989,8 @@ async function execStep(st){
         if (!scene) return;
       }
       const box = c && typeof c === 'object' ? c.box : null;
-      await sayBox(a, tx, box); return;
+      sbFaceOff = !!(c && typeof c === 'object' && c.face === false);   // HC_PARADE D1356: The President speaks with no portrait
+      try { await sayBox(a, tx, box); } finally { sbFaceOff = false; } return;
     }
     case 'choice': {
       sc.skip = false;
@@ -10034,6 +10203,7 @@ async function execStep(st){
     }
     case 'rest': if (atLantern()) await bedTuck(sc); sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
+    case 'mark': { if (a) mapRT.talked.add(String(a)); return; }   // MAHOPAC_DREAMS: a runtime mark for this map visit (talked:<id>)
     case 'keepPlace': sc.deferRespawn = false; return;   // this scene walks the holder to the Lantern House itself (ROOK_LANTERN_WALK)
     // The guide teaches the Lantern House once: its "Lanterns" unlock card would repeat the same lesson right after the rest.
     case 'lanternGuide': { const g = lanternGuideHere(); if (g) await execSteps(lanternGuideSteps(g, true)); if (S) S.flags['story.unlock_lantern'] = true; return; }
@@ -10055,6 +10225,13 @@ async function execStep(st){
     case 'wait': { if (!cutFast(sc)) await cutWait(a | 0); return; }
     case 'curtain': { cutCurtain(a === 'on', cutFast(sc)); return; }
     case 'castAt': { cutCastAt(sc, a, b, c, d); return; }
+    // HC_PARADE: ["hide", "people" | [ids]] keeps the map's own people (and parked tanks) off the map until the scene ends.
+    case 'hide': { cutHide(a); return; }
+    case 'camera': { cutCamera(sc, a); return; }
+    // HC_PARADE E8 (D1369): ["emoteAll", [ids], glyph, ms] shows one emote on every listed actor in the same frame (the clap).
+    case 'emoteAll': { if (sc.skip) return; for (const id of a || []) sceneEmote(id, b, (c | 0) || 1200); return; }
+    // HC_PARADE §5 (D1359-D1361): a street battle with an ally and two foes picked at random; a loss restarts it.
+    case 'hcFight': { sc.skip = false; await hcFight(sc, a, b); return; }
     case 'prop': { cutProp(sc, cutVar(sc, a), b); return; }
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
@@ -10080,7 +10257,19 @@ async function execStep(st){
     case 'sfx': { if (a) sfx(a); return; }
     case 'toast': { if (a) sc.toasts.push(expand(a)); return; }   // ACT1_KEEPER_JOIN 7g: a toast once the scene ends
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
-    case 'music': { if (a && !sc.skip) { sc.musicCue = a; try { PPSound.music(a, { fadeOut: 180, fadeIn: 140 }); } catch (e) {} } return; }
+    // KEEPER_ANTHEM M6 (D1381): ["music", id, { fadeOut, fadeIn, minDelay, near, keep }]; plain ["music", id] is 180 / 140 ms as before.
+    // `near` starts a swelling cue at full; `keep` holds this cue over a scene warp (M7).
+    // MAHOPAC_DREAMS §8: SCENE_MUSIC's proposed cues fall back (musicStepId) until their loops exist; a real loop always wins.
+    case 'music': {
+      if (!a || sc.skip) return;
+      const o = (b && typeof b === 'object') ? b : {}, id = musicStepId(a);
+      sc.musicCue = id || 'hush'; sc.keepMusic = !!o.keep;
+      try {
+        if (id) PPSound.music(id, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near });
+        else PPSound.hush(900);
+      } catch (e) {}
+      return;
+    }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
       if (a === 'open') openReveal(sc);
@@ -10136,11 +10325,17 @@ async function execStep(st){
     case 'warp': {
       if (!a || !WORLD[a]) return;
       commitPending();   // the position save inside the warp must not outrun this scene's flags
-      await new Promise(res => {
-        const at = { map: a, x: b | 0, y: c | 0, facing: d || 'down' };
-        if (fade.busy) { arriveAt(at); res(); return; }
-        warpTo(at, res);
-      });
+      // KEEPER_ANTHEM M7 (D1381, D1384): a scene's own `keep` cue plays on through the warp while it is still the wanted one
+      // (not after a battle handed back the map loop, never under SKIP); arriveAt() then leaves the landing map's loop alone.
+      const hold = !!sc.keepMusic && !sc.skip && PPSound.musicWant === sc.musicCue;
+      if (hold) musicHold = true;
+      try {
+        await new Promise(res => {
+          const at = { map: a, x: b | 0, y: c | 0, facing: d || 'down' };
+          if (fade.busy) { arriveAt(at); res(); return; }
+          warpTo(at, res);
+        });
+      } finally { if (hold) musicHold = false; }
       return;
     }
   }
@@ -10227,11 +10422,12 @@ async function sceneEncounter(id){
 const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['story.starter_line']] || t.counterTeam.ember)) || [];
 
 /* --- the bottom text box (#ovScene) --- */
+let sbFaceOff = false;   // HC_PARADE D1356: a say step with {face: false} keeps the small frame empty
 function sbRender(who, text, box, asHolder){
   // INTRO_CUTSCENE D800: a scene with a portraits table shows the speaker's own sprite at 4x; the holder speaks on narrator prompts.
   const pt = scene && PORTRAIT_FOR[scene.id], pk = pt ? (asHolder ? pt.$player : pt[who]) || null : null;
   if (asHolder && pk) who = curName(true) || DEFAULT_PLAYER_NAME;
-  const key = who && LOOK_OF_NAME[who];
+  const key = who && !sbFaceOff && LOOK_OF_NAME[who];
   const look = key ? npcLook({ look: key, name: who }) : null;
   $('#sbWho').textContent = shownName(who) || ''; $('#sbWho').hidden = !who;
   $('#sbText').textContent = text; $('#sbText').classList.toggle('narr', !who);
@@ -10452,7 +10648,8 @@ function syncWalkCam(t){
   const c = $('#mapCanvas'); if (!c || !c.width || !walk) return;
   tickCamBias(t == null ? performance.now() : t);
   // Follow the keeper's drawn (whole-pixel) spot, so an odd canvas size can't make the keeper wobble 1 px against the screen.
-  const VW = c.width, VH = c.height, px_ = Math.round(walk.fx * TS), py_ = Math.round(walk.fy * TS);
+  const cp = scene && (cutRT.cam || cutRT.camEase) ? cutCamPoint() : null;   // HC_PARADE: a scene's ["camera", id] follows that actor
+  const VW = c.width, VH = c.height, px_ = Math.round((cp ? cp.x : walk.fx) * TS), py_ = Math.round((cp ? cp.y : walk.fy) * TS);
   const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
   const prevY = walk.cam.y;
   // Clamp to the band above the partner strip. Centre in the open band under the area chip, so a north
@@ -10926,6 +11123,10 @@ const WILD_TARGET = 4;                          // creatures kept around the map
 const WILD_LIFE_S = [150, 270];                 // seconds (of Walk-tab time) before a creature wanders off
 const WILD_RESPAWN_S = [5, 12];                 // seconds between spawns while below the target
 const WILD_STEP_MS = 520, WILD_IDLE_MS = [900, 3200], WILD_LEASH = 4;
+// WALK_BESIDE §6.2 (D1973): "walk beside" on this roaming. near/lostAt/lampR/pickupR in tiles (Manhattan), stillMs/lookMs in
+// wild.clock ms. All of it is runtime (each wild's `beside`, the `wb` record); the only save writes are the day stamp, a reward
+// and Standing (§6.4).
+const WB = Object.freeze({ near: 2, stillMs: 3000, steps: 12, lookMs: 1500, lostAt: 3, lampR: 6, pickupR: 8 });
 const WILD_STAGE2_CHANCE = 0.05;                // wild second forms are rare (they skip the first evolution)
 const ANY_SPECIES_CHANCE = 0.08;                // small share for any species, so nothing is impossible anywhere
 const wild = { list: [], poofs: [], seq: 0, chase: null, started: false, clock: 0, nextSpawn: 0, auto: true };
@@ -11066,11 +11267,12 @@ function updateWild(dt){
   if (!wild.started) { wild.started = true; if (wild.auto) for (let i = 0; i < 3; i++) spawnWild(); wild.nextSpawn = c + rnd(WILD_RESPAWN_S) * 1000; }
   for (const w of wild.list.slice()) {
     if (w.to) {
-      const k = clamp((c - w.t0) / WILD_STEP_MS, 0, 1);
+      const k = clamp((c - w.t0) / (w.dur || WILD_STEP_MS), 0, 1);   // a walk-beside step keeps the holder's pace (w.dur)
       w.fx = w.from.x + (w.to.x - w.from.x) * k; w.fy = w.from.y + (w.to.y - w.from.y) * k;
-      if (k >= 1) { w.fx = w.x; w.fy = w.y; w.to = null; w.idleUntil = c + wildIdle(w.sp); }
+      if (k >= 1) { w.fx = w.x; w.fy = w.y; w.to = null; w.dur = 0; w.idleUntil = c + wildIdle(w.sp); }
       continue;
     }
+    if (w.beside) continue;                                                            // WALK_BESIDE E2: no expiry, no roaming
     const chased = wild.chase === w.id;
     if (!w.guide && c - w.born > w.life && !chased) { removeWild(w, onScreen(w)); continue; }       // wandered off
     const far = Math.abs(w.x - S.world.x) > 11 || Math.abs(w.y - S.world.y) > 9;
@@ -11084,11 +11286,12 @@ function updateWild(dt){
     w.from = { x: w.x, y: w.y }; w.x += d[0]; w.y += d[1]; w.to = { x: w.x, y: w.y }; w.t0 = c;
   }
   if (wild.auto && (wild.list.length < 2 || (wild.list.length < WILD_TARGET && c >= wild.nextSpawn))) { spawnWild(); wild.nextSpawn = c + rnd(WILD_RESPAWN_S) * 1000; }
+  besideTick(dt);
 }
 function drawWild(g, w, cx, cy, VW, VH, t){
   const x = Math.round(w.fx*TS - cx) - 1, y0 = Math.round(w.fy*TS - cy) - 2;
   if (x < -18 || y0 < -18 || x > VW || y0 > VH) return;
-  const tt = t + w.phase, bob = w.to ? Math.floor(clamp((wild.clock - w.t0) / WILD_STEP_MS, 0, 1) * 2) % 2 : Math.floor(tt / 450) % 2;
+  const tt = t + w.phase, bob = w.to ? Math.floor(clamp((wild.clock - w.t0) / (w.dur || WILD_STEP_MS), 0, 1) * 2) % 2 : Math.floor(tt / 450) % 2;
   const age = wild.clock - w.born;
   g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(x + 3, Math.round(w.fy*TS - cy) + 14, 12, 2);
   if (age < 400) g.globalAlpha = age / 400;                              // fade in on spawn
@@ -11098,6 +11301,151 @@ function drawWild(g, w, cx, cy, VW, VH, t){
   const gx = Math.round(w.fx), gy = Math.round(w.fy);
   if (MAP[gy] && MAP[gy][gx] === 't') g.drawImage(TILES.t, 0, 10, 16, 6, gx*TS - cx, gy*TS - cy + 10, 16, 6);
   if (w.stage > 0 && Math.floor(tt / 350) % 5 === 0) drawGlyph(g, 'spark', x + 14, y0 - 2);   // rare form twinkle
+  // WALK_BESIDE R6, E6: the built notice "!" over it as it stops and turns (SPOT_BANG_MS), never under reduced motion. The
+  // overworld wild sprites have no left/right flip, so the turn is its `face` only (no facing change drawn).
+  const B = w.beside;
+  if (B && B.phase === 'look' && wild.clock < B.glyphUntil && !prefersReduced()) {
+    const under = S.world.x === Math.round(w.fx) && S.world.y === Math.round(w.fy) - 1;   // the holder stands on the tile above: beside, not on them
+    drawGlyph(g, 'emote_bang', x + (under ? 15 : 5), y0 - (under ? 6 : 13)); B.glyphs++;
+  }
+}
+/* ---------- WALK_BESIDE §6 (D1973-D1979): "walk beside" ----------
+   Stand still within WB.near tiles of a wild for WB.stillMs and it walks beside you for WB.steps landings, then stops and turns
+   toward what the act points at (§6.3). Stay still with it for WB.lookMs and the walk completes, once a local day
+   (daily.walk_beside): a Joy Crumb (10 Acorns with a full stack) and Keepers +1 with muteAlign, none for a switcher (§6.4).
+   A tap scoots it, walking off loses it, a warp, door, scene or battle ends it silently; none of those spends the day (D1977).
+   Taps only (D268). Never a battle, a story.* flag or a new save field (§6.6). Copy is PLACEHOLDER (Story). */
+const WB_LINES = Object.freeze({
+  start: 'It walks beside you a while.', lost: 'It goes on without you.',
+  crumb: 'It left a Joy Crumb where it stood.', acorns: 'Found 10 Acorns where it stood.',
+  lamp: "It turns to the lamp's hum. You wait.", grass: "It stops. Something's in the grass.",
+  north: 'It stops and looks north. You look too.', sky: 'It stops and looks up. So do you.',
+  sea: 'It turns toward the sea. You look.', high: 'It turns toward the high road.', holder: 'It looks at you a while. Then it goes.',
+});
+const wb = { still: 0, cand: null };
+const wbDay = () => dayKey(Date.now());
+const wbSpent = () => !!(S && S.flags && S.flags['daily.walk_beside'] === wbDay());
+const wbDist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+function wbDirTo(a, b){ if (!a || !b) return null; const dx = b.x - a.x, dy = b.y - a.y; if (!dx && !dy) return null; return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); }
+// §6.3 (D1975), pure: `near` = { act, seals, at (its tile), holder, lamp, pickup, grass } (tiles the caller found, or null).
+// A Comfort Lamp within WB.lampR wins in every act. Returns { to, dir, toast }; dir is null when there is nothing to face.
+function wbTurnOf(flags, near){
+  const F = flags || {}, n = near || {};
+  const act = n.act != null && Number.isFinite(+n.act) ? +n.act : PPStanding.actOf(F, n.seals);
+  const T = (to, dir) => ({ to, dir, toast: WB_LINES[to === 'pickup' ? 'grass' : to] });
+  if (n.lamp) return T('lamp', wbDirTo(n.at, n.lamp));
+  if (act <= 1) return n.pickup ? T('pickup', wbDirTo(n.at, n.pickup)) : T('grass', wbDirTo(n.at, n.grass));
+  if (act <= 3) return T('north', 'up');              // reuses sv_sign_a2's look north
+  if (act === 4) return T('sky', 'up');
+  if (act === 5 && !F['story.solvane_met']) return T('sea', 'down');
+  if (act <= 6) return T('high', 'up');
+  return T('holder', wbDirTo(n.at, n.holder));        // Act 7 and the post-game
+}
+function wbNear(w){
+  const at = { x: w.x, y: w.y }, best = (list, r) => { let b = null, bd = Infinity; for (const t of list) { const d = wbDist(at, t); if (d <= r && d < bd) { b = t; bd = d; } } return b; };
+  const objs = (CUR.objs || []).filter(present), pos = o => { const q = objPos(o); return { x: q.x, y: q.y }; };
+  const lamp = best(objs.filter(o => o.sprite === 'comfort_lamp').map(pos), WB.lampR);
+  const pickup = best(objs.filter(o => o.kind === 'pickup' && !S.flags['item.' + o.id]).map(pos), WB.pickupR);
+  const grass = [];
+  if (!pickup) for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (MAP[y][x] === 't' && !(x === at.x && y === at.y)) grass.push({ x, y });
+  return { act: actNow(false), seals: sealsHeld(), at, holder: { x: S.world.x, y: S.world.y }, lamp, pickup, grass: best(grass, Infinity) };
+}
+// "Free" (R4): not solid (tiles and blockers: crates, lamps, buildings), not a warp or door, not the holder, the follower or another wild.
+function wbFree(x, y, w){
+  if (!MAP[y] || MAP[y][x] == null || solid(x, y) || warpAt(x, y) || doorAt(x, y)) return false;
+  if (x === S.world.x && y === S.world.y) return false;
+  if (fol.x != null && followerOn() && fol.x === x && fol.y === y) return false;
+  return !wildAt(x, y, w);
+}
+// R4: the side tile (perpendicular to the holder's facing, its own side first), then the tile the follower just left, then any
+// free neighbour (nearest first). Its own tile counts when it is one of those.
+function wbSpot(w){
+  const h = S.world, f = DIRS[h.facing] || DIRS.down, near = (a, b) => wbDist(a, w) - wbDist(b, w);
+  const side = [[f[1], f[0]], [-f[1], -f[0]]].map(([dx, dy]) => ({ x: h.x + dx, y: h.y + dy })).sort(near);
+  const back = fol.from ? [{ x: fol.from.x, y: fol.from.y }] : [];
+  const any = Object.values(DIRS).map(([dx, dy]) => ({ x: h.x + dx, y: h.y + dy })).sort(near);
+  for (const t of side.concat(back, any)) if (wbFree(t.x, t.y, w)) return t;
+  return null;
+}
+function wbMove(w, t){
+  if (w.to) { w.fx = w.x; w.fy = w.y; w.to = null; }
+  if (!t || (t.x === w.x && t.y === w.y)) return;
+  w.from = { x: w.x, y: w.y }; w.x = t.x; w.y = t.y; w.to = { x: t.x, y: t.y }; w.t0 = wild.clock; w.dur = STEP_MS;
+}
+// One toast per beat; the live region mirrors it with the species name (§6.5).
+function wbSay(w, line, chirp){
+  toast(line);
+  if (chirp) sfx('chirp_' + String((SPECIES[w.sp] || {}).type || 'PLAIN').toLowerCase(), 0.16);
+  const el = $('#wbLive'); if (el) el.textContent = nameOf(w.sp, w.stage) + ': ' + line;
+}
+function wbRelease(w){
+  if (!w || !w.beside) return;
+  w.born += Math.max(0, wild.clock - w.beside.since);   // its life timer paused while it walked (R4)
+  w.beside = null; w.hx = w.x; w.hy = w.y;              // the leash re-anchors where it stands (R7)
+}
+function wbAbort(){ for (const w of wild.list) wbRelease(w); wb.still = 0; wb.cand = null; }   // R8 (c): silent, no reward, no stamp
+function wbScoot(w){ wbRelease(w); wild.chase = null; walk.target = null; w.idleUntil = 0; w.shyUntil = wild.clock + 1500; }   // R8 (a)
+const wbNetLive = () => !!(window.PPNet && typeof PPNet.live === 'function' && PPNet.live());
+// R1, R2: where and when the wait may run. The map tick (updateWild) already skips overlays, scenes and the encounter intro.
+function wbCanWait(){
+  if (!S || !CUR || !CUR.spawns || CUR.dream || wbSpent() || wbNetLive()) return false;
+  if (wild.list.some(w => w.guide)) return false;
+  return standingStill() && !walk.intro && !trayOpen() && !overlayOpen() && !(battle && battle.on);
+}
+function wbStart(w){
+  w.beside = { left: WB.steps, phase: 'walk', since: wild.clock, still: 0, face: null, to: null, glyphUntil: 0, glyphs: 0 };
+  if (wild.chase === w.id) wild.chase = null;
+  if (wbDist(w, S.world) > 1) wbMove(w, wbSpot(w));
+  wb.still = 0; wb.cand = null;
+  wbSay(w, WB_LINES.start, true);
+}
+// E3 (R4, R6): called from onLand. One landing, one step beside; the twelfth stops it and it turns.
+function besideStep(){
+  const w = wild.list.find(o => o.beside && o.beside.phase === 'walk'); if (!w) return;
+  w.beside.left = Math.max(0, w.beside.left - 1);
+  wbMove(w, wbSpot(w));
+  if (w.beside.left > 0) return;
+  wbTurn(w);
+}
+function wbTurn(w){
+  const turn = wbTurnOf(S.flags, wbNear(w)), B = w.beside;
+  B.phase = 'look'; B.still = 0; B.face = turn.dir; B.to = turn.to; B.glyphUntil = wild.clock + STEP_MS + SPOT_BANG_MS;
+  const hd = turn.to === 'holder' ? wbDirTo(S.world, w) : turn.dir; if (hd) S.world.facing = hd;   // one facing change, no animation
+  walk.path = walk.target = walk.arrive = walk.queued = walk.repath = null; dropAim();   // a tap-walk stops with it; held input stays the holder's
+  wbSay(w, turn.toast, false);
+}
+function wbComplete(w){
+  const r = grantItem('joy_crumb', 1);
+  if (r.added) wbSay(w, WB_LINES.crumb); else { S.money = (S.money | 0) + 10; wbSay(w, WB_LINES.acorns); }
+  if (!S.flags['story.switched_a3']) addStanding('keepers', 1, { muteAlign: true });
+  S.flags['daily.walk_beside'] = wbDay();
+  const c = wild.clock; wbRelease(w); w.idleUntil = c + 2000;
+  updateHUD(); save();
+}
+// E2: after the roaming loop. The wait (R2), the look (R7) and walking off (R8 b).
+function besideTick(dt){
+  const ms = dt * 1000, w = wild.list.find(o => o.beside);
+  if (w) {
+    const d = wbDist(w, S.world);
+    if (d > WB.lostAt || (w.beside.phase === 'look' && !standingStill())) { wbSay(w, WB_LINES.lost); wbRelease(w); return; }
+    if (w.beside.phase !== 'look' || d > WB.near) return;
+    w.beside.still += ms;
+    if (w.beside.still >= WB.lookMs) wbComplete(w);
+    return;
+  }
+  if (!wbCanWait()) { wb.still = 0; wb.cand = null; return; }
+  const c = wild.clock, here = S.world;
+  let cand = null;
+  for (const o of wild.list) {
+    if (o.guide || o.to || (o.shyUntil || 0) > c || wild.chase === o.id || wbDist(o, here) > WB.near) continue;
+    const d = wbDist(o, here), cd = cand ? wbDist(cand, here) : Infinity;
+    if (d < cd || (d === cd && o.id < cand.id)) cand = o;
+  }
+  if (!cand) { wb.still = 0; wb.cand = null; return; }
+  if (wb.cand !== cand.id) { wb.cand = cand.id; wb.still = 0; }
+  cand.idleUntil = Math.max(cand.idleUntil, c + 250);   // it holds still while you do
+  wb.still += ms;
+  if (wb.still >= WB.stillMs) wbStart(cand);
 }
 
 // Dream maps (Mahopac memories): a plum wash and slow sparks, indoors or out. The keeper is drawn smaller.
@@ -11234,7 +11582,7 @@ function buildPresetButtons(){
   add('auto', 'AUTO');
   Object.entries(PPEnv.PRESETS).forEach(([k, p]) => add(k, p.name));
 }
-function resetWild(){ wild.list = []; wild.poofs = []; wild.chase = null; wild.started = false; wild.auto = !!CUR.spawns; }   // Hearthmoor and rooms never spawn
+function resetWild(){ wbAbort(); wild.list = []; wild.poofs = []; wild.chase = null; wild.started = false; wild.auto = !!CUR.spawns; }   // Hearthmoor and rooms never spawn
 
 /* ---------- battle (BATTLE.md v0.3.1) ---------- */
 // Meeting a wild creature (bump/tap/G) opens a turn-based battle; befriending is one of its actions (§2). The befriend bar
@@ -11295,7 +11643,7 @@ function noBattleToast(){
   toast(S.party.some(canStepIn) ? 'Battles start at 10 NRG. REST first!' : 'Your team needs a rest first!');
 }
 function startEncounterIntro(sp, stage, wid, lv){
-  clearMoves();
+  clearMoves(); wbAbort();                                 // WALK_BESIDE R8 (c)
   if (!leadPet()) {                                        // nobody able: no battle, the creature turns shy (§1)
     noBattleToast(); const w = wid && wild.list.find(o => o.id === wid); if (w) { w.idleUntil = 0; w.shyUntil = wild.clock + 1500; }
     return;
@@ -11384,6 +11732,7 @@ function applySoftBerry(p, before){
 
 /* --- open / close --- */
 function openBattle(o){
+  wbAbort();                                                  // WALK_BESIDE R8 (c): a battle ends a walk beside silently
   { const bb = $('#buildBar'); if (bb) bb.hidden = true; }   // hide the new-build bar at once, not on the next 500 ms poll
   markAlive();                                                // the crash marker notes this page is now in a battle
   const lead = leadPet();
@@ -12518,16 +12867,26 @@ async function knockOut(side, id){
   }
 }
 // Battle XP (§7) for a defeated or befriended foe: every participant that is still able (not Fainted, HP > 0) gets the award.
+// D1128 (Vincent, Nov 3, 2026): every other Walkling in the holder's own party (the bench, worn-out ones too) gets the bench
+// share (benchXpAward, stats.js). Caps hold the overflow as usual, and bench level-ups show at the end like a participant's.
+// Only S.party counts: in co-op the partner's game pays its own party.
 function awardFoe(fi){
-  const B = battle, f = B.foes[fi];
-  for (const pid of B.participants[fi]) {
-    const p = petById(pid); if (!p || isFainted(p) || hpOf(p) <= 0) continue;
-    const r = grantBattleXp(p, battleXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer: B.kind === 'trainer' }), true);
+  const B = battle, f = B.foes[fi], trainer = B.kind === 'trainer', took = B.participants[fi];
+  const note = (pid, r) => {
     if (r.held > 0 && B.heldIds) B.heldIds.add(pid);
     if (r.to > r.from) {
       const old = B.levelUps.find(x => x.id === pid);
       if (old) old.to = r.to; else B.levelUps.push({ id: pid, from: r.from, to: r.to });
     }
+  };
+  for (const pid of took) {
+    const p = petById(pid); if (!p || isFainted(p) || hpOf(p) <= 0) continue;
+    note(pid, grantBattleXp(p, battleXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer }), true));
+  }
+  for (const p of S.party) {
+    if (!p || took.has(p.id) || p.id === B.newId) continue;   // the Walkling just befriended earns nothing for its own capture
+    const n = benchXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer });
+    if (n > 0) note(p.id, grantBattleXp(p, n, true));
   }
 }
 async function endCheck(id){
@@ -12583,7 +12942,7 @@ const MAP_HOLD_LINE = {
   keepers: 'The Keepers hold this place.',
   glimmer: 'Glimmerwell holds this place.',
   split: 'Both sides keep a claim.',
-  wild: 'Wild country. No faction holds it.',
+  wild: 'Wild country. Nobody walks ahead here.',   // WALK_BESIDE D1934, D1971: the fallback for every node with no line
 };
 const REGION_MAP = {
   title: 'THE AMBERWILD', unknownLabel: '???', unknownBlurb: "You haven't been here yet.",
@@ -12591,7 +12950,7 @@ const REGION_MAP = {
     hearthmoor:    { kind: 'town',  col: 2,  row: 6, label: 'HEARTHMOOR',  labelAt: 'below', blurb: 'Hill village of the Keepers. Home.',
       hold: [{ id: 'keepers', line: 'Home. The Keepers hold this town.' }] },
     route1:        { kind: 'route', col: 6,  row: 7, label: 'ROUTE 1',     labelAt: 'below', blurb: 'Hearthmoor to Fernbrook, by the stream.', path: [[2, 6], [4, 7], [8, 7], [10, 6]],
-      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
+      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road. Walk beside, not ahead.' }] },   // WALK_BESIDE D1934
     proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]],
       hold: [{ id: 'wild' }] },
     fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Fernbrook Trial Hall.',
@@ -12607,9 +12966,9 @@ const REGION_MAP = {
         { id: 'keepers', when: ['story.side_pick_done', 'story.seal1', '!story.side=glimmer'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
         { id: 'split', line: 'Keepers keep the town. Glimmerwell keeps a stand.' }] },
     route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]],
-      hold: [{ id: 'split', line: 'Keepers keep the road. Glimmerwell runs the Census.' }] },
+      hold: [{ id: 'split', line: 'Keepers walk beside. Glimmerwell runs the Census.' }] },   // WALK_BESIDE D1934
     route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]],
-      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the glen.' }] },
+      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the glen. The lamps walk ahead.' }] },   // WALK_BESIDE D1934
     hw_cut:        { kind: 'side',  col: 15, row: 3, label: 'HUSHWATER',   labelAt: 'below', blurb: 'A quiet stream, quarry to glen.', path: [[12, 2], [15, 3], [17, 3]],
       hold: [{ id: 'wild' }] },
     cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.',
@@ -15434,7 +15793,9 @@ function renderStanding(){
     const fill = document.createElement('i'); fill.className = 'st-fill-' + k; fill.style.width = Math.round(i.frac * 100) + '%'; bar.append(fill);
     const num = document.createElement('small'); num.textContent = i.next == null ? i.points + ' / ' + SC_STANDING.max : i.points + ' / ' + i.next;
     barRow.append(bar, num);
-    body.append(head, blurb, barRow); row.append(em, body); rows.append(row);
+    body.append(head, blurb, barRow);
+    const word = sideWordLong(k); if (word) body.append(word);   // WALK_BESIDE D1972: the same line on the STANDING tab's Keepers row
+    row.append(em, body); rows.append(row);
   }
 }
 /* ---------- SIDE_BADGE (Vincent, Nov 2, 2026) ---------- */
@@ -15530,10 +15891,19 @@ function openSideCard(){
     const ln = document.createElement('p'); ln.className = 'side-line';
     // Before the pick: the first sentence of what the side asks (no points). After: the tier you hold with them.
     ln.textContent = sd === 'none' ? String(F.asks).split(/(?<=[.!?])\s/)[0] : PPStanding.tierInfo(k, standingOf(k, false)).name;
-    body.append(nm, ln); row.append(em, body); rows.append(row);
+    body.append(nm, ln);
+    const word = sideWordLong(k); if (word) body.append(word);   // WALK_BESIDE E9 (D1972): the whole word, after the charter
+    row.append(em, body); rows.append(row);
   }
   clearMoves(); sfx('tap'); $('#ovSide').hidden = false; lockTabs(true);
   $('#sideClose').textContent = SB_CFG.close; $('#sideClose').focus({ preventScroll: true });
+}
+// WALK_BESIDE E9 (D1972): once story.wb_charter is set, the Keepers row carries the whole word (STANDING_CFG asksLong) on its own
+// line under the tier, in the row's text colour. `asks` stays as built (D1937). Readable text, no button; null otherwise.
+function sideWordLong(k){
+  const F = SC_STANDING.sides[k];
+  if (k !== 'keepers' || !F || !F.asksLong || !(S && S.flags && S.flags['story.wb_charter'])) return null;
+  const p = document.createElement('p'); p.className = 'side-word'; p.textContent = F.asksLong; return p;
 }
 function closeSideCard(){ if ($('#ovSide').hidden) return; $('#ovSide').hidden = true; lockTabs(false); }
 function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
@@ -18413,6 +18783,25 @@ const DEBUG_EXTRAS = {
       flags: BG.concat(['story.act=3', 'story.side=glimmer', 'story.switched_a3']) }, BG_AT),
   });
 }
+// MAHOPAC_DREAMS E4: four places for Mom's walk and the lens (Seal 4, Seal 5, the Ledger Night and the Spire are later builds,
+// so these places seed their flags). Debug only, like every place here.
+{
+  const MD_A2 = ['story.intro_seen', 'story.starter_received', 'story.reached_route1', 'story.reached_fernbrook', 'story.met_fen', 'story.mom_met',
+    'story.mom_chore', 'story.mom_sent', 'story.reached_mahopac', 'story.dream_started', 'story.dream_toy', 'story.dream_party', 'story.dream_dad',
+    'story.dream_woke', 'story.dream_study', 'story.seal1', 'story.crackdown', 'story.post_trial_done', 'story.warden_called', 'story.warden_met',
+    'story.phone_got', 'story.chi_done', 'story.orchard_cleared', 'story.ilse_call2', 'story.keeper_cadet', 'story.cover=glimmer', 'story.side=keepers',
+    'story.side_pick_done', 'story.seal2', 'story.seal3', 'story.route3_open', 'story.ep1_end', 'story.ilse_call3', 'story.a2_called',
+    'story.cover_done', 'story.rpt_1=told', 'story.rpt_2=told', 'story.rpt_3=told', 'story.hc_council_done', 'story.gov_posted',
+    'story.cv_mom_walk', 'story.cv_mom=told', 'story.seal4'];
+  const MD_A5 = MD_A2.concat(['story.seal5', 'story.ilse_ledger', 'story.solvane_met', 'story.lens_note']);
+  const obs = { map: 'mahopac_obs', x: 4, y: 5, facing: 'up' };
+  Object.assign(DEBUG_EXTRAS, {
+    md_mom_offer: { place: "Mahopac: Mom's offer (after Seal 4)", text: 'Tap Mom at home: walk north.', map: 'hm_home_in', x: 5, y: 6, facing: 'up', flags: MD_A2 },
+    md_lens_kept: Object.assign({ place: 'Mahopac: lens, W kept', text: 'Ilse at the lens; a kept report.', flags: MD_A5.concat(['story.rpt_4=kept']) }, obs),
+    md_lens_switch: Object.assign({ place: 'Mahopac: lens, switcher', text: "Ilse at the lens; Juniper's clip.", flags: MD_A5.concat(['story.switched_a3', 'story.ilse_p0']) }, obs),
+    md_lens_cut: Object.assign({ place: 'Mahopac: lens, loyalist', text: 'Ilse at the lens; the Cabinet Room door.', flags: MD_A5.concat(['story.warden_cut']) }, obs),
+  });
+}
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
 if (HC_V2_ON) {
   const HC_F = ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'];
@@ -19534,6 +19923,7 @@ function bindInput(){
       const o = objAt(tx, ty, tappable) || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
       if (scene || fade.busy) { /* nothing */ }
       else if (window.PPNet && PPNet.tapTile(tx, ty)) { closePartnerTray(); wild.chase = null; }
+      else if (w && pet() && w.beside) { closePartnerTray(); wbScoot(w); }   // WALK_BESIDE R8 (a): a tap scoots it, no battle
       else if (w && pet()) { closePartnerTray(); if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
       else if (standingStill() && followerAt(tx, ty)) { clearMoves(); if (trayOpen()) closePartnerTray(); else openPartnerTray(); }   // standing still: the care tray toggles (D542, D578)
       else if (o) { closePartnerTray(); wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
@@ -19734,10 +20124,10 @@ function cloudSummary(raw){
 }
 function startCloud(){
   PPCloud.start({
-    getState: () => (readOnly || resetting) ? null : S,
+    getState: () => (readOnly || resetting || previewActive()) ? null : S,   // a debug preview never reaches the cloud save
     save, toast, sfx, summary: cloudSummary,
     drawPet: (cv, sp, st) => spriteCanvas(cv, sp, st, 'n'),
-    busy: () => overlayOpen() || !!(battle && battle.on),
+    busy: () => overlayOpen() || !!(battle && battle.on) || previewActive(),   // no compare (so no adopt reload) under a preview
     beforeOverlay: () => { clearMoves(); lockTabs(true); },
     afterOverlay: () => lockTabs(!$('#ovSettings').hidden),
     // adopt a cloud save: this page stops writing, the v2 key gets the cloud copy as-is (its `last` keeps away-time decay), reload
@@ -19995,6 +20385,7 @@ function boot(){
   applyControls();
   if (S && S.flags['story.tut_care'] === 'armed') careDoorLand();
   scheduleTutorial(false);
+  if (CUR && CUR.objs.some(o => o.load)) setTimeout(() => checkLoadTriggers(), late);   // HC_PARADE E10: resume on map load
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   PPSound.setMusic(S.settings.music !== false);
@@ -20013,7 +20404,9 @@ function boot(){
     get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get finds(){ return { at: FINDS.at.slice(), today: S && S.care ? { ...S.care } : null }; }, get wildAcorns(){ const c = S && S.care, day = dayKey(Date.now()); return { ...WILD_ACORNS, day, today: c && c.d === day ? (c.wildAcorns | 0) : 0 }; }, setFindRng: f => { if (DEBUG) findRng = typeof f === 'function' ? f : Math.random; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, get refreshEnv(){ return DEBUG && debugQueryOn() ? () => PPEnv.refresh('refresh') : undefined; },   // ?debug=1 only; the REFRESH path (geoPref 'allow' + permState 'granted'), never prompts
-    get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, guide: !!w.guide, name: nameOf(w.sp, w.stage) })); },
+    get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, guide: !!w.guide, name: nameOf(w.sp, w.stage),
+      beside: DEBUG && w.beside ? { left: w.beside.left, phase: w.beside.phase, face: w.beside.face, to: w.beside.to, still: Math.round(w.beside.still), glyphs: w.beside.glyphs } : null })); },   // WALK_BESIDE E12: `beside` only under ?debug=1, read-only
+    get wbWait(){ return DEBUG ? { still: wb.still, cand: wb.cand, spent: wbSpent(), can: !!S && wbCanWait() } : undefined; },   // WALK_BESIDE E12, debug read
     get poofs(){ return wild.poofs.length; },
     spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
@@ -20102,7 +20495,19 @@ function boot(){
     clearEvoMoves: () => { const p = pet(); if (!p) return; p.evoMoves = []; save(); },
     setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; },
     spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
-    clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
+    clearWild: () => { wbAbort(); wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
+    // WALK_BESIDE E12 (D1979), inert without ?debug=1: end the current wait (it starts) or look (it completes) at once; the wait
+    // still needs its R1/R2 conditions and a wild in range. Returns what happened. wbTurnOf is the pure §6.3 table.
+    wbSkip: () => {
+      const w = wild.list.find(o => o.beside);
+      if (w && w.beside.phase === 'look') { wbComplete(w); return 'look'; }
+      if (w) return null;
+      const c = wild.clock, cand = wbCanWait() && wild.list.filter(o => !o.guide && !o.to && (o.shyUntil || 0) <= c && wild.chase !== o.id && wbDist(o, S.world) <= WB.near)
+        .sort((a, b) => wbDist(a, S.world) - wbDist(b, S.world) || a.id - b.id)[0];
+      if (!cand) return null;
+      wbStart(cand); return 'wait';
+    },
+    wbTurnOf: (flags, near) => wbTurnOf(flags, near),
     exitIntent: (x, y) => {   // MAP_EDGE_TAPS P1 debug read. Inert without ?debug=1. Does not move the holder.
       if (!DEBUG || !S || !Number.isFinite(+x) || !Number.isFinite(+y)) return undefined;
       const hit = exitIntent(+x, +y);
@@ -20255,7 +20660,7 @@ function boot(){
     band: (() => { const c = $('#mapCanvas'), b = c && c.height ? outdoorViewBand(c.height) : null; return b && { topPad: b.topPad, hudPad: b.hudPad, VHe: b.VHe, mid: b.mid, head: b.head, padL: b.padL, padR: b.padR }; })(),
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
-    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });
+    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom', music: scene.musicCue || null }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows
@@ -20432,6 +20837,7 @@ function boot(){
   };
   api.musicIds = () => PPSound.musicIds();
   api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
+  api.trainerFaction = id => trainerFaction(id);   // debug/tests: the battle faction table's side for a holder (D1437: Hall Masters are 'none')
   api.wildTracks = () => WILD_TRACKS.slice();
   api.npcLine = id => id === 'amos' ? lanternGreet('Keeper Amos') : (objById(id) ? linesFor(objById(id)) : null);
   api.loyaltyLine = id => loyaltyBagLine(id);
@@ -20465,6 +20871,19 @@ function boot(){
   api.weekKey = ms => weekKey(ms);
   api.charityCheck = () => highCharityDevCheck();
   // HIGH_CHARITY_LAYOUT phase 1 (debug only): is the city on, its chunks and counts, its check, and the PLACEHOLDER art list.
+  // HC_PARADE probe (debug only): who is on the map right now, tanks in view, hidden bodies, the last street-battle pick.
+  // hcParadeRng(seq) replaces the pick's Math.random with a fixed list (tests); hcParadeRng() restores it.
+  api.hcParade = () => {
+    if (!DEBUG || !CUR) return null;
+    const c = $('#mapCanvas'), vx0 = walk.cam.x / TS, vy0 = walk.cam.y / TS, vx1 = vx0 + c.width / TS, vy1 = vy0 + c.height / TS;
+    const live = CUR.objs.filter(o => present(o));
+    const inView = o => { const q = objPos(o), x = q.fx != null ? q.fx : q.x, y = q.fy != null ? q.fy : q.y; return x + 2 >= vx0 && x - 2 <= vx1 && y + 1 >= vy0 && y <= vy1 + 1; };
+    return { map: CUR.id, scene: scene ? scene.id : null, battle: !!battle.on, battleId: battle.id, cam: cutRT.cam, camLog: scene && scene.camLog ? scene.camLog.slice() : [], people: live.filter(o => o.kind === 'npc' || o.kind === 'trainer').length,
+      tanksInView: live.filter(o => o.kind === 'prop' && /tank_(cmd_)?[rl]$|^hc_tank/.test(o.sprite || '') && inView(o)).length,
+      hidden: CUR.objs.filter(o => o._cutHide).length, cast: live.filter(o => o.cast).map(o => { const q = objPos(o); return { id: o.id, x: q.fx != null ? q.fx : q.x, y: q.fy != null ? q.fy : q.y, sprite: o.sprite || null, fly: !!o.fly }; }),
+      last: scene && scene.hcLast ? JSON.parse(JSON.stringify(scene.hcLast)) : null, used: scene && scene.hcUsed ? [...scene.hcUsed] : [] };
+  };
+  api.hcParadeRng = seq => { if (!DEBUG) return; if (!Array.isArray(seq)) { hcRng = Math.random; return; } let i = 0; hcRng = () => seq[i++ % seq.length]; };
   api.hcCity = () => DEBUG ? { on: HC_V2_ON, preview: HC_PREVIEW, ship: HC_CITY_V2, chunks: HC_V2_ON ? HC_CHUNKS.map(id => ({ id, w: WORLD[id].w, h: WORLD[id].h,
     objs: WORLD[id].objs.length, people: WORLD[id].objs.filter(o => o.kind === 'npc').length,
     tanks: WORLD[id].objs.filter(o => /^hc_tank/.test(o.sprite || '')).length, cars: WORLD[id].objs.filter(o => /^hc_car/.test(o.sprite || '')).length })) : [],

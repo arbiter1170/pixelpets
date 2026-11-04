@@ -151,6 +151,7 @@ built roof kit for now. The President's look is a PLACEHOLDER NPC look (LH-2 is 
   32,26, with wide steps (A14 PLACEHOLDER decals `hc_court_steps_w`/`hc_court_steps`/`hc_court_steps_e`) on rows 26-27 facing
   Muster Road; the old corner 2,38-14,44 is grass and the tool places nothing there (`VACANT`); the flag row reads its row from
   the layout's `flag_row` landmark. Test: `tests/hc_court_move.spec.js`. Shots: `handoff/shots/hc_court_move/`.
+- **HC_PARADE (branch `claude/hc-parade`)** stages on this Court (door 32,26, steps rows 26-27); see `handoff/maps/HC_PARADE.md`.
 
 ## Open, for the Chief of Staff
 
