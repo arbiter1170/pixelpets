@@ -192,7 +192,7 @@ test.describe('ROUTE_TO_GOVERNOR: the coach, the gap and Route 4 (D1854, D1866, 
     expect((await stored(page)).v).toBe(2);
   });
 
-  test('T3: the adder plays once five tiles in and sets r4_adder_met; the Rambler's sight covers the road; wilds Lv 27-30', async ({ page }) => {
+  test('T3: the adder plays once five tiles in and sets r4_adder_met; the Rambler sight covers the road; wilds Lv 27-30', async ({ page }) => {
     await boot(page, save(POSTED, { map: 'route4', x: 7, y: 26, facing: 'up' }));
     const adder = R4.maps.route4.objs.find(o => o.id === 'r4_adder_first');
     expect(Math.abs(adder.x - 6) + Math.abs(adder.y - 26)).toBe(5);

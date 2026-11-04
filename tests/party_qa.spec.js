@@ -76,7 +76,7 @@ test('journal counts and silhouettes stay on the WALKLINGS tab', async ({ page }
   expect(grid.header).toContain('Out there 69');
   expect(grid.joined).toBe('joined');
   expect(grid.met).toBe('met');
-  expect(grid.unmet).toBe(55);
+  expect(grid.unmet).toBe(67);   // + the twelve Act 2 forms (ROUTE_TO_GOVERNOR, KILNMOUTH)
   expect(grid.unmetButtons).toBe(0);
   expect(grid.unmetMark).toBe(true);
   expect(grid.locked).toBe(false);

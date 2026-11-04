@@ -177,7 +177,7 @@ test('unknown species stays, draws a fallback, and cannot lead', async ({ page }
     };
   });
   expect(grid.known).toBe(69);
-  expect(grid.n).toBe(59);
+  expect(grid.n).toBe(71);   // + the twelve Act 2 forms (ROUTE_TO_GOVERNOR, KILNMOUTH)
   expect(grid.header).toContain('Out there 69');
   expect(grid.header).toContain('Joined ' + grid.joinedKnown);
   expect(grid.label).toContain('???');
