@@ -162,11 +162,11 @@ test.describe('SCENE_MUSIC slices 4-5 on the Act 2 opener: the posting and Mom\'
       const a = await j('detail_zzz_act2_opener.json'), b = await j('detail_zzz_act2_cover.json'), c = await j('hc_city_v2.json');
       const cues = steps => JSON.stringify(steps).match(/\["music","[a-z_]+"/g) || [];
       const all = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, cues(v)]).filter(([, v]) => v.length));
-      return { opener: all(a), cover: all(b), city: all(c), first: [a.a2_posting[0], b.cv_mom_gate[0], b.cv_mom_supper[0]] };
+      return { opener: all(a), cover: all(b), gov: cues(c.hc_gov_meet), first: [a.a2_posting[0], b.cv_mom_gate[0], b.cv_mom_supper[0]] };
     });
     const m = id => '["music","' + id + '"';
     expect(data).toEqual({ opener: { a2_posting: [m('ledger')] }, cover: { cv_mom_gate: [m('hearth')], cv_mom_home: [m('hearth')], cv_mom_supper: [m('hearth')] },
-      city: {}, first: [['music', 'ledger'], ['music', 'hearth'], ['music', 'hearth']] });
+      gov: [], first: [['music', 'ledger'], ['music', 'hearth'], ['music', 'hearth']] });
   });
 
   test('T9 C12: Mom wants hearth at "There you are", the town loop on the walk home, hearth again at supper, the room loop after', async ({ page }) => {
