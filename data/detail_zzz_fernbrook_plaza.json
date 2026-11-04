@@ -171,6 +171,7 @@
       "y": 11,
       "facing": "right",
       "hold": true,
+      "_note": "ACT1_KEEPER_JOIN D1561: when a Keeper Cadet's Fernbrook is held by Glimmerwell (fbplaza:post), the Constable alone stays at this post, no patrol; his Walkling, the other Keepers and the banner go. The explaining line is later copy (PLACEHOLDER).",
       "faceWhen": {
        "fbplaza:held": "down",
        "fbplaza:watch": "up",
@@ -181,7 +182,7 @@
        "fbplaza:after"
       ],
       "when": [
-       "!fbplaza:held_glimmer",
+       "!fbplaza:held_glimmer | fbplaza:post",
        "!fbplaza:curfew"
       ],
       "lines": {
@@ -190,7 +191,7 @@
        "fbplaza:watch": "Master Fen's waiting. Listen more than you swing. You'll learn plenty.",
        "fbplaza:after": "A Seal from Master Fen, and still no side? Then stay out of this.",
        "!story.side_pick_done": "Not your quarrel, traveller. Stay out of it.",
-       "story.side=glimmer": "Mint vest. We've nothing to say to you.",
+       "story.side=glimmer": "Wine vest. We've nothing to say to you.",
        "else": "Good to see a Keeper here. Thank you for standing with Fernbrook."
       },
       "chatter": {
@@ -264,7 +265,7 @@
        "fbplaza:watch": "Learn everything Master Fen shows you. Then teach me!",
        "fbplaza:after": "You beat the Trial! But it's still not safe here. Stay back.",
        "!story.side_pick_done": "Please, it's not safe here. Stay out of it.",
-       "story.side=glimmer": "Sergeant says I'm not to talk to mint vests.",
+       "story.side=glimmer": "Sergeant says I'm not to talk to wine vests.",
        "else": "A Keeper! Thank you for helping us hold the square."
       },
       "chatter": {
@@ -444,8 +445,8 @@
      {
       "kind": "npc",
       "id": "fbp_associate_pet",
-      "name": "Bitlet",
-      "pet": "byte/0",
+      "name": "Loamlet",
+      "pet": "mole/0",
       "x": 28,
       "y": 11,
       "hold": true,
@@ -543,7 +544,7 @@
       },
       "lines": {
        "fbplaza:held_keepers": "Lanterns up, shouting done. I can weave in peace.",
-       "fbplaza:held_glimmer": "Quiet now. Too quiet. Mint everywhere.",
+       "fbplaza:held_glimmer": "Quiet now. Too quiet. Wine vests everywhere.",
        "fbplaza:watch": "Look at them, all hoping. Whoever wins, I still weave.",
        "else": "Keep back, dear. Their Walklings are bristling."
       },

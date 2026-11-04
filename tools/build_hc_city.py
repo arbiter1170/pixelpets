@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""HIGH_CHARITY_LAYOUT v0.2.1, phase 1 ("the capital, day one"): writes data/hc_city_v2.json.
+"""HIGH_CHARITY_LAYOUT v0.3, phase 1 ("the capital, day one"): writes data/hc_city_v2.json.
+v0.3 (D1354): the Keeper High Court stands on the Parade's south half, its front and wide steps facing Muster Road.
 
 Run from the repo root: python3 tools/build_hc_city.py [--layout design/specs/high_charity_layout.json]
 The layout JSON lives in the private design repo (gitignored `design/` checkout); it is read, never copied in whole.
@@ -68,7 +69,7 @@ TXT = {
     'hb15_door_seven': "Chained. Ask the duty Keeper.",
     'hb15_keeper': "Shut since the war, holder. Come back with seven on the roll.",
     'gov_door': "By appointment.",
-    'gov_line': "[PLACEHOLDER: Governor Merriden's Act 5 lines are Story's.]",
+    'gov_line': "[PLACEHOLDER: Governor Merriden's Act 2 lines are Story's.]",
     'gov_stair': "[PLACEHOLDER] Upstairs is the President's floor. Not today, holder.",
     'court': "The Court is not sitting.",
     'closed': "Closed for now.",                                # PLACEHOLDER facade line (Store Row a-c, the Exchange, Ferry House, College)
@@ -243,8 +244,9 @@ NEW_STYLE = {
 }
 
 # Doors: kept ids carry from WORLD; new doors are authored here.
+GOV1 = '!story.side=glimmer & story.act>=2'   # the Governor's House floors 1-2 (layout v0.4 §5.3); floor 3 is GOV3
 NEW_DOORS = {
-    'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': '!story.side=glimmer & story.act>=5', 'deny': TXT['gov_door']},
+    'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': GOV1, 'deny': TXT['gov_door']},   # D1426/D1439: Act 2 on
     'hc_news': {'to': 'hc_news_1', 'tx': 7, 'ty': 14, 'facing': 'up'},
     'hc_trial': {'need': 'story.hc_trial_called', 'deny': {'seals>=7': TXT['hb15_door_seven'], 'else': TXT['hb15_door']}},   # §5.2 keyed deny; seals>= counts Seals held (D1329)
     'hc_court': {'need': 'story.hc_no_room', 'deny': TXT['court']},
@@ -504,7 +506,17 @@ for i, (x, y) in enumerate([(19, 30), (39, 30), (60, 30), (18, 23), (60, 24)]):
     prop('highcharity', f'hc2_sq_bench_{i}', x, y, 'bench_long', r=2)
 
 # Charter Hill: the Parade flag row, the Lantern Muster mural (HB6), LAMP STOCK crates and the dockhand (HB7).
-for i, x in enumerate(range(22, 43, 4)): prop('hc_civic', f'hc2_flag_{i}', x, 21, 'flag_pole', r=1)
+FLAG_Y = next(l['y'] for l in CH['hc_civic']['landmarks'] if l['id'] == 'flag_row')     # v0.3: row 20, between the Governor's House and the Court
+for i, x in enumerate(range(22, 43, 4)): prop('hc_civic', f'hc2_flag_{i}', x, FLAG_Y, 'flag_pole', r=1)
+# v0.3 (D1354): the High Court's wide steps, two rows deep across its front, down to Muster Road's north sidewalk.
+# Decals (A14 PLACEHOLDER, 16x32 each from the top step row): drawn on walk tiles, never block, never talk.
+court = [d for d in CH['hc_civic']['doors'] if d['id'] == 'hc_court'][0]
+cx0, _, cx1, cy1 = court['box']
+for i, x in enumerate(range(cx0, cx1 + 1)):
+    for y in (cy1 + 1, cy1 + 2):
+        if not CHUNKS['hc_civic'].walk(x, y): fail(f'hc_civic: Court step {(x, y)} is not a walk tile')
+    CHUNKS['hc_civic'].add({'kind': 'decal', 'id': f'hc2_court_step_{i}', 'x': x, 'y': cy1 + 1,
+                            'sprite': 'hc_court_steps_w' if x == cx0 else 'hc_court_steps_e' if x == cx1 else 'hc_court_steps'}, blocks=False)
 SC['hc2_mural'] = [['say', '', TXT['hb6_mural']], ['setFlag', 'story.hc_mural', True]]
 mur = CHUNKS['hc_civic'].add({'kind': 'prop', 'id': 'hc_mural', 'x': 50, 'y': 20, 'sprite': 'hc_mural', 'scene': 'hc2_mural',
                                'lines': {'else': TXT['hb6_mural']}, 'name': 'The Lantern Muster mural'}, blocks=False)
@@ -532,12 +544,15 @@ for i, (x, y) in enumerate([(15, 40), (30, 36), (38, 30)]): prop('hc_college', f
 for i, (x, y) in enumerate([(5, 26), (20, 30), (42, 42), (6, 44)]): prop('hc_college', f'hc2_park_tree_{i}', x, y, 'lm_big_tree', r=3)
 
 # Parks are spotless: clipped hedges and flowerbeds on open grass, a few per chunk, never on a way through.
+# The Court's old corner (v0.3, D1354; the layout's §7.6) stays plain grass: nothing is placed there.
+VACANT = {'hc_civic': [(2, 38, 14, 44)]}
+def vacant(cid, x, y): return any(x0 <= x <= x1 and y0 <= y <= y1 for x0, y0, x1, y1 in VACANT.get(cid, []))
 for cid, c in CHUNKS.items():
     k = 0
     for y in range(2, c.h - 2):
         for x in range(2, c.w - 2):
             if k >= 14: break
-            if c.ch(x, y) != 'g' or (x * 7 + y * 13) % 29: continue
+            if c.ch(x, y) != 'g' or (x * 7 + y * 13) % 29 or vacant(cid, x, y): continue
             if c.scatter_ok(x, y):
                 c.add({'kind': 'prop', 'id': f'hc2_plant_{cid}_{k}', 'x': x, 'y': y, 'sprite': ('hedge_planter', 'flowerbed', 'planter_round')[k % 3]})
                 k += 1
@@ -675,8 +690,10 @@ objs += [P(f'hc2_filing_{x}', x, 10, 'bookshelf', name='filing') for x in (10, 1
 objs.append(N('hc_reader', 'Keeper reader', 'clerk', 1, 6, 'right', lines={'else': TXT['hb10_reader']}))
 ROOMS['hc_news_2'] = room('hc_news_2', 'Block News House', 'hc_news', 'hc_exchange', g, 'hc_news_2', objs, (11, 12))
 
-# hc_gov_1, lobby and the Governor's office, 16x16 (§7.3 floor 1). The stair goes to floor 3 in phase 1 (the Cabinet
-# Room, floor 2, is phase 2); Keepers path, Act 5, after meeting the Governor (story.hc_gov_met, PLACEHOLDER flag).
+# hc_gov_1, lobby and the Governor's office, 16x16 (§7.3 floor 1). Keepers path, Act 2 on (D1426, D1439, layout v0.4
+# §5.3): the door, Governor Merriden and the ORDERS DOWN chute (HB12) open with GOV1. The stair goes to floor 3 in phase 1
+# (the Cabinet Room, floor 2, is phase 2 and follows GOV1 when built); the President's rooms stay Keepers path, Act 5, after
+# meeting the Governor (story.hc_gov_met, PLACEHOLDER flag).
 part = lambda: '#' + '.' * 8 + '#' + '.' * 5 + '#'
 g = ['#' * 16, '#' + 'W' * 14 + '#'] + [part() for _ in range(3)] + ['#' + '.' * 14 + '#'] * 2 + [part() for _ in range(8)] + ['#######m########']
 GOV3 = '!story.side=glimmer & story.act>=5 & story.hc_gov_met'
@@ -689,7 +706,7 @@ objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={GOV3:
 objs += [P(f'hc2_govdesk_{x}', x, 4, 'keep_desk', name="the Governor's desk") for x in (11, 12)]
 SC['hc2_chute'] = [['say', '', TXT['hb12_chute']], ['setFlag', 'story.hc_chute', True]]
 objs.append(P('hc_chute_mouth', 13, 4, 'hc_chute_mouth', name='the ORDERS DOWN chute', scene='hc2_chute', lines={'else': TXT['hb12_chute']}))
-objs.append(N('hc_governor', 'Governor Merriden', 'hc_governor', 12, 3, 'down', when=['story.act>=5'], lines={'else': TXT['gov_line']}))
+objs.append(N('hc_governor', 'Governor Merriden', 'hc_governor', 12, 3, 'down', when=['story.act>=2'], lines={'else': TXT['gov_line']}))
 objs += [P('hc2_gov_flag_w', 10, 2, 'banner_keeper'), P('hc2_gov_flag_e', 14, 2, 'banner_keeper')]
 ROOMS['hc_gov_1'] = room('hc_gov_1', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_1', objs, (7, 14))
 
@@ -752,7 +769,8 @@ for sid, steps in SC.items():
         if st[0] == 'say' and len(st[2]) > 110: fail(f'{sid}: say over 110')
 
 # ---------- the reputation cast (every named body needs an entry; only added while the city is on) ----------
-KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'Governor Merriden', 'The President', 'Aide', 'Commander', 'Clerk'}
+# D1439: the Governor is a civil post, not a Keeper; the cast has no civil value, so he takes 'none' (as civilians do)
+KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk'}
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
 CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
@@ -772,7 +790,7 @@ for cid, c in CHUNKS.items():
                  'grid': c.grid, 'objs': c.objs,
                  'hcSlots': [h for h in c.src['hooks']]}
 out = {
-    'spec': 'HIGH_CHARITY_LAYOUT v0.2.1 phase 1 (design specs/HIGH_CHARITY_LAYOUT.md); built by tools/build_hc_city.py',
+    'spec': 'HIGH_CHARITY_LAYOUT v0.3 phase 1 (design specs/HIGH_CHARITY_LAYOUT.md); built by tools/build_hc_city.py',
     '_about': 'City preview data. Not in MAPDATA. Merged into WORLD only while HC_CITY_V2 or ?debug=1&hccity=2 is on. '
               'All player text is PLACEHOLDER until Story signs it (layout §11). Art keys hc_* are PLACEHOLDER (HC_PLACEHOLDER_ART).',
     'tiles': {'C': {'name': 'carriageway', 'walk': True}, 'Z': {'name': 'crosswalk', 'walk': True},
