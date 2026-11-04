@@ -9530,7 +9530,7 @@ function endScene(){
     else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
-  if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
+  if (cue && !(battle && battle.on) && (PPSound.musicWant === cue || (cue === 'hush' && !PPSound.musicWant))) {
     const back = trackFor(CUR); if (back && back !== cue) PPSound.music(back, { fadeOut: 400, fadeIn: 500 });
   }
   scheduleTutorial(true);
@@ -9775,6 +9775,17 @@ async function readWalk(dir){
   const steps = dir === 'back' ? [[6, 5], [6, 6]] : [[6, 5], [6, 4]];
   await walkCast([{ id: 'gb_read_pet', steps: steps }]);
   if (dir === 'back') dropCastIds(['gb_read_pet']);
+}
+// MAHOPAC_DREAMS §8: SCENE_MUSIC (design, draft) names cues that have no loop yet. A built loop id plays as built; `hearth`
+// falls back to the room's own loop, `ledger` to `dream`, and `hush` to silence (a 900 ms fade) for the rest of the scene.
+// Any other unknown id does nothing, as before.
+const MUSIC_FALLBACK = { hearth: 'room', ledger: 'dream', hush: null };
+function musicStepId(a){
+  const ids = PPSound.musicIds();
+  if (ids.includes(a) || !(a in MUSIC_FALLBACK)) return a;
+  const f = MUSIC_FALLBACK[a];
+  if (f === 'room') return trackFor(CUR);
+  return f && ids.includes(f) ? f : null;
 }
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene; if (k === 'priceOn') { document.body.classList.add('price-on'); return; }
@@ -10050,7 +10061,13 @@ async function execStep(st){
     case 'sfx': { if (a) sfx(a); return; }
     case 'toast': { if (a) sc.toasts.push(expand(a)); return; }   // ACT1_KEEPER_JOIN 7g: a toast once the scene ends
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
-    case 'music': { if (a && !sc.skip) { sc.musicCue = a; try { PPSound.music(a, { fadeOut: 180, fadeIn: 140 }); } catch (e) {} } return; }
+    case 'music': {
+      if (!a || sc.skip) return;
+      const id = musicStepId(a);   // MAHOPAC_DREAMS §8: SCENE_MUSIC's proposed cues fall back until their loops exist
+      sc.musicCue = id || 'hush';
+      try { if (id) PPSound.music(id, { fadeOut: 180, fadeIn: 140 }); else PPSound.hush(900); } catch (e) {}
+      return;
+    }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
       if (a === 'open') openReveal(sc);
@@ -20087,7 +20104,7 @@ function boot(){
     band: (() => { const c = $('#mapCanvas'), b = c && c.height ? outdoorViewBand(c.height) : null; return b && { topPad: b.topPad, hudPad: b.hudPad, VHe: b.VHe, mid: b.mid, head: b.head, padL: b.padL, padR: b.padR }; })(),
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
-    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });
+    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom', music: scene.musicCue || null }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows

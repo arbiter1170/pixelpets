@@ -6,8 +6,10 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - What changed and why:
   - G1 (D1951): `data/mahopac.json` `status` and `decisions.1_optional` say the dream chain is required on new saves (D1167); the keys stay.
   - G2 (D1949, D1921): Dad's whereabouts show no place line on PEOPLE (row and card); Mom keeps `home · AT HOME`.
-- Files touched: `data/mahopac.json`, `data/mapdata.js`, `game.js` (`whereNow`), `tools/GAMEJS_MAP.txt`, `tests/whereabouts.spec.js` (Dad expects no place line), `tests/mahopac_dreams.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`.
-- Commit(s) + build id: claude/mahopac-lens, build 20261103-2345.
+  - Mom's walk north (§4, D1944, D1945): from Seal 4 to Seal 5, with Supper played (`story.cv_mom`) and the dream woken, Mom's home tap offers "Walk north with me?" (the daily snack still comes first when due). "Not today" writes nothing and the offer stays; "Walk with her" writes `story.mom_mah_ask` at the warp (one cut) to the Observatory, where Mom stands at (5, 2) and opens on what you told her at Supper (four variants, the pin variant included). Tapping the lens plays the glass, her question and the silence: "Neither of you says the next thing." with the music gone; `story.mom_mahopac` told / held. Mom never names Dad. Her repeat at home and Nora's chatter change until Seal 5.
+  - Music (§8): the built `music` step takes SCENE_MUSIC's proposed cues before their loops exist: `hearth` plays the room's own loop, `ledger` plays `dream`, `hush` fades the loop to silence (900 ms) for the rest of the scene (`PPSound.hush`); the room's loop returns when the scene ends.
+- Files touched: `data/mahopac.json`, `data/detail_zzzz_mahopac_dreams.json` (new), `data/mapdata.js`, `game.js` (`whereNow`, the `music` step), `sfx.js` (`hush`), `quests.js` (NOT_STEPS), `tools/GAMEJS_MAP.txt`, `tests/whereabouts.spec.js` (Dad expects no place line), `tests/mahopac_dreams.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`.
+- Commit(s) + build id: claude/mahopac-lens, builds 20261103-2345 (1/5), 20261104-0011 (2/5).
 - Tests run and result (widths, checks): results in the PR.
 - Decisions made (colour + reasoning): D1940-D1951 settled by Vincent, Wed Nov 4, 2026 (defaults).
 - Anything left unfinished: see the PR.
