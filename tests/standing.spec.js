@@ -57,7 +57,9 @@ test('a saved standing is clamped to the range; a non-object becomes 0/0', async
 });
 
 test('thresholds and tier-up toasts come from the config, once per tier @w1', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  // Arcade opt-in: the toast checks read each toast the moment it is raised; Modern queues toasts (modern_hud_dock covers that).
+  const s = starterSave(); s.settings.controls = 'arcade';
+  await installSave(page.context(), s, { quietDay: true });
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   const T = cfg.thresholds;   // 0/10/25/45/70 by default
@@ -466,7 +468,8 @@ const ICON_BAG = ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'r
 const PAL_HEX = { y: '#ffcd75', o: '#ef7d57', w: '#f4f4f4', h: '#94b0c2', r: '#b13e53', p: '#5d275d' };
 
 test('the quest icon is the delivered signpost and the other d-pad icons are unchanged', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  const s = starterSave(); s.settings.controls = 'arcade';   // Arcade opt-in: the 8x8 icons on the Arcade d-pad row
+  await installSave(page.context(), s, { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => { const b = document.querySelector('#questBtn'); return b && !b.hidden; });
