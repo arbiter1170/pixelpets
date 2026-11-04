@@ -10,7 +10,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - `bg_gala_in` (stage, round tables, the host) exists for Story's G1; its door stays "Closed for an event." (D1486).
 - Files touched: `tools/build_brightgate.py`, `data/detail_zzzzz_brightgate.json`, `data/mapdata.js`, `sprites.js` (three skins, the gate, rack, plaque and board art), `battle_bg.js`, `index.html`, `version.json`, `tests/brightgate.spec.js`, `tests/interior_walls.spec.js`, `handoff/shots/brightgate/`.
 - Commit(s) + build id: claude/brightgate slice 2, build 20261104-0234.
-- Tests run and result (widths, checks): brightgate 41/41 (320, 375, 390) with the six gate holds; interior_walls, battle_backdrops, data_integrity pass.
+- Tests run and result (widths, checks): brightgate 42/42 (320, 375, 390) with the six gate holds; interior_walls, battle_backdrops, data_integrity pass.
 - Decisions made (colour + reasoning): as settled.
 - Anything left unfinished: ACT3_SWITCH's lobby and floor 2 scenes, the Outcomes Board's cards, G1, the Tuning wing and the Act 5 shells.
 
