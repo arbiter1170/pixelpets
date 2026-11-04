@@ -1047,3 +1047,10 @@ Recorded from design GEAR_SWITCH v0.1.3 (design commit 8a06d36), without renumbe
 | D1071 | yellow | GLIMMERWELL_PALETTE v0.2.3: map halos and legend for E | Superseded by D1086 |
 | D1072 | red | GLIMMERWELL_PALETTE v0.2.3: "mint" in player text | Superseded by D1087 |
 | D1073 | green | GLIMMERWELL_PALETTE v0.2.4: olive porters | Superseded and moot: porters stay blue |
+
+## MAHOPAC_DREAMS v0.1 (settled Wed Nov 4, 2026)
+
+| Id | Colour | Call | Outcome |
+|---|---|---|---|
+| D1002 (g) | yellow, STORMBELL_SPIRE | the dream-ledger echo | Settled by D1924 (Vincent, Wed Nov 4, 2026): the Spire debrief for W, the lens for L, P1 for G (design `specs/MAHOPAC_DREAMS.md` §5) |
+| D1940-D1951 | red D1940-D1946, yellow D1947-D1950, green D1951 | the lens moment, Mom's walk north, the silence, the epilogue card, the echoes, Dad's whereabouts, the side card, build notes | Settled by Vincent, Wed Nov 4, 2026, on every default (design `specs/MAHOPAC_DREAMS.md` §14) |

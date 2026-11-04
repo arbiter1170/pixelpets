@@ -1,10 +1,10 @@
 {
   "spec": "MAHOPAC",
   "version": "1.0",
-  "status": "playable side story. Optional after the starter. Does not gate the main chain.",
+  "status": "playable story chain. Required on new saves (D1167, quests.js home_trip). Telling Ilse stays optional.",
   "_about": "Mom's upstairs, a north trail to Mahopac, and a dream at Breckenridge Observatory. Time in Mahopac is stuck: people drift a step, then hold still. The dream is three memories (a 2004 pop-toy, a seventh birthday, dinner with Dad at MacRonalds) that teach the partner to trust the player. Mom then sends you to Warden Ilse, who keeps a dream ledger.",
   "decisions": {
-    "1_optional": "The side chain never blocks Route 1. Old saves with a Walkling can start it by going upstairs.",
+    "1_optional": "Was optional (D27). Since D1167 the dream is a main-chain step on new saves. Old saves that skipped it still load and go on.",
     "2_ilse": "Mom calls her Warden Ilse, like everyone else (STORY v0.5, Oct 29). Dreams are part of a Warden's work.",
     "3_dream_art": "Dream maps set dream to young or child. The map gets a soft wash, and the keeper draws smaller.",
     "4_no_conflict": "Mahopac has no trainers, no faction stands, and no wild battles."

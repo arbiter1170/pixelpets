@@ -2,6 +2,16 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 23:45 ET: Build: Mahopac dreams, the lens and Mom's walk north (MAHOPAC_DREAMS v0.1; D1940-D1951)
+- What changed and why:
+  - G1 (D1951): `data/mahopac.json` `status` and `decisions.1_optional` say the dream chain is required on new saves (D1167); the keys stay.
+  - G2 (D1949, D1921): Dad's whereabouts show no place line on PEOPLE (row and card); Mom keeps `home · AT HOME`.
+- Files touched: `data/mahopac.json`, `data/mapdata.js`, `game.js` (`whereNow`), `tools/GAMEJS_MAP.txt`, `tests/whereabouts.spec.js` (Dad expects no place line), `tests/mahopac_dreams.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`.
+- Commit(s) + build id: claude/mahopac-lens, build 20261103-2345.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1940-D1951 settled by Vincent, Wed Nov 4, 2026 (defaults).
+- Anything left unfinished: see the PR.
+
 ## 2026-11-03 22:42 ET: Build: Act 2 cover story, the opening slices: Mom's Supper and Juniper's point (ACT2_COVER_STORY v0.1.1; D1680-D1699, D1921)
 - What changed and why:
   - Mom's "Supper" (C-M, D1682): on the first step out of the Lodge after the posting, Mom waits at the gate (a temporary body), says m1 and walks home ahead; in your room the drawer (the chest) plays the rest: the lanyards, Hattie's post, and "Tell the truth" / "Cover story" / "Say nothing" (D1681) writing `story.cv_mom` told / cover / quiet. Talking to Mom at your door plays the same scene. Fallback: the first step inside home for a save that never passed the gate. An interrupted scene writes nothing and replays.

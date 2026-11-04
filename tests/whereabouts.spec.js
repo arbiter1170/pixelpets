@@ -79,12 +79,12 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   expect(got[SHOWN('Keeper Teague')].where).toBe('Lamplight Provisions · AT WORK');
   expect(got[SHOWN('Keeper Quill')].where).toBe('home (off the map) · ASLEEP');
   expect(got.Mom.where).toBe('home · AT HOME');
-  expect(got.Dad.where).toBe('home · AT HOME');
+  expect(got.Dad.where).toBe('');   // MAHOPAC_DREAMS G2 (D1949): Dad shows no place line
   expect(got.Mom.tier).toBe('close');
   expect(got.Dad.tier).toBe('close');
   expect(got.Lizzy.icon).toBe(true);
   expect(got.Mom.icon).toBe(true);
-  expect(got.Dad.icon).toBe(true);
+  expect(got.Dad.icon).toBe(false);
   expect(got['Warden Ilse'].where).toBe("Warden's Lodge · AT WORK");
   expect(got['Officer Ness'].where).toBe('Hearthmoor · AT WORK');
   expect(got.Rook.where).toBe('Hearthmoor · OUT AND ABOUT');
@@ -132,7 +132,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   expect(got.Wren.where).toBe('Lanternball Court · OUT AND ABOUT');
   expect(got['Mr. Gristle'].where).toBe('the lobby · AT HOME');
   expect(got.Mom.where).toBe('home · AT HOME');
-  expect(got.Dad.where).toBe('home · AT HOME');
+  expect(got.Dad.where).toBe('');   // MAHOPAC_DREAMS G2 (D1949): Dad shows no place line
   const homeIcon = await page.evaluate(() => {
     const src = name => {
       const row = [...document.querySelectorAll('#repList .rep-row')].find(r => r.querySelector('.rep-name').textContent === name);
@@ -164,7 +164,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   expect(got[SHOWN('Keeper Quill')].where).toBe('Lamplight Provisions · AT WORK');
   expect(got[SHOWN('Keeper Teague')].where).toBe('home (off the map) · ASLEEP');
   expect(got.Mom.where).toBe('home · AT HOME');
-  expect(got.Dad.where).toBe('home · AT HOME');
+  expect(got.Dad.where).toBe('');   // MAHOPAC_DREAMS G2 (D1949): Dad shows no place line
   expect(got['Warden Ilse'].where).toBe("Warden's Lodge · AT WORK");
   expect(got['Officer Ness'].where).toBe('Hearthmoor · AT WORK');
   expect(got.Rook.where).toBe('Hearthmoor · OUT AND ABOUT');
