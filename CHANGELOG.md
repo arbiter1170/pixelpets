@@ -2,6 +2,17 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 08:31 ET: LOOK_LOCK, a test that keeps the main cast's signature looks locked and catches lookalikes (D2270-D2279)
+- What changed and why:
+  - Vincent (Wed Nov 4): "other NPCs do not resemble Rook, Mom, Lizzy, Ilse, the President, etc. Their style should be locked down." New `tests/look_lock.spec.js` reads `data/look_lock.json`: 18 locked characters (Rook, Mom, Lizzy, Ilse, the President, the Governor, Jacob Chi, Archivist Mo, Quinn, Juniper, Masters Fen, Hale and Marisol, Dad, Mrs. Calloway, Dorian Pell, Imogen, Hollis) and an empty slot for Ashlee Ironclaw.
+  - (a) Lock: each locked look matches its recorded fields and a hash of its drawn frames, and every NPC, cast or portrait carrying a locked name wears that look. (b) Lookalike: no other look or NPC shares a signature: same hair style and colour plus the same top colour or accessory, the same outfit set with a real accessory, 85% of drawn pixels alike, or a trait the json names as the character's own. (c) Palette lock (AGENTS rule 11): the on-duty Keeper and Glimmerwell NPCs (ids from Design's WS-PALETTE) stay in their scheme, and nobody without a faction role wears the uniform coat, a faction-only piece or a reference look.
+  - 35 known clashes on main are listed as exceptions, each with a follow-up and a proposed fix; no look changed. Side-by-side shots at 390: `handoff/shots/look_lock/`.
+- Files touched: `tests/look_lock.spec.js` (new), `data/look_lock.json` (new; test data, not in MAPDATA), `handoff/shots/look_lock/*.png` (35), `tests/README.md`, `OPEN_DECISIONS.md` (one row, D2273-D2278), `CHANGELOG.md`.
+- Commit(s) + build id: claude/look-lock; test-only, no deployed file changes, so no build stamp.
+- Tests run and result (widths, checks): see the PR. `look_lock` at 390 (data checks) plus its light pass at 320 and 375; `people_looks_28`, `data_integrity`, `look_keys`.
+- Decisions made (colour + reasoning): D2270 green (the lock rule, settled by Vincent's ask); D2271-D2272 green (cast list and similarity rule, inside the rule); the look fixes D2273-D2277 are red (visible look changes need Vincent); D2278 yellow (two Keeper-coat wearers with no Keeper title, and the Junior Bright wearing the reference look); D2279 green (Ashlee's slot). Rows in Design's `specs/LOOK_LOCK.md`.
+- Anything left unfinished: the 35 exceptions wait on Vincent's calls (F1-F8). Ashlee's slot fills when her look lands.
+
 ## 2026-11-04 03:50 ET: The recall's last line leads into Ilse's posting; the Lantern Council waits for the Governor (ACT1_KEEPER_JOIN v0.1.6; D2020)
 - What changed and why:
   - 9e re-voiced (packet v0.1.6, PLACEHOLDER). The last line of `recall`, `cadet_sendoff` and `rpt_old` (its `story.ep1_end` branch) is now Warden Ilse's "That's their work done. Don't go yet, Cadet. Something came for you." It no longer sends the holder to Captain Lumen and the capital before the posting. The posting itself (`a2_posting`) comes with the Act 2 opener (#312); until then nothing on main points the holder anywhere after the recall.
