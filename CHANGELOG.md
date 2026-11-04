@@ -9,7 +9,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - Lobby (`bg_hq_lobby`): the preview ran on a stand-in grid (face on row 1, a white depot floor). On the built room the two banners and the clock hang on the real face (row 0), and a water cooler sits under it at (1,1). The room's own planters, front desk and sofa cells already stand where the preview put the library planters, reception counter and the two sofa + table + chair groups, so `replaceObjs` gives those 16 cells the library art in place (same id, cell and name; none is tappable). New: a planter by the desk, two info pillars, display cases and planters flanking the entry, a second cooler, two corner planters (22 → 36 pieces). The lanyard racks and the INSIGN plaque (all tappable) keep their own art, so the preview's library rack, its display case at (1,6) and its charter on the plaque's cell (1,8) are left out. The two pillars stand one row lower than the preview (bases 5,7 and 13,7): 5,6 holds no body or piece (D1491, BG10) and 13,6 is Juniper's tap side.
   - The lobby reads clearly unlike the approved preview on the built soot-gloss floor (the stand-in was white), so it is flagged for Vincent's re-look under rule 9 with new before/after and preview-vs-build sheets. The bathhouse matches its preview but for the one bucket.
 - Files touched: `data/detail_zzzzzz_prop_dress.json` (the two rooms, `_bath_note`, `_lobby_note`), `data/mapdata.js` (generated), `tests/prop_dress.spec.js`, `tests/README.md`, `handoff/shots/prop_dress/` (8 PNGs: bath and lobby before/after and preview-vs-build sheets, and their 390 shots), `CHANGELOG.md`, `index.html` and `version.json` (stamp).
-- Commit(s) + build id: claude/prop-dress-2, build 20261104-1506.
+- Commit(s) + build id: claude/prop-dress-2, build 20261104-1520 (first stamped 20261104-1506; restamped after merging origin/main 2dff7a5: #317).
 - Tests run and result (widths, checks): see the PR. `tests/prop_dress.spec.js` at 320, 375 and 390; `kilnmouth`, `brightgate`, `map_reach_sweep`, `tap_interact`, `interior_walls` and `prop_library` re-run.
 - Decisions made (colour + reasoning): D2033 and D2034 (red, settled by Vincent) built from the previews; the bucket nudge and the lobby's translation (face row, kept tappables, pillars one row down) are green engineer's calls on S3 (every interactable keeps a reach cell) and S6 (no piece on an anchor or tap tile, no line blocked). The lobby waits on Vincent's re-look (rule 9). No new decision ids.
 - Anything left unfinished: Vincent's re-look at `handoff/shots/prop_dress/lobby_before_after.png` and `lobby_preview_vs_build.png` before the lobby part deploys. The design measure's face check reads row 1, so it cannot score this lobby's row-0 face; `prop_dress` measures it (longest bare run 2). The bathhouse floor is 66 % one tile (S4 asks 60 %), as the PROP_LIBRARY packet noted; a floor variant is Kilnmouth's, not this pass.
@@ -192,6 +192,41 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): brightgate 42/42 (320, 375, 390) with the six gate holds; interior_walls, battle_backdrops, data_integrity pass.
 - Decisions made (colour + reasoning): as settled.
 - Anything left unfinished: ACT3_SWITCH's lobby and floor 2 scenes, the Outcomes Board's cards, G1, the Tuning wing and the Act 5 shells.
+
+## 2026-11-04 02:27 ET: Build: High Charity v0.4, the capital (HIGH_CHARITY_LAYOUT v0.4.2; city preview only, HC_CITY_V2 stays false)
+- What changed and why:
+  - The city tool builds from the v0.4.2 layout. Nothing may stand on a road any more (layout §4.1): five props had been nudged
+    onto carriageways (a Square bench, a Charter Hill tree, an Exchange cafe table, the Counting Garden statue, the Block News
+    poster) and now stand on sidewalk or grass.
+  - The parade's stands (HC_PARADE §2-§3, the beat sheet on #296) are kept clear of city dressing: no parked car in the cordon
+    bays on Muster Road, no lamp, and the Court's sign steps one tile east, off the close guards' step tiles.
+  - Rule 9: the rooms with no approved preview (the Cabinet Room `hc_gov_2`, the gallery, the College Great Hall, the Muster
+    Hall and its Hall Stone room, the Library, the Dojo expansion) are held, listed in the data, never built.
+  - `tests/high_charity_v04.spec.js` ports the layout checker onto the merged game WORLD (§13.1) and adds the rule 10 arrival
+    frame, the coach, Charter Hill's gates, the Governor's office, old saves, the save, reduced motion and frame time.
+  - §8.2 scheduled townsfolk (phase 2): nine bodies on schedule rows (Child and Parent, the old holder, two students, the
+    Exchange clerk, the pier dockhand, the shopper, the office worker), home off the map outside their rows. Shown labels drop
+    the letters (NAMES_PASS D1744's rule); lines the layout does not give are PLACEHOLDER.
+  - HB14, the capital road (D1279, behind `HC_SPIRE_ROAD_HOOK` in the tool): a sealed sea gate at Lantern Quay 21,38, tap
+    only ("Sealed. The tide decides.", PLACEHOLDER); the built weir sluice stands in for art A52. P1 reuse props: cafe tables
+    and a Block News bill on the Square, bikes by the College steps.
+  - Battle backdrops (BATTLE_BACKDROPS_ACT2 §4): Charter Hill and the Exchange stop drawing the Square's scene; each has its
+    own in its district's colours, with its landmark on the far layer (the Keeper High Court; Block News House and its mast).
+    With the city on, the Square's scene adds the Muster Hall, the one dark roof. Normal play's scenes are unchanged.
+  - Merge fix (Wed Nov 4, 2026, build 20261104-1325): Brightgate (#316) also schedules a "Child" and a "Parent", and the clock
+    kept one schedule per display name, so with the city on one town's pair walked the other's rows. `wireSchedules` (game.js)
+    now gives each scheduled body its own bag (`name#id`) when two share a name; schedHere, schedPos and tileOk read the body's
+    bag, and `npcSpot(name, npcIds)` uses the schedule of the body its ids name (no quest step names a scheduled body today,
+    so no cue changes). §8.2 looks people up by NPC id and checks Brightgate's pair keeps its own rows. Labels unchanged.
+- Files touched: `game.js` (schedules by body), `tools/GAMEJS_MAP.txt`, `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tests/high_charity_v04.spec.js` (new),
+  `tests/hc_court_move.spec.js`, build stamp files.
+- Commit(s) + build id: claude/high-charity-v04, one commit per slice; build 20261104-0227 (slice 1), 20261104-0306 (slice 2), 20261104-0318 (merge of main with #313), 20261104-0336 (slice 3), 20261104-0341 (slice 4).
+- Tests run and result (widths, checks): in the PR.
+- Decisions made (colour + reasoning): no new ids. The road rule is the layout's own (§4.1, D1271); the stands follow D1354 and
+  HC_PARADE's settled rows; the holds follow AGENTS rule 9.
+- Anything left unfinished: the held rooms wait on Vincent's previews (the Cabinet Room also needs a grid); the Muster Hall's
+  inside also waits on the Hall 8 build; the two phase 2 tank posts have no bays in the layout (and Charter Hill is at its cap of
+  three); patrol carts wait on art A28. Shots: `handoff/shots/high_charity/` (slice 5, docs only).
 
 ## 2026-11-04 02:25 ET: Build: Brightgate, slice 1: the city's five districts, the Lantern House and Bright Mart (BRIGHTGATE_LAYOUT v0.2; D1478-D1499, D2000-D2009)
 - What changed and why:
