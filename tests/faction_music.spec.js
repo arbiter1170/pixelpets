@@ -84,8 +84,8 @@ test('keeper and Glimmerwell lines follow pledge and standing @w1', async ({ pag
   expect(lines.tobinKeeper).toBe('Oh! A Hall Friend. The crates are still a partnership, {player}.');
   expect(lines.juniperPick).toBe("Founder's Pick! Marlowe asked after you.");
   expect(lines.tobinLead).toBe('Bright Lead! A spar keeps the quarterly glow healthy. Ready, {player}?');
-  expect(lines.fenMint).toBe('Mint vest. Roots remember your step.');
-  expect(lines.haleMint).toBe('Mint coat, {player}. Stone stands firm all the same.');
+  expect(lines.fenMint).toBe('Wine vest. Roots remember your step.');   // D1434: wine vests
+  expect(lines.haleMint).toBe('Wine vest, {player}. Stone stands firm all the same.');
   expect(lines.amosMint).toBe('Bright day, then rest. Beds are beds.');
   expect(lines.fenAlly).toBe("Warden's Ally. Roots first, then blossoms. Show me, {name}.");
   expect(lines.haleAlly).toBe("Ha! You moved the hill, {player}. Gently, like a Warden's Ally.");
