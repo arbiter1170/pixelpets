@@ -691,8 +691,12 @@
      "id": "km_hall5",
      "x": 42,
      "y": 28,
-     "need": "map:km_hall_in",
-     "deny": "Closed for now."
+     "to": "km_hall_in",
+     "tx": 7,
+     "ty": 22,
+     "facing": "up",
+     "need": "story.km_hall_lit",
+     "deny": "The kiln's cold. No fuel vote, no fire."
     },
     {
      "kind": "door",
@@ -2990,6 +2994,563 @@
      "x": 12,
      "y": 9,
      "sprite": "km_bench"
+    }
+   ]
+  },
+  "km_hall_in": {
+   "name": "Kilnmouth Trial Hall",
+   "kind": "interior",
+   "outdoor": "kilnmouth",
+   "door": "km_hall5",
+   "backdrop": "town",
+   "w": 16,
+   "h": 24,
+   "spawns": null,
+   "zones": [],
+   "skin": "km_hall",
+   "variants": true,
+   "wall": {
+    "windows": []
+   },
+   "safe": {
+    "x": 7,
+    "y": 22
+   },
+   "music": "hall",
+   "grid": [
+    "################",
+    "#WWWWWWWWWWWWW^#",
+    "#;;;;;;;;;;;;;;#",
+    "#;;;;;;;;;;;;;;#",
+    "#;;;;;;;;;;;;;;#",
+    "#;;;;;;;;;;;;;;#",
+    "#aaaaaaaaaaa::a#",
+    "#::::::::::::::#",
+    "#::::::::::::::#",
+    "#::::::::::::::#",
+    "#::::::::::::::#",
+    "#::::::::::::::#",
+    "#a,,aaaaaaaaaaa#",
+    "#,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,#",
+    "#aaaaaaaaaaa..a#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "km_hall_mat",
+     "x": 7,
+     "y": 23,
+     "to": "kilnmouth",
+     "tx": 42,
+     "ty": 28,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "km_hall_stair",
+     "x": 14,
+     "y": 1,
+     "to": "km_stone_in",
+     "tx": 4,
+     "ty": 7,
+     "facing": "up"
+    },
+    {
+     "kind": "prop",
+     "id": "km_stone_gate",
+     "x": 14,
+     "y": 2,
+     "sprite": "km_stone_gate",
+     "lines": {
+      "else": "A stone door, warm to the touch. It opens for a Seal 5 holder."
+     },
+     "when": [
+      "!story.seal5"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_firebox",
+     "x": 6,
+     "y": 1,
+     "sprite": "km_firebox",
+     "lines": {
+      "else": "The firebox. Cold."
+     },
+     "ox": 8,
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_firebox_lit",
+     "x": 6,
+     "y": 1,
+     "sprite": "km_firebox_lit",
+     "lines": {
+      "else": "The firebox, roaring."
+     },
+     "ox": 8,
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_1_1",
+     "x": 1,
+     "y": 1,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_2_1",
+     "x": 2,
+     "y": 1,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_13_1",
+     "x": 13,
+     "y": 1,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_1_4",
+     "x": 1,
+     "y": 4,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_14_4",
+     "x": 14,
+     "y": 4,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_1_8",
+     "x": 1,
+     "y": 8,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_14_8",
+     "x": 14,
+     "y": 8,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_1_10",
+     "x": 1,
+     "y": 10,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_14_10",
+     "x": 14,
+     "y": 10,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_1_14",
+     "x": 1,
+     "y": 14,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_14_14",
+     "x": 14,
+     "y": 14,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_1_16",
+     "x": 1,
+     "y": 16,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_14_16",
+     "x": 14,
+     "y": 16,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_1_20",
+     "x": 1,
+     "y": 20,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_14_20",
+     "x": 14,
+     "y": 20,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_1_1",
+     "x": 1,
+     "y": 1,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_2_1",
+     "x": 2,
+     "y": 1,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_13_1",
+     "x": 13,
+     "y": 1,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_1_4",
+     "x": 1,
+     "y": 4,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_14_4",
+     "x": 14,
+     "y": 4,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_1_8",
+     "x": 1,
+     "y": 8,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_14_8",
+     "x": 14,
+     "y": 8,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_1_10",
+     "x": 1,
+     "y": 10,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_14_10",
+     "x": 14,
+     "y": 10,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_1_14",
+     "x": 1,
+     "y": 14,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_14_14",
+     "x": 14,
+     "y": 14,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_1_16",
+     "x": 1,
+     "y": 16,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_14_16",
+     "x": 14,
+     "y": 16,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_1_20",
+     "x": 1,
+     "y": 20,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_vent_lit_14_20",
+     "x": 14,
+     "y": 20,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "h5_crew_a",
+     "name": "Kiln Crew",
+     "x": 4,
+     "y": 20,
+     "facing": "right",
+     "look": "km_crew_hall"
+    },
+    {
+     "kind": "npc",
+     "id": "h5_crew_b",
+     "name": "Kiln Crew",
+     "x": 10,
+     "y": 15,
+     "facing": "left",
+     "look": "km_crew_hall"
+    },
+    {
+     "kind": "npc",
+     "id": "h5_crew_c",
+     "name": "Kiln Crew",
+     "x": 5,
+     "y": 9,
+     "facing": "right",
+     "look": "km_crew_hall"
+    },
+    {
+     "kind": "npc",
+     "id": "hall5_master",
+     "name": "Master Tobias Hearn",
+     "x": 6,
+     "y": 2,
+     "facing": "down",
+     "look": "km_tobias"
+    }
+   ]
+  },
+  "km_stone_in": {
+   "name": "Hall Stone Room",
+   "kind": "interior",
+   "outdoor": "kilnmouth",
+   "door": null,
+   "backdrop": "town",
+   "w": 9,
+   "h": 9,
+   "spawns": null,
+   "zones": [],
+   "skin": "km_stone",
+   "variants": true,
+   "wall": {
+    "windows": []
+   },
+   "safe": {
+    "x": 4,
+    "y": 7
+   },
+   "music": "hall",
+   "grid": [
+    "#########",
+    "#WWWWWWW#",
+    "#.......#",
+    "#..ddd..#",
+    "#..ddd..#",
+    "#.......#",
+    "#.......#",
+    "#.......#",
+    "####m####"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "km_stone_mat",
+     "x": 4,
+     "y": 8,
+     "to": "km_hall_in",
+     "tx": 14,
+     "ty": 2,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "km_hall_stone",
+     "x": 4,
+     "y": 3,
+     "sprite": "km_hall_stone",
+     "lines": {
+      "else": "The Hall Stone, warm as a hearth."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_stone_plate_a",
+     "x": 1,
+     "y": 1,
+     "sprite": "km_plate",
+     "lines": {
+      "else": "The stone was warm before the town was."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_stone_plate_b",
+     "x": 7,
+     "y": 1,
+     "sprite": "km_plate"
+    },
+    {
+     "kind": "prop",
+     "id": "km_stone_vent_a",
+     "x": 1,
+     "y": 6,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_stone_vent_b",
+     "x": 7,
+     "y": 6,
+     "sprite": "km_vent",
+     "when": [
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_stone_vent_lit_a",
+     "x": 1,
+     "y": 6,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_stone_vent_lit_b",
+     "x": 7,
+     "y": 6,
+     "sprite": "km_vent_lit",
+     "when": [
+      "story.km_hall_lit"
+     ]
     }
    ]
   }
