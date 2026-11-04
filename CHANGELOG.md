@@ -22,6 +22,18 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): green, mine: the coach tile moves four columns east because the spec only fixes it "one tile south of the east-west path", and the nook at (16,9) is the nearest open spot that is not a through lane. D1437 built as settled. No new decision id. No new flag or save field.
 - Anything left unfinished: none.
 
+## 2026-11-03 22:45 ET: Build: the weir hut gets its own room music, `weir` (SCENE_MUSIC v0.1 slice 1, D1898), build 20261103-2241
+- What changed and why:
+  - Vincent asked for music for the story's big scenes, with a spec first. Design wrote SCENE_MUSIC v0.1 (design repo, branch `claude/scene-music`, commit ee3e2ee): a small set of short motifs and a cue for each big scene. Only one of those scenes is on main today, the weir hut, so this PR builds that one cue.
+  - `sfx.js`: one new `MUSIC` loop, `weir` (D minor, 72 bpm, 8 bars, 26.7 s; a soft triangle tune over a bass pedal, a few drips of hi-hat). Pasted from the spec literal (§4.1); plain data on the existing scheduler (no swell, double or voice gate). No audio file.
+  - `data/detail_zz_weir_hut.json`: `hw_weir_hut_in` gains `"music": "weir"` (the design copy gains the same key), regenerated into `data/mapdata.js`. `trackFor()` already plays a room's own `music`, so no code changes: the hut plays `weir` on the door (400 ms crossfade), `route` comes back on the mat, the same loop day and night and on both paths.
+  - Unchanged: `trackFor`, `music()`, the scene steps, the Sound and Music rows, the Music volume, the first-tap unlock, the iPhone audio path, the save.
+- Files touched: `sfx.js`, `data/detail_zz_weir_hut.json`, `data/mapdata.js`, `tests/scene_music.spec.js` (new), `tests/keeper_anthem.spec.js` (T3 skips `weir`), `tests/README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`.
+- Commit(s) + build id: `claude/scene-music`; build 20261103-2241.
+- Tests run and result (widths, checks): see the PR body (`tests/scene_music.spec.js` T1-T8 at 320/375/390, plus the weir hut, music, anthem, faction-music and data-integrity specs).
+- Decisions made (colour + reasoning): D1898 (red, Vincent): the hut's room loop is `weir`; this PR merges only after his yes on the preview. D1905-D1909 (green): plain data format, built fades, the test rows, build order, no iPhone audio change. The other SCENE_MUSIC rows (D1890-D1897, D1899-D1904) are for scenes not on main and are not built here.
+- Anything left unfinished: the cues for the crackdown, the enrolment and recall, and the Act 2 opener are follow-ups for those PRs (listed in the PR body).
+
 ## 2026-11-03 22:29 ET: Battle scenes for the maps built Nov 3: the Weir Hut on the Cut, the plaza fountain in Fernbrook (BATTLE_BACKDROPS, D1009)
 - What changed and why:
   - Vincent asked for battle backgrounds for the maps and areas built and designed this week. Audit of every built place that hosts a battle (wild, holder or scripted): every map on main already has a scene and the `battle_backdrops` checks pass, but two scenes no longer matched their maps. Hushwater Cut (wild zones, a holder) gained the Weir Hut in #301 and its scene did not show it; Fernbrook (the orchard's wild zone and holders) had its pond repaved into the plaza and fountain in #266 and its scene still drew a sand-rimmed pond.
