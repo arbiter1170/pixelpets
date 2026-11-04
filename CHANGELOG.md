@@ -28,7 +28,9 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): in the PR.
 - Decisions made (colour + reasoning): no new ids. The road rule is the layout's own (§4.1, D1271); the stands follow D1354 and
   HC_PARADE's settled rows; the holds follow AGENTS rule 9.
-- Anything left unfinished: the held rooms wait on Vincent's previews; the Muster Hall's inside also waits on the Hall 8 build.
+- Anything left unfinished: the held rooms wait on Vincent's previews (the Cabinet Room also needs a grid); the Muster Hall's
+  inside also waits on the Hall 8 build; the two phase 2 tank posts have no bays in the layout (and Charter Hill is at its cap of
+  three); patrol carts wait on art A28. Shots: `handoff/shots/high_charity/` (slice 5, docs only).
 
 ## 2026-11-04 00:12 ET: Build: Route 4, the walk to the Governor, and four new Walklings (ROUTE_TO_GOVERNOR v0.1.1, D1850-D1876; ACT2_PACING D1880, D1881; KILNMOUTH §4.4)
 - What changed and why:
