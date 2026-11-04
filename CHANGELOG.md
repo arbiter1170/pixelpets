@@ -23,8 +23,8 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
     - A profile of Gate Plaza showed `clock.js` re-reading the URL and sessionStorage on every `now()` call made by phase conditions. `debugOn()` now holds its answer for 500 ms.
     - Walking each district at 390 now averages 18-26 ms per frame, inside the existing towns' 19-27 ms on the same box.
 - Files touched: `tools/build_brightgate.py`, `data/detail_zzzzz_brightgate.json`, `data/mapdata.js`, `game.js` (the `glide` kind, the Master's `crew` gate, Seal 4's art and name, `window.WART` under debug), `clock.js`, `sprites.js`, `battle_bg.js`, `quests.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/brightgate.spec.js`, `tests/interior_walls.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `handoff/shots/brightgate/`.
-- Commit(s) + build id: claude/brightgate slices 3-5. Slices 3 and 4 share one commit, since both live in the build tool's one output. Build id in the PR.
-- Tests run and result (widths, checks): results in the PR.
+- Commit(s) + build id: claude/brightgate 56c3005 (slices 3-4, build 20261104-0400) and the slice 5 commit (build 20261104-0416).
+- Tests run and result (widths, checks): brightgate 54/54 and 13 covering specs, 331 passed, 3 skipped, 0 failed (320, 375, 390).
 - Decisions made (colour + reasoning): as settled; v0.2.1's yellow and green rows on their defaults. Green engine notes: the `glide` object, a trainer `crew` row, the `debugOn` memo.
 - Anything left unfinished:
   - The shuttle waits on D2090 and D2091.
