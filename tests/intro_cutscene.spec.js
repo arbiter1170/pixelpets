@@ -13,7 +13,8 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 test.use({ serviceWorkers: 'block' });   // a service worker would serve game.js past the read hook on a second load
 trackErrors(test, expect);
 
-const BOOT_HOOK = 'try {\n  boot();\n';
+// CRLF-tolerant: a Windows checkout with core.autocrlf=true serves game.js with \r\n (.gitattributes now pins LF).
+const BOOT_HOOK = /try \{\r?\n  boot\(\);\r?\n/g;
 const LINE = {
   hello: 'There you are. Come in.',
   named: 'Tester. The road will test that name.',
@@ -55,8 +56,8 @@ async function exposeInternals(page) {
   await page.route('**/game.js*', async (route) => {
     const res = await route.fetch();
     let body = await res.text();
-    const at = body.indexOf(BOOT_HOOK);
-    if (at >= 0 && body.indexOf(BOOT_HOOK, at + 1) < 0) body = body.slice(0, at) + 'window.__ic = { ev: s => eval(s) };\n' + body.slice(at);
+    const hits = [...body.matchAll(BOOT_HOOK)];
+    if (hits.length === 1) { const at = hits[0].index; body = body.slice(0, at) + 'window.__ic = { ev: s => eval(s) };\n' + body.slice(at); }
     await route.fulfill({ status: 200, body, headers: { 'content-type': 'application/javascript', 'cache-control': 'no-store' } });
   });
 }
