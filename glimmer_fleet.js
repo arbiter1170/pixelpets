@@ -89,18 +89,22 @@ window.PPFleet = (() => {
     gw_bay: { x0: 16, y0: 2, x1: 22, y1: 3, roof: 'roof_gw_panel', wall: 'wall_gw_panel', door: 'door_gw_bay', trim: 'V', shape: 'arch' },
   };
   const PARKED = { x: 20, y: 7, facing: 'left' };   // Cruiser B on the Fleet Bay apron (blocks its three cells)
-  const LINES = {   // June's pass (drafted by Claude in June's role, approved by the owner, Tue Nov 3, 2026; D1346), by hold
+  // June's pass (drafted by Claude in June's role, approved by the owner, Tue Nov 3, 2026; D1346), by hold. A hold missing
+  // from a line falls back to split. D1431: a Keeper slip is local and temporary, never an order from the capital (the three
+  // slip lines are PLACEHOLDER until Story). D1440: Bright Swap is its own lamp-swap stall with no Keeper cover, so on a
+  // Keepers hold it stands as on split (PLACEHOLDER).
+  const LINES = {
     clinic_sign: 'GLOW CARE · A Glimmerwell clinic for Walklings. Members by appointment. Brighter by nature!',
-    clinic_door: { split: "The frosted door stays shut. A plaque: 'By appointment only. We'll call you!'", glimmer: "The frosted door stays shut. A plaque: 'Booked through next season. We'll call you!'", keepers: "Shuttered. A Keeper slip on the shutter: 'CLOSED PENDING REVIEW. By order.'" },
+    clinic_door: { split: "The frosted door stays shut. A plaque: 'By appointment only. We'll call you!'", glimmer: "The frosted door stays shut. A plaque: 'Booked through next season. We'll call you!'", keepers: "Shuttered. A Keeper slip on the shutter: 'CLOSED PENDING LOCAL REVIEW.'" },
     receptionist: { split: "Welcome to Glow Care! Members by appointment. We'll call you when it's your Walkling's turn!", keepers: "We're closed for a Keeper 'review'. I just answer the phone. Brighter by nature... eventually!", glimmer: "Booked through next season! Everyone wants a brighter Walkling. We'll call you. Have a bright day!" },
     mast_sign: 'GLIMMERWELL RELAY · Keeps the lamps talking to each other. The hum is normal. Have a bright day!',
-    mast: { split: 'A slim mast with a wine ring and honey studs. It hums, soft and steady.', keepers: "The mast is dark and still. A Keeper slip on the base: 'POWER CUT BY ORDER.'", glimmer: 'The ring glows and a red light blinks. Up close, the hum is louder.' },
+    mast: { split: 'A slim mast with a wine ring and honey studs. It hums, soft and steady.', keepers: "The mast is dark and still. A Keeper slip on the base: 'POWER CUT. LOCAL NOTICE.'", glimmer: 'The ring glows and a red light blinks. Up close, the hum is louder.' },
     mast_tech: { split: "Don't mind the hum. It's normal. Totally, completely normal. Have a bright day!", keepers: 'The Keepers cut the power. First quiet night since it went up. I slept like a stone.', glimmer: "Signal's never been stronger! Hear that hum? Normal. Strong and normal. Have a bright day!" },
     stall_sign: "BRIGHT SWAP · Old oil lamps in, Glimmer lanterns out. Free! It's a partnership!",
-    stall: { split: 'A rack of Glimmer lanterns, each with a honey tag: FREE.', keepers: "A cream cloth over the rack. A Keeper slip: 'A LAMP IS A LAMP.'", glimmer: 'Half the rack is gone. The honey tags left all say FREE.' },
-    swap_clerk: { split: "Bring me any old oil lamp, take home a Glimmer lantern. Free! Why? It's a partnership!", keepers: "Covered up by order. The Keepers say a lamp's a lamp. I say it's a partnership!", glimmer: 'Half the town swapped already! The old oil lamps? Relocated. Have a bright day!' },
+    stall: { split: 'A rack of Glimmer lanterns, each with a honey tag: FREE.', glimmer: 'Half the rack is gone. The honey tags left all say FREE.' },
+    swap_clerk: { split: "Bring me any old oil lamp, take home a Glimmer lantern. Free! Why? It's a partnership!", glimmer: 'Half the town swapped already! The old oil lamps? Relocated. Have a bright day!' },
     bay_sign: 'FLEET BAY · Courtesy Cruisers. Arriving where you need us. Have a bright day!',
-    bay_door: { split: "The roll door is down. A honey plate: 'Fleet staff only. Thank you for your patience!'", glimmer: "The roll door is down. A honey plate: 'Fleet staff only. Cruisers out on call!'", keepers: "The roll door is chained. A Keeper slip: 'VEHICLES HELD BY ORDER.'" },
+    bay_door: { split: "The roll door is down. A honey plate: 'Fleet staff only. Thank you for your patience!'", glimmer: "The roll door is down. A honey plate: 'Fleet staff only. Cruisers out on call!'", keepers: "The roll door is chained. A Keeper slip: 'VEHICLES HELD. LOCAL NOTICE.'" },
     bay_attendant: { split: "Cruisers go where a town needs reassuring. Today, that's here! Feeling reassured?", keepers: "The Keepers towed our Cruiser to their yard. Towed it! It doesn't even have wheels.", glimmer: "Two Cruisers and a Sky Concierge on one block! You've never been so reassured. Have a bright day!" },
     cruiser: 'A Courtesy Cruiser, parked. No wheels at all. It rests a hand above the road and hums.',
     queue: "They said my Walkling would feel brighter. I asked, 'Brighter than what?' They said, 'We'll call you.'",
@@ -108,7 +112,7 @@ window.PPFleet = (() => {
   };
 
   function buildMap(hold, back){
-    const k = hold === 'keepers', gl = hold === 'glimmer', L = (id) => typeof LINES[id] === 'string' ? LINES[id] : LINES[id][hold];
+    const k = hold === 'keepers', gl = hold === 'glimmer', L = (id) => typeof LINES[id] === 'string' ? LINES[id] : (LINES[id][hold] || LINES[id].split);
     const objs = [
       { kind: 'door', id: 'gw_clinic_door', x: 4, y: 5, to: back.map, tx: back.x, ty: back.y, facing: 'up', need: NEVER, deny: L('clinic_door') },
       { kind: 'door', id: 'gw_bay_door', x: 19, y: 6, to: back.map, tx: back.x, ty: back.y, facing: 'up', need: NEVER, deny: L('bay_door') },
@@ -121,7 +125,7 @@ window.PPFleet = (() => {
       { kind: 'npc', id: 'gw_mast_tech', name: 'Mast Tech', look: 'gw_mast_tech', x: 12, y: 6, facing: 'down', lines: { else: L('mast_tech') } },
       { kind: 'sign', id: 'gw_bay_sign', x: 15, y: 6, sprite: 'gw_sign', text: L('bay_sign') },
       { kind: 'npc', id: 'gw_bay_attendant', name: 'Bay Attendant', look: 'gw_bay_attendant', x: 23, y: 6, facing: 'down', lines: { else: L('bay_attendant') } },
-      { kind: 'prop', id: 'gw_stall', x: 5, y: 12, sprite: k ? 'gw_swap_stall_shut' : 'gw_swap_stall', lines: { else: L('stall') } },
+      { kind: 'prop', id: 'gw_stall', x: 5, y: 12, sprite: 'gw_swap_stall', lines: { else: L('stall') } },   // D1440: no Keeper cover (gw_swap_stall_shut art kept, unused)
       { kind: 'prop', id: 'gw_stall_r', x: 6, y: 12, sprite: 'gw_none' },
       { kind: 'sign', id: 'gw_stall_sign', x: 3, y: 12, sprite: 'gw_sign', text: L('stall_sign') },
       { kind: 'npc', id: 'gw_swap_clerk', name: 'Swap Clerk', look: 'gw_swap_clerk', x: 7, y: 12, facing: 'down', lines: { else: L('swap_clerk') } },
