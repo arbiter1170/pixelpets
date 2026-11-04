@@ -2,6 +2,36 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 09:10 ET: Build: Brightgate, slices 3-5: the city dressed and peopled, Hall 4, v0.2.1's gaps, perf (BRIGHTGATE_LAYOUT v0.2 and v0.2.1; D1484-D1489, D1492, D1494, D1498, D2005, D2092-D2106)
+- What changed and why:
+  - **Slice 3, dressing and people:**
+    - Seven parked Courtesy Cruisers. Three Cruisers glide their east-west lanes, and a Sky Concierge crosses the Campus every 9 s. They use a new non-blocking `glide` object; reduced motion parks each at its west end.
+    - Courtesy staff beats, in pairs where the packet says so. No Keeper patrols (D1489). Every fixed anchor and the eight scheduled townsfolk. The Keeper slot stays empty (D1498).
+    - §11's hooks, with first-read flags `story.bg_insign`, `story.bg_crate` and `story.bg_vane`. The three flame lanterns stand on D1492's tiles, inert for the Dimlamp build.
+    - A wine ring on every planter lamp post: lit by day, one shared night pulse (D1494). No litter.
+    - The fleet's pieces, the Comfort Lamp, the hedge planter and the weathervane are copied mint-free (D2000, D2103).
+  - **Slice 4, Hall 4 (D1484, D2005):**
+    - The door opens from Act 2 onto the storm tower: three rod plinths round the idle coil. Each crew win lights its own rod (the crew's beaten flag; no new save key).
+    - Master Ada Coil stands under the dead rod and fights only after the crew (a trainer `crew` row). Her win gives `seal_brightgate` (Seal 4), `story.seal4` and the quiet tail (`story.ada_sky`).
+  - **v0.2.1 (§17), on the yellow and green defaults:**
+    - Hall 4's teams, lines and the bench rest by the door.
+    - Four optional talk-to-battle holders (Lv 31-33). No wild table; one one-shot Lv 32 dipper at the mill pond (`story.bg_dipper`).
+    - The Pavilion's lantern bowl, the pond sign and the shelter's timetable.
+    - The clerk's, the clock's and floor 2's guest lines; floor 2's first guest arrival (`story.bg_f2_guest`).
+    - The Bright Shuttle's legs (D2090, D2091, Vincent's red calls) are built as data behind `story.bg_shuttle_live`, which nothing sets. The bar at 32,38 stays until he rules. Kilnmouth's stop is handed over as data for the Kilnmouth build.
+  - **Slice 5, perf:**
+    - A profile of Gate Plaza showed `clock.js` re-reading the URL and sessionStorage on every `now()` call made by phase conditions. `debugOn()` now holds its answer for 500 ms.
+    - Walking each district at 390 now averages 18-26 ms per frame, inside the existing towns' 19-27 ms on the same box.
+- Files touched: `tools/build_brightgate.py`, `data/detail_zzzzz_brightgate.json`, `data/mapdata.js`, `game.js` (the `glide` kind, the Master's `crew` gate, Seal 4's art and name, `window.WART` under debug), `clock.js`, `sprites.js`, `battle_bg.js`, `quests.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/brightgate.spec.js`, `tests/interior_walls.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `handoff/shots/brightgate/`.
+- Commit(s) + build id: claude/brightgate 56c3005 (slices 3-4, build 20261104-0400) and the slice 5 commit (build 20261104-0416).
+- Tests run and result (widths, checks): brightgate 54/54 and 13 covering specs, 331 passed, 3 skipped, 0 failed (320, 375, 390).
+- Decisions made (colour + reasoning): as settled; v0.2.1's yellow and green rows on their defaults. Green engine notes: the `glide` object, a trainer `crew` row, the `debugOn` memo.
+- Anything left unfinished:
+  - The shuttle waits on D2090 and D2091.
+  - The ring's 2-tile hum needs a sound the game does not have; each post carries `hum: true` for it.
+  - The phase-2 rooms stay "Closed for now".
+  - Pia's art.
+
 ## 2026-11-04 04:35 ET: Walk beside: the Keepers' first word, the hold lines and the "walk beside" mechanic (WALK_BESIDE; D1960-D1979)
 - What changed and why:
   - Vincent settled WALK_BESIDE v0.1 (D1960-D1979; direction D1930-D1937). Built in four slices on `claude/walk-beside`, everything new in `data/detail_zz_walk_beside.json` unless named.
@@ -71,6 +101,31 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `npx playwright test` on `tests/names_pass.spec.js` (new, 12 runs) plus the 21 specs covering the touched files (npc_ranks, whereabouts, market_row, polish_build2_quest, wardrobe, town_landmarks, shop_p0, standing, weir_hut, tap_interact, reputation, fernbrook_plaza, phone_contacts, world_clock, day1_flow, highcharity, hc_city_v2, lizzy, quest_npc_where, heights, news) at 320, 375 and 390, `--workers=1`: 396 passed, 7 skipped (width-tagged), 0 failed. Zero console errors (every spec tracks them).
 - Decisions made (colour + reasoning): D1730-D1769 built as settled (red, Vincent). Green (engineer): test pins that read the raw speaker key (`PixelPets.scene.who`, `PixelPets.contacts()`) keep the raw name; pins that read what the player sees take the new name.
 - Anything left unfinished: Cal (the Heights lab ally) to Jory and Kit (High Charity) to Mabry are not applied: each shares its cast key with a person who keeps the name (Cal in the Mahopac dream, Kit on the Heights), so a cast label would rename both. It needs a per-body display label or a raw-name split (a new key), which is beyond D1768; flagged for the Supervisor. The crackdown Commander (Commander Brack), the Wickerglen slip Constable (Constable Dunn) and the parade "Officer" labels belong to their own open PRs.
+
+## 2026-11-04 02:55 ET: Build: Brightgate, slice 2: the HQ lobby and the lanyard gate, the review floor, the gala (BRIGHTGATE_LAYOUT v0.2; D1483, D1486, D1493, D2006-D2008)
+- What changed and why:
+  - The Campus HQ door opens on `bg_hq_lobby` for every holder. The front desk with the Receptionist ("Visitors' hours end at five. It's five."), the lanyard rack with its empty hook and the INSIGN plaque on the public side, the clip tiles 2,5 and 2,6 and Dorian's Act 5 tile 5,9 kept free, Courtesy staff inside the gate.
+  - The lanyard gate (7-8,4) stands shut for every holder but a switcher (`story.switched_a3`) or an open offer before the Spire (`story.a3_offer & !story.solvane_met`, Rook's guest, D2008). An undercover Keeper's Glimmerwell lanyard does not open it ("Your name isn't on today's list.", D1521). With the gate shut no lift is reachable (checked in the tool and the spec).
+  - The west lift goes to `bg_review_in`: the one desk empty under the Outcomes Board, Rook's desk beside it, Dorian at his own desk by the lift, Quinn at the wire sets (D2007); their lines and the board's cards wait on ACT3_SWITCH and GLIMMER_DECISIONS (PLACEHOLDER). The east lift says "Out of service."; the stair to the wing shell stays shut. Juniper stands at the desk only while the offer is open.
+  - `bg_gala_in` (stage, round tables, the host) exists for Story's G1; its door stays "Closed for an event." (D1486).
+- Files touched: `tools/build_brightgate.py`, `data/detail_zzzzz_brightgate.json`, `data/mapdata.js`, `sprites.js` (three skins, the gate, rack, plaque and board art), `battle_bg.js`, `index.html`, `version.json`, `tests/brightgate.spec.js`, `tests/interior_walls.spec.js`, `handoff/shots/brightgate/`.
+- Commit(s) + build id: claude/brightgate slice 2, build 20261104-0234.
+- Tests run and result (widths, checks): brightgate 42/42 (320, 375, 390) with the six gate holds; interior_walls, battle_backdrops, data_integrity pass.
+- Decisions made (colour + reasoning): as settled.
+- Anything left unfinished: ACT3_SWITCH's lobby and floor 2 scenes, the Outcomes Board's cards, G1, the Tuning wing and the Act 5 shells.
+
+## 2026-11-04 02:25 ET: Build: Brightgate, slice 1: the city's five districts, the Lantern House and Bright Mart (BRIGHTGATE_LAYOUT v0.2; D1478-D1499, D2000-D2009)
+- What changed and why:
+  - Vincent settled BRIGHTGATE_LAYOUT v0.2 and approved its previews (rule 9). `tools/build_brightgate.py` reads the packet's layout json (private, never copied whole) and writes `data/detail_zzzzz_brightgate.json`: Gate Plaza (`brightgate`), the Campus (`bg_campus`), the Lamp Works (`bg_works`), Old Wick (`bg_oldtown`) and Partner Row (`bg_partner`), 13,568 tiles, every building on the roof kit, the paired five-wide mouths, every door with its room or its shut line, district signposts.
+  - Rule 10: the Lantern House (the plaza's one old house, terracotta over cream) and Bright Mart (awning) either side of the Promise Walk, the heart lantern on 28,33 and the acorn board on 36,33, both in the arrival frame at 390 and 320. Their rooms: `bg_lantern_in` (12 beds in two alcoves, the host at 4,6, the clock, respawn 6,11) and `bg_store_in`.
+  - Ten new map tiles and Old Wick's roof and wall, PAL only; lawns use Route 4's mown lawn; no mint anywhere (D2000): the city's edge is a clipped hedge, and the Comfort Lamp and hedge planter get honey copies.
+  - `factionOfMap` reads Glimmerwell for every Brightgate id (D1496); the region node on the north sheet stays ??? and grey until a save has been there; three `?debug=1` places. No route or coach leads in yet.
+  - Battle scenes for the five districts and two rooms (BATTLE_BACKDROPS_ACT2 v0.1.1 recipes).
+- Files touched: `tools/build_brightgate.py` (new), `data/detail_zzzzz_brightgate.json` (new), `data/mapdata.js`, `game.js`, `sprites.js`, `battle_bg.js`, `quests.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/brightgate.spec.js` (new), `tests/interior_walls.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `handoff/shots/brightgate/`.
+- Commit(s) + build id: claude/brightgate slice 1, build 20261104-0224.
+- Tests run and result (widths, checks): brightgate 23/23 (320, 375, 390); battle_backdrops, data_integrity, interior_walls, town_landmarks, route_to_governor, standing, lantern_rest, faction_music pass (results in the PR).
+- Decisions made (colour + reasoning): as settled. Engine notes (green): an overlay may add reputation `cast`; `l`, `I` and `o` show behind a cut roof; a `sweet` music ask falls back to `town_glimmer`; the read-only debug `viewTiles()`.
+- Anything left unfinished: the HQ lobby and lanyard gate, the review floor and the gala (slice 2); the fleet, people, hooks and the city's tells (slice 3); Hall 4 (slice 4). The way in waits on the Act 2 route or a coach link.
 
 ## 2026-11-04 00:41 ET: The Hearthmoor Lantern Coach can be boarded again; Hall Masters are faction none in the battle table (D1437; build 20261104-0041)
 - What changed and why: QA found the Lantern Coach in Hearthmoor could not be boarded (found on the parade branch, and it reproduces on main with a Modern tap and with the Arcade pad). Root cause: `data/civic.json` (the Keeper House, Oct 14) and then `data/town_board.json` write Hearthmoor row 9 after `data/highcharity.json`, so the Keeper House roof covers columns 10-13 and the coach warp (12,9), Porter Bram (11,9) and the coach sign (13,9) all stood on roof tiles. The coach moves to (16,9), the grass nook between the road and the Lantern House roof, with Bram at (15,9) and the sign at (17,9); that tile is now a path tile (the "mark" the sign names), and only the road (16,8) steps onto it. The objects come from `tools/build_highcharity.py` (edited and re-run; `COACH_X = 16`), the row from `data/town_board.json` (the last writer of row 9). hc_south still lands on the road at (12,8), facing up (D122). Separately, the battle faction table in `game.js` still gave Master Fen, Master Hale and Master Marisol faction `keepers`; it now says `none`, as `data/reputation.json` has since #294 (D1437). Their battles keep the trial loop; no battle line, Standing or music read the old value, so nothing else changes on screen.
