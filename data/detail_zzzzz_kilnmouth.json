@@ -19,6 +19,14 @@
    "skin": "km_road",
    "variants": true,
    "spawns": "km_road",
+   "spawnsWhen": [
+    {
+     "when": [
+      "story.km_seat_filled"
+     ],
+     "spawns": "km_road_b10"
+    }
+   ],
    "respawn": null,
    "safe": {
     "x": 1,
@@ -48,6 +56,33 @@
      "y": 3,
      "w": 3,
      "h": 9
+    }
+   ],
+   "tilePatch": [
+    {
+     "id": "b10_soaked",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ],
+     "rows": {
+      "15": "TTgggggggppgggggggwwwwwwwwsssswwwwggggTT",
+      "16": "TTCCCCCCCppCCCCCCgwwwwttttppppggggggggTT",
+      "17": "TTCCCCCCCppCCCCCCgwwwwttttppppgTTTTTTTTT",
+      "18": "TTCCCCCCCppCCCCCCgwwwwttttppppgTTTTTTTTT",
+      "19": "TTggggggggggggggggwwwwttttppppgggggggTTT",
+      "20": "TTgggjjgggggggggggwwwwttttppppgggggggTTT",
+      "21": "TTggggggggggggjjggwwwwttttppppgggggggTTT",
+      "22": "TTggggggggggggggggwwwwttttppppgggggggTTT",
+      "23": "TTggggggggggggggggwwwwggggppppgggggggTTT",
+      "24": "pmmmmmmmmmmmmmmmmmaaaappppppppgggggggTTT",
+      "25": "pmmmmmmmmmmmmmmmmmaaaappppppppgggggggTTT",
+      "26": "pmmmmmmmmmmmmmmmmmaaaappppppppgggggggTTT",
+      "27": "TTmtttttttttttttmmwwwwgggggggggggggggTTT",
+      "28": "TTmtttttttttttttmmwwwwgjjggggggggggggTTT",
+      "29": "TTmtttttttttttttmmwwwwgggggggggTTTTTTTTT",
+      "30": "TTmtttttttttttttmmwwwwgggggggggTTTTTTTTT"
+     }
     }
    ],
    "grid": [
@@ -250,6 +285,137 @@
      "id": "kr_holder_3",
      "x": 30,
      "y": 8
+    },
+    {
+     "kind": "trainer",
+     "id": "kr_b10_1",
+     "x": 8,
+     "y": 23,
+     "when": [
+      "story.km_seat_filled"
+     ]
+    },
+    {
+     "kind": "trainer",
+     "id": "kr_b10_2",
+     "x": 25,
+     "y": 18,
+     "when": [
+      "story.km_seat_filled"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "kr_mud",
+     "x": 12,
+     "y": 27,
+     "sprite": "puddle",
+     "lines": {
+      "else": "Mud to the ankle. The storm came down here, not up the hill."
+     },
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_0",
+     "x": 5,
+     "y": 28,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_1",
+     "x": 9,
+     "y": 29,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_2",
+     "x": 14,
+     "y": 28,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_3",
+     "x": 7,
+     "y": 30,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_4",
+     "x": 3,
+     "y": 24,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_5",
+     "x": 11,
+     "y": 25,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_6",
+     "x": 16,
+     "y": 26,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_7",
+     "x": 26,
+     "y": 22,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "kr_puddle_8",
+     "x": 28,
+     "y": 19,
+     "sprite": "puddle",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
     }
    ]
   },
@@ -273,6 +439,15 @@
     "y": 37
    },
    "zones": [],
+   "skyWhen": [
+    {
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ],
+     "sky": "night"
+    }
+   ],
    "overlays": [
     {
      "id": "km_storm_cloud",
@@ -641,6 +816,7 @@
      "y": 27,
      "sprite": "km_gauge",
      "lines": {
+      "story.km_springs=warm & story.km_settled": "A painted gauge. Each notch is dated in neat brush strokes. The water has climbed a notch.",
       "else": "A painted gauge. Each notch is dated in neat brush strokes. The water sits below them all."
      }
     },
@@ -660,6 +836,7 @@
      "y": 28,
      "sprite": "km_gate_post",
      "lines": {
+      "story.km_seat_filled & !story.km_council": "BY ORDER. NO GATHERING AFTER DARK.",
       "else": "The springs gate. It stands open; there is nothing to keep in."
      }
     },
@@ -897,7 +1074,22 @@
      "id": "km_works_sign",
      "x": 48,
      "y": 27,
-     "text": "WORKS YARD: BY PERMIT. HARD HATS ONLY."
+     "text": "WORKS YARD: BY PERMIT. HARD HATS ONLY.",
+     "when": [
+      "!story.km_seat_filled | story.km_council"
+     ]
+    },
+    {
+     "kind": "sign",
+     "id": "km_works_order",
+     "x": 48,
+     "y": 27,
+     "text": "BY ORDER. NO GATHERING AFTER DARK.",
+     "sprite": "km_by_order",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
     },
     {
      "kind": "prop",
@@ -906,8 +1098,22 @@
      "y": 25,
      "sprite": "km_coach_shelter",
      "lines": {
+      "story.km_council": "LANTERN COACH. The coach stops here for Hearthmoor.",
       "else": "LANTERN COACH. No coaches till the council sits."
      }
+    },
+    {
+     "kind": "warp",
+     "id": "km_coach",
+     "x": 52,
+     "y": 26,
+     "to": "hearthmoor",
+     "tx": 12,
+     "ty": 8,
+     "facing": "down",
+     "when": [
+      "story.km_council"
+     ]
     },
     {
      "kind": "prop",
@@ -926,6 +1132,7 @@
      "y": 17,
      "sprite": "notice_board",
      "lines": {
+      "story.km_seat_filled & !story.km_council": "BY ORDER. NO GATHERING AFTER DARK.",
       "else": "The council board. Old notices, curling at the corners."
      }
     },
@@ -1021,7 +1228,10 @@
       "story.km_ask_market": "The Bathkeeper. Kept the water warm for years and never asked a thing back.",
       "else": "Coal's dear. Everyone's heating water by hand."
      },
-     "look": "km_seller"
+     "look": "km_seller",
+     "when": [
+      "!story.km_seat_filled | story.km_council"
+     ]
     },
     {
      "kind": "npc",
@@ -1035,7 +1245,10 @@
       "story.km_ask_springs": "If the town could vote tonight, it'd be the Bathkeeper. It can't. Curfew.",
       "else": "It used to be under, that white ring. Mind the frost."
      },
-     "look": "km_regular"
+     "look": "km_regular",
+     "when": [
+      "!story.km_seat_filled"
+     ]
     },
     {
      "kind": "npc",
@@ -1048,7 +1261,10 @@
       "story.km_storm": "No storm again! The tower's the best thing that ever happened here.",
       "else": "Coats on in a spa town. Gran says that never used to happen."
      },
-     "look": "km_kid"
+     "look": "km_kid",
+     "when": [
+      "!story.km_seat_filled | story.km_council"
+     ]
     },
     {
      "kind": "npc",
@@ -1131,6 +1347,849 @@
      "id": "km_yard",
      "x": 48,
      "y": 34
+    },
+    {
+     "kind": "decal",
+     "id": "km_warm_glow",
+     "x": 51,
+     "y": 12,
+     "sprite": "km_window_glow",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "km_curfew_keeper_a",
+     "name": "Keeper Patrol",
+     "x": 8,
+     "y": 37,
+     "facing": "right",
+     "lines": {
+      "else": "Curfew, Cadet. No gathering after dark."
+     },
+     "look": "keeper_officer",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ],
+     "patrol": [
+      [
+       8,
+       37
+      ],
+      [
+       9,
+       37
+      ],
+      [
+       10,
+       37
+      ],
+      [
+       11,
+       37
+      ],
+      [
+       12,
+       37
+      ],
+      [
+       13,
+       37
+      ],
+      [
+       14,
+       37
+      ],
+      [
+       15,
+       37
+      ],
+      [
+       16,
+       37
+      ],
+      [
+       17,
+       37
+      ],
+      [
+       18,
+       37
+      ],
+      [
+       19,
+       37
+      ],
+      [
+       20,
+       37
+      ],
+      [
+       21,
+       37
+      ],
+      [
+       22,
+       37
+      ],
+      [
+       21,
+       37
+      ],
+      [
+       20,
+       37
+      ],
+      [
+       19,
+       37
+      ],
+      [
+       18,
+       37
+      ],
+      [
+       17,
+       37
+      ],
+      [
+       16,
+       37
+      ],
+      [
+       15,
+       37
+      ],
+      [
+       14,
+       37
+      ],
+      [
+       13,
+       37
+      ],
+      [
+       12,
+       37
+      ],
+      [
+       11,
+       37
+      ],
+      [
+       10,
+       37
+      ],
+      [
+       9,
+       37
+      ]
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "km_curfew_keeper_b",
+     "name": "Keeper Patrol",
+     "x": 22,
+     "y": 37,
+     "facing": "left",
+     "lines": {
+      "else": "Curfew, Cadet. No gathering after dark."
+     },
+     "look": "keeper_officer",
+     "when": [
+      "story.km_seat_filled",
+      "!story.km_council"
+     ],
+     "patrol": [
+      [
+       8,
+       37
+      ],
+      [
+       9,
+       37
+      ],
+      [
+       10,
+       37
+      ],
+      [
+       11,
+       37
+      ],
+      [
+       12,
+       37
+      ],
+      [
+       13,
+       37
+      ],
+      [
+       14,
+       37
+      ],
+      [
+       15,
+       37
+      ],
+      [
+       16,
+       37
+      ],
+      [
+       17,
+       37
+      ],
+      [
+       18,
+       37
+      ],
+      [
+       19,
+       37
+      ],
+      [
+       20,
+       37
+      ],
+      [
+       21,
+       37
+      ],
+      [
+       22,
+       37
+      ],
+      [
+       21,
+       37
+      ],
+      [
+       20,
+       37
+      ],
+      [
+       19,
+       37
+      ],
+      [
+       18,
+       37
+      ],
+      [
+       17,
+       37
+      ],
+      [
+       16,
+       37
+      ],
+      [
+       15,
+       37
+      ],
+      [
+       14,
+       37
+      ],
+      [
+       13,
+       37
+      ],
+      [
+       12,
+       37
+      ],
+      [
+       11,
+       37
+      ],
+      [
+       10,
+       37
+      ],
+      [
+       9,
+       37
+      ]
+     ],
+     "patrolStart": 14
+    },
+    {
+     "kind": "decal",
+     "id": "km_council_lit_8",
+     "x": 8,
+     "y": 15,
+     "sprite": "km_window_glow",
+     "when": [
+      "story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_council_lit_9",
+     "x": 9,
+     "y": 15,
+     "sprite": "km_window_glow",
+     "when": [
+      "story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_council_lit_10",
+     "x": 10,
+     "y": 15,
+     "sprite": "km_window_glow",
+     "when": [
+      "story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_council_lit_11",
+     "x": 11,
+     "y": 15,
+     "sprite": "km_window_glow",
+     "when": [
+      "story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_council_lit_12",
+     "x": 12,
+     "y": 15,
+     "sprite": "km_window_glow",
+     "when": [
+      "story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_council_lit_13",
+     "x": 13,
+     "y": 15,
+     "sprite": "km_window_glow",
+     "when": [
+      "story.km_council"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_council_lit_14",
+     "x": 14,
+     "y": 15,
+     "sprite": "km_window_glow",
+     "when": [
+      "story.km_council"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_coal_a",
+     "x": 43,
+     "y": 29,
+     "sprite": "km_coal",
+     "lines": {
+      "else": "Coal sacks, stamped with the works mark."
+     },
+     "when": [
+      "story.km_council",
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_coal_b",
+     "x": 45,
+     "y": 29,
+     "sprite": "km_coal",
+     "when": [
+      "story.km_council",
+      "!story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_chimney_smoke",
+     "x": 46,
+     "y": 19,
+     "sprite": "km_smoke",
+     "when": [
+      "story.km_hall_lit"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_pennant",
+     "x": 44,
+     "y": 13,
+     "sprite": "km_pennant",
+     "lines": {
+      "else": "A Keeper pennant on the post."
+     },
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth>=2"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "km_hold_keeper_a",
+     "name": "Keeper Patrol",
+     "x": 26,
+     "y": 31,
+     "facing": "down",
+     "lines": {
+      "else": "Kilnmouth sits its own seat. The Keepers walk its lanes."
+     },
+     "look": "keeper_officer",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth>=2"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "km_hold_keeper_b",
+     "name": "Keeper Patrol",
+     "x": 26,
+     "y": 34,
+     "facing": "up",
+     "lines": {
+      "else": "Kilnmouth sits its own seat. The Keepers walk its lanes."
+     },
+     "look": "keeper_officer",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth>=2"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "km_split_keeper",
+     "name": "Keeper Patrol",
+     "x": 24,
+     "y": 29,
+     "facing": "right",
+     "lines": {
+      "else": "Both sides wait at the springs."
+     },
+     "look": "keeper_officer",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<2",
+      "story.sway_kilnmouth>-2"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "km_split_vest",
+     "name": "Works Hand",
+     "x": 49,
+     "y": 28,
+     "facing": "left",
+     "lines": {
+      "else": "Both sides wait at the springs."
+     },
+     "look": "km_crew",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<2",
+      "story.sway_kilnmouth>-2"
+     ]
+    },
+    {
+     "kind": "sign",
+     "id": "km_bath_plate",
+     "x": 12,
+     "y": 27,
+     "text": "BRIGHT BATHS, A PARTNER SITE.",
+     "sprite": "km_plate_bright",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_19",
+     "x": 19,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_20",
+     "x": 20,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_21",
+     "x": 21,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_22",
+     "x": 22,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_23",
+     "x": 23,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_24",
+     "x": 24,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_25",
+     "x": 25,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_26",
+     "x": 26,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_29",
+     "x": 29,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_30",
+     "x": 30,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_31",
+     "x": 31,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_32",
+     "x": 32,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_33",
+     "x": 33,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_34",
+     "x": 34,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_35",
+     "x": 35,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_36",
+     "x": 36,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_37",
+     "x": 37,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_38",
+     "x": 38,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_39",
+     "x": 39,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_40",
+     "x": 40,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_41",
+     "x": 41,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_42",
+     "x": 42,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_43",
+     "x": 43,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_44",
+     "x": 44,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_45",
+     "x": 45,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_46",
+     "x": 46,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_47",
+     "x": 47,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_48",
+     "x": 48,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_pipe_49",
+     "x": 49,
+     "y": 29,
+     "sprite": "km_pipe",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_bunting_49",
+     "x": 49,
+     "y": 27,
+     "sprite": "km_bunting",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_bunting_50",
+     "x": 50,
+     "y": 27,
+     "sprite": "km_bunting",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_bunting_51",
+     "x": 51,
+     "y": 27,
+     "sprite": "km_bunting",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_bunting_52",
+     "x": 52,
+     "y": 27,
+     "sprite": "km_bunting",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "km_bunting_53",
+     "x": 53,
+     "y": 27,
+     "sprite": "km_bunting",
+     "when": [
+      "story.km_settled",
+      "story.sway_kilnmouth<=-2"
+     ]
     }
    ]
   },
@@ -2014,6 +3073,58 @@
     "lose": "Rest at the Lantern House up top."
    }
   },
+  "kr_b10_1": {
+   "name": "PLACEHOLDER G",
+   "title": "Kiln Hand",
+   "map": "km_road",
+   "x": 8,
+   "y": 23,
+   "facing": "down",
+   "sight": 2,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "skink/1",
+     "level": 35
+    },
+    {
+     "form": "stone/1",
+     "level": 36
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Rained all night down here. Not a drop up top. You tell me.",
+    "win": "Wet and beaten. Some night, {player}.",
+    "lose": "Go and dry off. The road will keep."
+   }
+  },
+  "kr_b10_2": {
+   "name": "PLACEHOLDER H",
+   "title": "Night Fisher",
+   "map": "km_road",
+   "x": 25,
+   "y": 18,
+   "facing": "right",
+   "sight": 2,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "otter/1",
+     "level": 36
+    },
+    {
+     "form": "owl/1",
+     "level": 37
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Creek's full for once. Don't get used to it.",
+    "win": "Good catch, {player}.",
+    "lose": "The creek will be here tomorrow."
+   }
+  },
   "km_yard": {
    "name": "PLACEHOLDER I",
    "title": "Kiln Yard Holder",
@@ -2415,6 +3526,53 @@
      8,
      29,
      32
+    ]
+   ]
+  },
+  "km_road_b10": {
+   "stage2": 0.25,
+   "table": [
+    [
+     "dipper",
+     22,
+     34,
+     37
+    ],
+    [
+     "crab",
+     14,
+     34,
+     37
+    ],
+    [
+     "otter",
+     12,
+     34,
+     37
+    ],
+    [
+     "snail",
+     12,
+     34,
+     37
+    ],
+    [
+     "jugwasp",
+     10,
+     34,
+     37
+    ],
+    [
+     "stone",
+     8,
+     34,
+     37
+    ],
+    [
+     "gust",
+     8,
+     34,
+     37
     ]
    ]
   }
