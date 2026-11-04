@@ -767,6 +767,10 @@
     ]
    ],
    [
+    "music",
+    "anthem_hall"
+   ],
+   [
     "if",
     "enrol:ask",
     [
@@ -1099,6 +1103,10 @@
    ]
   ],
   "recall": [
+   [
+    "music",
+    "ledger"
+   ],
    [
     "say",
     "Warden Ilse",
