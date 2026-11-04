@@ -142,7 +142,8 @@ OFF2 = {'pr_off_a': (26, 28), 'pr_off_b': (37, 28)}
 CAR_STOP = (32, 31)   # the 64 px car spans 30.5-34.5; its rear door (left-facing) sits at about 33, on the crosswalk
 
 def part2_stage():
-    S = [['hide', 'people'], ['hide', ['hc2_sign_court']], ['curtain', 'on'],   # the Court's sign (33,26) steps aside for the close guards
+    S = [['if', '!story.hc_sf_1', [['music', 'anthem_march', {'keep': True, 'near': True}]], []],   # §6.4: an E10 replay of Part 2 hears the march at full (inside a run from Part 1 it is already playing)
+         ['hide', 'people'], ['hide', ['hc2_sign_court']], ['curtain', 'on'],   # the Court's sign (33,26) steps aside for the close guards
          ['if', 'story.side=glimmer', [walk('player', *HILL_SPOT['glimmer'])], [walk('player', *HILL_SPOT['keepers'])]]]   # a resume lands here first
     S += [cast('pr_tank_w', 4, 31, 'right'), cast('pr_tank_e', 60, 31, 'left'),
           cast('pr_rotor_h', 32, 25, 'down'), cast('pr_court_beam', 32, 25, 'down')]                  # ROTOR_CRAFT §6.2: one row behind his step
@@ -154,7 +155,7 @@ def part2_stage():
     return S
 
 def part2_speech():
-    S = [['curtain', 'off'], ['music', 'anthem_march']]
+    S = [['curtain', 'off']]
     # 2.3 a marching column arrives along the road and files into the Court (frees its slots before the car)
     S += [cast(f'pr_march_{k + 1}', 40 + k, 31, 'left') for k in range(4)]
     S += [['walkAll', [[f'pr_march_{k + 1}', *COURT_DOOR, {'ms': 150, 'drop': True}] for k in range(4)]]]
@@ -170,8 +171,9 @@ def part2_speech():
           ['prop', 'pr_car2', 'hc_pcar_l']]
     # 2.5 nobody gets close
     S += [['walkTo', 'pr_c2_7', 27, 30], ['walkTo', 'pr_line_2', 31, 29],
+          ['music', 'anthem_dark', {'fadeOut': 900, 'minDelay': 1600, 'fadeIn': 2400}],   # KEEPER_ANTHEM §6.4 (D1379): the march dies, ~0.7 s quiet, the dark cue
           ['say', N_GUARD, 'Citizen. Back.'], ['walkTo', 'pr_c2_7', 27, 31], ['walkTo', 'pr_line_2', 30, 28],
-          ['music', 'anthem_dark'], ['wait', 600]]
+          ['wait', 600]]
     # 2.6 the speech (§4, PLACEHOLDER until Story signs it; D1358). No portrait (D1356).
     for line in SPEECH: S.append(['say', 'The President', line, {'face': False}])
     if True:   # 2.7 the clap on the raised hand
@@ -242,7 +244,7 @@ def build(CHUNKS, keep, fail):
 
     side = {'keepers': {'p1_stop': [['say', N_OFF_A, 'Citizen. The street is closed. Step back.']]},
             'glimmer': {'p1_stop': [['say', N_OFF_A, 'Guest. The street is closed. Stand at the back.']]}}
-    p1 = [['hide', 'people'], ['music', 'anthem_march'], walk('player', *GATE),
+    p1 = [['music', 'anthem_march', {'keep': True}], ['hide', 'people'], walk('player', *GATE),   # §6.4 / M8: the scene opens with its own cue; keep carries it across the warp
           ['say', '', 'High Charity. Bells ring across the roofs, and every street has gone quiet.'],
           cast('pr_off_a', 31, 35, 'down'), cast('pr_off_b', 33, 35, 'down'), ['wait', 300],
           ['if', 'story.side=glimmer', side['glimmer']['p1_stop'] + part1_tail('glimmer'), side['keepers']['p1_stop'] + part1_tail('keepers')]]

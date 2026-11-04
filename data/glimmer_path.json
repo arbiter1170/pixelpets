@@ -357,7 +357,7 @@
       [
         "say",
         "",
-        "Tobin hands you a crate lid with a mint bow on it. Juniper sets a Glimmer lantern by the stack."
+        "Tobin hands you a crate lid with a wine bow on it. Juniper sets a Glimmer lantern by the stack."
       ],
       [
         "say",
@@ -496,7 +496,7 @@
       [
         "say",
         "Associate Juniper",
-        "Wear it everywhere. People trust mint. Brighter by nature!"
+        "Wear it everywhere. People trust a lanyard. Brighter by nature!"
       ],
       [
         "if",
@@ -695,7 +695,7 @@
       ],
       [
         "choice",
-        "The projector hums on a mint-green slide. Juniper asks which campaign slogan grabs you.",
+        "The projector hums on a wine-red slide. Juniper asks which campaign slogan grabs you.",
         [
           [
             "Brighter by nature.",
@@ -767,7 +767,7 @@
       [
         "say",
         "",
-        "Mint lamps hum. Walklings doze under them, colours washed thin."
+        "Wine-red lamps hum. Walklings doze under them, colours washed thin."
       ],
       [
         "say",

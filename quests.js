@@ -38,6 +38,7 @@
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
+    'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
@@ -319,7 +320,7 @@
     [
       { id: 'rc_meet', label: 'The last crates', when: ['story.cobble_end'], givers: ['rook_road', 'rook_gate', 'rook_after'], done: ['story.rc_start'],
         text: 'Rook is sitting by the Brinewick road sign. He wants a word.', place: 'Cobblecrest, east road',
-        glimmer: { text: 'Rook is by the Brinewick road sign. His mint lanyard is still on.', place: 'Cobblecrest, east road' },
+        glimmer: { text: 'Rook is by the Brinewick road sign. His Glimmerwell lanyard is still on.', place: 'Cobblecrest, east road' },
         target: { map: 'cobblecrest', x: 28, y: 7 } },
       { id: 'rc_crates', when: ['story.rc_start'], done: ['story.rc_c1', 'story.rc_c2', 'story.rc_c3'],
         text: 'Three Pebblit crates wait in the quarry yard. Open them gently.', place: 'Quarry yard',

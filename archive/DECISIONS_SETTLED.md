@@ -25,6 +25,41 @@ Vincent, in the Claude Code session that built the crackdown packet: "Let's buil
 | D1205 | yellow, POST_TRIAL_CRACKDOWN §13 | A Keeper wire set prop plays Block News as `say` lines; three Block News stories in NEWS | Not built. Default yes, Fernbrook only | the new overlay, `data/news.json` |
 | D1206 | yellow, POST_TRIAL_CRACKDOWN §12 | The Trial Hall is closed by `deny` during the curfew only; open as a place after the pick | Not built. Default yes | `data/fernbrook_rooms.json` |
 | D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
+
+## Tue Nov 3, 2026: Vincent settles KEEPER_ANTHEM v0.2.1 (design specs/KEEPER_ANTHEM.md §12, master 52f62a2; recorded by Claude Code with the build, `claude/keeper-anthem-build`)
+
+Every row was settled by Vincent on its default (v0.1.1 for D1375-D1384, v0.2.1 for D1419-D1423), as the design spec records them. Built as written.
+
+- **D1375 (Tue Nov 3, 2026, red, SETTLED by Vincent; the direction recorded as HC_PARADE D1357).** The Keeper anthem: one original melody, two arrangements as scene cues, `anthem_march` (the parade) and `anthem_dark` (the speech); synthesised at runtime, no audio file; previews before build.
+- **D1376 (Tue Nov 3, 2026, red, SETTLED by Vincent: the default; SUPERSEDED in part by D1419).** No name and no lyrics in player text in v0.1. The anthem now has a name (D1419); the "no lyrics" half stands.
+- **D1377 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** Keys, tempos and length: B-flat major 120 bpm (32 s loop) and B-flat minor 64 bpm (60 s loop), 16 bars each.
+- **D1378 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** The march's swell: from -14 dB and a 700 Hz lowpass to full over 48 s, then hold; retimed to the beat sheet so it is full by wave 5 (the car).
+- **D1379 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** The 2.5 hand-off: the march dies over 0.9 s, about 0.7 s of quiet under "Citizen. Back.", the dark cue fades in over 2.4 s.
+- **D1380 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** Between the street battles the map loop returns as after any battle; `anthem_dark` does not come back; Part 3 adds no cue.
+- **D1381 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** Engine changes M1-M8: voice `double`, voice `gate`, per-track `swell`, check/spec/getter, data, `music` step options, warp hold, the pre-scan skip.
+- **D1382 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default; SUPERSEDED by D1420-D1422).** The anthem plays only in `hc_parade` in v0.1. Now also in two Keeper HQ rooms; the Muster Hall, Trials and outdoor maps still do not use it.
+- **D1383 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** Both paths hear the same two cues; no Glimmer counter-arrangement.
+- **D1384 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** SKIP: no warp hold under SKIP and the 2.5 step is skipped with it; reload replays use `near`.
+- **D1419 (Tue Nov 3, 2026, red, SETTLED by Vincent: the default).** The anthem's name in player text is **Every Roof a Lantern** (runner-up The Lanterns Watch); still no lyrics; Story (June) signs the wording around it.
+- **D1420 (Tue Nov 3, 2026, red, SETTLED by Vincent: the default, two rooms only for now).** The anthem plays indoors as the room loop of Sky-Dock Command (`hc_command_in`) and the Keeper Barracks (`hc_barracks_in`) and nowhere else, behind `HC_CITY_V2` with the parade.
+- **D1421 (Tue Nov 3, 2026, yellow, SETTLED by Vincent: the default).** The indoor arrangement is a third cue, `anthem_hall` (B-flat major, 80 bpm, 16 bars, 48 s; one soft triangle lead, the march's bass as a slow tread, soft kick; the same melody), on today's engine.
+- **D1422 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** In the rooms: the same cue day and night; Glimmer saves hear it too; leaving plays the outdoor loop; stingers duck it; Sound OFF, Music OFF and the volume row as for any loop; no save field.
+- **D1423 (Tue Nov 3, 2026, green, SETTLED by Vincent: the default).** One framed-sheet `sign` in each anthem room names the anthem, PLACEHOLDER until Story signs; the optional Keeper line is Story's to place; engine M10-M11 (`roomPatch`).
+## Tue Nov 3, 2026, late evening ET: Vincent settles WEIR_HUT v0.1 (all defaults; recorded by Claude Code in the build)
+
+Design `specs/WEIR_HUT.md` v0.1.1 (design master). Vincent saw the previews (rule 9: yes) and took every default. Built in branch `claude/weir-hut-build` (`tests/weir_hut.spec.js`).
+
+- **D1590 (red, SETTLED: default).** The hut stands on `hw_cut`, the Old Weir's south bank at the weir's east foot (x 22-25, y 11-12), door step (23,13), with a towpath and a trimmed wild zone.
+- **D1591 (red, SETTLED: as previewed).** The look: turf roof, rough stone, timber trim, barn door, slit window, oil lamp, barrel, nets outside; inside skin `weir_hut` (stone flags, sacking, a lipped trough crossed on two planks), wall row `ICFKmFFFFcsB`.
+- **D1592 (red, SETTLED: default).** The place name on the HUD is "Weir Hut" (PLACEHOLDER for Story).
+- **D1593 (yellow, SETTLED: 6).** The jar counter: six jars on two sill shelves, reading `story.chi_jars` 0-6 (placeholder flag; another build sets it).
+- **D1594 (yellow, SETTLED: a).** Act 1 access: Wickerglen > Falls > Cut open at `story.warden_met`; the Rim stays shut; Ottilie and Nils wait for `story.cobble_end`; wilds on the Falls and the Cut roll Lv 13-16 until `story.cobble_end`.
+- **D1595 (yellow, SETTLED: default).** The door is barred (deny line) until `story.warden_met | story.cobble_end`.
+- **D1596 (yellow, SETTLED: no rest).** The cot does not rest or heal; only Lantern Houses heal (rule 10).
+- **D1597 (green, SETTLED: default).** Exterior dressing: five towpath cells, oil lamp, rain barrel, nets; no pole, no crest; `hw_weir_s` gains a line.
+- **D1598 (green, SETTLED: default).** Arrival at (4,10); the first step (4,9) fires the meeting scene once (a stub until that scene is built); no new sound.
+- **D1599 (green, SETTLED: default).** Build notes: overlay `data/detail_zz_weir_hut.json` copied verbatim; skin and art in `sprites.js`; every line PLACEHOLDER for Story.
+
 ## Tue Nov 3, 2026, 9:57 AM ET: Vincent settles the rest of GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
 
 Vincent, in his own words in the Claude Code session that wrote #268: "Defaults are fine, merge is approved if no conflicts". This settles the fleet's remaining yellow and green rows on their defaults (the reds were settled at 7:44 AM ET, below).

@@ -1081,7 +1081,7 @@
    "when": [
     "story.quarry_bought"
    ],
-   "text": "Clerk Mint runs the Bright Quarry desk now. Very bright. Very mint.",
+   "text": "Clerk Mint runs the Bright Quarry desk now. Very bright. Very polite.",
    "lore": [
     "person.clerk_mint",
     "place.bright_quarry"
