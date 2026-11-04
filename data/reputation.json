@@ -94,7 +94,8 @@
     {
       "name": "Cal",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "The Mahopac dream's Cal (data/mahopac.json npc cal). The RegenX floor tech who shared this key is Jory now, under his own key (NAMES_PASS G8, D1766)."
     },
     {
       "name": "Captain Lumen",
@@ -270,6 +271,12 @@
       "base": 50
     },
     {
+      "name": "Jory",
+      "faction": "none",
+      "base": 50,
+      "note": "NAMES_PASS G8 (D1766; Vincent, Wed Nov 4, 2026: own key). The RegenX floor tech and lab ally: npc id rx_cal, scene rx_cal, trainer rx_cal_ally and flag story.met_cal are unchanged. Was raw name Cal, shared with the Mahopac dream's Cal; save.js SPLIT_KEYS copies an old Cal contact here once."
+    },
+    {
       "name": "Keeper Amos",
       "label": "Host Amos",
       "faction": "keepers",
@@ -349,7 +356,14 @@
     {
       "name": "Kit",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "The Heights stock-up Kit (data/heights.json ht_kit). High Charity's kite seller who shared this key is Mabry now, under her own key (NAMES_PASS G9, D1766)."
+    },
+    {
+      "name": "Mabry",
+      "faction": "none",
+      "base": 50,
+      "note": "NAMES_PASS G9 (D1766; Vincent, Wed Nov 4, 2026: own key). High Charity's kite seller, npc id hc_kite (unchanged). Was raw name Kit, shared with the Heights Kit; save.js SPLIT_KEYS copies an old Kit contact here once."
     },
     {
       "name": "Lab Pair",

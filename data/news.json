@@ -644,7 +644,7 @@
    "headline": "Meet the ridge lab of 'decent people'",
    "body": [
     "RegenX, the lab on the ridge, is a lab of 'decent people'. Atten is its brew.",
-    "On the floor: Nia, Cal and Dr. Weller. Out on the ridge: clerk Jed. Wave at all of them."
+    "On the floor: Nia, Jory and Dr. Weller. Out on the ridge: clerk Jed. Wave at all of them."
    ],
    "lore": [
     "faction.regenx",
@@ -3013,13 +3013,13 @@
    "headline": "Staff spotlight: the decent people of RegenX!",
    "body": [
     "Partner spotlight! RegenX on the ridge is a lab of 'decent people', and the partnership adores decent people.",
-    "Say hi to Nia, Cal and Dr. Weller. They brew Atten. We admire Atten. Quarterly, we admire it a great deal."
+    "Say hi to Nia, Jory and Dr. Weller. They brew Atten. We admire Atten. Quarterly, we admire it a great deal."
    ],
    "replies": [
     {
      "name": "Lab visitor",
      "handle": "ridgelab",
-     "text": "Cal held the door. Dr. Weller said hello. The spotlight felt a bit bright for them."
+     "text": "Jory held the door. Dr. Weller said hello. The spotlight felt a bit bright for them."
     }
    ],
    "lore": [

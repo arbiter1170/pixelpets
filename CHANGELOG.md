@@ -2,6 +2,19 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 08:20 ET: Cal → Jory and Kit → Mabry, each under its own key (NAMES_PASS G8, G9; D1766)
+- What changed and why:
+  - The names pass (#307) held two renames because each body shared its raw name, and so its trust, contact and portrait key, with a person who keeps the name. Vincent ruled (Wed Nov 4, 2026): each renamed character gets its own key. The RegenX floor tech and lab ally is now **Jory** (was Cal; the Mahopac dream's Cal keeps "Cal"). High Charity's kite seller is now **Mabry** (was Kit; the Heights stock-up Kit keeps "Kit").
+  - Data: the raw `name` of npc `rx_cal`, the `rx_cal` scene's speaker and his "I'm Jory" line, and the lab fight ally `rx_cal_ally` say Jory; npc `hc_kite` says Mabry (`tools/build_highcharity.py`, re-run). New cast entries Jory and Mabry in `data/reputation.json`. RegenX lines in the news and Ribbit feeds that named the floor tech say Jory; Mahopac's Cal and the Heights Kit lines are unchanged.
+  - Portraits: the `speakers` tables map Jory to `rx_cal` and Mabry to `kit`, and the Heights `Kit` to his own `stockup_kit`. Before this, heights.json's "Cal" overwrote mahopac.json's, so the dream Cal's dialog portrait was the RegenX tech, and the Heights Kit's stock-up lines showed the kite seller's face.
+  - Old saves: NPC ids, looks, the scene id, trainer id and `story.met_cal` are unchanged. The old "Cal" and "Kit" keys stay where they are. `save.js` copies an old Cal or Kit trust value, contact and star to the new key once, only if the save reached that person (`story.met_cal` for Jory; `story.hc_arrived` or the High Charity map node for Mabry), and records `fold.Cal` / `fold.Kit` so it never runs again. Additive; save v stays 2.
+  - `tests/look_keys.spec.js` gains the speaker-name clash check (walklings-key-collision-check).
+- Files touched: `data/heights.json`, `data/highcharity.json`, `tools/build_highcharity.py`, `data/reputation.json`, `data/news.json`, `data/ribbit_posts.json`, `save.js`, `data/mapdata.js` (generated), `tools/GAMEJS_MAP.txt` (generated), `tests/names_pass.spec.js`, `tests/look_keys.spec.js`, `tests/group_battle.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `index.html`, `version.json`, `screenshots/names_pass/`.
+- Commit(s) + build id: claude/names-own-keys, build 20261104-0809.
+- Tests run and result (widths, checks): see the PR. `names_pass` (four new tests), `look_keys`, `name_fold`, `group_battle`, `data_integrity`, `people_looks_28` and `stores_p4` at 320, 375 and 390, Modern controls.
+- Decisions made (colour + reasoning): D1766 G8, G9 red, settled by Vincent, built as ruled. Green (engineer): the fold copies only when the save reached the renamed person, because the old key is two people; the Heights Kit gets his own portrait entry.
+- Anything left unfinished: an old save whose shared "Cal" or "Kit" contact came from the renamed person also keeps that card under the kept name (keys are never removed). `names_pass` T1 fails on main before this change: Route 4's Road, Lock and Gate Keeper (#315) have no rank, pending row or civilian mark for `rankCheck`.
+
 ## 2026-11-04 03:50 ET: The recall's last line leads into Ilse's posting; the Lantern Council waits for the Governor (ACT1_KEEPER_JOIN v0.1.6; D2020)
 - What changed and why:
   - 9e re-voiced (packet v0.1.6, PLACEHOLDER). The last line of `recall`, `cadet_sendoff` and `rpt_old` (its `story.ep1_end` branch) is now Warden Ilse's "That's their work done. Don't go yet, Cadet. Something came for you." It no longer sends the holder to Captain Lumen and the capital before the posting. The posting itself (`a2_posting`) comes with the Act 2 opener (#312); until then nothing on main points the holder anywhere after the recall.
