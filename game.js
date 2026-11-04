@@ -78,9 +78,11 @@ const HALL2_KEY = 'pixelpets.hall2';
 const HALL2_ON = (() => {
   if (HALL2_RELEASED) return true;
   let on = false;
+  // Without debug the key is never stored, and any left over is cleared (as readHcCityPref), so a later ?debug=1 in this tab can't turn it on.
+  if (!DEBUG) { try { sessionStorage.removeItem(HALL2_KEY); } catch (e) {} return false; }
   try { const q = new URLSearchParams(location.search).get('hall2'); if (q === '1') sessionStorage.setItem(HALL2_KEY, '1'); else if (q === '0') sessionStorage.removeItem(HALL2_KEY); } catch (e) {}
   try { on = sessionStorage.getItem(HALL2_KEY) === '1'; } catch (e) {}
-  return DEBUG && on;
+  return on;
 })();
 /* HIGH_CHARITY_LAYOUT v0.2.1 phase 1 ("the capital, day one"; D1268, D1270-D1281). The five-chunk city lives in
    data/hc_city_v2.js (window.PP_HC_V2, built by tools/build_hc_city.py), outside MAPDATA. HC_CITY_V2 is the ship switch:
@@ -387,13 +389,17 @@ let resetting = false, gameReplaced = false;
 // Tell the player once per page load; the game keeps playing in memory.
 let saveFailTold = false;
 let hcPreviewTold = false;
+// A debug preview is open: the High Charity city preview (HC_CITY_V2) or the Glimmerwell preview lot (GLIMMERWELL_VEHICLES_BUILDINGS).
+// While it is, nothing writes the save, and the cloud hooks see no state, so preview play never uploads or adopts.
+function previewActive(){
+  return HC_PREVIEW || !!(window.PPFleet && PPFleet.holdSave()) || !!(S && S.world && S.world.map === 'gw_preview');
+}
 function save(){
   if (!S || readOnly || resetting) return;
-  if (HC_PREVIEW) {   // the city preview never writes the save (see HC_CITY_V2)
-    if (!hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
+  if (previewActive()) {
+    if (HC_PREVIEW && !hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
     return;
   }
-  if (window.PPFleet && PPFleet.holdSave()) return;   // GLIMMERWELL_VEHICLES_BUILDINGS: no write while the ?debug=1 preview lot is open
   S.last = Date.now(); if (DEBUG) S.debugSave = true;
   if (PPSave.writeV2(S) !== false || saveFailTold) return;
   saveFailTold = true;
@@ -3943,6 +3949,10 @@ function applyHcCity(W){
   }
   for (const [id, ln] of Object.entries(V.linesPatch || {}))
     for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o.id === id) o.lines = Object.assign({}, o.lines || {}, ln);
+  // KEEPER_ANTHEM M10 (D1420, D1423): a kept room's loop and added objects (anthem_hall and the framed sheet), city only.
+  for (const [rid, p] of Object.entries(V.roomPatch || {})) { const r = W[rid]; if (!r) continue;
+    if (p.music) r.music = p.music;
+    if (Array.isArray(p.add)) for (const o of p.add) if (!r.objs.some(x => x.id === o.id)) r.objs.push(JSON.parse(JSON.stringify(o))); }
 }
 const WORLD = (() => {
   const W = JSON.parse(JSON.stringify(MD.maps_slice.maps));
@@ -4001,15 +4011,25 @@ if (HC_V2_ON) Object.assign(SCENES, JSON.parse(JSON.stringify(window.PP_HC_V2.sc
 // FACE_ME (Vincent, Nov 3, 2026): Lizzy's reunion can start from Buddy, with Lizzy wandered off or facing away. She walks
 // back beside the holder and faces them first (whichever of her bodies is here: the morning plaza, the plaza, the school).
 if (SCENES.lizzy_intro) SCENES.lizzy_intro = [['faceMe', ['hm_lizzy_pre', 'hm_lizzy', 'school_lizzy']]].concat(SCENES.lizzy_intro);
+// A top-level say first (as before); else one inside an `if` branch, so a second file's swap can wrap a line an earlier file
+// already wrapped (B-2: the crackdown's "After last night," variant wraps Fen's Glimmer-pick line before day1's swap does).
+function swapLine(steps, sw){
+  const at = steps.findIndex(st => Array.isArray(st) && st[0] === 'say' && st[2] === sw.text);
+  if (at >= 0) { const copy = steps.slice(); copy[at] = ['if', sw.when, JSON.parse(JSON.stringify(sw.to)), [steps[at]]]; return copy; }
+  for (let i = 0; i < steps.length; i++) {
+    const st = steps[i]; if (!Array.isArray(st) || st[0] !== 'if') continue;
+    for (const b of [2, 3]) {
+      const inner = Array.isArray(st[b]) && swapLine(st[b], sw); if (!inner) continue;
+      const step = st.slice(), copy = steps.slice(); step[b] = inner; copy[i] = step; return copy;
+    }
+  }
+  return null;
+}
 // DAY1_TRIAL1_FLOW: a detail file may append steps to a built scene (`sceneTails`, e.g. Mom's ask after mom_wake) or wrap one
 // built line so a condition swaps it (`lineSwaps`: { scene, text, when, to }). The design JSON stays verbatim.
 for (const k of DETAIL_KEYS) {
   for (const [id, tail] of Object.entries(MD[k].sceneTails || {})) if (SCENES[id] && id[0] !== '_') SCENES[id] = SCENES[id].concat(JSON.parse(JSON.stringify(tail)));
-  for (const sw of MD[k].lineSwaps || []) {
-    const steps = SCENES[sw.scene]; if (!steps) continue;
-    const at = steps.findIndex(st => Array.isArray(st) && st[0] === 'say' && st[2] === sw.text);
-    if (at >= 0) { const copy = steps.slice(); copy[at] = ['if', sw.when, JSON.parse(JSON.stringify(sw.to)), [steps[at]]]; SCENES[sw.scene] = copy; }
-  }
+  for (const sw of MD[k].lineSwaps || []) { const out = SCENES[sw.scene] && swapLine(SCENES[sw.scene], sw); if (out) SCENES[sw.scene] = out; }
 }
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 // HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
@@ -4953,6 +4973,7 @@ function needMet(need){
 }
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
 function present(o){
+  if (o.cutGone) return false;   // a real map NPC a scene walked off a map edge (`walkTo ... {drop: true}`), until the scene ends
   if (o.when && !o.when.every(c => cond(c, false, String(c).indexOf('away:') >= 0 ? o : undefined))) return false;
   if (!schedHere(o)) return false;
   if (o.kind === 'pickup' && S.flags['item.' + o.id]) return false;
@@ -7234,6 +7255,9 @@ function lanternAsk(who){
   }
   return null;
 }
+// D1128: Fen's challenge hint (below this lead level). PLACEHOLDER copy (Story).
+const FEN_HINT_LV = 12;
+const FEN_HINT_LINE = "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first.";
 function placeSteps(dr){
   if (dr.panel === 'lantern') {
     const who = dr.keeper || '';
@@ -7268,6 +7292,9 @@ function placeSteps(dr){
     const steps = [['say', pn.who || 'Master Fen', greet]];
     // F2 follows the greet while the first Seal is still open. The rematch line and the won line stay as they are.
     if (!rematchPending('hall1_fen') && !(S.flags && S.flags['story.seal1'])) steps.push(['say', pn.who || 'Master Fen', 'Win my Seal and your Walklings can grow higher than Lv 15. Roots first, then blossoms.']);
+    // D1128 (Vincent, Nov 3, 2026): a hint at the challenge (not the Hall door) while the lead is below Lv 12. It informs and
+    // never blocks: the choice below is the same. PLACEHOLDER copy for June.
+    if (pet() && levelOf(pet()) < FEN_HINT_LV) steps.push(['say', pn.who || 'Master Fen', FEN_HINT_LINE]);
     steps.push(['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]);
     return steps;
   }
@@ -9412,6 +9439,7 @@ async function runSteps(steps, ctx = {}){
 const GLIMMER_MEET = { glimmer1: 1, faded1: 1 };
 function cueFactionMusic(ctx, steps){
   if (!scene || !S || side() === 'glimmer') return;
+  if (Array.isArray(steps && steps[0]) && steps[0][0] === 'music') return;   // KEEPER_ANTHEM M8 (D1381): a scene that opens with its own cue keeps it
   const hit = (steps || []).find(st => Array.isArray(st) && st[0] === 'battle' && trainerFaction(st[1]) === 'glimmer');
   if (hit) {
     scene.musicCue = battleTrack('trainer', hit[1]);
@@ -9568,7 +9596,7 @@ async function walkCast(paths){
 }
 // INTRO_CUTSCENE (D801-D809): scene staging. A walk or wait hides the text box but keeps the tap layer: the first tap
 // doubles the pace, the second ends the beat (D808). Casts and prop swaps last until the scene ends (cutReset).
-const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [] };
+const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [], gone: [] };
 function cutFast(sc){ return !!(sc && sc.skip) || signalCastFast(); }
 function cutVar(sc, v){
   if (typeof v !== 'string' || v[0] !== '$') return v;
@@ -9653,7 +9681,11 @@ async function cutWalkTo(sc, who, x, y, opts){
       await glideCast(mv, ms); for (const m of mv) { const P = mapRT.pos[m.id]; if (P) P.moving = false; } }
     prev = p;
   }
-  if (opts.drop) dropCastIds([who].concat(mate ? [mate.id] : []));
+  if (opts.drop) {   // a cast leaves the map; a real map NPC (B-2, D1442: the supporter led away) only hides until the scene ends,
+    const ids = [who].concat(mate ? [mate.id] : []), real = ids.map(id => CUR.objs.find(q => q.id === id)).filter(q => q && !q.cast && !((scene && scene.cast) || []).some(c => c.o === q));
+    for (const q of real) { q.cutGone = true; cutRT.gone.push(q); delete mapRT.pos[q.id]; }   // so it is back on its tile next time
+    dropCastIds(ids.filter(id => !real.some(q => q.id === id)));
+  }
   if (!fast) cutHold(false);
 }
 function cutStepPlayer(p, ms){            // the frame loop skips updateWalk while the scene box is open, so this drives its own tween
@@ -9668,6 +9700,7 @@ function cutStepPlayer(p, ms){            // the frame loop skips updateWalk whi
 function cutReset(sc){
   cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
   for (const p of cutRT.props) p.o.sprite = p.sprite; cutRT.props = [];
+  for (const o of cutRT.gone) delete o.cutGone; cutRT.gone = [];
   const box = $('#sbox'); if (box) box.hidden = false;
 }
 async function relayStart(){
@@ -9977,7 +10010,10 @@ async function execStep(st){
     }
     case 'sfx': { if (a) sfx(a); return; }
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
-    case 'music': { if (a && !sc.skip) { sc.musicCue = a; try { PPSound.music(a, { fadeOut: 180, fadeIn: 140 }); } catch (e) {} } return; }
+    // KEEPER_ANTHEM M6 (D1381): ["music", id, { fadeOut, fadeIn, minDelay, near, keep }]; plain ["music", id] is 180 / 140 ms as before.
+    // `near` starts a swelling cue at full; `keep` holds this cue over a scene warp (M7).
+    case 'music': { if (a && !sc.skip) { const o = (b && typeof b === 'object') ? b : {}; sc.musicCue = a; sc.keepMusic = !!o.keep;
+      try { PPSound.music(a, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near }); } catch (e) {} } return; }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
       if (a === 'open') openReveal(sc);
@@ -10033,11 +10069,17 @@ async function execStep(st){
     case 'warp': {
       if (!a || !WORLD[a]) return;
       commitPending();   // the position save inside the warp must not outrun this scene's flags
-      await new Promise(res => {
-        const at = { map: a, x: b | 0, y: c | 0, facing: d || 'down' };
-        if (fade.busy) { arriveAt(at); res(); return; }
-        warpTo(at, res);
-      });
+      // KEEPER_ANTHEM M7 (D1381, D1384): a scene's own `keep` cue plays on through the warp while it is still the wanted one
+      // (not after a battle handed back the map loop, never under SKIP); arriveAt() then leaves the landing map's loop alone.
+      const hold = !!sc.keepMusic && !sc.skip && PPSound.musicWant === sc.musicCue;
+      if (hold) musicHold = true;
+      try {
+        await new Promise(res => {
+          const at = { map: a, x: b | 0, y: c | 0, facing: d || 'down' };
+          if (fade.busy) { arriveAt(at); res(); return; }
+          warpTo(at, res);
+        });
+      } finally { if (hold) musicHold = false; }
       return;
     }
   }
@@ -12403,16 +12445,26 @@ async function knockOut(side, id){
   }
 }
 // Battle XP (§7) for a defeated or befriended foe: every participant that is still able (not Fainted, HP > 0) gets the award.
+// D1128 (Vincent, Nov 3, 2026): every other Walkling in the holder's own party (the bench, worn-out ones too) gets the bench
+// share (benchXpAward, stats.js). Caps hold the overflow as usual, and bench level-ups show at the end like a participant's.
+// Only S.party counts: in co-op the partner's game pays its own party.
 function awardFoe(fi){
-  const B = battle, f = B.foes[fi];
-  for (const pid of B.participants[fi]) {
-    const p = petById(pid); if (!p || isFainted(p) || hpOf(p) <= 0) continue;
-    const r = grantBattleXp(p, battleXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer: B.kind === 'trainer' }), true);
+  const B = battle, f = B.foes[fi], trainer = B.kind === 'trainer', took = B.participants[fi];
+  const note = (pid, r) => {
     if (r.held > 0 && B.heldIds) B.heldIds.add(pid);
     if (r.to > r.from) {
       const old = B.levelUps.find(x => x.id === pid);
       if (old) old.to = r.to; else B.levelUps.push({ id: pid, from: r.from, to: r.to });
     }
+  };
+  for (const pid of took) {
+    const p = petById(pid); if (!p || isFainted(p) || hpOf(p) <= 0) continue;
+    note(pid, grantBattleXp(p, battleXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer }), true));
+  }
+  for (const p of S.party) {
+    if (!p || took.has(p.id) || p.id === B.newId) continue;   // the Walkling just befriended earns nothing for its own capture
+    const n = benchXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer });
+    if (n > 0) note(p.id, grantBattleXp(p, n, true));
   }
 }
 async function endCheck(id){
@@ -19445,10 +19497,10 @@ function cloudSummary(raw){
 }
 function startCloud(){
   PPCloud.start({
-    getState: () => (readOnly || resetting) ? null : S,
+    getState: () => (readOnly || resetting || previewActive()) ? null : S,   // a debug preview never reaches the cloud save
     save, toast, sfx, summary: cloudSummary,
     drawPet: (cv, sp, st) => spriteCanvas(cv, sp, st, 'n'),
-    busy: () => overlayOpen() || !!(battle && battle.on),
+    busy: () => overlayOpen() || !!(battle && battle.on) || previewActive(),   // no compare (so no adopt reload) under a preview
     beforeOverlay: () => { clearMoves(); lockTabs(true); },
     afterOverlay: () => lockTabs(!$('#ovSettings').hidden),
     // adopt a cloud save: this page stops writing, the v2 key gets the cloud copy as-is (its `last` keeps away-time decay), reload
