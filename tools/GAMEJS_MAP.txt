@@ -2392,10 +2392,11 @@
 3504-3560  const HC_PLACEHOLDER_ART
 3561-3595  const WEIR_HUT_ART
 3596-3617  const ROUTE4_ART
-3618-3748  const PROP_LIBRARY_ART
-3749-3805  function addExteriorArt
-3806-3908  function addHcParadeArt
-3909-3909  const OUTDOOR_SKIN
+3618-3751  const PROP_LIBRARY_ART
+3752-3813  const PROP_LIBRARY_2_ART
+3814-3881  function addExteriorArt
+3882-3984  function addHcParadeArt
+3985-3985  const OUTDOOR_SKIN
 
 # stats.js
 9-10  const EVO_XP
