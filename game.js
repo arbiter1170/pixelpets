@@ -6431,7 +6431,7 @@ const ITEMS = {
   atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
   route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
   keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
-  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Keeper Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Wynne sells them.' },   // D1154, FPT Part A
+  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Host Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Brisa sells them.' },   // D1154, FPT Part A
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);

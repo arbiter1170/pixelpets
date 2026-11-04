@@ -418,7 +418,7 @@ rooms['hc_hall_in'] = room('hc_hall_in', 'Event Hall', 11, 11, 'arcade', 'hc_hal
     {'kind': 'prop', 'id': 'hc_booth_d', 'x': 8, 'y': 5, 'sprite': 'hall_booth',
      'lines': {'else': 'PLAZA DASH · Mind the puddles. The plaza is for everyone.'}},
     {'kind': 'sign', 'id': 'hc_hall_note', 'x': 2, 'y': 8,
-     'text': 'EVENT HALL · Solo booths up top. Games for two with Brin.'},
+     'text': 'EVENT HALL · Solo booths up top. Games for two with Tove.'},
 ])
 
 rooms['hc_arena_in'] = room('hc_arena_in', 'Charity Arena', 11, 9, 'charity', 'hc_arena', [
