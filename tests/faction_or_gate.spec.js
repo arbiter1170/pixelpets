@@ -275,12 +275,13 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
     };
     for (const id of ['fb_east', 'fb_sign_route2_open', 'fb_rubble', 'fb_sign_route2']) cmp(id, route2(id), ['when']);
     for (const id of ['rook_fb', 'fb_teaser']) cmp(id, slice(id), ['when']);
-    cmp('fb_hall', live('fb_hall'), []);
+    cmp('fb_hall', live('fb_hall'), ['shutWhen', 'deny']);   // POST_TRIAL_CRACKDOWN (D1224): objPatch adds the shut read and its deny line first
     // DAY1_TRIAL1_FLOW: Fen's orchard body and the two crates also take Part A's line keys; the Hall sign its new text.
     const sliceSkip = (id, skip) => cmp(id, slice(id), skip);
     sliceSkip('fen_orchard', ['when', 'lines']); sliceSkip('fern_associate', ['when']);
     sliceSkip('fb_crate_a', ['lines']); sliceSkip('fb_crate_b', ['lines']); sliceSkip('fb_sign_hall', ['text']);
     out.hallNeed = live('fb_hall').need;
+    out.hallShut = live('fb_hall').shutWhen;
     out.hallDeny = live('fb_hall').deny;
     out.count = WORLD.fernbrook.objs.filter(o => ['fb_east', 'fb_sign_route2_open', 'fb_rubble', 'fb_sign_route2', 'rook_fb', 'fb_teaser', 'fb_hall'].includes(o.id)).length;
     out.slips = MAPDATA.town_board.towns.fernbrook.reports.filter(r => /^fb_hall_/.test(r.id)).map(r => r.text);
@@ -290,8 +291,9 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
     fb_east: true, fb_sign_route2_open: true, fb_rubble: true, fb_sign_route2: true, rook_fb: true, fb_teaser: true, fb_hall: true,
     fen_orchard: true, fern_associate: true, fb_crate_a: true, fb_crate_b: true, fb_sign_hall: true,
     hallNeed: 'story.lizzy_class | story.orchard_cleared | story.seal1',   // D1169
+    hallShut: 'story.hall1_shut',
     // June's line while Day 1 is not done (FPT §2.1); Fen's note while she is away (DAY1_TRIAL1_FLOW §7, PLACEHOLDER).
-    hallDeny: { '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
+    hallDeny: { 'story.hall1_shut': 'Shut by order of High Charity. A Keeper cordon blocks the door.', '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
     count: 7,
     slips: ['The Trial Hall is latched. Tobin is by the orchard gate, counting crates.', 'The Trial Hall is shut. Master Fen is away on Keeper business.', 'The Trial Hall is open. The steps were swept this morning.'],
   });

@@ -180,12 +180,17 @@ test('Trial 1: three holders before Fen, the Seal, the post-Trial slot, the pick
     expect((await flags(page))['trainer.' + id]).toBe(true);
   }
   expect((await quest(page)).id).toBe('hall1');
-  // Now Fen takes the match. The win gives the Seal; her Seal scene ends with D1175's PLACEHOLDER line (the post-Trial flag).
+  // Now Fen takes the match. The win gives the Seal; the post-Trial slot is the crackdown now (POST_TRIAL_CRACKDOWN, D1395),
+  // so the Seal scene no longer sets story.post_trial_done and the next card is the street outside the Hall.
   await page.evaluate(() => PixelPets.goto('fb_hall_in', 7, 5, 'up'));
   await fight(page, 'fen_hall', ['Begin trial']);
   let f = await flags(page);
   expect(f['story.seal1']).toBe(true);
-  expect(f['story.post_trial_done']).toBe(true);
+  expect(f['story.post_trial_done']).toBeFalsy();
+  expect((await quest(page)).id).toBe('crackdown_street');
+  expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_side_pick').whenOk)).toBe(false);
+  // The crackdown night and Warden Ilse's summons are played in tests/post_trial_crackdown.spec.js; here their flags stand in.
+  await page.evaluate(() => { for (const k of ['story.crackdown', 'story.hall1_shut', 'story.post_trial_done', 'story.warden_called', 'story.warden_met']) PixelPets.setFlag(k, true); });
   expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('split');
   expect((await quest(page)).id).toBe('pick');
   // The pick at the orchard gate (built scene, moved trigger). A Glimmer pick also gets the Tier 1 lanyard (D1150).

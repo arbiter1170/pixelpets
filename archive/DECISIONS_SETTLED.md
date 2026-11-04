@@ -2,6 +2,25 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Tue Nov 3, 2026: Vincent approves the Lantern House and the President's look (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the crackdown: "Approved, president has a preview/look that is seen on the TV during his broadcast moment. Build his character based off that."
+
+- **D1413 (Tue Nov 3, 2026, red, SETTLED by Vincent):** yes: the rebuilt Fernbrook Lantern House (the wire station, LANTERN_HOUSE_FERNBROOK) deploys; rule 9 previews approved (`handoff/shots/lantern_house_fernbrook/build/`).
+- **D1414 (Tue Nov 3, 2026, red, SETTLED by Vincent):** the President's look is the bust on the wire set (`wire_wall_pres`), and his character is built from it: NPC look `president` (skin 3, short grey hair, Keeper green `J` cardigan with a gold front for the bust's gold lapels) and cast `cd_president`, both in `data/detail_zz_crackdown.json`; sheet in `handoff/shots/post_trial_crackdown/build/president_sheet.png`. On-screen naming was not ruled on, so the speaker label stays "The President" (D1241 cleared the name for later use).
+
+## Tue Nov 3, 2026: Vincent's rulings on POST_TRIAL_CRACKDOWN (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the crackdown packet: "Let's build it", then on the spec's defaults "Yes, but I'll change some", with one change: "There should be no pick yet, need placeholder and to spec a quest from the warden in starting area who summons the keeper back home to meet her." He also chose the full Lantern House redesign (still behind rule 9 previews, D1413) and draft art now (D1412).
+
+- **The pick after the crackdown (Tue Nov 3, 2026, red, SETTLED by Vincent; the same call as D1395, recorded with its wording in docs PR #278).** Vincent: "Only change is the pick doesn't happen right when the curfew ends." Everything else follows the spec defaults: the holder is let go at dawn and the curfew order (posts, notice, cordon, Glimmerwell on the east road) stands until the pick. On the first step out of the Lantern House after the dawn release, Warden Ilse phones (Amos passes the message on if the holder has no phone); the holder goes home to the Lodge for the debrief (`warden_summons`, `warden_meet`); the pick waits on `story.warden_met` until the rendezvous build moves it to `story.rdv_done`. The quest that follows is RENDEZVOUS_VINCENT (D1396-D1410, #278), merged with WARDEN_SUMMONS by Vincent at 9:56 AM ET: Ilse phones (D1404), is distraught at the President at the Lodge, and sends the holder on to Vincent. Supersedes D1203's "pick at dawn". D1200 ("The curfew is good to run through dawn") and D1405 (townsfolk back by day once Ilse calls; posts and notice until the pick) are what is built.
+- **Rows closed with this ruling (moved word for word from Open).** D1197, D1198, D1201, D1202, D1204, D1205 and D1207: the spec defaults, accepted and built. D1200: built as Vincent settled it (the curfew runs through dawn; the order's posts stand until the pick, D1405). D1203: amended by D1395. D1206: already superseded by D1224 (the Hall stays shut, `story.hall1_shut`), which is what is built. D1198, D1200, D1201, D1202 and D1203 are recorded with Vincent's own words in the 7:52 and 8:05 AM ET sections below (#278), so only D1197 and D1204-D1207 are moved here.
+| D1197 | red, POST_TRIAL_CRACKDOWN §13 | The crackdown after Trial 1: a Keeper Commander with two Keeper tanks (no guns) and officers closes Fernbrook, stops its Trials, sends Glimmerwell away, threatens the holder's Seal (words only) and orders the holder and Fen out; Fen defies him and appeals to the Warden. Fills D1175 | Not built. Spec and storyboard in `handoff/shots/post_trial_crackdown/` | `data/detail_zz_crackdown.json` (new) |
+| D1204 | yellow, POST_TRIAL_CRACKDOWN §10a.5 | Engine E1-E5: prop casts, per-tile `ms`, `_move` frames for moving props, width-aware cull, `walkAll` step (all prototyped); E6 footprint only if needed | Not built. Default: add E1-E5 | `game.js` |
+| D1205 | yellow, POST_TRIAL_CRACKDOWN §13 | A Keeper wire set prop plays Block News as `say` lines; three Block News stories in NEWS | Not built. Default yes, Fernbrook only | the new overlay, `data/news.json` |
+| D1206 | yellow, POST_TRIAL_CRACKDOWN §12 | The Trial Hall is closed by `deny` during the curfew only; open as a place after the pick | Not built. Default yes | `data/fernbrook_rooms.json` |
+| D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
+
 ## Tue Nov 3, 2026: Vincent settles KEEPER_ANTHEM v0.2.1 (design specs/KEEPER_ANTHEM.md §12, master 52f62a2; recorded by Claude Code with the build, `claude/keeper-anthem-build`)
 
 Every row was settled by Vincent on its default (v0.1.1 for D1375-D1384, v0.2.1 for D1419-D1423), as the design spec records them. Built as written.

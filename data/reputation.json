@@ -864,6 +864,21 @@
       "given": "Imogen"
     },
     {
+      "name": "Commander",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Officer",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Resident",
+      "faction": "none",
+      "base": 50
+    },
+    {
       "name": "Vincent Chi",
       "faction": "none",
       "base": 50
@@ -1098,6 +1113,18 @@
     "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays",
     "masters": "D1437: Hall Masters (Fen, Hale, Marisol) are neutral: faction none, off the Keeper ladder. Master is their Hall title, still shown first (Master Fen).",
     "pending": {
+      "Commander": {
+        "propose": "Commander",
+        "given": null,
+        "decision": "D1198",
+        "note": "POST_TRIAL_CRACKDOWN: the Commander stays unnamed (D1198, settled Nov 3: names stay placeholders); rank-only label until Story names him"
+      },
+      "Officer": {
+        "propose": "Officer",
+        "given": null,
+        "decision": "D1198",
+        "note": "POST_TRIAL_CRACKDOWN: the escort officers and the curfew posts; rank-only label, like the plaza's (D1245)"
+      },
       "Constable": {
         "propose": "Constable",
         "given": null,
