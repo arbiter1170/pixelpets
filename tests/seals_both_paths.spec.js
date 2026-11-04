@@ -310,9 +310,9 @@ test('9. kill switch: with both off, the helpers read the raw map @w1', async ({
 test('10. town lines after a quota close, then after beating Hale; the Ferry Hand after a quarter close @w1', async ({ page }) => {
   await boot(page, mkSave(Object.assign({}, COBBLE_G, { 'story.seal2': true }), { seal_fernbrook: 1, seal_glim_1: 1, seal_glim_2: 1 }));
   let l = await page.evaluate(() => ({ tobin: PixelPets.npcLine('tobin_gate'), miner: PixelPets.npcLine('cc_miner'), tamsin: PixelPets.npcLine('tamsin') }));
-  expect(l.miner).toBe("Hale says your cord's from the company, not him. His floor's still open, patient as stone.");
+  expect(l.miner).toBe("Hale says your lanyard's from the company, not him. His floor's still open, patient as stone.");   // D1448 (objPatch)
   expect(l.tamsin).toBe("A Bright Tier from the company. Hale's Seal still waits on his floor.");
-  expect(['A Tier 2 cord, huh? Doesn\'t open this gate, sorry. Nothing does. Have a bright day!', "Lanyard and vest. Gate's shut, partner."]).toContain(l.tobin);
+  expect(['A Tier 2 lanyard, huh? Doesn\'t open this gate, sorry. Nothing does. Have a bright day!', "Lanyard and vest. Gate's shut, partner."]).toContain(l.tobin);
   await boot(page, mkSave(Object.assign({}, COBBLE_G, { 'story.seal2': true, 'trainer.hall2_hale': true }), { seal_fernbrook: 1, seal_glim_1: 1, seal_cobblecrest: 1, seal_glim_2: 1 }));
   l = await page.evaluate(() => ({ miner: PixelPets.npcLine('cc_miner'), tamsin: PixelPets.npcLine('tamsin') }));
   expect(l.miner).toBe("Hale says you moved stone the right way. Patient. That's high praise from him.");

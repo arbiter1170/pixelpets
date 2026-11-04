@@ -14,12 +14,12 @@ const SCENE_IDS = ['curfew', 'president', 'ledger', 'dawn', 'hearth', 'sweet', '
 const LITERAL_FNV = { curfew: 'b468198a', president: 'aa3fce1e', ledger: '94f05fb3', dawn: '3db394b2', hearth: '9e25f6f6',
   sweet: '91301751', storm: '944bc253', hush: '7be60263' };
 const STINGER_FNV = { ink: 'c233ff12', call: '6fb371c1' };
-// Every loop this branch already had keeps its spec (the same hashes as on main for these ids).
+// Every loop this branch already had keeps its spec (the same hashes as on main; `weir` is checked in tests/scene_music.spec.js).
 const BASE_SPEC_FNV = { town: 'ae1a7a77', route: '5acf6566', battle: 'e0248118', charity: '5201d8eb', chapel: '4d644eb4', arcade: 'a7dabf56',
   wild_skip: 'be947cca', wild_romp: 'ec032d57', wild_spark: '71933125', glimmer_first: '853bfef1', glimmer_battle: '702a4c4d',
   town_glimmer: 'e0b44cf3', quarry: '1bc66c3b', grove: '4fb3ee32', trial: '8933c548', rival: '19362918', hall: '605c2dc0',
   harbour: 'e10c15be', route3: '28044496', lab: '588d4f16', dream: 'ca939dc8', arbiter_test: '17c46c8c', episode_end: 'e755ae15',
-  starter_pick: '7ec8e5d3' };
+  starter_pick: '7ec8e5d3', anthem_march: 'd1633a01', anthem_dark: '26a44e54', anthem_hall: '91eaaf50' };
 const BUILT_STINGERS = ['seal', 'item', 'befriend', 'levelup', 'evolve', 'starter'];
 const LODGE = 'hm_lodge_in';
 
@@ -133,7 +133,7 @@ test.describe('SCENE_MUSIC slices 4-5 on the Act 2 opener: the posting and Mom\'
       const fnv = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return ('0000000' + h.toString(16)).slice(-8); };
       const out = { check: PPSound.musicCheck(), hash: {}, others: {}, names: PPSound.names.filter(n => /^stinger_/.test(n)) };
       for (const id of ids) out.hash[id] = fnv(JSON.stringify(PPSound.musicSpec(id)));
-      for (const id of PPSound.musicIds()) if (!ids.includes(id)) out.others[id] = fnv(JSON.stringify(PPSound.musicSpec(id)));
+      for (const id of PPSound.musicIds()) if (!ids.includes(id) && id !== 'weir') out.others[id] = fnv(JSON.stringify(PPSound.musicSpec(id)));
       const src = await (await fetch('sfx.js', { cache: 'no-store' })).text();
       const i = src.indexOf('  const STINGERS = {'), j = src.indexOf('\n  };\n', i);
       const ST = new Function(src.slice(i, j + 5) + '\nreturn STINGERS;')();

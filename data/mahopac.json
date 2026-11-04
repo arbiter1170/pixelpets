@@ -138,7 +138,7 @@
         {"kind": "npc", "id": "dream04_mom", "name": "Mom", "look": "mom", "x": 10, "y": 3, "facing": "up", "lines": {
           "story.dream_roll": "Keep it rolling, sweetie. Dinner's almost ready.",
           "else": "Dinner in ten minutes. Go push your toy around the rug."}},
-        {"kind": "prop", "id": "dream_tv", "x": 10, "y": 5, "sprite": "tv_set", "lines": {"else": "The TV hums. A ball game, with the sound turned low."}},
+        {"kind": "prop", "id": "dream_tv", "x": 10, "y": 5, "sprite": "tv_set", "lines": {"else": "The wire set hums. A ball game, with the sound turned low."}},
         {"kind": "npc", "id": "dream04_dad", "name": "Dad", "look": "dad", "x": 10, "y": 6, "facing": "up", "lines": {
           "story.dream_roll": "Hear that pop? You're doing great, kiddo.",
           "else": "The game's on. Show me how far that toy can roll."}},

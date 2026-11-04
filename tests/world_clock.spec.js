@@ -280,7 +280,7 @@ test('the header chip stays tappable and points at the compass', async ({ page }
   expect(card).toContain("Who's where: tap the compass, or a contact.");
   expect(card).not.toContain('Lizzy');
   expect(card).not.toContain('Pip');
-  expect(card).not.toContain('Wren');
+  expect(card).not.toContain('Tilly');   // the pupil Wren, shown as Tilly (NAMES_PASS D1767)
   expect(card).not.toContain('Ossabell');
   expect(card).not.toContain('Mr. Gristle');
   const close = await page.locator('#envClose').boundingBox();
