@@ -1,7 +1,7 @@
 /* QUEST_CUE QA clearance (D467, D469). Edge boxes stay off the joystick, the d-pad and a slip chip. */
 const { test, expect } = require('@playwright/test');
 const path = require('path');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, openSettings } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -25,7 +25,7 @@ async function frame(page) {
 async function openSettings(page) {
   const gear = page.locator('#gearFloat');
   if (await gear.isVisible()) await gear.click();
-  else await openSettings(page);
+  else await page.locator('#settingsBtn').click();
   await expect(page.locator('#ovSettings')).toBeVisible();
 }
 

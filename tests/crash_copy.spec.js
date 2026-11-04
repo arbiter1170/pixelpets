@@ -2,12 +2,15 @@
    crash log has a count, even when Debug is off. The clipboard gets the crash diag when one was kept,
    otherwise this boot's pp_diag, plus the reload list. Nothing is sent. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
 trackErrors(test, expect);
 
 async function openSettings(page) {
-  await openSettings(page);
+  // Modern (the default) opens Settings from the dock's gear; Arcade from the header gear.
+  const gear = page.locator('#gearFloat');
+  if (await gear.isVisible()) await gear.click();
+  else await page.locator('#settingsBtn').click();
   await expect(page.locator('#ovSettings')).toBeVisible();
 }
 
