@@ -278,6 +278,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 - Constable Ivo's contact card shows the rank first and the "Watch" duty line; Keeper Amos (a civilian host) shows his plain name and no duty line;
 - the Trial Hall cadet is Cadet Sefton in battle lines, Grete Ash keeps her name, and an old save that met "Ash" keeps the trust and the contact (copy-only fold; `v` 2; keys only grow).
 
+`tests/name_fold.spec.js` (name fold once per save, QA Nov 3, 2026, `?debug=1`, reduced motion; the two play checks at all three widths, the rest `@w1`) checks that an old save with `fav: {Ash: true}` folds to Cadet Sefton once, and unfavouriting Sefton survives a reload; that `rep: {Fen: 60}` dropped to 50 with `repAdd('Master Fen', -10)` stays 50 after a save and reload; that `normalizeV2` run twice on a save holding every old name (`FOLD_KEYS`) is deep-equal and marks each `flags['fold.<old name>']`; that a save holding both keys keeps the new key and the old key, a fresh save gets no fold marks, and a save folded before the fix copies once more and then never again; and that `save.js` `FOLD_KEYS` matches `PPRep.canon()`. Old keys stay; `v` stays 2.
+
 `tests/side_badge.spec.js` (SIDE_BADGE, Vincent, Nov 2, 2026, `?debug=1`, all three widths) checks:
 - faction control sits inside the place chip (a 12 px emblem and a hold stripe, no separate button) in modern and arcade, before and after the pick;
 - the chip's aria label names the pledge and who holds the place;
