@@ -359,6 +359,24 @@ const PPSave = (() => {
         if (ownKey(s.rep, from) && !ownKey(s.rep, to) && !fixedKeys.has(to)) s.rep[to] = s.rep[from];
         if (ownKey(s.rep, from) || ownKey(s.phoneBook.met, from) || ownKey(s.phoneBook.fav, from)) s.flags['fold.' + from] = true;
       }
+      // NAMES_PASS G8, G9 (D1766; Vincent, Wed Nov 4, 2026): two people who shared one raw name now have their own keys.
+      // The RegenX floor tech is Jory (was Cal, shared with the Mahopac dream's Cal); High Charity's kite seller is Mabry
+      // (was Kit, shared with the Heights Kit). The old key stays with the person who keeps the name. Unlike FOLD_KEYS it
+      // is not one person, so a mark under the old key copies to the new key only when this save reached the renamed
+      // person (Jory: his own story.met_cal; Mabry: High Charity reached). Once per name, by the same flags['fold.<old>']
+      // rule as above. Copy only: the old key stays, nothing is renamed or removed, v stays 2.
+      const reached = { Cal: () => !!s.flags['story.met_cal'],
+        Kit: () => !!s.flags['story.hc_arrived'] || (isObj(s.mapSeen) && !!s.mapSeen.highcharity) };
+      const SPLIT_KEYS = { Cal: 'Jory', Kit: 'Mabry' };
+      for (const [from, to] of Object.entries(SPLIT_KEYS)) {
+        if (!foldDue(from)) continue;
+        if (!(ownKey(s.rep, from) || ownKey(s.phoneBook.met, from) || ownKey(s.phoneBook.fav, from))) continue;
+        if (reached[from]()) {
+          copyIfAbsent(s.phoneBook.met, from, to); copyIfAbsent(s.phoneBook.fav, from, to);
+          if (ownKey(s.rep, from) && !ownKey(s.rep, to) && !fixedKeys.has(to)) s.rep[to] = s.rep[from];
+        }
+        s.flags['fold.' + from] = true;
+      }
     }
     fill(s, 'repJoins', x => Number.isInteger(x) && x >= 0, 0);
     // D439: ui.sideTracked stays a string (a side chain id, 'main', or 'none'; absent = not chosen, so the first active
