@@ -479,8 +479,10 @@
      "id": "km_bath",
      "x": 13,
      "y": 28,
-     "need": "map:km_bath_in",
-     "deny": "Closed for now."
+     "to": "km_bath_in",
+     "tx": 7,
+     "ty": 12,
+     "facing": "up"
     },
     {
      "kind": "door",
@@ -503,8 +505,10 @@
      "id": "km_council",
      "x": 11,
      "y": 17,
-     "need": "map:km_council_in",
-     "deny": "Closed for now."
+     "to": "km_council_in",
+     "tx": 6,
+     "ty": 10,
+     "facing": "up"
     },
     {
      "kind": "door",
@@ -1289,6 +1293,403 @@
      "x": 5,
      "y": 1,
      "sprite": "acorn_board"
+    }
+   ]
+  },
+  "km_bath_in": {
+   "name": "Kilnmouth Bathhouse",
+   "kind": "interior",
+   "outdoor": "kilnmouth",
+   "door": "km_bath",
+   "backdrop": "town",
+   "w": 16,
+   "h": 14,
+   "spawns": null,
+   "zones": [],
+   "skin": "km_bath",
+   "variants": true,
+   "wall": {
+    "windows": []
+   },
+   "safe": {
+    "x": 7,
+    "y": 12
+   },
+   "grid": [
+    "################",
+    "#WWWWWWWWWWWWWW#",
+    "#iiiiiiiiiiiii.#",
+    "#wwwwwwwwwwwww.#",
+    "#wwwwwwwwwwwww.#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "km_bath_mat",
+     "x": 7,
+     "y": 13,
+     "to": "kilnmouth",
+     "tx": 13,
+     "ty": 28,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "km_mural_wall",
+     "x": 8,
+     "y": 1,
+     "sprite": "km_mural",
+     "lines": {
+      "else": "Kiln tiles: a fire-bird over the water. The glaze is cracked where the steam used to be."
+     },
+     "ox": -8
+    },
+    {
+     "kind": "prop",
+     "id": "km_notches",
+     "x": 14,
+     "y": 2,
+     "sprite": "km_notches",
+     "lines": {
+      "else": "Notches in red paint, each one dated in a neat hand. The newest is the lowest."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "km_orla",
+     "name": "Bathkeeper Orla",
+     "x": 4,
+     "y": 12,
+     "facing": "right",
+     "lines": {
+      "else": "Thirty years I kept that water."
+     },
+     "look": "km_orla"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ticket_seat",
+     "x": 5,
+     "y": 12,
+     "sprite": "km_ticket_seat",
+     "lines": {
+      "else": "A raised ticket seat. From here you can see the door and the water at once."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "km_bath_kid_a",
+     "name": "Kilnmouth Kid",
+     "x": 4,
+     "y": 7,
+     "facing": "up",
+     "look": "km_kid"
+    },
+    {
+     "kind": "npc",
+     "id": "km_bath_kid_b",
+     "name": "Kilnmouth Kid",
+     "x": 11,
+     "y": 7,
+     "facing": "up",
+     "look": "km_kid"
+    },
+    {
+     "kind": "prop",
+     "id": "km_bath_lamp",
+     "x": 2,
+     "y": 10,
+     "sprite": "floor_lantern"
+    },
+    {
+     "kind": "prop",
+     "id": "km_bath_plant",
+     "x": 14,
+     "y": 10,
+     "sprite": "plant_pot"
+    },
+    {
+     "kind": "prop",
+     "id": "km_bath_bench_1",
+     "x": 1,
+     "y": 6,
+     "sprite": "km_bench",
+     "lines": {
+      "else": "A wet-room bench. Dry as a bone."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_bath_bench_3",
+     "x": 3,
+     "y": 6,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_bath_bench_5",
+     "x": 5,
+     "y": 6,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_bath_bench_10",
+     "x": 10,
+     "y": 6,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_bath_bench_12",
+     "x": 12,
+     "y": 6,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_bath_bench_14",
+     "x": 14,
+     "y": 6,
+     "sprite": "km_bench"
+    }
+   ]
+  },
+  "km_council_in": {
+   "name": "Kilnmouth Council House",
+   "kind": "interior",
+   "outdoor": "kilnmouth",
+   "door": "km_council",
+   "backdrop": "town",
+   "w": 14,
+   "h": 12,
+   "spawns": null,
+   "zones": [],
+   "skin": "km_council",
+   "variants": true,
+   "wall": {
+    "windows": [
+     3,
+     10
+    ]
+   },
+   "safe": {
+    "x": 6,
+    "y": 10
+   },
+   "grid": [
+    "##############",
+    "#WWWWWWWWWWWW#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#rrrrr..rrrrr#",
+    "#............#",
+    "#............#",
+    "######m#######"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "km_council_mat",
+     "x": 6,
+     "y": 11,
+     "to": "kilnmouth",
+     "tx": 11,
+     "ty": 17,
+     "facing": "down"
+    },
+    {
+     "kind": "npc",
+     "id": "km_reeve",
+     "name": "Reeve Agna",
+     "x": 11,
+     "y": 3,
+     "facing": "left",
+     "lines": {
+      "else": "Six chairs sit. Six hands. Every vote ends three and three, and the capital signs the rest."
+     },
+     "look": "km_reeve"
+    },
+    {
+     "kind": "prop",
+     "id": "km_chair_7",
+     "x": 7,
+     "y": 3,
+     "sprite": "km_chair_back"
+    },
+    {
+     "kind": "prop",
+     "id": "km_chair_1",
+     "x": 4,
+     "y": 4,
+     "sprite": "km_chair"
+    },
+    {
+     "kind": "prop",
+     "id": "km_chair_2",
+     "x": 10,
+     "y": 4,
+     "sprite": "km_chair"
+    },
+    {
+     "kind": "prop",
+     "id": "km_chair_3",
+     "x": 3,
+     "y": 5,
+     "sprite": "km_chair"
+    },
+    {
+     "kind": "prop",
+     "id": "km_chair_4",
+     "x": 11,
+     "y": 5,
+     "sprite": "km_chair"
+    },
+    {
+     "kind": "prop",
+     "id": "km_chair_5",
+     "x": 3,
+     "y": 6,
+     "sprite": "km_chair"
+    },
+    {
+     "kind": "prop",
+     "id": "km_chair_6",
+     "x": 11,
+     "y": 6,
+     "sprite": "km_chair"
+    },
+    {
+     "kind": "prop",
+     "id": "km_table_6",
+     "x": 6,
+     "y": 5,
+     "sprite": "km_table"
+    },
+    {
+     "kind": "prop",
+     "id": "km_table_7",
+     "x": 7,
+     "y": 5,
+     "sprite": "km_table"
+    },
+    {
+     "kind": "prop",
+     "id": "km_table_8",
+     "x": 8,
+     "y": 5,
+     "sprite": "km_table"
+    },
+    {
+     "kind": "prop",
+     "id": "km_pegs",
+     "x": 7,
+     "y": 1,
+     "sprite": "km_peg_board",
+     "lines": {
+      "else": "6 OF 7."
+     },
+     "ox": 8
+    },
+    {
+     "kind": "prop",
+     "id": "km_minute_book",
+     "x": 11,
+     "y": 1,
+     "sprite": "km_minute_book",
+     "lines": {
+      "else": "The minute book, shelved. Nobody is reading it today."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_council_shelf_1",
+     "x": 1,
+     "y": 1,
+     "sprite": "km_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_council_shelf_2",
+     "x": 2,
+     "y": 1,
+     "sprite": "km_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_council_shelf_3",
+     "x": 3,
+     "y": 1,
+     "sprite": "km_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_council_shelf_10",
+     "x": 10,
+     "y": 1,
+     "sprite": "km_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_council_shelf_12",
+     "x": 12,
+     "y": 1,
+     "sprite": "km_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_gallery_1",
+     "x": 1,
+     "y": 9,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_gallery_2",
+     "x": 2,
+     "y": 9,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_gallery_4",
+     "x": 4,
+     "y": 9,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_gallery_9",
+     "x": 9,
+     "y": 9,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_gallery_11",
+     "x": 11,
+     "y": 9,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "prop",
+     "id": "km_gallery_12",
+     "x": 12,
+     "y": 9,
+     "sprite": "km_bench"
     }
    ]
   }
