@@ -176,6 +176,7 @@ for (const [id, sk] of Object.entries(SKINS)) if (sk.wall) Object.assign(TILES, 
 const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
 const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
 const fadedCol = col => Object.fromEntries(Object.entries(col).map(([ch, v]) => [ch, PAL[FADE_KEY[PAL_KEY[v]]] || v]));
+if (typeof SA === 'object') SA.fade = { col: fadedCol, key: FADE_KEY };   // SPRITE_ANIM: faded pets' pose frames fade the same way
 function fadedStage(st){
   if (!st.grid) return { src: st.half, col: fadedCol(st.col) };
   return { src: st.grid.map(row => [...row].map(ch => ch === '.' ? '.' : (FADE_KEY[ch] || ch)).join('')), col: null };
@@ -17198,13 +17199,19 @@ function drawBattle(t, dt){
     if (shy > 4) shy = 4; else if (shy < -4) shy = -4;
     if (ms > end) B.punch = null;
   } else if (punch && punch.mode !== 'full' && t - punch.t0 > 700) B.punch = null;
-  if (auraMode() !== 'full') { shx = 0; shy = 0; meDx = 0; foeDx = 0; }
+  const am = auraMode();
+  if (am !== 'full') { shx = 0; shy = 0; meDx = 0; foeDx = 0; }
+  const saSeen = B.saSeen || (B.saSeen = {});   // SPRITE_ANIM (D2070-D2089): the frame each battler drew this frame (B.view.frames)
+  saSeen.me = saSeen.foe = saSeen.foe2 = saSeen.ally = undefined;
   g.save();
   if (shx || shy) g.translate(shx, shy);
   g.fillStyle = PAL.t; g.fillRect(fx0 - 2, fy0 + 15, 22, 3); g.fillRect(mx0 - 2, my0 + 15, 22, 3);
   const drawMon = (who, si, stage, x0, y0, mirror, faded) => {
     let x = x0, y = y0, mode = (fxT % 2600) < 130 ? 'b' : 'n', hide = false;
-    y += Math.floor(fxT / 450) % 2;
+    // SPRITE_ANIM (D2070-D2089): the pose frame from the idle clock and the step queue. OFF (and SA.on false) is today's bob and blink.
+    const pose = typeof saPose === 'function' ? saPose(am, who, fxT, t, B) : null;
+    if (pose && am !== 'off' && SA.on) saWarm(si, stage, faded);
+    if (pose) { mode = pose.blink ? 'b' : 'n'; y += pose.bob; } else y += Math.floor(fxT / 450) % 2;
     const sq = who === 'me' ? meSq : who === 'foe' ? foeSq : [0, 0];
     for (let i = 0; i < B.fx.length; i++) {
       const e = B.fx[i];
@@ -17224,12 +17231,14 @@ function drawBattle(t, dt){
     if (B.white && B.white.who === who && t >= B.white.t0 && t < B.white.until) mode = 'w';
     if (who === 'me' && !B.meShown) hide = true;
     if (hide) return null;
-    const img = sprSet(si, stage, faded)[mode];
+    const fset = pose && pose.f !== 'base' && mode !== 's' && typeof saSet === 'function' ? saSet(si, stage, faded, pose.f) : null;
+    const img = (fset && fset[mode]) || sprSet(si, stage, faded)[mode];
+    saSeen[who] = fset ? pose.f : 'base';
     const dw = Math.max(1, 18 + (sq[0] || 0)), dh = Math.max(1, 18 + (sq[1] || 0));
     const ox = Math.round(x - (dw - 18) / 2), oy = Math.round(y - (dh - 18) / 2);
     if (mirror) { g.save(); g.translate(ox + dw, oy); g.scale(-1, 1); g.drawImage(img, 0, 0, dw, dh); g.restore(); }
     else g.drawImage(img, ox, oy, dw, dh);
-    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, ox, oy, !!faded, sprSet(si, stage, faded).n);
+    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, ox, oy, !!faded, (fset || sprSet(si, stage, faded)).n);
     if (B.calm && B.calm.who === who) {
       const age = t - B.calm.t0;
       if (age >= 0 && age < B.calm.ms) {
@@ -17323,7 +17332,7 @@ function drawBattle(t, dt){
   g.restore();
   B.view = { t: t, shakeX: shx, shakeY: shy, white: !!(B.white && t >= B.white.t0 && t < B.white.until), tint: tintA,
     meX: mx0 + meDx, foeX: fx0 + foeDx, meRest: mx0, foeRest: fx0, pool: typeof mvPoolCount === 'function' ? mvPoolCount() : 0,
-    sc: Sc, tc: Tc };   // MOVE_FX_2 tests: the user and target centres this frame
+    sc: Sc, tc: Tc, frames: saSeen };   // MOVE_FX_2 tests: the user and target centres this frame; SPRITE_ANIM: each battler's frame
 }
 
 /* ---------- evolution ---------- */
@@ -20546,6 +20555,9 @@ function boot(){
       const c = document.createElement('canvas'); c.width = W; c.height = H;
       c.wet = BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode || 'day', wf ? 1 : 0), layer); return c; },
     battleSceneIds: () => DEBUG && window.BattleBG ? Object.keys(BattleBG.scenes) : null,
+    // SPRITE_ANIM (D2070-D2089): debug only. Draw the open battle once at time t (returns battle.view.frames); the Effects mode.
+    drawBattleAt: t => { if (!DEBUG || !battle.on) return null; drawBattle(t, 0); return battle.view ? battle.view.frames : null; },
+    auraMode: () => DEBUG ? auraMode() : null,
     debugToast: msg => { if (!DEBUG) return null; toast(msg); const t = $('#toast'); return t ? t.textContent : ''; },
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
