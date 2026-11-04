@@ -56,9 +56,6 @@ function save() {
   s.settings.tips = false;   // the phone tip (story.phone_got) can open mid-test and write story.unlock_phone, which the save compare would catch
   s.flags['story.early_done'] = true;
   s.flags['story.phone_got'] = true;
-  // Unlock tips off: the phone tip opens on its own timer after boot and saves story.unlock_phone, which raced the
-  // before/after save compare below. This spec is about looks, not tips.
-  s.settings.tips = false;
   return s;
 }
 
