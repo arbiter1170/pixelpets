@@ -49,10 +49,15 @@ async function roofView(page) {
         });
       }
     }
+    // Turf roofs are kept off Cobblecrest's own maps only (D910). Other towns may use roof_turf:
+    // the Weir Hut on hw_cut does, by D1591 (#301).
     const turf = [];
+    const scope = [];
     for (const id of PixelPets.debugCatalog().maps) {
+      if (!/^(cobble|cc_)/.test(id)) continue;
       const v = PixelPets.exteriors(id);
       if (!v || !v.buildings) continue;
+      scope.push(id);
       for (const building of v.buildings) {
         if (building.roof === 'roof_turf') turf.push(id + '.' + building.name);
       }
@@ -63,6 +68,7 @@ async function roofView(page) {
       cells,
       fac: PixelPets.townFaction('cobblecrest'),
       turf,
+      scope,
       tile: rows ? { n: rows.length, wide: rows.every((row) => row.length === 16), grass: rows.some((row) => row.indexOf('g') >= 0) } : null,
       keeper: { x: PixelPets.keeper.x, y: PixelPets.keeper.y, map: PixelPets.mapInfo.id },
     };
@@ -108,6 +114,7 @@ test('cottage_e keeps the arch and the slate roof reads over the lawn', async ({
   const crown = view.cells.filter((c) => c.y === 11 && (c.x === 22 || c.x === 23));
   expect(tan).toBeGreaterThan(0);
   expect(crown.every((c) => c.mint === 0 && c.wine === 0 && c.soot === 0)).toBe(true);
+  expect(view.scope).toContain('cobblecrest');
   expect(view.turf).toEqual([]);
   expect(view.tile).toEqual({ n: 16, wide: true, grass: true });
   const after = await saveShape(page);

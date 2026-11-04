@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 22:05 ET: Test fix: cc_cottage_roof checks turf roofs on Cobblecrest's maps only (test only, no build stamp)
+- What changed and why: `tests/cc_cottage_roof.spec.js` ("cottage_e keeps the arch...", line 111) asserted that no building on any map uses `roof_turf`. The Weir Hut on `hw_cut` (D1591, merged in #301) does, so the test failed on main at 320, 375 and 390 from #301 on (#302 merged over it; main 9041f0d, build 20261103-1747). The check is meant to guard Cobblecrest (D910), so the query now walks only Cobblecrest's maps (`cobble*`, `cc_*`), asserts that list includes `cobblecrest` so it can never go empty, and still expects no turf roof there. No game code or data changes.
+- Files touched: `tests/cc_cottage_roof.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/fix-cottage-roof-scope`; no build stamp (test and docs only; build stays 20261103-1747).
+- Tests run and result (widths, checks): before, on main: `tests/cc_cottage_roof.spec.js` + `tests/weir_hut.spec.js` 3 failed (cottage_e test at 320/375/390, `["hw_cut.weir_hut"]`), 34 passed. After: 37 passed. Negative check: a scratch `roof_turf` on Cobblecrest's `cottage_w` fails the test at all three widths with `["cobblecrest.cottage_w"]` (reverted, not committed).
+- Decisions made (colour + reasoning): green; a test-only fix that keeps the Cobblecrest check whole and stops it reaching other towns. No new D or Q id.
+- Anything left unfinished: none.
+
 ## 2026-11-03 13:06 ET: Build: the Keeper anthem, "Every Roof a Lantern" (KEEPER_ANTHEM v0.2.1, D1375-D1384, D1419-D1423)
 - What changed and why:
   - D1375, D1377, D1421 (settled by Vincent; design `specs/KEEPER_ANTHEM.md` v0.2.1, master 52f62a2): three new loops in `sfx.js` `MUSIC`, pasted from the spec literal (§3), all one original melody, synthesised at runtime, no audio file:
