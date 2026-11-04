@@ -28,6 +28,10 @@ const WINE = [
   ['Rook has a friend in mint.', 'Rook has a friend in a wine vest.'],
   ['looks so good on mint.', 'looks so good on a wine vest.'],
   ['mint vest', 'wine vest'], ['Mint vest', 'Wine vest'],
+  // D1087 (Vincent, Nov 3, 2026): no more mint for Glimmerwell (B-12).
+  ['mintwatch', 'lanyardwatch'], ['The lanyard is very mint.', 'The lanyard is very bright.'], ['mintcondition', 'freshvest'],
+  ['Very bright. Very mint.', 'Very bright. Very polite.'], ['the mint stand', 'the Glimmer stand'], ['The mint stand', 'The Glimmer stand'],
+  ['#MintStand', '#GlimmerStand'],
 ];
 
 function loadNews(newsSrc, mapSrc) {

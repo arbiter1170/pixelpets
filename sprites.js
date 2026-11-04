@@ -402,6 +402,30 @@ const SPECIES = [
       '.......a','......aa','.....aaa','...d.aaa','..daaaaa','..aaaaaa','.daaaaaa','.aaaaiea',
       '.aaaaeea','.aaaccbb','..aaccbb','..daaaaa','...aaaaa','...daaa.','..c..c.c','....c..c']}
   ]},
+  // ROUTE_TO_GOVERNOR v0.1.1 §7 (D1855, D1857, D1862) and KILNMOUTH v0.1.1 §4.4 (indices 25-28, appended in landing order).
+  // Names are PLACEHOLDER. tableOnly: wild only on an authored spawn table (never the any-species roll or a habitat pick).
+  // spawnNear: a tile char the line prefers to spawn beside (the adder basks by drystone walls, D1871); idleMul stretches
+  // the wild's idle between steps (the heron stands still, D1871). The heron's stages are full 16-column profiles.
+  { id:'adder', habitat:{meadow:4, hot:4, storm:3, mountain:3}, tiles:'grass', tableOnly:true, spawnNear:'h', type:'VOLT', blurb:"A wall adder. Its zigzag back looks like a lightning mark.", stages:[
+    { name:"Adderlet", col:{a:PAL.h,b:PAL.y,c:PAL.m,d:PAL.r,x:PAL.d}, half:['........','........','........','........','........','......aa','.....aaa','....aiea','....aeea','.....aad','......ab','....abab','..aababa','.abaabab','.caaaaaa','..cccccc']},
+    { name:"Walladder", col:{a:PAL.m,b:PAL.y,c:PAL.d,d:PAL.r,x:PAL.k}, half:['........','........','......aa','.....aaa','....aaaa','....aiea','....aeea','.....aad','......ab','......ba','......ab','...aabaa','..abaaba','.abaabab','caaaaaaa','.ccccccc']},
+    { name:"Zigzag", col:{a:PAL.m,b:PAL.y,c:PAL.d,d:PAL.r,x:PAL.w}, half:['....x..x','....b.bb','....aaaa','...aaaaa','...aaiea','...aaeea','...baaaa','....aaad','.....aab','.....aba','..aabaab','.aabaaba','abaabaab','baabaaba','caaaaaaa','cccccccc']}
+  ]},
+  { id:'heron', habitat:{water:6, rain:3, fog:3, night:3}, tiles:'shore', tableOnly:true, idleMul:3, type:'TIDE', blurb:"A striped reed-heron. It stands so still it becomes a reed.", stages:[
+    { name:"Reedling", grid:['................','................','................','.......F........','.......G........','......GGG.......','......GkG.......','......GGGt......','.......GGtt.....','......GwGttt....','.....GwwGttt....','.....GwwGGtt....','......GwGGt.....','.......GGG......','.......F.F......','.......F.F......']},
+    { name:"Stalker", grid:['.......F........','.......G........','.......G........','......GGG.......','......GkGt......','......GGGt......','.......GF.......','.......FG.......','.......GF.......','.......FGt......','......GwGtt.....','.....GwwGttt....','.....GwwGGttt...','......GwGGtt....','.......GGG......','.......F.F......']},
+    { name:"Boomer", grid:['.......F........','.......G........','.......G.tt.....','......GGGtt.....','......GkGGt.....','......GGGG......','......GwFG......','.....GwwGF......','.....GwFGG......','.....GGFGGt.....','......GGGGtt....','.....tGGGGttt...','....ttGGGGGttt..','.....ttGGGGtt...','.......G..G.....','.......F..F.....']}
+  ]},
+  { id:'dipper', habitat:{water:6, cold:4, rain:2}, tiles:'shore', tableOnly:true, type:'TIDE', blurb:"Walks the stream bed. Hunches when the water runs cold.", stages:[
+    { name:"Chick", col:{a:PAL.m,b:PAL.w,c:PAL.d,d:PAL.y,x:PAL.k}, half:['........','........','........','........','.....aaa','....aaaa','...aaaaa','...aeiaa','...aaaaa','.ccaaabb','c.caabbb','..caabbb','...caabb','....aaaa','......d.','.....dd.']},
+    { name:"Walker", col:{a:PAL.m,b:PAL.w,c:PAL.d,d:PAL.y,x:PAL.k}, half:['........','........','.....aaa','....aaaa','...aaaaa','...aeiaa','...aaaax','..aaaaab','.caaaabb','ccaaabbb','ccaaabbb','.caaaabb','..caaaaa','...aaaaa','.....d..','....dd..']},
+    { name:"Diver", col:{a:PAL.m,b:PAL.w,c:PAL.n,d:PAL.y,x:PAL.k}, half:['......c.','.....cc.','....aaaa','...aaaaa','..aaaaaa','..aaeiaa','..aaaaax','.aaaaaab','ccaaaabb','cccaabbb','cccaabbb','.ccaaabb','..caaaaa','...aaaaa','....d...','...dd...']}
+  ]},
+  { id:'jugwasp', habitat:{mountain:4, hot:3, meadow:2}, tiles:'grass', tableOnly:true, type:'STONE', blurb:"Shapes tiny clay jugs on warm banks. Carries one always.", stages:[
+    { name:"Bearer", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['........','........','...x....','....x...','.....aaa','....aeia','.bb..aaa','bbbb..xa','.bb..aaa','....aaxa','....aaaa','.....aax','......cc','.....ccc','.....ccc','......dd']},
+    { name:"Potter", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['........','..x.....','...x....','....xaaa','....aaaa','...aaeia','bbb..aaa','bbbb..xa','.bbb.aaa','.b..aaxa','...aaaaa','....aaax','.....ccc','....cccc','....cccc','.....ddd']},
+    { name:"Cluster", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['.x......','..x.....','...xaaaa','...aaaaa','...aaeia','bb..aaaa','bbbb..xa','bbbb.aaa','.bb.aaxa','...aaaaa','....aaax','.cc..ccc','cccccccc','cccccccc','.dd.dddd','........']}
+  ]},
 ];
 
 // HUSHWATER B0: one fallback stage for a species id this client does not know.
@@ -2093,7 +2117,7 @@ const HOUSE_SKINS = {
   hc_apt: hcSkin('floor_pile', 'wall_peach', 'mat_room', { weights: [0.22, 0.18], remap: { '=': 'rug_room' }, wall: wallRow('mhdpdomdocsm') }),
   hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop', { wall: wallRow('swbcbwmmbswh') }),
   hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz', { wall: wallRow('rypwhbdmncsr') }),
-  // BRINEWICK. Plank, rope, brass and sea blue; the depot is the one mint-and-graphite room. Wall rows are unique to each room.
+  // BRINEWICK. Plank, rope, brass and sea blue; the depot is the one wine-and-graphite room. Wall rows are unique to each room.
   bw_lantern: hcSkin('floor_ropeplank', 'wall_brine_rest', 'mat_brine_rest', { remap: { '=': 'rug_navy_runner' }, wall: wallRow('nbdwhnnFdcsn') }),
   bw_store: hcSkin('floor_tarboard', 'wall_chandler', 'mat_chandler', { wall: wallRow('mhdhKFFdFcsF') }),
   bw_hall: hcSkin('floor_ferrydeck', 'wall_ferry', 'mat_ferry', { decal: { q: 'deck_lane' }, walk: { q: 1 }, wall: wallRow('ncdwhrrdnswn') }),
@@ -2282,9 +2306,9 @@ function buildWorldArt(){
   A.basket_empty = mkTile(g => { wicker(g); px(g,PAL.d,3,7,10,2); px(g,PAL.w,10,3,4,4); px(g,PAL.h,11,6,3,1); });
   A.wall_lantern = [0,1].map(f => mkTile(g => { px(g,PAL.d,7,0,2,3); px(g,PAL.d,5,3,6,1); px(g,PAL.y,5,4,6,8); px(g,PAL.d,6,5,4,6); px(g,PAL.o,7,7-f,2,3+f); px(g,PAL.y,7,8,2,1+f); px(g,PAL.d,5,12,6,1); }));
   A.floor_lantern = [0,1].map(f => mkTile(g => { oval(g,7.5,4.5,6+f,4+f,'rgba(255,205,117,.25)'); px(g,PAL.d,7,8,2,7); px(g,PAL.d,4,15,8,1); px(g,PAL.y,5,1,6,7); px(g,PAL.d,6,2,4,5); px(g,PAL.o,7,4-f,2,3+f); px(g,PAL.y,7,5,2,1); }));
-  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'l'],[7,'s'],[11,'l']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.V,1,7,14,1); });
+  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'V'],[7,'s'],[11,'V']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.V,1,7,14,1); });
   A.crate = mkTile(g => { px(g,PAL.d,1,3,14,13); px(g,PAL.o,2,4,12,11); px(g,PAL.d,2,9,12,1); for (let i=0;i<11;i++) px(g,PAL.d,2+i,4+i,1,1); px(g,PAL.y,3,5,1,1); });
-  // Rook's Crossroads: a sealed quarry crate. Mint band, three air holes, one glow. Original; the orchard crate stays A.crate.
+  // Rook's Crossroads: a sealed quarry crate. Wine band, three air holes, one glow. Original; the orchard crate stays A.crate.
   A.rc_crate = mkTile(g => {
     px(g,PAL.d,2,3,12,12); px(g,PAL.o,3,4,10,10); px(g,PAL.d,3,3,10,1);
     px(g,PAL.V,3,8,10,2);
@@ -2318,8 +2342,8 @@ function buildWorldArt(){
     px(g,PAL.d,6,5,7,9); px(g,PAL.m,7,6,5,7); px(g,PAL.h,7,6,2,2);
     px(g,PAL.d,12,9,3,5); px(g,PAL.h,12,10,2,2); });
   A.comfort_lamp = [0, 1].map(f => mkTile(g => {
-    px(g,PAL.l,4,2,1,1); px(g,PAL.l,11,3,1,1); px(g,PAL.l,3,6,1,1); px(g,PAL.l,12,5,1,1);
-    px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.l,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
+    px(g,PAL.V,4,2,1,1); px(g,PAL.V,11,3,1,1); px(g,PAL.V,3,6,1,1); px(g,PAL.V,12,5,1,1);
+    px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.V,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
     px(g,PAL.Q,1,1,1,1); px(g,PAL.Q,14,1,1,1); px(g,PAL.Q,1,12,1,1); px(g,PAL.Q,14,10,1,1);
   }));
   // The Signal Review. Wine relay ring, the Capital screen face, and the loaned crate. PAL only. The ring stays off the maps.
@@ -2383,7 +2407,7 @@ function buildWorldArt(){
   });
   A.stage_bunting = mkTile(g => {
     px(g,PAL.d,2,2,1,14); px(g,PAL.d,13,2,1,14); px(g,PAL.m,2,2,12,1);
-    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.l : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.l, x, 5, 2, 2); }
+    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.V : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.V, x, 5, 2, 2); }
   });
   A.miner_lamps = mkTile(g => {
     px(g,PAL.o,1,3,14,2); px(g,PAL.d,1,5,14,1); px(g,PAL.o,1,12,14,2);
@@ -3567,6 +3591,27 @@ const WEIR_HUT_ART = {
     weir_oil_lamp: [["................", "................", "......dddd......", ".......dd.......", "......dmmd......", ".....dwyywd.....", ".....dyooyyd....", ".....dyoyyd.....", ".....dwyywd.....", "......dmmd......", ".....dddddd.....", "................", "...hhhhhhhhhh...", "..hmmmmmmmmmmh..", "..mmmmmmmmmmmm..", "................"]],
   },
 };
+// ROUTE_TO_GOVERNOR E6/E7 (D1869, yellow, settled): Route 4's three new tiles (y reeds, h drystone wall, l mown lawn) and its
+// roadside props, PAL keys only, drawn from the packet's descriptions. water_trough and notice_board reuse built art.
+const ROUTE4_ART = {
+  tiles: {
+    y: ["gggtggglggggtggg", "gglgggtyggglgtgg", "ggyggggyggtyggyg", "gtygglgyggtyglyg", "gtyggyglgttygyyg", "gtlggygygltyggyl", "ttlgtygygltylgyl", "ttytlyglgyttytyl", "gtytyyglgytltlyg", "gtltylgytyltylyg", "ttylyytlyyltyyyt", "tlyttyyttyltlyyt", "ttlttlyttlttltyt", "ttttttttttttttlt", "gtttgtttttgtttgt", "gggggggggggggggg"],
+    h: ["dhhhdmmmhdhhhmmd", "hhwhdmhmhdhwhhmd", "hhhmdmmmmdhhhmmd", "dddddddddddddddd", "mmdhhhhmdmmmhhhd", "mhdhwhhmdmlmhwhd", "mmdhhhmmdmmmhhmd", "dddddddddddddddd", "hhhmdmmmhhdhhhmd", "hwhmdmlmhwdhhmmd", "hhmmdmmmmhdhmmmd", "dddddddddddddddd", "mmhhhdmmmhhhdmmm", "mlhwhdmhmwhhdmhm", "mmhhmdmmmhhmdmmm", "kkkkkkkkkkkkkkkk"],
+    l: ["gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt"],
+  },
+  art: {
+    milestone: ["................", "................", "................", "....dddddddd....", "....hwwhhhhm....", "....hwhhhhhm....", "....hmmmmhhm....", "....hhhhhhhm....", "....hmmmhhhm....", "....hhhhhhhm....", "....hmmmmhhm....", "....hhhhhhhm....", "....hhhhhhhm....", "...dhhhhhhhmd...", "...gddddddddg...", "................"],
+    finger_post: ["................", "................", ".......ddd......", ".......dod......", "..dddddddoddd...", ".dyyyyyyyyyyyd..", "dyoooooooooood..", ".dyyyyyyyyyyyd..", "..dddddddoddd...", ".......dod......", "...ddddddodddd..", "..dyyyyyyyyyyyd.", "..dooooooooooood", "..dyyyyyyyyyyyd.", "...ddddddodddd..", ".......dod......", ".......dod......", ".......dod......", "......ddoddd....", "......dyyyyd....", "......doooodd...", "......dyyyyd....", "......ddoddd....", ".......dod......", ".......dod......", ".......dod......", ".......dod......", ".......dod......", ".......dod......", "......ddoddd....", ".....gddddddg...", "................"],
+    road_bar: ["................", "................", "................", "................", ".kk..........kk.", ".dk..........dk.", "kkkkkkkkkkkkkkkk", "krrrrwwwwrrrrwwk", "krrrrwwwwrrrrwwk", "kkkkkkkkkkkkkkkk", ".dk..........dk.", ".dk..........dk.", ".dk..........dk.", ".dk..........dk.", "kdkk........kdkk", "................"],
+    gate_arch_post: ["................", "....kkkkkkkk....", "...khhhhhhhhk...", "...kmmmmmmmmk...", "....kyyyyyyk....", "....kyooooyk....", "....kyooooyk....", "....kkyyyykk....", "....khhhhhhk....", "....khwhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khwhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khhhhhmk....", "....khwhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "...khhhhhhhmk...", "...kmmmmmmmmk...", "..khhhhhhhhhmk..", "..kmmmmmmmmmmk..", "..kkkkkkkkkkkk..", "................"],
+    capital_roofs: ["....................y...........", "...................yoy..........", "....y.............kkkkk.........", "...yoy...........krrrrrk........", "..kkkkk.........krrprrrrk.......", ".krrrrrk.......krrrrrrprrk......", "krrprrrrk.....krprrrrrrrrrk.....", "krrrrrprk....krrrrrprrrrrrrk....", "kprrrrrrrk..krrrrrrrrrrprrrrk...", "kCCCCCCCCk..kCCCCCCCCCCCCCCCk...", "kCyCCCyCCk..kCCyCCCCCyCCCCyCk...", "kCyCCCyCCk..kCCyCCCCCyCCCCyCk...", "kCCCCCCCCk..kCCCCCCCCCCCCCCCk...", "kkkkkkkkkk..kkkkkkkkkkkkkkkkk...", "................................", "................................"],
+    capital_spire: [".......k........", ".......krr......", ".......krrr.....", ".......krr......", ".......k........", "......kmk.......", "......kmk.......", ".....kmhmk......", ".....kmhmk......", "....kmhhhmk.....", "....kmhhhmk.....", "...kmhhhhhmk....", "...kCCCCCCCk....", "...kCyCCCyCk....", "...kCCCCCCCk....", "...kkkkkkkkk...."],
+    reed_clump: ["................", "......y.....y...", "......y..y..y...", "...y..l..y..l...", "...y..l..l..l...", "...l..l..l.yl...", "...l.ll..l.ll...", "...llgl.ll.lg...", "...lglg.lg.lg...", "..lglgglgglgg...", "..gtgtggtgtgtl..", "..tgtgttgtgtgt..", "..ttgttttgttt...", "...tttttttttt...", "....dddddddd....", "................"],
+    clipped_tree: ["................", "................", "......kkkk......", "....kkggggkk....", "...kggllggggk...", "..kgglgggggtgk..", "..kglggggggtgk..", ".kgggggggggtttk.", ".kgggggggggtttk.", ".kggggggggttttk.", "..kgggggggtttk..", "..ktggggtttttk..", "...kttttttttk...", "....kkttttkk....", "......kkkk......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", "......kdpk......", ".....kmmmmk.....", "....khhhhhhk....", "....khwhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....kkkkkkkk....", "................", "................", "................", "................"],
+    bin_tipped: ["................", "................", "................", "................", "................", "..kkkkkkkk......", ".kmmmmmmmhk.....", ".kmhhhhhhhkk....", ".kmhhhhhhhkdk...", ".kmmmmmmmhkdk...", "..kkkkkkkkkk....", "................", "..y.y.y..o.o.ww.", "..yyyyy..ooo.ww.", ".kkkkkkkkkkkkkk.", "................"],
+    withy_bundle: ["................", "................", "................", ".....o.y.o......", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "...gooyoyoog....", "................"],
+  },
+};
 function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
@@ -3602,7 +3647,117 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   // Blink is the sit grid with the two dark eye pixels closed. Design did not ship a blink grid.
   if (LIZZY_ART.art.buddy_sit) A.buddy_blink = paint(LIZZY_ART.art.buddy_sit.map(r => r.replace(/k/g, 'y')));
   for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
+  // ROUTE_TO_GOVERNOR: the new tiles by map char, the props, and the built trough tile as a prop (the fold's rest).
+  for (const [k, rows] of Object.entries(ROUTE4_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  for (const [k, rows] of Object.entries(ROUTE4_ART.art)) if (!A[k]) A[k] = paint(rows);
+  if (!A.water_trough && T.water_trough) A.water_trough = T.water_trough;
   addCrackdownArt(T, A, paint);   // POST_TRIAL_CRACKDOWN + LANTERN_HOUSE_FERNBROOK draft art
+  if (city) addHcParadeArt(T, A);   // HC_PARADE PLACEHOLDER art, city only, built on first draw
+}
+// HC_PARADE §8 (D1355, D1356; design specs/HC_PARADE.md): PLACEHOLDER draft art for the parade, PAL keys only, from the sub-agent
+// inspiration briefs in handoff/maps/HC_PARADE.md (rule 9). Pia redraws before HC_CITY_V2 ships. Installed only while the city is
+// on, and built on first draw, not at boot (each new size opens a whole pool sheet; memory_walk). No gun on any of it.
+// Sizes: rotor craft 48x32 (its shadow 40x10), the President's car 64x32, the President 16x16, crowd strips 64x16.
+function addHcParadeArt(T, A){
+  const lazy = (key, fn) => {
+    if (key in A) return;
+    const set = v => { Object.defineProperty(A, key, { value: v, writable: true, configurable: true, enumerable: true }); return v; };
+    Object.defineProperty(A, key, { configurable: true, enumerable: true, get(){ return set(fn()); }, set });
+  };
+  const anim = (list, ms) => { list.ms = ms; return list; };
+  const P = (g, mir, W) => (k, x, y, w = 1, h = 1) => { g.fillStyle = PAL[k]; g.fillRect(mir ? W - x - w : x, y, w, h); };
+  // Keeper rotor craft, facing right (mir = facing left). f: rotor frame 0-3.
+  const rotor = (f, mir) => sheetPaint(48, 32, g => {
+    const d = P(g, mir, 48);
+    d('J', 3, 15, 13, 3); d('D', 3, 15, 13, 1); d('J', 1, 10, 3, 6); d('D', 1, 10, 1, 5);                // tail boom and fin
+    d('d', 0, 8, 5, 1); d('m', 2, 6, 1, 5);                                                              // tail rotor
+    d('J', 15, 11, 24, 13); d('J', 13, 13, 2, 9); d('J', 39, 13, 2, 9); d('D', 16, 11, 22, 2);         // cabin
+    d('C', 14, 20, 26, 2); d('A', 14, 22, 26, 1);                                                        // cream belly band
+    d('F', 16, 15, 18, 1); d('G', 16, 16, 18, 1);                                                        // brass rail
+    d('d', 32, 13, 7, 5); d('m', 33, 14, 5, 3); d('h', 36, 14, 1, 1);                                     // glass
+    d('y', 22, 13, 3, 3); d('F', 23, 14, 1, 1);                                                          // lantern crest on the door
+    d('F', 40, 17, 5, 5); d('y', 41, 18, 3, 3); d('w', 42, 19, 1, 1);                                     // caged nose lantern
+    d('d', 18, 24, 1, 3); d('d', 34, 24, 1, 3); d('d', 13, 27, 28, 1); d('m', 13, 27, 2, 1);           // skids
+    d('d', 26, 7, 2, 4);                                                                                 // mast
+    if (f === 0) { d('d', 3, 7, 44, 1); d('m', 3, 6, 4, 1); }
+    else if (f === 1) { for (let i = 0; i < 18; i++) d(i % 2 ? 'h' : 'm', 10 + i * 2, 3 + (i >> 1) % 2 + Math.floor(i / 6), 2, 1); }
+    else if (f === 2) { d('d', 24, 2, 6, 1); d('d', 26, 3, 2, 4); d('d', 22, 8, 10, 1); }
+    else { for (let i = 0; i < 18; i++) d(i % 2 ? 'h' : 'm', 10 + i * 2, 9 - Math.floor(i / 6), 2, 1); }
+  });
+  for (const [k, mir] of [['hc_rotor_r', false], ['hc_rotor_l', true]]) lazy(k, () => anim([0, 1, 2, 3].map(f => rotor(f, mir)), 70));
+  // ROTOR_CRAFT v0.1.1 (D1385-D1394): Design's draft frames, carried in the city data (PP_HC_V2.art: deduplicated rows of PAL
+  // keys; a legend char is [PAL key, alpha] for the translucent shadow and beam). They win over the engineer draft above.
+  const R = typeof window !== 'undefined' && window.PP_HC_V2 && window.PP_HC_V2.art;
+  if (R && R.rows && R.sprites) for (const [k, sp] of Object.entries(R.sprites)) lazy(k, () => {
+    const fr = sp.frames.map(f => sheetPaint(sp.w, sp.h, g => f.forEach((ri, y) => { const row = R.rows[ri] || '';
+      for (let x = 0; x < row.length; x++) { const ch = row[x]; if (ch === '.') continue;
+        const lg = sp.legend && sp.legend[ch], key = lg ? lg[0] : ch; if (!PAL[key]) continue;
+        g.globalAlpha = lg ? lg[1] : 1; g.fillStyle = PAL[key]; g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; })));
+    return fr.length === 1 && !sp.ms ? fr[0] : anim(fr, sp.ms || 400);
+  });
+  lazy('hc_rotor_shadow', () => sheetPaint(40, 10, g => {
+    g.globalAlpha = 0.32; g.fillStyle = PAL.k;
+    for (let y = 0; y < 10; y++) { const r = Math.round(20 * Math.sqrt(1 - ((y - 4.5) / 5) ** 2)); g.fillRect(20 - r, y, 2 * r, 1); }
+    g.globalAlpha = 1;
+  }));
+  // The President's car, facing right (mir = left). v: 0 drive, 1 wheels turned, 'hand' the still, 'door' the rear door open.
+  // v0.2 (relayed from Vincent's preview review, Tue Nov 3): a stately armoured car, 64x32 (four tiles long; the parked
+  // runabouts are two), high armoured cabin, long bonnet, two pennants, a large rear window so the gloved hand reads.
+  const car = (v, mir) => sheetPaint(64, 32, g => {
+    const d = P(g, mir, 64);
+    d('k', 3, 29, 58, 2);                                                                                // hard shadow
+    d('J', 2, 16, 60, 11); d('E', 2, 25, 60, 2); d('D', 3, 16, 58, 1);                                   // armoured body, sill
+    d('h', 3, 21, 58, 1); for (let x = 5; x < 60; x += 5) d('m', x, 18, 1, 1);                           // chrome strip, rivets
+    d('J', 40, 13, 21, 4); d('D', 41, 13, 19, 1); d('w', 44, 14, 14, 1);                                 // long bonnet, its streak
+    d('m', 60, 17, 3, 9); d('h', 61, 18, 1, 6); d('y', 61, 15, 2, 2); d('w', 62, 15, 1, 1);              // grille, headlamp
+    d('m', 0, 18, 3, 8);                                                                                 // rear bumper
+    d('J', 12, 3, 30, 13); d('E', 12, 3, 30, 1); d('D', 13, 4, 28, 1); d('k', 11, 4, 1, 12); d('k', 42, 4, 1, 12);   // armoured cabin
+    d('k', 14, 6, 9, 8); d('k', 24, 6, 8, 8); d('k', 33, 6, 8, 8);                                       // tinted glass, three panes
+    d('d', 15, 6, 3, 1); d('d', 25, 6, 3, 1); d('n', 34, 6, 5, 1); d('m', 39, 7, 1, 2);                  // glass glints
+    d('y', 25, 17, 5, 5); d('F', 26, 18, 3, 3); d('y', 27, 19, 1, 1);                                    // Keeper crest on the rear door
+    d('F', 49, 3, 1, 11); d('J', 50, 3, 5, 3); d('y', 54, 3, 1, 3);                                      // pennants on the front wings
+    d('F', 56, 5, 1, 9); d('J', 57, 5, 4, 3); d('y', 60, 5, 1, 3);
+    d('k', 7, 23, 10, 8); d('k', 44, 23, 10, 8); d('d', 8, 24, 8, 6); d('d', 45, 24, 8, 6);             // wheels under the wings
+    const hub = v === 1 ? 1 : 0; d('m', 10 + hub, 26, 3, 2); d('m', 47 + hub, 26, 3, 2);
+    if (v === 'hand') {                                                                                  // 1.6: the window down, one gloved hand
+      d('J', 14, 6, 9, 3); d('d', 14, 9, 9, 1); d('k', 14, 10, 9, 4);
+      d('C', 16, 9, 5, 4); for (const fx of [16, 18, 20]) d('C', fx, 6, 1, 3); d('w', 17, 9, 2, 1); d('C', 21, 10, 2, 2); d('J', 16, 13, 5, 1);   // a raised glove: three fingers, a thumb, the cuff
+    }
+    if (v === 'door') { d('k', 13, 6, 11, 20); d('y', 15, 24, 6, 1); d('J', 8, 9, 6, 20); d('D', 8, 9, 6, 1); d('h', 12, 17, 1, 2); }
+  });
+  for (const [sfx, mir] of [['r', false], ['l', true]]) {
+    lazy('hc_pcar_' + sfx, () => car(0, mir));
+    lazy('hc_pcar_' + sfx + '_move', () => anim([car(0, mir), car(1, mir)], 160));
+    lazy('hc_pcar_hand_' + sfx, () => car('hand', mir));
+    lazy('hc_pcar_door_' + sfx, () => car('door', mir));
+  }
+  // The President, minimal and half-seen (D1356): a dark long coat with a rim of light from behind; no face pixels.
+  const pres = f => sheetPaint(16, 16, g => {
+    const d = P(g, false, 16);
+    d('k', 6, 1, 4, 4); d('y', 6, 0, 4, 1); d('y', 10, 1, 1, 3); d('C', 9, 0, 1, 1);                     // head, rim
+    d('k', 5, 5, 6, 8); d('d', 6, 6, 1, 6); d('m', 8, 8, 1, 3); d('y', 11, 5, 1, 4); d('y', 5, 5, 1, 1); // coat, rim on shoulder and sleeve
+    d('k', 4, 11, 8, 2); d('d', 5, 12, 6, 1);                                                            // hem
+    if (f) { d('d', 5, 13, 2, 2); d('d', 9, 13, 2, 1); } else { d('d', 6, 13, 2, 2); d('d', 8, 13, 2, 2); }
+  });
+  lazy('hc_president', () => pres(0));
+  lazy('hc_president_move', () => anim([pres(1), pres(0)], 180));
+  // Crowd strips: rows of heads and shoulders seen from behind (one object fills four tiles). v 0-2; f 1 = the bob and the clap.
+  const HAIR = ['k', 'd', 'F', '5', 'G', 'y', 'd', 'k'], COAT = ['m', 'I', 'A', 'B', 'h', 'K', 'm'];
+  const strip = (v, f) => sheetPaint(64, 16, g => {
+    const d = P(g, false, 64), up = f ? 1 : 0;
+    for (let i = 0; i < 8; i++) { const x = 1 + i * 8; d(HAIR[(i + v * 3) % 8], x + 2, 2 - up, 4, 4); d(COAT[(i + v) % 7], x, 6 - up, 8, 3); }
+    for (let i = 0; i < 7; i++) {
+      const x = 4 + i * 8, coat = (v === 2 && i === 3) ? 'V' : COAT[(i * 3 + v) % 7];   // one supporter's vest: Glimmerwell wine (rule 11)
+      d(HAIR[(i * 5 + v) % 8], x + 1, 6 - up, 5, 5); d(coat, x - 1, 10 - up, 9, 6 + up);
+      if (v === 2 && i === 3) d('N', x + 3, 13 - up, 1, 1);
+      if (f && i % 3 === 0 && !(v === 2 && i === 3)) { d('3', x - 1, 7, 1, 2); d('3', x + 7, 7, 1, 2); }
+    }
+    if (v === 1) { d('F', 14, 0, 1, 7); d('y', 15, 0, 3, 2); d('J', 15, 2, 3, 1); d('F', 46, 0, 1, 7); d('y', 47, 0, 3, 2); d('J', 47, 2, 3, 1); }
+    if (v === 2) { d('2', 30, 0 - up, 3, 3); d('d', 30, 0 - up, 3, 1); }
+  });
+  for (const v of [0, 1, 2]) lazy('hc_crowd_' + 'abc'[v], () => anim([strip(v, 0), strip(v, 1)], 650));
+  // E8 in a still: the crowd strips' clap frame, for the beat when the Officer raises a hand (reduced motion keeps frame 0).
+  for (const v of [0, 1, 2]) lazy('hc_crowd_' + 'abc'[v] + '_clap', () => strip(v, 1));
 }
 // E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).
 // Lab maps keep LAB_SKIN.variants; hand-placed chars (`f`, `t`, …) never vary.

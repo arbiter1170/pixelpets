@@ -522,12 +522,13 @@ test('twelve Hushwater forms join the journal and a holder battle names Tindlet'
     };
   }, LINES);
   expect(info.v).toBe(2);
-  expect(info.ids).toHaveLength(25);   // ARBITER_UNITS appended five boss lines after snail
+  expect(info.ids).toHaveLength(29);   // ARBITER_UNITS appended five boss lines after snail; Act 2 four more (ROUTE_TO_GOVERNOR, KILNMOUTH)
   expect(info.fetchAt).toBe(15);
-  expect(info.last).toBe('humwisp');
+  expect(info.ids.slice(20, 25)).toEqual(['tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
+  expect(info.last).toBe('jugwasp');
   expect(info.ids.slice(16, 20)).toEqual(['skink', 'otter', 'owl', 'snail']);
-  expect(info.forms).toBe(75);
-  expect(info.journal).toBe(57);
+  expect(info.forms).toBe(87);
+  expect(info.journal).toBe(69);
   expect(info.arrive).toBe(2);
   expect(info.rope).toBe(11);
   for (const [id, want] of Object.entries(LINES)) {

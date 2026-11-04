@@ -44,11 +44,13 @@
     'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
     'story.mom_mah_ask', 'story.mom_mahopac', 'story.lens_note',   // MAHOPAC_DREAMS §9: Mom's walk north (the warp), her answer at the lens, Ilse's note
+    'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
     'story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',   // HIGH_CHARITY_LAYOUT §11 hooks
     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
+    'story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen',   // HC_PARADE (D1365): beats inside the parade scene (city only); story.hc_greeted stays the step
     'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue',   // High Charity and Mahopac bits; neither is a main-chain step
     // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
     'story.know_us', 'story.heights_path', 'story.stock_warned', 'story.rx_enter', 'story.met_nia', 'story.rx_f1',
@@ -127,10 +129,10 @@
       text: 'Tobin is tallying crates at the orchard gate. Lend a hand with three of them.', place: 'Orchard gate',
       target: { map: 'fernbrook', x: 9, y: 14 } },
     { id: 'tl_amos', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.tally_done'], done: ['story.tl_amos'],
-      text: 'Evening in Fernbrook. The Lantern House window is dark. See Keeper Amos.', place: 'Fernbrook Lantern House',
+      text: 'Evening in Fernbrook. The Lantern House window is dark. See Host Amos.', place: 'Fernbrook Lantern House',
       target: { map: 'fb_lantern_in', x: 6, y: 4 } },
     { id: 'tl_light', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.tl_amos'], done: ['story.tl_done'],
-      text: "Amos needs a light for Burrsnout's cot. Wynne's stall sells wicks. Juniper has her own idea.", place: 'Fernbrook Lantern House',
+      text: "Amos needs a light for Burrsnout's cot. Brisa's stall sells wicks. Juniper has her own idea.", place: 'Fernbrook Lantern House',
       target: { map: 'fb_lantern_in', x: 6, y: 4 } },
     { id: 'fen_dusk', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.tl_done'], done: ['story.crates_seen'],
       text: 'Master Fen is waiting in the orchard. She wants a word before night.', place: 'Fernbrook orchard',
@@ -325,9 +327,15 @@
       npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
       text: 'Warden Ilse wants you home at the Lodge in Hearthmoor. You have a posting.', place: 'Hearthmoor, the Lodge',
       target: { map: 'hm_lodge_in', x: 5, y: 3 } },
-    // ROUTE HOOK: today the Cadet rides the Lantern Coach to High Charity (GOVERNOR_MEETING §0, settled). A walkable route to
-    // the Governor (ROUTE_TO_GOVERNOR, being designed) would add its own rows here, between gov_post and gov_meet, ending at
-    // the Governor's House door; gov_meet's target stays the office.
+    // ROUTE_TO_GOVERNOR §6 (D1854, carrying PACING's D1881): the first trip after the posting is on foot. Route 4 to the fork, then
+    // the river road to the Charter Hill gate; gov_meet's target stays the office. A save that already met the Governor never
+    // walks (skipIf); gov_meet's done (story.km_assigned) implies both. Text PLACEHOLDER.
+    { id: 'gov_walk', when: ['story.gov_posted'], done: ['story.r4_fork'], skipIf: ['story.hc_gov_met'],
+      text: 'Walk the coach road north from Hearthmoor. The fork is past the downs.', place: 'Route 4',
+      target: { map: 'route4', x: 10, y: 5 } },
+    { id: 'gov_walk2', when: ['story.r4_fork'], done: ['story.r4_walked'], skipIf: ['story.hc_gov_met'],
+      text: 'Take the west fork and the river road to the Charter Hill gate.', place: 'Route 4, river road',
+      target: { map: 'route4_reeds', x: 1, y: 10 } },
     { id: 'gov_meet', when: ['story.gov_posted'], done: ['story.km_assigned'],
       npc: 'Governor Merriden', npcIds: ['hc_governor'],
       text: "Report to Governor Merriden at the Governor's House on Charter Hill, High Charity.", place: "Governor's House",
@@ -389,7 +397,7 @@
     [
       { id: 'rc_meet', label: 'The last crates', when: ['story.cobble_end'], givers: ['rook_road', 'rook_gate', 'rook_after'], done: ['story.rc_start'],
         text: 'Rook is sitting by the Brinewick road sign. He wants a word.', place: 'Cobblecrest, east road',
-        glimmer: { text: 'Rook is by the Brinewick road sign. His mint lanyard is still on.', place: 'Cobblecrest, east road' },
+        glimmer: { text: 'Rook is by the Brinewick road sign. His Glimmerwell lanyard is still on.', place: 'Cobblecrest, east road' },
         target: { map: 'cobblecrest', x: 28, y: 7 } },
       { id: 'rc_crates', when: ['story.rc_start'], done: ['story.rc_c1', 'story.rc_c2', 'story.rc_c3'],
         text: 'Three Pebblit crates wait in the quarry yard. Open them gently.', place: 'Quarry yard',
@@ -418,7 +426,7 @@
         text: 'File a claim with Clerk Wynn', place: 'Keeper House',
         target: { map: 'hm_hq_f1', x: 3, y: 10 } },
       { id: 'leak_serve', when: ['story.leak5b_filed'], done: ['story.leak5b_served'],
-        text: 'Ask Constable Rue to serve it', place: 'Fernbrook, west edge',
+        text: 'Ask Constable Thale to serve it', place: 'Fernbrook, west edge',
         target: { map: 'fernbrook', x: 4, y: 9 } },
       { id: 'leak_done', when: ['story.moral_leak5b'], done: ['story.leak_fixed'],
         text: 'Check the bathroom in 5B', place: 'Amberhill Flats, 5B',

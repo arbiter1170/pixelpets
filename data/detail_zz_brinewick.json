@@ -995,7 +995,7 @@
           "y": 3,
           "sprite": "lab_counter",
           "lines": {
-            "else": "A stamp pad. Mint ink. A sticker sheet: BRIGHTER BY NATURE."
+            "else": "A stamp pad. Wine ink. A sticker sheet: BRIGHTER BY NATURE."
           }
         },
         {
@@ -1005,7 +1005,7 @@
           "y": 2,
           "sprite": "glimmer_stand",
           "lines": {
-            "else": "A display of Glimmer Cells. Each one glows the same calm mint."
+            "else": "A display of Glimmer Cells. Each one glows the same calm wine-red."
           }
         },
         {
@@ -1028,7 +1028,7 @@
           "y": 2,
           "sprite": "cell_crate_open",
           "lines": {
-            "else": "The cage is open and empty. Mint light still leaks from the slot."
+            "else": "The cage is open and empty. Wine-red light still leaks from the slot."
           },
           "when": [
             "story.brine_freed"
@@ -1399,7 +1399,7 @@
               [
                 "say",
                 "",
-                "You sign. THUNK. The stamp leaves a bright mint star on the cage."
+                "You sign. THUNK. The stamp leaves a bright wine star on the cage."
               ],
               [
                 "say",

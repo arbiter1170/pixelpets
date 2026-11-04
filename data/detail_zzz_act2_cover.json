@@ -42,7 +42,7 @@
  "scenes": {
   "cv_mom_gate": [
    ["if", "story.cover=glimmer | seal:seal_glim_1", [
-    ["say", "Mom", "There you are. Ilse kept you long enough. Walk me home before your coach?"],
+    ["say", "Mom", "There you are. Ilse kept you long enough. Walk me home before your long walk?"],
     ["walkTo", "cv_mom_gate", 3, 6, {"drop": true}],
     ["setFlag", "story.cv_mom_walk", true]
    ], [

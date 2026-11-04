@@ -540,6 +540,93 @@ const PPSound = (() => {
       lead: { wave: 'square', gain: 0.06, notes: [[67,1],[71,1],[74,1],[71,1],[67,1],[69,1],[71,1],[67,1],[69,1],[71,1],[72,1],[71,1],[69,1],[67,1],[66,1],[67,1],[71,1],[74,1],[76,1],[74,1],[71,1],[69,1],[67,1],[69,1],[67,1],[66,1],[64,1],[66,1],[67,1],[69,1],[67,1],[66,1],[67,1],[71,1],[74,1],[72,1],[71,1],[69,1],[67,1],[69,1],[71,1],[69,1],[67,1],[66,1],[67,1],[69,1],[71,1],[67,1],[69,1],[67,1],[66,1],[67,1],[69,1],[71,1],[69,1],[67,1],[66,1],[64,1],[66,1],[67,1],[66,1],[64,1],[62,1],[64,1]] },
       bass: { wave: 'triangle', gain: 0.28, notes: [[43,2],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,2]] },
       drums: ['k...s.h.','k.h.s...','k...s.h.','k.h.s...','k...s.h.','k.h.s...','k...s.h.','k.hks...'] },
+    // KEEPER_ANTHEM v0.2.1 (design specs/KEEPER_ANTHEM.md §3, D1375-D1384, D1419-D1423): the Keeper anthem, one original melody in
+    // three arrangements. Pasted from the spec literal; tests/keeper_anthem.spec.js checks it against the spec checker's rules.
+    anthem_march: { key: 'Bb major', bpm: 120, bars: 16, stepsPerBar: 16, gate: 0.8, perc: 0.7,
+      swell: { sec: 48, from: 0.2, lpFrom: 700, lpTo: 12000 },                 // far off -> near, this track only (§5.3)
+      lead: { wave: 'square', gain: 0.05, double: -12, doubleGain: 0.035, notes: [  // the tune plus the octave below
+        [65,6],[70,2],[74,4],[70,4],          //  1 I    F. Bb D Bb
+        [77,6],[75,2],[74,4],[72,4],          //  2 I V  F. Eb D C
+        [74,4],[75,2],[77,2],[79,4],[77,4],   //  3 I IV D Eb F G F
+        [72,12],[0,4],                        //  4 V    C (half cadence)
+        [65,6],[70,2],[74,4],[70,4],          //  5 I    F. Bb D Bb
+        [79,6],[77,2],[75,4],[79,4],          //  6 vi IV G. F Eb G
+        [77,4],[74,4],[75,2],[74,2],[72,4],   //  7 I V  F D Eb D C
+        [70,12],[0,4],                        //  8 I    Bb (full cadence)
+        [79,6],[79,2],[81,4],[82,4],          //  9 vi V G. G A Bb
+        [81,6],[79,2],[77,8],                 // 10 V I  A. G F
+        [79,4],[75,4],[77,4],[74,4],          // 11 IV I G Eb F D
+        [75,4],[74,4],[72,8],                 // 12 ii V Eb D C
+        [65,6],[70,2],[74,4],[77,4],          // 13 I    F. Bb D F
+        [82,6],[82,2],[86,4],[84,4],          // 14 I vi Bb. Bb D C (the high D)
+        [82,4],[79,4],[77,2],[75,2],[74,2],[72,2], // 15 IV V Bb G F Eb D C
+        [70,12],[0,4] ] },                    // 16 I    Bb
+      bass: { wave: 'triangle', gain: 0.26, notes: [
+        [46,4],[53,4],[46,4],[53,4],  [46,4],[53,4],[41,4],[48,4],  [46,4],[53,4],[39,4],[46,4],  [41,4],[48,4],[41,4],[48,4],
+        [46,4],[53,4],[46,4],[53,4],  [43,4],[50,4],[39,4],[46,4],  [46,4],[53,4],[41,4],[48,4],  [46,4],[53,4],[46,4],[53,4],
+        [43,4],[50,4],[41,4],[48,4],  [41,4],[48,4],[46,4],[53,4],  [39,4],[46,4],[46,4],[53,4],  [48,4],[55,4],[41,4],[48,4],
+        [46,4],[53,4],[46,4],[53,4],  [46,4],[53,4],[43,4],[50,4],  [39,4],[46,4],[41,4],[48,4],  [46,4],[53,4],[41,4],[45,4] ] },
+      drums: ['k...s.ssk...s...','k...s...k...s.ss','k...s.ssk...s...','k...s.ssk.s.s.s.',
+              'k...s.ssk...s...','k...s...k...s.ss','k...s.ssk...s...','k...s.ssk...ssss',
+              'k...s.ssk...s...','k...s...k...s.ss','k...s.ssk...s...','k...s.ssk.s.s.s.',
+              'k...s.ssk...s...','k...s...k...s.ss','k...s.ssk...s...','k...s...s.s.ssss'] },
+
+    anthem_dark: { key: 'Bb minor', bpm: 64, bars: 16, stepsPerBar: 16, gate: 0.95, perc: 0.5,
+      lead: { wave: 'triangle', gain: 0.22, notes: [   // the same melody: degrees 3, 6, 7 lowered, every duration equal
+        [65,6],[70,2],[73,4],[70,4],
+        [77,6],[75,2],[73,4],[72,4],
+        [73,4],[75,2],[77,2],[78,4],[77,4],
+        [72,12],[0,4],
+        [65,6],[70,2],[73,4],[70,4],
+        [78,6],[77,2],[75,4],[78,4],
+        [77,4],[73,4],[75,2],[73,2],[72,4],
+        [70,12],[0,4],
+        [78,6],[78,2],[80,4],[82,4],
+        [80,6],[78,2],[77,8],
+        [78,4],[75,4],[77,4],[73,4],
+        [75,4],[73,4],[72,8],
+        [65,6],[70,2],[73,4],[77,4],
+        [82,6],[82,2],[85,4],[84,4],
+        [82,4],[78,4],[77,2],[75,2],[73,2],[72,2],
+        [70,12],[0,4] ] },
+      bass: { wave: 'triangle', gain: 0.14, gate: 8, notes: [   // the drone: struck every half bar, each strike rings 8 slots (15 s)
+        [46,8],[46,8],[46,8],[46,8],[46,8],[46,8],[46,8],[46,8],     // bars 1-4  Bb2
+        [46,8],[46,8],[46,8],[46,8],[46,8],[46,8],[46,8],[46,8],     // bars 5-8  Bb2
+        [42,8],[42,8],[42,8],[42,8],[42,8],[42,8],[42,8],[42,8],     // bars 9-12 Gb2 under the B phrase
+        [46,8],[46,8],[46,8],[46,8],                                 // bars 13-14 Bb2
+        [45,8],[45,8],[45,8],[45,8] ] },                             // bars 15-16 A2: a semitone under home, the cadence grinds
+      drums: ['k...............','................','k...............','................',
+              'k...............','................','k...............','................',
+              'k...............','................','k...............','................',
+              'k.......k.......','k.......k.......','k.......k.......','k.......k.......'] },
+
+    anthem_hall: { key: 'Bb major', bpm: 80, bars: 16, stepsPerBar: 16, gate: 0.9, perc: 0.3,   // v0.2: indoors (§8a)
+      lead: { wave: 'triangle', gain: 0.11, notes: [   // the same melody, note for note: the march's lead, one soft voice
+        [65,6],[70,2],[74,4],[70,4],
+        [77,6],[75,2],[74,4],[72,4],
+        [74,4],[75,2],[77,2],[79,4],[77,4],
+        [72,12],[0,4],
+        [65,6],[70,2],[74,4],[70,4],
+        [79,6],[77,2],[75,4],[79,4],
+        [77,4],[74,4],[75,2],[74,2],[72,4],
+        [70,12],[0,4],
+        [79,6],[79,2],[81,4],[82,4],
+        [81,6],[79,2],[77,8],
+        [79,4],[75,4],[77,4],[74,4],
+        [75,4],[74,4],[72,8],
+        [65,6],[70,2],[74,4],[77,4],
+        [82,6],[82,2],[86,4],[84,4],
+        [82,4],[79,4],[77,2],[75,2],[74,2],[72,2],
+        [70,12],[0,4] ] },
+      bass: { wave: 'triangle', gain: 0.14, notes: [   // the march's bass line note for note (root, fifth), here a slow tread
+        [46,4],[53,4],[46,4],[53,4],  [46,4],[53,4],[41,4],[48,4],  [46,4],[53,4],[39,4],[46,4],  [41,4],[48,4],[41,4],[48,4],
+        [46,4],[53,4],[46,4],[53,4],  [43,4],[50,4],[39,4],[46,4],  [46,4],[53,4],[41,4],[48,4],  [46,4],[53,4],[46,4],[53,4],
+        [43,4],[50,4],[41,4],[48,4],  [41,4],[48,4],[46,4],[53,4],  [39,4],[46,4],[46,4],[53,4],  [48,4],[55,4],[41,4],[48,4],
+        [46,4],[53,4],[46,4],[53,4],  [46,4],[53,4],[43,4],[50,4],  [39,4],[46,4],[41,4],[48,4],  [46,4],[53,4],[41,4],[45,4] ] },
+      drums: ['k...............','k...............','k...............','k.......s.......',
+              'k...............','k...............','k...............','k.......s.......',
+              'k...............','k...............','k...............','k.......s.......',
+              'k...............','k...............','k...............','k.......s...s.ss'] },
     // STARTER_MOMENT D470: a new F-major loop, not a variation of town. 132 bpm, 8 bars, 14.545 s.
     starter_pick: {key: 'F major', bpm: 132, bars: 8, stepsPerBar: 8, gate: 0.8, perc: 0.8,
       lead: { wave: 'square', gain: 0.055, notes: [
@@ -557,6 +644,22 @@ const PPSound = (() => {
         [41,2],[53,2],[48,2],[53,2],  [45,2],[57,2],[52,2],[57,2],
         [46,2],[58,2],[48,2],[60,2],  [41,2],[48,2],[41,2],[48,1],[52,1] ] },
       drums: ['k.hhs.hk','k.h.s.h.','k.hhs.hk','k.h.s.h.','k.hhs.hk','k.h.s.h.','k.hhs.hk','k.s.s.ss'] },
+    // SCENE_MUSIC v0.1 (design specs/SCENE_MUSIC.md §4.1, D1898): the Weir Hut's room loop. Suspense pedal, the Keeper anthem's head
+    // in the minor, and the call once a loop. `motifs` is for the design checker only; nothing here reads it.
+    weir: { key: 'D minor', bpm: 72, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.3, motifs: ['suspense', 'keepers', 'call'],
+      lead: { wave: 'triangle', gain: 0.13, notes: [
+        [69,3],[74,1],[77,2],[74,2],          // 1 Dm  A D F D: the Keepers' head, minor, alone (the lantern under a cloth)
+        [76,3],[74,1],[73,4],                 // 2 A   E D C#
+        [0,4],[70,2],[69,2],                  // 3 Bb  . Bb A
+        [69,6],[0,2],                         // 4 A   A
+        [69,3],[74,1],[77,2],[79,2],          // 5 Dm  A D F G: the head again, reaching
+        [77,3],[76,1],[74,4],                 // 6 Dm  F E D
+        [0,2],[81,1],[82,1],[81,2],[0,2],     // 7 Gm  . A Bb A: the call, once (the lamps' hum)
+        [0,8] ] },                            // 8 A   breath
+      bass: { wave: 'triangle', gain: 0.2, notes: [
+        [50,2],[50,2],[51,2],[50,2],  [45,2],[45,2],[46,2],[45,2],  [46,2],[46,2],[47,2],[46,2],  [45,2],[45,2],[46,2],[45,2],
+        [50,2],[50,2],[51,2],[50,2],  [50,2],[50,2],[51,2],[50,2],  [43,2],[43,2],[44,2],[43,2],  [45,2],[45,2],[46,2],[45,1],[49,1] ] },
+      drums: ['k.....h.','...h....','.h......','....h..h','k.....h.','..h.....','.....h..','h...h...'] },
   };
   function musicCheck(){
     const bad = [];
@@ -568,17 +671,24 @@ const PPSound = (() => {
       }
       if (t.drums.length !== t.bars) bad.push(id + ' drum bars');
       t.drums.forEach((bar, i) => { if (bar.length !== t.stepsPerBar || /[^ksh.]/.test(bar)) bad.push(id + ' drum ' + i); });
+      // KEEPER_ANTHEM M4: the optional voice double (octaves only) and voice gate, and the track swell (never above the bus level)
+      for (const voice of ['lead', 'bass']) { const v = t[voice];
+        if (v.double != null && (![-12, 12].includes(v.double) || !(v.doubleGain > 0 && v.doubleGain <= v.gain))) bad.push(id + ' ' + voice + ' double');
+        if (v.gate != null && !(v.gate > 0 && v.gate <= 8)) bad.push(id + ' ' + voice + ' gate'); }
+      const sw = t.swell;
+      if (sw != null && !(sw.sec > 0 && sw.from > 0 && sw.from < 1 && sw.lpFrom > 0 && sw.lpFrom < sw.lpTo)) bad.push(id + ' swell');
     }
     return bad;
   }
   function musicSpec(id){
     const t = MUSIC[id];
     if (!t) return null;
-    const voice = v => ({ wave: v.wave, gain: v.gain, notes: v.notes.map(n => [n[0], n[1]]) });
-    return {
+    const voice = v => Object.assign({ wave: v.wave, gain: v.gain, notes: v.notes.map(n => [n[0], n[1]]) },
+      v.double != null ? { double: v.double, doubleGain: v.doubleGain } : {}, v.gate != null ? { gate: v.gate } : {});   // M4: only when set
+    return Object.assign({
       key: t.key, bpm: t.bpm, bars: t.bars, stepsPerBar: t.stepsPerBar, gate: t.gate, perc: t.perc,
       lead: voice(t.lead), bass: voice(t.bass), drums: t.drums.slice(),
-    };
+    }, t.swell ? { swell: Object.assign({}, t.swell) } : {});
   }
   let MUSIC_ON = true, MUSIC_VOL = 0.5, want = null, trk = null, token = 0;
   const FLAT = {};
@@ -590,7 +700,7 @@ const PPSound = (() => {
       for (const [note, steps] of t[voice].notes) { if (note) by[s].push({ kind: voice, note, steps }); s += steps; }
     }
     t.drums.forEach((bar, b) => { for (let i = 0; i < bar.length; i++) if (bar[i] !== '.') by[b * t.stepsPerBar + i].push({ kind: 'd', drum: bar[i] }); });
-    FLAT[id] = { by, n, stepSec: (60 / t.bpm) * 4 / t.stepsPerBar, stepsPerBar: t.stepsPerBar, gate: t.gate, perc: t.perc, lead: t.lead, bass: t.bass };
+    FLAT[id] = { by, n, stepSec: (60 / t.bpm) * 4 / t.stepsPerBar, stepsPerBar: t.stepsPerBar, gate: t.gate, perc: t.perc, lead: t.lead, bass: t.bass, swell: t.swell || null };
     return FLAT[id];
   }
   function canHear(){ return MUSIC_ON && !muted && !document.hidden && !!ac && ac.state === 'running'; }
@@ -611,11 +721,13 @@ const PPSound = (() => {
       for (const e of cur.info.by[cur.step] || []) {
         if (e.kind === 'd') {
           const k = KIT[e.drum]; if (!k) continue;
-          noise(cur.nextAt, k[2] / 1000, k[3] * info.perc, k[1], k[0], cur.bus);
-          if (e.drum === 'k') tone({ hz: 120 }, cur.nextAt, 0.08, 'triangle', 0.35 * info.perc, 45, cur.bus);
+          noise(cur.nextAt, k[2] / 1000, k[3] * info.perc, k[1], k[0], cur.into);
+          if (e.drum === 'k') tone({ hz: 120 }, cur.nextAt, 0.08, 'triangle', 0.35 * info.perc, 45, cur.into);
         } else {
-          const voice = e.kind === 'lead' ? info.lead : info.bass;
-          tone(e.note, cur.nextAt, Math.max(0.02, e.steps * info.stepSec * info.gate), voice.wave, voice.gain, 0, cur.bus);
+          // KEEPER_ANTHEM M2: a voice gate overrides the track gate (the dark drone rings past its slot); M1: an octave double
+          const voice = e.kind === 'lead' ? info.lead : info.bass, len = Math.max(0.02, e.steps * info.stepSec * (voice.gate || info.gate));
+          tone(e.note, cur.nextAt, len, voice.wave, voice.gain, 0, cur.into);
+          if (voice.double) tone(e.note + voice.double, cur.nextAt, len, voice.wave, voice.doubleGain || voice.gain, 0, cur.into);
         }
       }
       cur.step = (cur.step + 1) % info.n;
@@ -631,16 +743,27 @@ const PPSound = (() => {
       old.bus.gain.setValueAtTime(Math.max(0.0001, old.bus.gain.value || 0.0001), now);
       old.bus.gain.setTargetAtTime(0.0001, now, Math.max(0.01, fadeSec / 3));
     } catch(e) {}
-    setTimeout(() => { try { old.bus.disconnect(); } catch(e) {} }, Math.round(fadeSec * 1000) + 120);
+    setTimeout(() => { try { old.bus.disconnect(); } catch(e) {} for (const n of old.chain || []) { try { n.disconnect(); } catch(e) {} } }, Math.round(fadeSec * 1000) + 120);
   }
-  function startTrack(id, fadeIn){
+  // KEEPER_ANTHEM M3: `swell` (a fresh music() call that is not `near`) puts a gain and a lowpass in front of this track's own bus,
+  // ramped from far off to full. The bus is made exactly as for every loop, so the Music volume, the stinger duck and the fade-out
+  // all act after the swell. startWanted() and resumeMusic() never pass it: a restart starts near.
+  function startTrack(id, fadeIn, swell){
     if (!ac) return;
     const info = eventsFor(id), bus = ac.createGain(), now = ac.currentTime;
     bus.connect(out);
     bus.gain.setValueAtTime(0.0001, now);
     if (fadeIn <= 0.001) bus.gain.setValueAtTime(MUSIC_VOL, now);
     else bus.gain.linearRampToValueAtTime(MUSIC_VOL, now + fadeIn);
-    const cur = { id, bus, info, step: 0, nextAt: now + 0.02, timer: null };
+    let into = bus, sw = null, chain = null;
+    if (swell && info.swell) {
+      const s = info.swell, g = ac.createGain(), lp = ac.createBiquadFilter();
+      lp.type = 'lowpass'; lp.Q.value = 0;
+      g.gain.setValueAtTime(s.from, now); g.gain.exponentialRampToValueAtTime(1, now + s.sec);
+      lp.frequency.setValueAtTime(s.lpFrom, now); lp.frequency.exponentialRampToValueAtTime(s.lpTo, now + s.sec);
+      g.connect(lp); lp.connect(bus); into = g; chain = [g, lp]; sw = { from: s.from, sec: s.sec, t0: now };
+    }
+    const cur = { id, bus, into, chain, swell: sw, info, step: 0, nextAt: now + 0.02, timer: null };
     trk = cur;
     const tick = () => { if (trk === cur) schedule(cur); };
     cur.timer = setInterval(tick, 100);
@@ -666,7 +789,7 @@ const PPSound = (() => {
       if (performance.now() - t0 < minDelay || (opt.afterStingers && stPending())) { setTimeout(attempt, 40); return; }
       if (trk && trk.id === id && !opt.restart) return;
       if (trk) stopTrack(fadeOut);
-      startTrack(id, fadeIn);
+      startTrack(id, fadeIn, !opt.near);   // KEEPER_ANTHEM M3: a fresh cue swells unless `near`
     };
     attempt();
     return true;
@@ -717,6 +840,7 @@ const PPSound = (() => {
     music, hush, setMusic, pauseMusic, resumeMusic, musicCheck, musicSpec, musicIds: () => Object.keys(MUSIC),
     get musicOn(){ return MUSIC_ON; }, get musicTrack(){ return trk ? trk.id : null; }, get musicWant(){ return want; },
     get musicVol(){ return MUSIC_VOL; },
+    get musicSwell(){ return trk && trk.swell ? Object.assign({}, trk.swell) : null; },   // KEEPER_ANTHEM M4: read-only, for tests
     set musicVol(v){ const n = +v; if (!Number.isFinite(n)) return; MUSIC_VOL = Math.max(0, Math.min(1, n));
       if (trk && ac) { try { trk.bus.gain.setTargetAtTime(MUSIC_VOL, ac.currentTime, 0.05); } catch(e) {} } } };
 })();

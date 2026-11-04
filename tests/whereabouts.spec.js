@@ -7,9 +7,10 @@ const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = requir
 trackErrors(test, expect);
 
 const MET = ['Lizzy', 'Pip', 'Wren', 'Ossabell', 'Mr. Gristle', 'Keeper Teague', 'Keeper Quill', 'Mom', 'Dad', 'Warden Ilse', 'Officer Ness', 'Rook'];
-// NPC_RANKS (Vincent, Nov 2, 2026): People rows show rank first. Teague and Quill wait on a ladder rank (D1159), so they
-// keep their plain names for now; SHOWN stays the one place to change when their ranks land.
-const SHOWN = n => n;
+// NPC_RANKS (Vincent, Nov 2, 2026): People rows show rank first. Teague and Quill are civilians (shopkeepers); NAMES_PASS
+// (D1734, D1767) shows them as Grocer Teague and Grocer Quill and the pupil Wren as Tilly. SHOWN is the one place for that.
+const SHOWN_AS = { 'Keeper Teague': 'Grocer Teague', 'Keeper Quill': 'Grocer Quill', Wren: 'Tilly' };
+const SHOWN = n => SHOWN_AS[n] || n;
 
 function save() {
   const s = starterSave();
@@ -73,7 +74,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   expect(got['Cook Hesper']).toBeUndefined();
   expect(got.Lizzy.where).toBe('Schoolhouse · AT WORK');
   expect(got.Pip.where).toBe('Schoolhouse · AT SCHOOL');
-  expect(got.Wren.where).toBe('Schoolhouse · AT SCHOOL');
+  expect(got[SHOWN('Wren')].where).toBe('Schoolhouse · AT SCHOOL');
   expect(got.Ossabell.where).toBe('home, 5B · ASLEEP');
   expect(got['Mr. Gristle'].where).toBe('the lobby · AT WORK');
   expect(got[SHOWN('Keeper Teague')].where).toBe('Lamplight Provisions · AT WORK');
@@ -97,7 +98,8 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
       const img = row && row.querySelector('.where-icon');
       return img ? img.getAttribute('src') : '';
     };
-    return { mom: src('Mom'), teague: src('Keeper Teague'), ilse: src('Warden Ilse'), ness: src('Officer Ness') };
+    // Keeper Teague's row shows Grocer Teague (NAMES_PASS D1734).
+    return { mom: src('Mom'), teague: src('Grocer Teague'), ilse: src('Warden Ilse'), ness: src('Officer Ness') };
   });
   expect(icons.mom.length).toBeGreaterThan(20);
   expect(icons.ilse).toBe(icons.teague);
@@ -129,7 +131,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   list = await rows(page);
   got = Object.fromEntries(list.map(r => [r.name, r]));
   expect(got.Pip.where).toBe('Lanternball Court · OUT AND ABOUT');
-  expect(got.Wren.where).toBe('Lanternball Court · OUT AND ABOUT');
+  expect(got[SHOWN('Wren')].where).toBe('Lanternball Court · OUT AND ABOUT');
   expect(got['Mr. Gristle'].where).toBe('the lobby · AT HOME');
   expect(got.Mom.where).toBe('home · AT HOME');
   expect(got.Dad.where).toBe('');   // MAHOPAC_DREAMS G2 (D1949): Dad shows no place line
@@ -158,7 +160,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   got = Object.fromEntries(list.map(r => [r.name, r]));
   expect(got.Lizzy.where).toBe('home, 5B · ASLEEP');
   expect(got.Pip.where).toBe('home (off the map) · ASLEEP');
-  expect(got.Wren.where).toBe('home (off the map) · ASLEEP');
+  expect(got[SHOWN('Wren')].where).toBe('home (off the map) · ASLEEP');
   expect(got['Mr. Gristle'].where).toBe('the lobby · ASLEEP');
   expect(got.Ossabell.where).toBe('home, 5B · AT HOME');
   expect(got[SHOWN('Keeper Quill')].where).toBe('Lamplight Provisions · AT WORK');
@@ -394,7 +396,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   const hour = await page.locator('#clockCard').innerText();
   expect(hour).toContain('Tuesday');
   expect(hour).toContain("Who's where: tap the compass, or a contact.");
-  for (const name of ['Lizzy', 'Pip', 'Wren', 'Ossabell', 'Mr. Gristle']) expect(hour).not.toContain(name);
+  for (const name of ['Lizzy', 'Pip', 'Wren', 'Ossabell', 'Mr. Gristle']) expect(hour).not.toContain(SHOWN(name));
 });
 
 test('lizzyWalk stays inert without debug', async ({ page }) => {
