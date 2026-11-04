@@ -102,15 +102,17 @@ test('every renamed person shows the new name in the dialog speaker tab; the nam
     expect(got.fits, raw + ' fits the speaker tab').toBe(true);
     await page.evaluate(() => PixelPets.endScene());
   }
-  // The six plaza bodies are named now; nothing is left pending (D1738 answers D1245).
+  // The six plaza bodies are named now (D1738 answers D1245). Only POST_TRIAL_CRACKDOWN's unnamed Commander and Officer
+  // (#288, D1198) stay pending: their names (D1740, D1744) are not built on main yet.
   const c = await page.evaluate(() => PixelPets.rankCheck());
-  expect(c.placeholders).toEqual([]);
+  expect(c.placeholders.sort()).toEqual(['Commander (D1198)', 'Officer (D1198)']);
   expect(c.missing).toEqual([]);
   expect(c.bad).toEqual([]);
 });
 
 test('real talks: Host Amos at the Lantern House, Jacob Chi in the weir hut, Grocer Teague at the counter', async ({ page }) => {
-  await boot(page, save({ 'story.warden_met': true }));
+  // story.chi_met: past ACT1_KEEPER_JOIN's first-step meeting (#303, T2), so a talk with the hut NPC is his own line.
+  await boot(page, save({ 'story.warden_met': true, 'story.chi_met': true }));
   await page.evaluate(() => { PixelPets.clock.set('tue', 12, 0); PixelPets.clock.freeze(true); });
   await page.evaluate(() => PixelPets.goto('fb_lantern_in', 6, 4, 'up'));
   await page.waitForFunction(() => !window.PixelPets.fading);
