@@ -2164,19 +2164,19 @@
 166-166  const NOT_FLOOR
 167-197  function room
 198-203  function ring
-204-209  function banners
-210-322  const OUT
-323-348  const ROOMS
-349-355  function autoProps
-356-356  const LIGHTER
-357-364  function dreamWash
-365-370  const scenes
-371-381  function render
-382-385  function frame
-386-393  const HC_OUT
-394-394  const HC_ROOMS
-395-399  function enableCity
-400-402  const api
+204-210  function banners
+211-326  const OUT
+327-352  const ROOMS
+353-359  function autoProps
+360-360  const LIGHTER
+361-368  function dreamWash
+369-374  const scenes
+375-385  function render
+386-389  function frame
+390-397  const HC_OUT
+398-398  const HC_ROOMS
+399-403  function enableCity
+404-406  const api
 
 # clock.js
 4-185  const PPClock

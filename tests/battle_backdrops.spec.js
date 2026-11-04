@@ -106,8 +106,9 @@ test('every map has a scene: PAL only, each one different, landmarks clear of th
     const pal = new Set(Object.values(PAL).map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',')));
     const out = { missing: world.filter((id) => !ids.includes(id)), missingBattle: battleMaps.filter((id) => !ids.includes(id)),
       offPal: [], clear: [], dupes: [], count: ids.length };
-    // the real canvas sizes (fitBattle) at 320 / 375 / 390, plus a short and a tall extreme
-    for (const [W, H] of [[61, 100], [60, 83], [63, 83], [56, 70], [70, 110]]) for (const mode of ['day', 'night', 'day-dull']) {
+    // canvas sizes (fitBattle) at 320 / 375 / 390 on tall phones, the live sizes at the test viewports (61x45 at 320x568, 60x54
+    // at 375x667; Nov 4: four scenes drew deco into the partner's box there), plus a short and a tall extreme
+    for (const [W, H] of [[61, 100], [60, 83], [63, 83], [61, 45], [60, 54], [56, 70], [70, 110]]) for (const mode of ['day', 'night', 'day-dull']) {
       const seen = new Map();
       for (const id of ids) {
         const c = PixelPets.battleSceneArt(id, W, H, mode), d = c.getContext('2d').getImageData(0, 0, W, H).data;
@@ -215,7 +216,9 @@ test('the Nov 4 scenes: the Weir Hut on the Cut and the plaza fountain in Fernbr
     // reduced motion: the live scene holds still (the Cut's river and the fountain keep their first water frame). The patch is
     // sprite-free: right of the partner's box and below the foe's, down to the bottom edge.
     const [[, fy, , fh], [px, , pw]] = await page.evaluate(({ W, H }) => BattleBG.boxes(W, H, false), r);   // foe, partner
-    // The battle's time-of-day tint can drift a step between samples, so a pixel only counts as moved past 12 per channel.
+    // The battle's time-of-day tint can drift a step between samples, so a pixel only counts as moved past 12 per channel. The first
+    // sample waits out the battle's opening (its entrance settles after CHOOSE on a slow run).
+    await page.waitForTimeout(600);
     const x0 = px + pw, y0 = fy + fh, a = (await patch(page, x0, y0, r.W - x0, r.H - y0)).split(',').map(Number);
     await page.waitForTimeout(700);
     const b = (await patch(page, x0, y0, r.W - x0, r.H - y0)).split(',').map(Number);

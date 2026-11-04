@@ -42,7 +42,7 @@ function solid(img){
 /* ---------- the drawing kit ---------- */
 function kit(g, W, H, id, env, layer){
   const L = lay(W, H), S = { g, W, H, id, env, layer, fy: L.fy, my: L.my, hz: L.hz, r: rng(seedOf(id)), wet: [], drew: [], on: layer !== 'deco',
-    boxes: boxes(W, H, !!(ROOMS[id] && ROOMS[id].group)),
+    boxes: boxes(W, H, !!(ROOMS[id] && ROOMS[id].group)), low: L.my - 3,   // low: the partner box's top row (fixed deco ends above it)
     night: /^night/.test(env.mode || ''), dull: /dull$/.test(env.mode || '') };
   S.P = (col, x, y, w = 1, h = 1) => { if (!S.on) return; g.fillStyle = PAL[col]; g.fillRect(x | 0, y | 0, w | 0, h | 0); };
   // Fill a rect with one map tile at scale s (1 or 0.5), clipped. cx/cy seed the map's tile variants; water is noted for frame().
@@ -203,7 +203,8 @@ function ring(S, col){
 // Two hall banners on the back wall, left of the foe.
 function banners(S, [a, b]){
   const { hz, P } = S;
-  [3, 17].forEach(x => { P('k', x, hz - 15, 8, 1); P(a, x + 1, hz - 14, 6, 9); P(b, x + 1, hz - 11, 6, 2); P(a, x + 1, hz - 5, 2, 2); P(a, x + 5, hz - 5, 2, 2); });
+  const t = hz - 15 - Math.max(0, hz - 3 - S.low);   // on a short screen (61x45) the tails would touch the partner's box: lift them
+  [3, 17].forEach(x => { P('k', x, t, 8, 1); P(a, x + 1, t + 1, 6, 9); P(b, x + 1, t + 4, 6, 2); P(a, x + 1, t + 10, 2, 2); P(a, x + 5, t + 10, 2, 2); });
 }
 
 /* ---------- the scenes ---------- */
@@ -219,7 +220,7 @@ const OUT = {
     sky(S); FAR.hills(S, 'l', 1.4);
     S.ground('g'); S.band('p', 22, 8); S.band('f', 12, 8, 0.5, S.W - 22, 16);
     S.deco(() => {
-      const x = 2, y = S.hz - 22;
+      const x = 2, y = Math.min(S.hz - 22, S.low - 24);   // short screens: the lodge rises so its door stays above the partner
       S.fill('R', x, y, 24, 16, 0.5, 8, 2); S.fill('H', x, y + 16, 24, 8, 0.5, 8, 4);
       S.P('d', x + 9, y + 18, 6, 6); S.P('o', x + 10, y + 19, 4, 5); S.P('y', x + 3, y + 18, 3, 3); S.P('y', x + 18, y + 18, 3, 3);
       S.art('lamp_post', 28, S.hz + 2, 0.5);
@@ -260,7 +261,8 @@ const OUT = {
     sky(S); FAR.cliff(S, S.hz - 20);
     S.ground('c'); S.band('t', S.H - S.hz - 14, 14, 0.5, 0, S.W);
     S.deco(() => {
-      const x = 7, y = S.hz - 14; S.P('k', x + 1, y, 8, 14); S.P('k', x, y + 2, 10, 12); S.P('d', x + 2, y + 1, 1, 13); S.P('m', x, y + 13, 10, 1);
+      const x = 7, y = S.hz - 14, h = Math.min(14, S.low - y);   // short screens: a shorter mouth, clear of the partner
+      S.P('k', x + 1, y, 8, h); S.P('k', x, y + 2, 10, h - 2); S.P('d', x + 2, y + 1, 1, h - 1); S.P('m', x, y + h - 1, 10, 1);
       S.art('barrel', 23, S.hz + 12); S.art('ore_cart', S.W - 11, S.H - 2) || S.art('rc_crate', S.W - 11, S.H - 2);
     });
   },
@@ -286,11 +288,13 @@ const OUT = {
   hw_falls(S){                                        // Hushwater Falls: the falls out of the rock, the pool, spray
     sky(S); FAR.cliff(S, 6);
     S.ground('g', 4); S.band('t', S.H - S.hz - 12, 12, 0.5, S.W - 26, 26);
+    // the pool and its spray are ground (base layer), so on a short screen the partner may stand in front of them
+    const pw = Math.min(28, S.W - 34);   // the pool stays left of the foe's box
+    S.fill('s', 4, S.hz + 2, pw, 14, 0.5, 14, 11); S.fill('w', 6, S.hz + 4, pw - 4, 9, 1, 14, 12);
+    const r = rng(seedOf('hw_falls_spray')); for (let i = 0; i < 14; i++) S.P(r() < .5 ? 'w' : 's', 8 + (r() * (pw - 6) | 0), S.hz + (r() * 5 | 0));
     S.deco(() => {
-      S.fill('w', 12, 6, 12, S.hz - 4, 1, 15, 1); S.P('k', 11, 6, 1, S.hz - 6); S.P('k', 24, 6, 1, S.hz - 6);
-      const pw = Math.min(28, S.W - 34);   // the pool stays left of the foe's box
-      S.fill('s', 4, S.hz + 2, pw, 14, 0.5, 14, 11); S.fill('w', 6, S.hz + 4, pw - 4, 9, 1, 14, 12);
-      const r = rng(seedOf('hw_falls_spray')); for (let i = 0; i < 14; i++) S.P(r() < .5 ? 'w' : 's', 8 + (r() * (pw - 6) | 0), S.hz + (r() * 5 | 0));
+      const fh = Math.min(S.hz - 4, S.low - 6);   // the falls end above the partner's box
+      S.fill('w', 12, 6, 12, fh, 1, 15, 1); S.P('k', 11, 6, 1, Math.min(S.hz - 6, fh)); S.P('k', 24, 6, 1, Math.min(S.hz - 6, fh));
       S.art('rope_coil', S.W - 10, S.H - 2);
     });
   },
