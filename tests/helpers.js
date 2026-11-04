@@ -34,9 +34,10 @@ function starterSave() {
       name: 'Tester',
       look: { skin: '3', hair: 'short', hairCol: 'p', outfit: 'coat', outfitCol: 't', accent: 'r' },
     },
-    // ARCADE_GRIPS: a save with no controls choice now loads as modern, so the shared test save picks arcade on purpose.
-    // Specs that test modern set controls: 'modern'; tests/controls.spec.js covers the missing-choice default.
-    settings: { textSpeed: 'fast', battleAnims: true, follower: true, music: false, musicVol: 0, controls: 'arcade' },
+    // Modern controls by default for all play testing and QA (Vincent, Nov 4, 2026), as for a new game. A spec that is about
+    // Arcade (the pad, TALK, the grips, the arcade HUD rows) opts in with s.settings.controls = 'arcade' and says why.
+    // tests/controls.spec.js covers the missing-choice default.
+    settings: { textSpeed: 'fast', battleAnims: true, follower: true, music: false, musicVol: 0, controls: 'modern' },
     world: { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' },
     dex: { seen: { 'ember/0': true }, caught: { 'ember/0': true }, legacy: [], hits: {} },
     bag: {},
