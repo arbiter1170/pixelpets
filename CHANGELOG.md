@@ -2,6 +2,32 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 13:06 ET: Build: the Keeper anthem, "Every Roof a Lantern" (KEEPER_ANTHEM v0.2.1, D1375-D1384, D1419-D1423)
+- What changed and why:
+  - D1375, D1377, D1421 (settled by Vincent; design `specs/KEEPER_ANTHEM.md` v0.2.1, master 52f62a2): three new loops in `sfx.js` `MUSIC`, pasted from the spec literal (§3), all one original melody, synthesised at runtime, no audio file:
+    - `anthem_march`: B-flat major, 120 bpm, 16 bars, 32 s; square lead in octaves, oom-pah bass, snare-led march kit; it swells from far off.
+    - `anthem_dark`: the same tune in B-flat minor, 64 bpm, 60 s; one triangle voice over a held drone that grinds under the last cadence.
+    - `anthem_hall`: the march's tune and bass, B-flat major, 80 bpm, 48 s; one soft voice for indoors.
+  - D1381 engine (M1-M4, `sfx.js`): a voice `double` (octaves), a voice `gate` (the drone rings past its slot), a per-track `swell` (a gain and a lowpass in front of the track's own bus, only on a fresh `music()` that is not `near`; the shared bus, the Music volume, the stinger duck and the fade act after it), `musicCheck()` / `musicSpec()` know the new fields, and a read-only `PPSound.musicSwell` for tests. Every other loop plays exactly as before.
+  - D1381 scene hooks (M6-M8, `game.js`): `["music", id, { fadeOut, fadeIn, minDelay, near, keep }]` (plain `["music", id]` is 180 / 140 ms as before); a `keep` cue plays on through a scene `warp` (not under SKIP, D1384); `cueFactionMusic()` skips a scene that opens with its own `music` step.
+  - D1420, D1422, D1423 (M10-M11): with the city on (`HC_CITY_V2`, still false; preview `?debug=1&hccity=2`), Sky-Dock Command and the Keeper Barracks play `anthem_hall` day and night on either side, and each has one framed-sheet sign: "[PLACEHOLDER] A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem." (D1419). `applyHcCity()` reads a new `roomPatch` key; `tools/build_hc_city.py` writes it. `data/highcharity.json` is unchanged, so with the city off both rooms keep `charity`.
+  - The parade (`hc_parade`, PR #286) is untouched: its `music` steps now find `anthem_march` and `anthem_dark`.
+  - Previews: `handoff/audio/keeper_anthem/{anthem_march,anthem_dark,anthem_hall}.wav`, one loop each, rendered from the game's own `sfx.js` by `tools/render_music.js` (an OfflineAudioContext in headless Chromium), with `report.json` comparing them to Design's reference renders.
+- Files touched:
+  - code and data: `sfx.js`, `game.js`, `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tools/GAMEJS_MAP.txt`, `tools/render_music.js` (new, dev only);
+  - tests: `tests/keeper_anthem.spec.js` (new), `tests/README.md`;
+  - previews: `handoff/audio/keeper_anthem/` (new), `handoff/shots/keeper_anthem/` (new; both rooms at 390 and 320);
+  - docs: `CHANGELOG.md`, `OPEN_DECISIONS.md` (D1419-D1423 reserved, next free D1424), `archive/DECISIONS_SETTLED.md` (D1375-D1384, D1419-D1423), plus the build stamp.
+- Commit(s) + build id: claude/keeper-anthem-build, build 20261103-1258, restamped 20261103-2208 after merging main (a6a3732). Built from design `master` 52f62a2 (KEEPER_ANTHEM v0.2.1).
+- Tests run and result (widths, checks): `tests/keeper_anthem.spec.js` (T1-T22) with the music, city, Brinewick and iOS specs at 320, 375 and 390: 177 passed, 0 failed; the full suite in the PR. Zero console errors. Save `v` 2, no new key. Design `node specs/keeper_anthem_render.js --no-wav` PASS; the in-game data equals the spec literal.
+- Decisions made (colour + reasoning):
+  - All fifteen rows are built as settled. No new decision id.
+  - Green (engineer): the swell's two nodes are disconnected with the bus when a track stops (Safari keeps connected nodes); the sheet uses the default sign art (no new art, D1423).
+- Anything left unfinished:
+  - Vincent hears the cues and sees the sheet previews before this merges (DRAFT).
+  - T22: at 320 and 375 the room draws at 2x, so the sheet's tile is 32 px, like every map tile there; it also opens from the 44 px TALK button. At 390 the tile is 48 px.
+  - The parade's own option steps (`keep`, the 2.5 fades, `near` on a reload) are #286's to add; the cues play there as plain steps today.
+  - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (firebase-tools ignores NO_PROXY).
 ## 2026-11-03 19:59 ET: Old-name fold runs once per save, so an unfavourite or a trust drop sticks
 - What changed and why:
   - QA (Nov 3, 2026): `normalizeV2` copied each old name in `FOLD_KEYS` (Ash, Fen, Hale, Tobin, Hollis, Quinn, Imogen, Marisol) to its ranked key in `phoneBook.met`, `phoneBook.fav` and `rep` on every load while the new key was absent. Play deletes the new key (unfavourite; trust back at base is stored sparse), and the old key stays on disk, so the next load put the removed mark back (an old `rep.Fen = 60` dropped to 50 came back as 60; an unfavourited Cadet Sefton came back on).
