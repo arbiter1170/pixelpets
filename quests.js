@@ -34,6 +34,7 @@
   const NOT_STEPS = ['story.starter_line', 'story.lizzy_wake', 'story.home_walk',   // PARTNER_DAY: house-morning beats (story.home_dressed is the dress step)
     'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
+    'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -153,16 +154,27 @@
       text: 'The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', place: 'Fernbrook Trial Hall',
       glimmer: { text: "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", place: 'Fernbrook Trial Hall' },
       target: { map: 'fernbrook', x: 22, y: 6 } },
-    // D1175 (Vincent, Nov 2, 2026): a quest slot after Seal 1 and before the pick. Content is not written yet; for now Fen's
-    // PLACEHOLDER line at the end of the Seal scene sets the flag. The pick trigger waits on it (fb_side_pick).
+    // POST_TRIAL_CRACKDOWN (fills D1175): the Keeper tanks roll in on the first step out of the Hall (cd_start), then the
+    // night in the Lantern House. A save with #261's old placeholder (post_trial_done, no crackdown) has this row implied done.
+    { id: 'crackdown_street', when: ['story.seal1', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.crackdown'],
+      text: "Something's happening outside the Trial Hall.", place: 'Fernbrook Trial Hall',
+      target: { map: 'fernbrook', x: 22, y: 7 } },
     { id: 'post_trial', when: ['story.seal1', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done'],
-      text: 'Master Fen has one more thing for you in the Trial Hall.', place: 'Fernbrook Trial Hall',
-      npc: 'Master Fen', npcIds: ['fen_hall'], target: { map: 'fb_hall_in', x: 7, y: 4 } },
+      text: 'Get to the Lantern House.', place: 'Fernbrook Lantern House',
+      npc: 'Keeper Amos', npcIds: ['amos'], target: { map: 'fb_lantern_in', x: 5, y: 13 } },
+    // D1395 (Vincent, Nov 3, 2026): no pick at dawn. RENDEZVOUS_VINCENT beats 1-2: Warden Ilse phones on the first step out of the
+    // Lantern House (D1404), then the Lodge debrief. The pick waits on story.warden_met until the rendezvous build moves it to rdv_done.
+    { id: 'ilse_call', when: ['story.post_trial_done', 'story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_called'],
+      text: 'Morning in Fernbrook. Step outside the Lantern House.', place: 'Fernbrook Lantern House',
+      target: { map: 'fernbrook', x: 5, y: 7 } },
+    { id: 'warden_summons', when: ['story.warden_called', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_met'],
+      text: "Warden Ilse wants you home. Go to the Warden's Lodge.", place: 'Hearthmoor, the Lodge',
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'], target: { map: 'hm_lodge_in', x: 5, y: 3 } },
     // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
     // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.
-    { id: 'pick', when: ['story.post_trial_done', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],
+    { id: 'pick', when: ['story.post_trial_done', 'story.warden_met | !story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],
       text: 'Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', place: 'Orchard gate',
-      target: { map: 'fernbrook', x: 9, y: 10 } },
+      npc: 'Master Fen', npcIds: ['fen_dawn'], target: { map: 'fernbrook', x: 9, y: 10 } },
     // D1187: after a Keepers pick on the new flow, Tobin's built battle still clears the orchard (FPT Part D is not built).
     // Its own row here, so Seal 1 never implies it; `story.crates_seen` keeps every old save off it.
     // Its done also needs story.crates_seen: a later row's done implies every earlier row, so an old save that cleared the

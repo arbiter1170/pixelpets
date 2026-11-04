@@ -344,7 +344,11 @@ const COPY = {
   orchard: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
   hall1_holders: ['Three holders stand between you and Master Fen. Win all three matches in the Trial Hall.', 'Fernbrook Trial Hall'],
   hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", 'Fernbrook Trial Hall'],
-  post_trial: ['Master Fen has one more thing for you in the Trial Hall.', 'Fernbrook Trial Hall'],
+  // POST_TRIAL_CRACKDOWN and D1395 (Warden Ilse's summons before the pick).
+  crackdown_street: ["Something's happening outside the Trial Hall.", 'Fernbrook Trial Hall'],
+  post_trial: ['Get to the Lantern House.', 'Fernbrook Lantern House'],
+  ilse_call: ['Morning in Fernbrook. Step outside the Lantern House.', 'Fernbrook Lantern House'],
+  warden_summons: ["Warden Ilse wants you home. Go to the Warden's Lodge.", 'Hearthmoor, the Lodge'],
   pick: ['Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', 'Orchard gate'],
   tobin_crates: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate'],
   teaser: ['Rook has news, waiting outside the Trial Hall.', 'Trial Hall doorstep', 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', 'Trial Hall doorstep'],

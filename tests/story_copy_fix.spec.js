@@ -494,7 +494,7 @@ test('Rook asks twice as a competitor, not a rival (ROOK_KEEPERS_REENTRY sign-of
 test("Fen's Glimmer-pick result line is doubt, not disapproval (C14, STORY_DECISIONS v0.64)", async ({ page }) => {
   const day1 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data/detail_zz_day1.json'), 'utf8'));
   const swap = day1.lineSwaps.find((s) => s.scene === 'orchard@glimmer' && s.when === 'story.seal1' && /Come to the Hall if you must/.test(s.text));
-  const line = "Go on, then. You won my Seal fairly. I can't say you're wrong.";   // "After last night," returns with the crackdown (PR #288)
+  const line = "Go on, then. You won my Seal fairly. After last night, I can't say you're wrong.";   // "After last night," is back with the crackdown (PR #288)
   expect(swap.to).toEqual([['say', 'Master Fen', line]]);
   expect(line.length).toBeLessThanOrEqual(110);
   expect(JSON.stringify(day1)).not.toContain('I hope you remember how.');

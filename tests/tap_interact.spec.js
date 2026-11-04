@@ -35,7 +35,9 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
     // WEIR_HUT (D1590-D1599): the hut door, its mat, the first-step trigger, and 27 talk taps (Vincent Chi, 14 room props, eight
     // jar shelves (one shows per sill tile at a time), the lamp, barrel and nets outside) add door 1, warp 1, trigger 1, talk 27.
-    door: 49, warp: 101, sign: 96, talk: 784, scene: 40, trigger: 41, board: 7,
+    // POST_TRIAL_CRACKDOWN: +1 sign (the curfew notice), +21 talk (curfew posts, Fen at the gate, Juniper's camp, the six Lantern House
+    // townsfolk and the wire station's props), +3 triggers (cd_start, cd_resume, ilse_call).
+    door: 49, warp: 101, sign: 97, talk: 805, scene: 40, trigger: 44, board: 7,
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
