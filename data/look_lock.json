@@ -958,6 +958,18 @@
    "clash": "palette|uniform|h1_cadet",
    "todo": "LOOK_LOCK follow-up F7 (D2278, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
    "fix": "Sefton (Fernbrook hall) wears the Keeper coat with no Keeper title. Design call: add the id to the Keeper on-duty list (then it passes), or recolour the coat. A title change is naming, so red."
+  },
+  {
+   "check": "lock",
+   "clash": "juniper|wears|bg_juniper_desk",
+   "todo": "Found when LOOK_LOCK (#328) met BRIGHTGATE (#316) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "Brightgate's lobby desk copy of Associate Juniper names the look `juniper`, which does not exist; it should wear the locked `associate` look."
+  },
+  {
+   "check": "lookalike",
+   "clash": "dad|lookalike|bg_hallcrew",
+   "todo": "Found when LOOK_LOCK (#328) met BRIGHTGATE (#316) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "Hall 4's crew look `bg_hallcrew` shares Dad's short dark hair and navy top; give the crew another hair or top colour."
   }
  ]
 }
