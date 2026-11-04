@@ -322,7 +322,7 @@
    "keys": [
     "fen"
    ],
-   "seen_as": "long white hair, green tunic, mint trim",
+   "seen_as": "long white hair, green tunic, light green trim",
    "signature": {
     "fen": {
      "skin": "4",
@@ -753,12 +753,5 @@
   "petra": "WARDROBE_SHOP 4a Captain Lumen row (F6): hc_lumen wears `captain`",
   "holder_glimmer_set": "D2278: a reference look for the palette devCheck, never worn; the Junior Bright wears `junior_bright`"
  },
- "exceptions": [
-  {
-   "check": "lookalike",
-   "clash": "dad|lookalike|bg_hallcrew",
-   "todo": "LOOK_LOCK follow-up D2350 (red, open, Vincent; OPEN_DECISIONS.md): new since #328 (Brightgate, #316), not in D2273-D2278, so no look changes until Vincent says yes",
-   "fix": "Hall 4's crew look `bg_hallcrew` (Rod Tender, Line Runner, Sky Watcher; built by tools/build_brightgate.py) shares Dad's short dark hair and navy top. Recolour the lookalike, never Dad: give the crew another hair or top colour (e.g. the vest to teal `t`)."
-  }
- ]
+ "exceptions": []
 }
