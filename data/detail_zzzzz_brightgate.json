@@ -1,0 +1,2458 @@
+{
+ "spec": "BRIGHTGATE_LAYOUT v0.2 (design specs/BRIGHTGATE_LAYOUT.md; D1478-D1499, D2000-D2009 settled; rule 9 previews approved)",
+ "_about": "Ours, built by tools/build_brightgate.py from the packet json (read, never copied whole). Named zzzzz so it applies after every other overlay. No warp outside the city leads in yet; ?debug=1 places only. All player text is PLACEHOLDER until Story signs it (§11). Art is PLACEHOLDER until Pia's pass (§10).",
+ "tiles": {
+  "I": {
+   "name": "panel paving",
+   "walk": true
+  },
+  "L": {
+   "name": "glide lane",
+   "walk": true
+  },
+  "x": {
+   "name": "glide crossing",
+   "walk": true
+  },
+  "J": {
+   "name": "planter kerb",
+   "walk": false
+  },
+  "b": {
+   "name": "Cruiser stand bay",
+   "walk": false
+  },
+  "o": {
+   "name": "cobbles",
+   "walk": true
+  },
+  "d": {
+   "name": "setts",
+   "walk": true
+  },
+  "O": {
+   "name": "rail on setts",
+   "walk": true
+  },
+  "G": {
+   "name": "company fence",
+   "walk": false
+  },
+  "V": {
+   "name": "Concierge pad",
+   "walk": true
+  },
+  "N": {
+   "name": "clipped hedge",
+   "walk": false
+  },
+  "&": {
+   "name": "flowerbed",
+   "walk": true
+  }
+ },
+ "maps": {
+  "brightgate": {
+   "name": "Brightgate",
+   "district": "GATE PLAZA",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 64,
+   "h": 40,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 32,
+    "y": 37
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "lantern": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 22,
+     "y0": 26,
+     "x1": 29,
+     "y1": 31,
+     "porch": [
+      "bg_lantern_sign"
+     ]
+    },
+    "store": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_white",
+     "door": "door_gw_glass",
+     "win": "bg_awning",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 35,
+     "y0": 29,
+     "x1": 44,
+     "y1": 31,
+     "porch": [
+      "bg_store_board"
+     ]
+    },
+    "flats_a": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 4,
+     "x1": 25,
+     "y1": 9
+    },
+    "flats_b": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 44,
+     "y0": 2,
+     "x1": 60,
+     "y1": 9
+    },
+    "welcome": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 12,
+     "y0": 28,
+     "x1": 19,
+     "y1": 31
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNILLLINNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+    "NlllllllllllllllllllllllllllIIILLLIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIILLLIIIlllllllRRRRRRRRRRRRRRRRRllN",
+    "NlllllllllllllllllllllllllllIIILLLIIIlllllllRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&&&&&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&lll&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&lll&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&lll&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&lll&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&&&&&lRRRRRRRRRRRRRRRRRllN",
+    "NllHHHHHHHHHHHHHHHHHHHHHHHllIIxxxxxIIlllllllHHHHHHHHHHHHHHHHHllN",
+    "NllHHHHHHHHHHHHHHHHHHHHHHHllIIxxxxxIIlllllllHHHHHHHHHHHHHHHHHllN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIIIIIIIllN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIIIIIIIllN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIIIIIIIllN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIIIIIIIllN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "IIIIJJJJJJJJxxJJJJJJJJJJJJJJLLLLLLLLLJJJJJJJJJJJJJJJxxJJbbbJIIII",
+    "LLLLLLLLLLLLxxLLLLLLLLLLLLLLLLLwwwLLLLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "LLLLLLLLLLLLxxLLLLLLLLLLLLLLLLLwwwLLLLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "LLLLLLLLLLLLxxLLLLLLLLLLLLLLLLLwwwLLLLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "IIIIJbbbJJJJxxJJJJJJJJJJJJJJLLLLLLLLLJJJJJJJJJJJJJJJxxJJJJJJIIII",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NllIIIIIIIIIIIIIIIIIIIRRRRRRRRILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "Nll&&&&&&&&lllllllllllRRRRRRRRILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "Nll&llllll&lRRRRRRRRllRRRRRRRRILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "Nll&llllll&lRRRRRRRRllRRRRRRRRILLLIRRRRRRRRRRIIIIIIIIIIIIIIIIIIN",
+    "Nll&llllll&lRRRRRRRRllRRRRRRRRILLLIRRRRRRRRRRIIIIIIIIIIIIIIIIIII",
+    "Nll&llllll&lRRRRRRRRllRRRRRRRRILLLIRRRRRRRRRRLLLLLLLLLLLLLLLLLLL",
+    "Nll&&&&&&&&lHHHHHHHHllHHHHHHHHILLLIHHHHHHHHHHLLLLLLLLLLLLLLLLLLL",
+    "NlllllllllllHHHHHHHHllHHHHHHHHILLLIHHHHHHHHHHLLLLLLLLLLLLLLLLLLL",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+    "NlllllllllllIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIlllllllllllllN",
+    "NlllllllllllIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIbbbIIIlllllllllllllN",
+    "NlllllllllllIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIlllllllllllllN",
+    "NlllllllllllIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIlllllllllllllN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_lantern",
+     "x": 29,
+     "y": 34,
+     "to": "bg_lantern_in",
+     "tx": 6,
+     "ty": 12,
+     "facing": "up"
+    },
+    {
+     "kind": "door",
+     "id": "bg_store",
+     "x": 35,
+     "y": 34,
+     "to": "bg_store_in",
+     "tx": 5,
+     "ty": 7,
+     "facing": "up"
+    },
+    {
+     "kind": "door",
+     "id": "bg_flats_a",
+     "x": 9,
+     "y": 12,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_flats_b",
+     "x": 55,
+     "y": 12,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_welcome",
+     "x": 15,
+     "y": 34,
+     "need": "story.bg_no_room",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_0",
+     "x": 30,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 30,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_1",
+     "x": 31,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 31,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_2",
+     "x": 32,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 32,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_3",
+     "x": 33,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 33,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_4",
+     "x": 34,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 34,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_0",
+     "x": 0,
+     "y": 18,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 18,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_1",
+     "x": 0,
+     "y": 19,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 19,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_2",
+     "x": 0,
+     "y": 20,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 20,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_3",
+     "x": 0,
+     "y": 21,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 21,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_4",
+     "x": 0,
+     "y": 22,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 22,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_0",
+     "x": 63,
+     "y": 18,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 18,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_1",
+     "x": 63,
+     "y": 19,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 19,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_2",
+     "x": 63,
+     "y": 20,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 20,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_3",
+     "x": 63,
+     "y": 21,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 21,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_4",
+     "x": 63,
+     "y": 22,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 22,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_0",
+     "x": 63,
+     "y": 30,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 30,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_1",
+     "x": 63,
+     "y": 31,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 31,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_2",
+     "x": 63,
+     "y": 32,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 32,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_3",
+     "x": 63,
+     "y": 33,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 33,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_4",
+     "x": 63,
+     "y": 34,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 34,
+     "facing": "right"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_south",
+     "x": 32,
+     "y": 38,
+     "sprite": "road_bar",
+     "name": "the shuttle bar",
+     "lines": {
+      "else": "[PLACEHOLDER] The shuttle stop. No shuttle runs from here yet."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_sign",
+     "x": 28,
+     "y": 33,
+     "sprite": "heal_lantern"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_board",
+     "x": 36,
+     "y": 33,
+     "sprite": "acorn_board"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_sign_town",
+     "x": 27,
+     "y": 36,
+     "sprite": "signpost",
+     "text": "BRIGHTGATE. Lit by Glimmerwell since the day the old wicks went out."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg0_n",
+     "x": 35,
+     "y": 1,
+     "sprite": "signpost",
+     "text": "GATE PLAZA · This way: THE CAMPUS."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg0_w",
+     "x": 1,
+     "y": 23,
+     "sprite": "signpost",
+     "text": "GATE PLAZA · This way: OLD WICK."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg0_e",
+     "x": 62,
+     "y": 23,
+     "sprite": "signpost",
+     "text": "GATE PLAZA · This way: THE LAMP WORKS."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg0_se",
+     "x": 62,
+     "y": 35,
+     "sprite": "signpost",
+     "text": "GATE PLAZA · This way: PARTNER ROW."
+    }
+   ]
+  },
+  "bg_campus": {
+   "name": "Brightgate",
+   "district": "THE CAMPUS",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 64,
+   "h": 48,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 32,
+    "y": 46
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "hq": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_glass",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat+mast",
+     "x0": 20,
+     "y0": 3,
+     "x1": 44,
+     "y1": 14
+    },
+    "gala": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 8,
+     "x1": 14,
+     "y1": 14
+    },
+    "glowcare": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 50,
+     "y0": 16,
+     "x1": 55,
+     "y1": 17
+    },
+    "annex_a": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 6,
+     "y0": 39,
+     "x1": 16,
+     "y1": 42
+    },
+    "annex_b": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 46,
+     "y0": 39,
+     "x1": 58,
+     "y1": 42
+    },
+    "block_0": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 49,
+     "y0": 9,
+     "x1": 61,
+     "y1": 15
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+    "NllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllN",
+    "NllllllllllllllllGlllllllllllllllllllllllllllllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlllllllllllllllN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlllllllllllllllN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllHHHHHHHHHHHHllGllHHHHHHHHHHHHHHHHHHHHHHHHHllGlRRRRRRRRRRRRRlN",
+    "NllHHHHHHHHHHHHllGllHHHHHHHHHHHHHHHHHHHHHHHHHllGllRRRRRRlllllllN",
+    "NlIIIIIIIIIIIIIIIGllHHHHHHHHHHHHHHHHHHHHHHHHHllGllRRRRRRlllllllN",
+    "NlIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIHHHHHHIIIIIIlN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "IIIIJJJJJJxxJJJJJJJJJJJJJbbbxxxxxxxxxbbbJJJJJJJJJJJJxxJJbbbJIIII",
+    "LLLLLLLLLLxxLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "LLLLLLLLLLxxLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "LLLLLLLLLLxxLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "IIIIJJJJJJxxJJJJJJJJJJJJJJJJxxxxxxxxxJJJJJJJJJJJJJJJxxJJJJJJIIII",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NlllllllllllllllllllllllllllIIIIIIIIIllllllllllllllllllllllllllN",
+    "Nlll&&&&&&&&&&&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&lllllllll&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&lllllllll&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&lllllllll&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&lllllllll&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&&&&&&&&&&&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllRRRRRRRRRRRlllllllllllIIIwwwIIIlllllllllRRRRRRRRRRRRRllllN",
+    "NlllllRRRRRRRRRRRlllllllllllIIIwwwIIIlllllllllRRRRRRRRRRRRRllllN",
+    "NlllllRRRRRRRRRRRlllllllllllIIIwwwIIIlllllllllRRRRRRRRRRRRRllllN",
+    "NlllllRRRRRRRRRRRlllllllllllIIIwwwIIIlllllllllRRRRRRRRRRRRRllllN",
+    "NlllllHHHHHHHHHHHlllllllllllIIIwwwIIIlllllllllHHHHHHHHHHHHHllllN",
+    "NlllllHHHHHHHHHHHlllllllllllIIIIIIIIIlllllllllHHHHHHHHHHHHHllllN",
+    "NlIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIlN",
+    "NlIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIlN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNIIIIINNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_hq",
+     "x": 32,
+     "y": 18,
+     "need": "story.bg_no_room",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "door",
+     "id": "bg_gala",
+     "x": 9,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Closed for an event. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_glowcare",
+     "x": 52,
+     "y": 19,
+     "need": "story.bg_no_room",
+     "deny": "By appointment. We'll call you."
+    },
+    {
+     "kind": "door",
+     "id": "bg_annex_a",
+     "x": 11,
+     "y": 45,
+     "need": "story.bg_no_room",
+     "deny": "Staff only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_annex_b",
+     "x": 52,
+     "y": 45,
+     "need": "story.bg_no_room",
+     "deny": "Staff only. Have a bright day!"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_0",
+     "x": 30,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 30,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_1",
+     "x": 31,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 31,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_2",
+     "x": 32,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 32,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_3",
+     "x": 33,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 33,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_4",
+     "x": 34,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 34,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_0",
+     "x": 0,
+     "y": 21,
+     "to": "bg_oldtown",
+     "tx": 50,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_1",
+     "x": 0,
+     "y": 22,
+     "to": "bg_oldtown",
+     "tx": 51,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_2",
+     "x": 0,
+     "y": 23,
+     "to": "bg_oldtown",
+     "tx": 52,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_3",
+     "x": 0,
+     "y": 24,
+     "to": "bg_oldtown",
+     "tx": 53,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_4",
+     "x": 0,
+     "y": 25,
+     "to": "bg_oldtown",
+     "tx": 54,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_0",
+     "x": 63,
+     "y": 21,
+     "to": "bg_works",
+     "tx": 30,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_1",
+     "x": 63,
+     "y": 22,
+     "to": "bg_works",
+     "tx": 31,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_2",
+     "x": 63,
+     "y": 23,
+     "to": "bg_works",
+     "tx": 32,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_3",
+     "x": 63,
+     "y": 24,
+     "to": "bg_works",
+     "tx": 33,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_4",
+     "x": 63,
+     "y": 25,
+     "to": "bg_works",
+     "tx": 34,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg1_s",
+     "x": 35,
+     "y": 46,
+     "sprite": "signpost",
+     "text": "THE CAMPUS · This way: GATE PLAZA."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg1_w",
+     "x": 1,
+     "y": 26,
+     "sprite": "signpost",
+     "text": "THE CAMPUS · This way: OLD WICK."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg1_e",
+     "x": 62,
+     "y": 26,
+     "sprite": "signpost",
+     "text": "THE CAMPUS · This way: THE LAMP WORKS."
+    }
+   ]
+  },
+  "bg_works": {
+   "name": "Brightgate",
+   "district": "THE LAMP WORKS",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 64,
+   "h": 48,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 2,
+    "y": 20
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "lampworks": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "door": "door_sliding",
+     "win": "win_band",
+     "trim": "y",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 3,
+     "x1": 25,
+     "y1": 11
+    },
+    "fleetbay": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "door": "door_sliding",
+     "win": "win_band",
+     "trim": "y",
+     "shape": "flat",
+     "x0": 40,
+     "y0": 10,
+     "x1": 46,
+     "y1": 11
+    },
+    "census": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "door": "door_sliding",
+     "win": "win_band",
+     "trim": "y",
+     "shape": "flat",
+     "x0": 37,
+     "y0": 27,
+     "x1": 44,
+     "y1": 30
+    },
+    "block_0": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 52,
+     "y0": 38,
+     "x1": 54,
+     "y1": 40
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNdddddNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+    "NllllllllllllllllllllllllllldddddddddllllllllllllllllllllllllllN",
+    "NllllllllllllllllllllllllllldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllllllllllllllllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddlllRRRRRRRllllllllllllllllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddlllRRRRRRRllllllllllllllllN",
+    "NllHHHHHHHHHHHHHHHHHHHHHHHlldddddddddlllHHHHHHHddddddllllllllllN",
+    "NllHHHHHHHHHHHHHHHHHHHHHHHlldddddddddlllHHHHHHHdbbbddllllllllllN",
+    "NlddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddlN",
+    "NlddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddlN",
+    "NddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "NddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLLLLLLLLLLLLN",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLLLLLLLLLLLLN",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLLLLLLLLLLLLN",
+    "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddbbbddddN",
+    "NddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "NddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddddddddddddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddddddddddddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddRRRRRRRRddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddRRRRRRRRddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddRRRRRRRRddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddRRRRRRRRddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddHHHHHHHHddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddHHHHHHHHddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddddddddddddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddlllllllllGGGGGGGGGGGGGGGGlN",
+    "NdOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOddlllllllllGllllllllllllllGlN",
+    "NDDDDDDDDDDDDDDDDDDDDDDDDDDldddddddddlllllllllGllllllllllllllGlN",
+    "NDDDDDDDDDDDDDDDDDDDDDDDDDDldddddddddlllllllllGllllllllllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGlllllRRRllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGlllllRRRllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGlllllRRRllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGllllllllllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGllllllllllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGllllllllllllllGlN",
+    "NwwwwwwwwwwwwwwwwwwwwwwwwwwldddddddddlllllllllGGGGGGGGGGGGGGGGlN",
+    "NwwwwwwwwwwwwwwwwwwwwwwwwwwldddddddddllllllllllllllllllllllllllN",
+    "NwwwwwwwwwwwwwwwwwwwwwwwwwwldddddddddllllllllllllllllllllllllllN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNdddddNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_lampworks",
+     "x": 14,
+     "y": 14,
+     "need": "story.bg_no_room",
+     "deny": "Day shift only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_fleetbay",
+     "x": 43,
+     "y": 14,
+     "need": "story.bg_no_room",
+     "deny": "Fleet staff only."
+    },
+    {
+     "kind": "door",
+     "id": "bg_census",
+     "x": 40,
+     "y": 33,
+     "need": "story.bg_no_room",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_0",
+     "x": 0,
+     "y": 18,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 18,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_1",
+     "x": 0,
+     "y": 19,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 19,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_2",
+     "x": 0,
+     "y": 20,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 20,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_3",
+     "x": 0,
+     "y": 21,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 21,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_4",
+     "x": 0,
+     "y": 22,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 22,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_0",
+     "x": 30,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 21,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_1",
+     "x": 31,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 22,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_2",
+     "x": 32,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 23,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_3",
+     "x": 33,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 24,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_4",
+     "x": 34,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 25,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_0",
+     "x": 30,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 21,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_1",
+     "x": 31,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 22,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_2",
+     "x": 32,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 23,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_3",
+     "x": 33,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 24,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_4",
+     "x": 34,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 25,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg2_w",
+     "x": 1,
+     "y": 23,
+     "sprite": "signpost",
+     "text": "THE LAMP WORKS · This way: GATE PLAZA."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg2_n",
+     "x": 35,
+     "y": 1,
+     "sprite": "signpost",
+     "text": "THE LAMP WORKS · This way: THE CAMPUS."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg2_s",
+     "x": 35,
+     "y": 46,
+     "sprite": "signpost",
+     "text": "THE LAMP WORKS · This way: PARTNER ROW."
+    }
+   ]
+  },
+  "bg_oldtown": {
+   "name": "Brightgate",
+   "district": "OLD WICK",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 64,
+   "h": 40,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 62,
+    "y": 20
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "hall": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_heavy",
+     "win": "win_slit",
+     "trim": "y",
+     "shape": "steep+vane",
+     "x0": 22,
+     "y0": 4,
+     "x1": 42,
+     "y1": 11
+    },
+    "old_a": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 5,
+     "y0": 6,
+     "x1": 13,
+     "y1": 10
+    },
+    "old_b": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 56,
+     "y0": 6,
+     "x1": 61,
+     "y1": 10
+    },
+    "odell": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 6,
+     "y0": 25,
+     "x1": 14,
+     "y1": 28
+    },
+    "wickshop": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 42,
+     "y0": 25,
+     "x1": 50,
+     "y1": 28
+    },
+    "block_0": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 43,
+     "y0": 1,
+     "x1": 48,
+     "y1": 2
+    },
+    "block_1": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 55,
+     "y0": 1,
+     "x1": 61,
+     "y1": 3
+    },
+    "block_2": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 2,
+     "y0": 2,
+     "x1": 3,
+     "y1": 3
+    },
+    "block_3": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 15,
+     "y0": 3,
+     "x1": 20,
+     "y1": 7
+    },
+    "block_4": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 2,
+     "y0": 16,
+     "x1": 8,
+     "y1": 19
+    },
+    "block_5": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 10,
+     "y0": 16,
+     "x1": 15,
+     "y1": 19
+    },
+    "block_6": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 2,
+     "y0": 23,
+     "x1": 4,
+     "y1": 27
+    },
+    "block_7": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 20,
+     "y0": 23,
+     "x1": 26,
+     "y1": 25
+    },
+    "block_8": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 38,
+     "y0": 23,
+     "x1": 41,
+     "y1": 26
+    },
+    "block_9": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 51,
+     "y0": 23,
+     "x1": 54,
+     "y1": 26
+    },
+    "block_10": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 58,
+     "y0": 23,
+     "x1": 62,
+     "y1": 27
+    },
+    "block_11": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 21,
+     "y0": 34,
+     "x1": 27,
+     "y1": 36
+    },
+    "block_12": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 38,
+     "y0": 34,
+     "x1": 45,
+     "y1": 36
+    },
+    "block_13": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 48,
+     "y0": 34,
+     "x1": 54,
+     "y1": 36
+    },
+    "block_14": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 57,
+     "y0": 34,
+     "x1": 62,
+     "y1": 36
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNoooooNNNNNNNNN",
+    "NllllllllllllllllllllllllllllllllllllllllllRRRRRRloooooRRRRRRRlN",
+    "NlRRlllllllllllllllllllllllllllllllllllllllRRRRRRloooooRRRRRRRlN",
+    "NlRRlllllllllllRRRRRRllllllllllllllllllllllHHHHHHloooooRRRRRRRlN",
+    "NlHHlllllllllllRRRRRRlRRRRRRRRRRRRRRRRRRRRRllllllloooooHHHHHHHlN",
+    "NllllllllllllllRRRRRRlRRRRRRRRRRRRRRRRRRRRRllllooooooolllllllllN",
+    "NllllRRRRRRRRRlRRRRRRlRRRRRRRRRRRRRRRRRRRRRllllooooooollRRRRRRlN",
+    "NllllRRRRRRRRRlRRRRRRlRRRRRRRRRRRRRRRRRRRRRllllooooooollRRRRRRlN",
+    "NllllRRRRRRRRRlHHHHHHlRRRRRRRRRRRRRRRRRRRRRllllooooooollRRRRRRlN",
+    "NllllRRRRRRRRRlHHHHHHlRRRRRRRRRRRRRRRRRRRRRloooooollllllRRRRRRlN",
+    "NllllRRRRRRRRRllllllllRRRRRRRRRRRRRRRRRRRRRloooooollllllRRRRRRlN",
+    "NllllHHHHHHHHHllllllllRRRRRRRRRRRRRRRRRRRRRloooooollllllHHHHHHlN",
+    "NllllHHHHHHHHHllllllllHHHHHHHHHHHHHHHHHHHHHloooooollllllHHHHHHlN",
+    "NlloooooooooooooooooooHHHHHHHHHHHHHHHHHHHHHloooooolllllooooooooN",
+    "NlloooooooooooooooooooHHHHHHHHHHHHHHHHHHHHHloooooolllllooooooooN",
+    "NllooooooooooooooooooooooooooooooooooooooooooooooolllllooooooooN",
+    "NlRRRRRRRlRRRRRRoooooooooooooooooooooooooooooooooolllllooooooooN",
+    "NlRRRRRRRlRRRRRRoooooooooooooooooooooooooooooooooolllllooooooooN",
+    "NlRRRRRRRlRRRRRRlooolllooooooooooooooooooooooooooooooooooooooooo",
+    "NlRRRRRRRlRRRRRRlooolllooooooooooooooooooooooooooooooooooooooooo",
+    "NlHHHHHHHlHHHHHHlooolllooooooooooooooooooooooooooooooooooooooooo",
+    "NlHHHHHHHlHHHHHHlooolllooooooooooooooooooooooooooooooooooooooooo",
+    "Nllllllllllllllllooolllooooooooooooooooooooooooooooooooooooooooo",
+    "NlRRRlllllllllllloooRRRRRRRoooooooooooRRRRlllllllllRRRRoooRRRRRN",
+    "NlRRRlllllllllllloooRRRRRRRoooooooooooRRRRlllllllllRRRRoooRRRRRN",
+    "NlRRRlRRRRRRRRRlloooRRRRRRRoooooooooooRRRRRRRRRRRRRRRRRoooRRRRRN",
+    "NlRRRlRRRRRRRRRlloooHHHHHHHoooooooooooRRRRRRRRRRRRRRRRRoooRRRRRN",
+    "NlRRRlRRRRRRRRRlloooooooooooooooooooooHHHHRRRRRRRRRHHHHoooRRRRRN",
+    "NlHHHlRRRRRRRRRlloooooooooooooooooooooHHHHRRRRRRRRRHHHHoooHHHHHN",
+    "NlHHHlHHHHHHHHHllooooooooooooooooooooollllHHHHHHHHHlllloooHHHHHN",
+    "NlllllHHHHHHHHHllooolllllllooooooooooollllHHHHHHHHHllllooolllllN",
+    "NllloooooooooooooooolllllllllloooooooooooooooooooooooooooolllllN",
+    "NllloooooooooooooooolllllllllloooooooooooooooooooooooooooolllllN",
+    "NllloooooooooooooooolllllllllloooooooooooooooooooooooooooolllllN",
+    "NllllllllwwwwwwwwllllRRRRRRRl&&&&&&&llRRRRRRRRllRRRRRRRllRRRRRRN",
+    "NllllllllwwwwwwwwllllRRRRRRRl&&&&&&&llRRRRRRRRllRRRRRRRllRRRRRRN",
+    "NllllllllwwwwwwwwllllRRRRRRRl&&&&&&&llRRRRRRRRllRRRRRRRllRRRRRRN",
+    "NllllllllwwwwwwwwllllHHHHHHHl&&&&&&&llHHHHHHHHllHHHHHHHllHHHHHHN",
+    "NllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_hall",
+     "x": 32,
+     "y": 15,
+     "need": "story.bg_no_room",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "door",
+     "id": "bg_old_a",
+     "x": 9,
+     "y": 13,
+     "need": "story.bg_no_room"
+    },
+    {
+     "kind": "door",
+     "id": "bg_old_b",
+     "x": 59,
+     "y": 13,
+     "need": "story.bg_no_room"
+    },
+    {
+     "kind": "door",
+     "id": "bg_odell",
+     "x": 10,
+     "y": 31,
+     "need": "story.bg_no_room",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "door",
+     "id": "bg_wickshop",
+     "x": 46,
+     "y": 31,
+     "need": "story.bg_no_room",
+     "deny": "Closed. Lanterns are free at the Plaza now."
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_0",
+     "x": 63,
+     "y": 18,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 18,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_1",
+     "x": 63,
+     "y": 19,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 19,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_2",
+     "x": 63,
+     "y": 20,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 20,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_3",
+     "x": 63,
+     "y": 21,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 21,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_4",
+     "x": 63,
+     "y": 22,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 22,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_0",
+     "x": 50,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 21,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_1",
+     "x": 51,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 22,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_2",
+     "x": 52,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 23,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_3",
+     "x": 53,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 24,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_4",
+     "x": 54,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 25,
+     "facing": "right"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg3_e",
+     "x": 62,
+     "y": 22,
+     "sprite": "signpost",
+     "text": "OLD WICK · This way: GATE PLAZA."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg3_n",
+     "x": 54,
+     "y": 1,
+     "sprite": "signpost",
+     "text": "OLD WICK · This way: THE CAMPUS."
+    }
+   ]
+  },
+  "bg_partner": {
+   "name": "Brightgate",
+   "district": "PARTNER ROW",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 48,
+   "h": 48,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 1,
+    "y": 32
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "home_a": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 3,
+     "x1": 9,
+     "y1": 5
+    },
+    "home_b": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 12,
+     "x1": 9,
+     "y1": 14
+    },
+    "home_c": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 21,
+     "x1": 9,
+     "y1": 23
+    },
+    "home_d": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 11,
+     "y0": 3,
+     "x1": 17,
+     "y1": 5
+    },
+    "home_e": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 11,
+     "y0": 12,
+     "x1": 17,
+     "y1": 14
+    },
+    "home_f": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 11,
+     "y0": 21,
+     "x1": 17,
+     "y1": 23
+    },
+    "home_g": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 30,
+     "y0": 3,
+     "x1": 36,
+     "y1": 5
+    },
+    "home_h": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 30,
+     "y0": 12,
+     "x1": 36,
+     "y1": 14
+    },
+    "home_i": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 38,
+     "y0": 3,
+     "x1": 44,
+     "y1": 5
+    },
+    "home_j": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 38,
+     "y0": 12,
+     "x1": 44,
+     "y1": 14
+    },
+    "academy": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 29,
+     "y0": 23,
+     "x1": 44,
+     "y1": 26
+    },
+    "showhome": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 31,
+     "y0": 37,
+     "x1": 43,
+     "y1": 41
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNILLLINNNNNNNNNNNNNNNNNNNNNN",
+    "NllllllllllllllllllIIILLLIIIlllllllllllllllllllN",
+    "NllllllllllllllllllIIILLLIIIlllllllllllllllllllN",
+    "NllRRRRRRRlRRRRRRRlIIILLLIIIllRRRRRRRlRRRRRRRllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIllHHHHHHHlHHHHHHHllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIllHHHHHHHlHHHHHHHllN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NllllllllllllllllllIIJLLLJIIlllllllllllllllllllN",
+    "NllllllllllllllllllIIJLLLJIIlllllllllllllllllllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIllHHHHHHHlHHHHHHHllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIllHHHHHHHlHHHHHHHllN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NllllllllllllllllllIIJLLLJIIlllllllllllllllllllN",
+    "NllllllllllllllllllIIJLLLJIIlllllllllllllllllllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIlRRRRRRRRRRRRRRRRllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIlRRRRRRRRRRRRRRRRllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIlRRRRRRRRRRRRRRRRllN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIlRRRRRRRRRRRRRRRRllN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIlHHHHHHHHHHHHHHHHllN",
+    "NllllllllllllllllllIIJLLLJIIlHHHHHHHHHHHHHHHHllN",
+    "NllllllllllllllllllIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "IIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "LLLLLLLLLLLLLLLLLLLIIJLLLJIIIIlllllllllllllllllN",
+    "LLLLLLLLLLLLLLLLLLLIIJLLLJIIIIlllllllllllllllllN",
+    "LLLLLLLLLLLLLLLLLLLIIJLLLJIIIIlllllllllllllllllN",
+    "IIIIIIIIIIIIIIIIIIIIIJLLLJIIIIlllllllllllllllllN",
+    "NlIIIIIIIIIIIIIIIIlIIJLLLJIIIIlllllllllllllllllN",
+    "NllllllllllllllllllIIJLLLJIIIIlllllllllllllllllN",
+    "NllllllllllllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NllllllllllllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlHHHHHHHHHHHHHlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlHHHHHHHHHHHHHlllN",
+    "NllllllllllllllllllIIILLLIIIIIIIIIIIIIIIIIIIIIlN",
+    "NllllllllllllllllllIIILLLIIIIIIIIIIIIIIIIIIIIIlN",
+    "NllllllllllllllllllIIILLLIIIlllllllllllllllllllN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_home_a",
+     "x": 6,
+     "y": 8,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_b",
+     "x": 6,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_c",
+     "x": 6,
+     "y": 26,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_d",
+     "x": 14,
+     "y": 8,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_e",
+     "x": 14,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_f",
+     "x": 14,
+     "y": 26,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_g",
+     "x": 33,
+     "y": 8,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_h",
+     "x": 33,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_i",
+     "x": 41,
+     "y": 8,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_j",
+     "x": 41,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_academy",
+     "x": 36,
+     "y": 29,
+     "need": "story.bg_no_room",
+     "deny": "Term starts soon. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_showhome",
+     "x": 37,
+     "y": 44,
+     "need": "story.bg_no_room"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_0",
+     "x": 0,
+     "y": 30,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 30,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_1",
+     "x": 0,
+     "y": 31,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 31,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_2",
+     "x": 0,
+     "y": 32,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 32,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_3",
+     "x": 0,
+     "y": 33,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 33,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_4",
+     "x": 0,
+     "y": 34,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 34,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_0",
+     "x": 21,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 30,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_1",
+     "x": 22,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 31,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_2",
+     "x": 23,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 32,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_3",
+     "x": 24,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 33,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_4",
+     "x": 25,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 34,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg4_w",
+     "x": 1,
+     "y": 35,
+     "sprite": "signpost",
+     "text": "PARTNER ROW · This way: GATE PLAZA."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg4_n",
+     "x": 26,
+     "y": 1,
+     "sprite": "signpost",
+     "text": "PARTNER ROW · This way: THE LAMP WORKS."
+    }
+   ]
+  },
+  "bg_lantern_in": {
+   "name": "Brightgate Lantern House",
+   "kind": "interior",
+   "outdoor": "brightgate",
+   "door": "bg_lantern",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 14,
+   "h": 14,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 6,
+    "y": 12
+   },
+   "skin": "bg_lantern",
+   "variants": true,
+   "grid": [
+    "#WWW#WWWW#WWW#",
+    "#...#....#...#",
+    "#...#....#...#",
+    "#...#....#...#",
+    "#...#....#...#",
+    "#...#....#...#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "######m#######"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_lantern_mat",
+     "x": 6,
+     "y": 13,
+     "to": "brightgate",
+     "tx": 29,
+     "ty": 34,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_a",
+     "x": 1,
+     "y": 2,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_b",
+     "x": 3,
+     "y": 2,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_c",
+     "x": 10,
+     "y": 2,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_d",
+     "x": 12,
+     "y": 2,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_e",
+     "x": 1,
+     "y": 4,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_f",
+     "x": 3,
+     "y": 4,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_g",
+     "x": 10,
+     "y": 4,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_h",
+     "x": 12,
+     "y": 4,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_i",
+     "x": 1,
+     "y": 6,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_j",
+     "x": 3,
+     "y": 6,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_k",
+     "x": 10,
+     "y": 6,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_l",
+     "x": 12,
+     "y": 6,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_lantern_host",
+     "name": "Lantern Host",
+     "look": "bg_lantern_host",
+     "x": 4,
+     "y": 6,
+     "facing": "down",
+     "still": true
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_clock",
+     "x": 6,
+     "y": 1,
+     "sprite": "clock_face",
+     "name": "a wall clock",
+     "lines": {
+      "else": "[PLACEHOLDER] A wall clock. It ticks."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_bench_9",
+     "x": 11,
+     "y": 9,
+     "sprite": "bench_long",
+     "name": "a bench"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_bench_10",
+     "x": 11,
+     "y": 10,
+     "sprite": "bench_long",
+     "name": "a bench"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_lamp",
+     "x": 2,
+     "y": 11,
+     "sprite": "bg_comfort_lamp",
+     "name": "a Comfort Lamp",
+     "lines": {
+      "else": "The lamp pulses like a slow heartbeat."
+     }
+    },
+    {
+     "kind": "sign",
+     "id": "bg_lantern_note",
+     "x": 1,
+     "y": 12,
+     "sprite": "none",
+     "text": ""
+    }
+   ],
+   "respawnSpot": {
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   }
+  },
+  "bg_store_in": {
+   "name": "Bright Mart",
+   "kind": "interior",
+   "outdoor": "brightgate",
+   "door": "bg_store",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 11,
+   "h": 9,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 5,
+    "y": 7
+   },
+   "skin": "bg_store",
+   "variants": true,
+   "grid": [
+    "###########",
+    "#WWWWWWWWW#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#####m#####"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_store_mat",
+     "x": 5,
+     "y": 8,
+     "to": "brightgate",
+     "tx": 35,
+     "ty": 34,
+     "facing": "down"
+    },
+    {
+     "kind": "npc",
+     "id": "bg_store_clerk",
+     "name": "Bright Mart clerk",
+     "look": "bg_store_clerk",
+     "x": 5,
+     "y": 2,
+     "facing": "down",
+     "still": true,
+     "shopTitle": "BRIGHT MART",
+     "lines": {
+      "else": "[PLACEHOLDER] Welcome to Bright Mart! Everything at partner price."
+     },
+     "shop": [
+      "heal_snack",
+      "hearty_snack",
+      "wake_tonic",
+      "befriend_treat",
+      "energy_sip",
+      "joy_crumb"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_counter_l",
+     "x": 4,
+     "y": 3,
+     "sprite": "stall_counter",
+     "name": "the counter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_counter_r",
+     "x": 6,
+     "y": 3,
+     "sprite": "stall_counter",
+     "name": "the counter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_acorn",
+     "x": 3,
+     "y": 1,
+     "sprite": "acorn_board",
+     "name": "the price board"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_crate_a",
+     "x": 1,
+     "y": 3,
+     "sprite": "bg_lantern_crate",
+     "name": "a crate of lanterns"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_crate_b",
+     "x": 9,
+     "y": 3,
+     "sprite": "bg_lantern_crate",
+     "name": "a crate of lanterns"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_shelf_a",
+     "x": 1,
+     "y": 6,
+     "sprite": "crate_stack",
+     "name": "a shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_shelf_b",
+     "x": 9,
+     "y": 6,
+     "sprite": "crate_stack",
+     "name": "a shelf"
+    }
+   ],
+   "wall": {
+    "windows": [
+     2,
+     8
+    ]
+   }
+  }
+ },
+ "looks": {
+  "bg_lantern_host": {
+   "skin": "3",
+   "hair": "bun",
+   "hairCol": "d",
+   "outfit": "jacket",
+   "outfitCol": "w",
+   "accent": "N"
+  },
+  "bg_store_clerk": {
+   "skin": "2",
+   "hair": "short",
+   "hairCol": "k",
+   "outfit": "apron",
+   "outfitCol": "V",
+   "accent": "w"
+  }
+ },
+ "cast": [
+  {
+   "name": "Lantern Host",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Bright Mart clerk",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  }
+ ],
+ "flags": {
+  "story.reached_brightgate": "set on the first arrival on Gate Plaza (beat sheet §9; ?debug=1 places in this build)"
+ }
+}

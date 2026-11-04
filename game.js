@@ -3874,6 +3874,9 @@ if (MD.interiors && MD.interiors.dialog) {
 // Map-pass overlays (handoff/maps): data/detail_*.json, ours, one file per batch, so the verbatim design copies stay untouched.
 // Each may carry `tiles` (new map chars only, never a redefinition) and a `slicePatch`, applied after every other patch.
 const DETAIL_KEYS = Object.keys(MD).filter(k => k.startsWith('detail_')).sort();
+// BRIGHTGATE_LAYOUT: an overlay may add reputation cast entries (`cast`); a name the cast already has keeps its entry.
+if (MD.reputation && Array.isArray(MD.reputation.cast)) for (const k of DETAIL_KEYS) for (const e of MD[k].cast || [])
+  if (e && e.name && !MD.reputation.cast.some(c => c && c.name === e.name)) MD.reputation.cast.push(Object.assign({}, e));
 const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles, (MD.cobblecrest && MD.cobblecrest.tiles) || {}, (MD.cobblecrest && MD.cobblecrest.roomTiles) || {}, (MD.highcharity && MD.highcharity.tiles) || {},
   ...DETAIL_KEYS.map(k => MD[k].tiles || {}));
 function applyMapPatch(W, patch){
@@ -4784,6 +4787,7 @@ function trackFor(map){
   }
   if (!map) return null;
   if (map.music && PPSound.musicIds().includes(map.music)) return map.music;
+  if (map.music === 'sweet') return 'town_glimmer';   // BRIGHTGATE_LAYOUT: SCENE_MUSIC's `sweet` is a data ask until its slice lands
   if (map.id === 'cobble_quarry') return 'quarry';
   if (map.dream) return 'dream';
   if (map.backdrop === 'grove') return 'grove';
@@ -7251,7 +7255,7 @@ function arriveAt(at){
   }
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null; walk.hop = false;
-  resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
+  resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; if (CUR.id === 'brightgate') S.flags['story.reached_brightgate'] = true; bump.talked = null; markMapSeen();
   placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); humOnArrive(); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
   try { syncPlaceYield(true); } catch (e) {}
@@ -7350,6 +7354,7 @@ function factionOfMap(id){
   if (id === 'bw_depot_in') return 'glimmer';                               // BRINEWICK (B6): a Keepers harbour with a Glimmerwell depot
   if (id === 'brinewick' || id.indexOf('bw_') === 0) return 'keepers';
   if (id === 'highcharity' || id.indexOf('hc_') === 0) return 'keepers';   // the capital wears the same gold and green as Hearthmoor
+  if (id === 'brightgate' || id.indexOf('bg_') === 0) return 'glimmer';    // BRIGHTGATE_LAYOUT D1496: the company's city; no hold flips it here
   if (id === 'hearthmoor' || id.indexOf('hm_') === 0 || id === 'fernbrook' || id === 'route1' || id === 'route2') return 'keepers';
   return null;
 }
@@ -7357,7 +7362,8 @@ function factionOfMap(id){
 // along the wall), trim (a PAL key) and shape ('gable', 'steep', 'point', 'dome', 'arch', 'drum', 'flat' or 'stepped', plus any of
 // '+chimney', '+mast', '+bell', '+clock', '+bunting', '+emblem', '+slit'). An entry with none of these draws exactly as before.
 // Each styled building is painted once per map and faction, then cut into 16x16 cells that replace its R and H tiles.
-const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPpt', bldCache = new Map(), BLD_CAP = 3;
+// BRIGHTGATE_LAYOUT: l (mown lawn), I (panel paving) and o (cobbles) show behind a cut roof too, so no grass with mint shows there (D2000).
+const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPptlIo', bldCache = new Map(), BLD_CAP = 3;
 const bldKey = (x, y) => y * 4096 + x;
 function buildingsOf(m){
   const out = [], at = (x, y) => (m.grid[y] && m.grid[y][x]) || '';
@@ -9955,7 +9961,7 @@ async function execStep(st){
     // DAY1_TRIAL1_FLOW (D1154): ["take", id, n] uses up n of an item (the wick goes on Amos's lamp). Nothing happens if it is not held.
     case 'take': { const n = Math.min(itemCount(a), Math.max(1, b | 0)); if (n > 0) pend(() => { S.bag[a] = Math.max(0, (S.bag[a] | 0) - n); if (!S.bag[a]) delete S.bag[a]; }); return; }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
-    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity' || r === 'brinewick') S.world.respawn = r; }); return; }
+    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity' || r === 'brinewick' || r === 'brightgate') S.world.respawn = r; }); return; }
     case 'play': {
       sc.skip = false;
       $('#ovScene').hidden = true;
@@ -11505,7 +11511,7 @@ function closeBattle(){
 // free only at 0 Acorns; a holder with fewer pays what they have. A party with nothing to restore pays nothing. Home naps stay free.
 const LANTERN_REST_COST = 5;
 const lanternRestNeeded = () => !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow) || Math.round(p.energy) < 100));
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1, bg_lantern_in: 1 };
 // BED_TUCK (Vincent, Nov 3, 2026): every Lantern House rest, the first one included, is shown, not told. The holder walks the
 // partner over to a bed, tucks it in, it sleeps (eyes shut, a "z"), wakes with a heart, and hops back out, healed. The bed is
 // the nearest one this holder can stand beside (a prop whose line is `@lantern_rest`). Runtime only; nothing is saved.
@@ -11632,9 +11638,11 @@ function blockLanternExit(){
   mark('fernbrook', 'fb_lantern_sign');
   mark('highcharity', 'hc_lantern_sign');
   mark('brinewick', 'bw_lantern_sign');   // BRINEWICK
+  mark('brightgate', 'bg_lantern_sign');   // BRIGHTGATE_LAYOUT §9 (rule 10)
+  put('bg_lantern_in', 'bg_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns, or what you have."');   // §7: the note as everywhere
 })();
 // Lantern House guides (D617, D618). One additive flag. The cost in the first line is LANTERN_REST_COST.
-const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1, bw_lantern_host: 1 };
+const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1, bw_lantern_host: 1, bg_lantern_host: 1 };
 const LANTERN_GUIDE_G2 = 'Lose a battle and you wake at the closest Lantern House. Tap me any time to hear this again.';
 function lanternCostLine(){
   return 'Welcome in. Talk to a bed and your whole team rests and heals, for ' + LANTERN_REST_COST + ' Acorns, or what you have.';
@@ -11676,6 +11684,7 @@ const TOWN_DOOR_ART = {
   hm_lantern: 'heal_lantern', cc_lantern: 'heal_lantern', fb_lantern: 'heal_lantern', hc_lantern: 'heal_lantern',
   hm_store: 'acorn_board',
   bw_lantern: 'heal_lantern', bw_store: 'acorn_board',   // BRINEWICK: the Lantern House and the Chandlery read like every other town's
+  bg_lantern: 'heal_lantern', bg_store: 'acorn_board',   // BRIGHTGATE_LAYOUT §3.5, §9 (D1490, D2001): rule 10 in a Glimmerwell city
 };
 const TOWN_STALL_ART = {
   cobblecrest: [['dottie', 'acorn_board']],
@@ -11706,8 +11715,9 @@ const LANTERN_NEAR = {
   fb_heights: [['fernbrook']],
   route3: [['cobblecrest', 'brinewick']],   // BRINEWICK: Route 3 runs from Cobblecrest's east gate down to the harbour
   brinewick: [['brinewick']],
+  brightgate: [['brightgate']],   // BRIGHTGATE_LAYOUT: every bg_ chunk is the brightgate node (REGION_MAP.interiors)
 };
-const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1, brinewick: 1 };
+const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1, brinewick: 1, brightgate: 1 };
 function respawnTown(){
   const cur = nodeOf(S.world.map);
   const tiers = (cur && LANTERN_NEAR[cur]) || [];
@@ -12606,7 +12616,10 @@ const REGION_MAP = {
     kilnmouth:     { sheet: 'north', kind: 'town', col: 8, row: 6, label: 'KILNMOUTH', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', nameWhen: ['story.km_assigned'],
       coach: { path: [[8, 6], [7, 8], [8, 10], [9, 11]], when: ['story.km_council'] }, hold: [{ id: 'wild' }] },
     km_road:       { sheet: 'north', kind: 'route', col: 9, row: 9, label: 'CLAYBANK ROAD', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', path: [[9, 11], [9, 9], [8, 6]], hold: [{ id: 'wild' }] },
-    brightgate:    { sheet: 'north', kind: 'town', col: 15, row: 5, label: 'BRIGHTGATE', labelAt: 'below', blurb: 'PLACEHOLDER (Brightgate packet)', hold: [{ id: 'wild' }] },
+    // BRIGHTGATE_LAYOUT §5.1, §9 (D1481): built, but no route or coach reaches it yet, so it stays ??? and grey until a save has
+    // been there (story.reached_brightgate; ?debug=1 places in this build). Blurb and hold line PLACEHOLDER (Story).
+    brightgate:    { sheet: 'north', kind: 'town', col: 15, row: 5, label: 'BRIGHTGATE', labelAt: 'below', blurb: "Glimmerwell's city. Brightgate HQ.",
+      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the city. Have a bright day!' }] },
   },
   // ROUTE_TO_GOVERNOR §4 (D1851): two sheets. The seam is column 9 on both; the markers are drawn, not tapped (no 44 px box
   // fits between the labels), and two buttons under the canvas switch sheets. NORTH shows once the holder has seen the fork.
@@ -12621,7 +12634,7 @@ const REGION_MAP = {
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'], route4: ['story.reached_route4'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'], brightgate: ['story.reached_brightgate'], route4: ['story.reached_route4'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', hm_store: 'hearthmoor', hm_wardrobe: 'hearthmoor', hm_diner: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook', fbh_press_in: 'fernbrook', fbh_picker_in: 'fernbrook', fbh_stitch_in: 'fernbrook',   // FERNBROOK_HOMES
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
@@ -12632,7 +12645,9 @@ const REGION_MAP = {
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
     bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick',
-    route4_reeds: 'route4', route4_withy: 'route4' },   // ROUTE_TO_GOVERNOR: the river road and the withy beds are Route 4
+    route4_reeds: 'route4', route4_withy: 'route4',   // ROUTE_TO_GOVERNOR: the river road and the withy beds are Route 4
+    bg_campus: 'brightgate', bg_works: 'brightgate', bg_oldtown: 'brightgate', bg_partner: 'brightgate', bg_lantern_in: 'brightgate',   // BRIGHTGATE_LAYOUT §9: one node
+    bg_store_in: 'brightgate', bg_hq_lobby: 'brightgate', bg_review_in: 'brightgate', bg_gala_in: 'brightgate', bg_hall_in: 'brightgate' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -13084,7 +13099,8 @@ const ML_SECTION = {
 };
 const ML_CHIPS = { hm_flats_lobby: 'LOBBY', hm_flats_5: '5B', sm_yard: 'YARD', sm_tunnel: 'TUNNEL', sm_hold: 'HOLD', sm_den: 'DEN' };
 const ML_LABEL = { hc_gym_in: 'DOJO' };
-const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K', y: 't', h: 'm', l: 'g' };   // y h l: ROUTE_TO_GOVERNOR's reeds, drystone wall, mown lawn
+const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K', y: 't', h: 'm', l: 'g',   // y h l: ROUTE_TO_GOVERNOR's reeds, drystone wall, mown lawn
+  I: 'w', L: 'h', x: 'w', J: 'N', b: 'V', o: 'A', d: 'm', O: 'F', G: 'N', V: 'N', N: 'J', '&': 'g' };   // BRIGHTGATE_LAYOUT's paving, lane, crossing, kerb, bay, cobbles, setts, rail, fence, pad, hedge, flowerbed
 const mapLayers = { ready: false, byId: {}, byFloor: {} };
 let regionBackdropImg = null;
 let mapPinSig = '';
@@ -18359,6 +18375,16 @@ const DEBUG_EXTRAS = {
     a2_met: { place: 'Act 2 met, ledger told', text: 'Ilse hears how it went.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up',
       flags: A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.gov_told=told', 'story.shift_g']) },
   });
+  // BRIGHTGATE_LAYOUT §9 (D1481, D2008): three ?debug=1 places on Gate Plaza's arrival, the only way in until the Act 2 route or
+  // coach link exists. A Keeper guest in Act 2; an unswitched Keeper with an open offer in Act 3; a switcher (story.switched_a3).
+  const BG = A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned']);
+  const BG_AT = { map: 'brightgate', x: 32, y: 36, facing: 'up' };   // debugStand lands one tile south: the arrival 32,37, facing north
+  Object.assign(DEBUG_EXTRAS, {
+    bg_keeper: Object.assign({ place: 'Brightgate (Act 2, Keeper)', text: 'A guest in the company town.', flags: BG.concat(['story.act=2']) }, BG_AT),
+    bg_offer: Object.assign({ place: 'Brightgate (Act 3, open offer)', text: "Rook's guest, floor 2 only.", flags: BG.concat(['story.act=3', 'story.a3_offer']) }, BG_AT),
+    bg_switched: Object.assign({ place: 'Brightgate (Act 3, switched)', text: 'Staff: the lanyard gate opens.',
+      flags: BG.concat(['story.act=3', 'story.side=glimmer', 'story.switched_a3']) }, BG_AT),
+  });
 }
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
 if (HC_V2_ON) {
@@ -20178,6 +20204,7 @@ function boot(){
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk, auditTaps: () => auditTapReport(),
     care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
+    viewTiles: () => { const c = $('#mapCanvas'); return c ? { x: walk.cam.x / TS, y: walk.cam.y / TS, w: c.width / TS, h: c.height / TS } : null; },   // BRIGHTGATE_LAYOUT §3.5: the arrival frame, read-only
     tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab floor keeps its old tile name.
       const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
       const sk = CUR.skin && SKINS[CUR.skin];

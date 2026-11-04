@@ -2,6 +2,19 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 02:25 ET: Build: Brightgate, slice 1: the city's five districts, the Lantern House and Bright Mart (BRIGHTGATE_LAYOUT v0.2; D1478-D1499, D2000-D2009)
+- What changed and why:
+  - Vincent settled BRIGHTGATE_LAYOUT v0.2 and approved its previews (rule 9). `tools/build_brightgate.py` reads the packet's layout json (private, never copied whole) and writes `data/detail_zzzzz_brightgate.json`: Gate Plaza (`brightgate`), the Campus (`bg_campus`), the Lamp Works (`bg_works`), Old Wick (`bg_oldtown`) and Partner Row (`bg_partner`), 13,568 tiles, every building on the roof kit, the paired five-wide mouths, every door with its room or its shut line, district signposts.
+  - Rule 10: the Lantern House (the plaza's one old house, terracotta over cream) and Bright Mart (awning) either side of the Promise Walk, the heart lantern on 28,33 and the acorn board on 36,33, both in the arrival frame at 390 and 320. Their rooms: `bg_lantern_in` (12 beds in two alcoves, the host at 4,6, the clock, respawn 6,11) and `bg_store_in`.
+  - Ten new map tiles and Old Wick's roof and wall, PAL only; lawns use Route 4's mown lawn; no mint anywhere (D2000): the city's edge is a clipped hedge, and the Comfort Lamp and hedge planter get honey copies.
+  - `factionOfMap` reads Glimmerwell for every Brightgate id (D1496); the region node on the north sheet stays ??? and grey until a save has been there; three `?debug=1` places. No route or coach leads in yet.
+  - Battle scenes for the five districts and two rooms (BATTLE_BACKDROPS_ACT2 v0.1.1 recipes).
+- Files touched: `tools/build_brightgate.py` (new), `data/detail_zzzzz_brightgate.json` (new), `data/mapdata.js`, `game.js`, `sprites.js`, `battle_bg.js`, `quests.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/brightgate.spec.js` (new), `tests/interior_walls.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `handoff/shots/brightgate/`.
+- Commit(s) + build id: claude/brightgate slice 1, build 20261104-0224.
+- Tests run and result (widths, checks): brightgate 23/23 (320, 375, 390); battle_backdrops, data_integrity, interior_walls, town_landmarks, route_to_governor, standing, lantern_rest, faction_music pass (results in the PR).
+- Decisions made (colour + reasoning): as settled. Engine notes (green): an overlay may add reputation `cast`; `l`, `I` and `o` show behind a cut roof; a `sweet` music ask falls back to `town_glimmer`; the read-only debug `viewTiles()`.
+- Anything left unfinished: the HQ lobby and lanyard gate, the review floor and the gala (slice 2); the fleet, people, hooks and the city's tells (slice 3); Hall 4 (slice 4). The way in waits on the Act 2 route or a coach link.
+
 ## 2026-11-04 00:12 ET: Build: Route 4, the walk to the Governor, and four new Walklings (ROUTE_TO_GOVERNOR v0.1.1, D1850-D1876; ACT2_PACING D1880, D1881; KILNMOUTH §4.4)
 - What changed and why:
   - Vincent settled ROUTE_TO_GOVERNOR and the Act 2 pacing calls (Wed Nov 4, 2026): the first trip to the Governor is on foot (D1881). `data/detail_zzzz_route4.json` adds Route 4 (`route4`, the walled downs to the fork), the river road (`route4_reeds`, downstream to the Charter Hill gate) and the pocket `route4_withy`; the fold at the fork is a free rest; three holders Lv 27-29; wild tables Lv 27-30 (pocket 28-31); first sightings for the adder and the heron. Hearthmoor's north-east coach-road gap opens on `story.gov_posted | story.hc_gov_met`.

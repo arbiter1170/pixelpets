@@ -2045,6 +2045,33 @@ function buildTiles(){
     coach_tile: ["CCCCCCCDCCCCCCCD","CwwCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","DDDDDDDDDDDDDDDD","CCCCCCCDCCCCCCCD","CCCCCCCDCwwCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","CCCCCCCDCCCCCCCD","DDDDDDDDDDDDDDDD"],
     rug_coach: ["BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBGBBGBBBBBB","BBBBBGBBBBGBBBBB","BBBBGBBBBBBGBBBB","BBBBGBBBBBBGBBBB","BBBBBGBBBBGBBBBB","BBBBBBGBBGBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB"],
   };
+  // BRIGHTGATE_LAYOUT §7 palette ledger: one floor per room, no new PAL keys. The Lantern House's warm planks are the city's
+  // one scuffed floor; Bright Mart's grey panels; the HQ lobby's polished soot-grey gloss; floor 2's light slate panels; the gala's
+  // soot gloss with a honey inlay; Hall 4's navy storm stone. Mats in each room's own pair. PLACEHOLDER art until Pia's pass.
+  T.floor_bg_plank = woodFloor('G', 'F', [0, 5, 10, 15], [[3, 1], [11, 6], [6, 11]], [[8, 3, 'A'], [2, 8, 'C']]);
+  T.floor_bg_plank_b = woodFloor('G', 'F', [1, 6, 11], [[7, 2], [13, 8]], [[4, 4, 'A'], [9, 9, 'A'], [10, 10, 'A'], [14, 13, 'C']]);
+  T.floor_bg_plank_c = woodFloor('G', 'F', [0, 6, 12], [[5, 1], [1, 8], [12, 10]], [[6, 7, 'F'], [7, 7, 'F'], [11, 3, 'A']]);
+  T.floor_bg_panel = shopFloor('h', null);
+  T.floor_bg_panel_b = shopFloor('h', 'y');
+  T.floor_bg_panel_c = shopFloor('w', null);
+  T.floor_bg_gloss = stoneFloor('d', 'N', [[3, 3, 'm'], [4, 4, 'm'], [11, 11, 'm']], null);
+  T.floor_bg_gloss_b = stoneFloor('d', 'N', [[10, 2, 'm'], [11, 3, 'm'], [2, 12, 'h']], null);
+  T.floor_bg_gloss_c = stoneFloor('d', 'N', [[6, 9, 'm'], [7, 10, 'm']], [9, 12, 3]);
+  T.floor_bg_review = stoneFloor('m', 'h', [[4, 3, 'K'], [12, 10, 'K']], null);
+  T.floor_bg_review_b = stoneFloor('m', 'h', [[9, 5, 'K']], [2, 12, 4]);
+  T.floor_bg_review_c = stoneFloor('m', 'K', [[3, 11, 'h']], null);
+  T.floor_bg_gala = parquetFloor('N', 'd', 'y');
+  T.floor_bg_gala_b = parquetFloor('d', 'N', 'y');
+  T.floor_bg_gala_c = parquetFloor('N', 'N', 'y');
+  T.floor_bg_storm = stoneFloor('n', 'd', [[3, 4, 'b'], [12, 11, 'm']], null);
+  T.floor_bg_storm_b = stoneFloor('n', 'd', [[9, 3, 'y'], [2, 12, 'b']], [5, 10, 4]);
+  T.floor_bg_storm_c = stoneFloor('n', 'm', [[6, 6, 'b']], null);
+  T.mat_bg_lantern = doormat('F', 'V');
+  T.mat_bg_store = doormat('N', 'h');
+  T.mat_bg_lobby = doormat('N', 'V');
+  T.mat_bg_review = doormat('d', 'h');
+  T.mat_bg_gala = doormat('V', 'y');
+  T.mat_bg_storm = doormat('d', 'y');
   for (const [k, rows] of Object.entries(ART_PASS_TILES)) T[k] = mkTile(g => paintGrid(g, rows));
   // LANTERN_HOUSE_FERNBROOK draft tiles (oak parquet, wire plinth, cable run) live with the other room tiles, so the skin
   // check (maps_b8) finds them here; addCrackdownArt only fills a name that is still missing.
@@ -2122,6 +2149,11 @@ const HOUSE_SKINS = {
   bw_store: hcSkin('floor_tarboard', 'wall_chandler', 'mat_chandler', { wall: wallRow('mhdhKFFdFcsF') }),
   bw_hall: hcSkin('floor_ferrydeck', 'wall_ferry', 'mat_ferry', { decal: { q: 'deck_lane' }, walk: { q: 1 }, wall: wallRow('ncdwhrrdnswn') }),
   bw_depot: hcSkin('floor_sealed', 'wall_depot', 'mat_depot', { decal: { q: 'depot_line' }, walk: { q: 1 }, wall: wallRow('dmdmdVVddswV') }),
+  // BRIGHTGATE_LAYOUT §7 (rule 9 previews approved, D2000-D2009): each room its own wall row and floor; Glimmerwell rooms inside
+  // the Glimmerwell set (soot, wine, white, grey, slate, honey marks), Hall 4 neutral. The Lantern House is the old cream house
+  // with a wine band at the wainscot and a soot plinth (D1490, D2009). The lobby, review floor, gala and Hall 4 skins land with their rooms.
+  bg_lantern: hcSkin('floor_bg_plank', 'wall_cream', 'mat_bg_lantern', { wall: wallRow('FCGCAVNFGcwF') }),
+  bg_store: hcSkin('floor_bg_panel', 'wall_vault', 'mat_bg_store', { wall: wallRow('mwhwhyNdmcsh') }),
   // HIGH_CHARITY_LAYOUT §7 palette ledger (rule 9 previews pending). Existing tile families only; each wall+floor pair is new.
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
   obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_dusk', m:'mat_dusk' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: floorFixVar('floor_dusk'), wall: wallRow('FGdGFyFFynsF') },
@@ -3612,6 +3644,33 @@ const ROUTE4_ART = {
     withy_bundle: ["................", "................", "................", ".....o.y.o......", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "...gooyoyoog....", "................"],
   },
 };
+// BRIGHTGATE_LAYOUT v0.2 (design specs/BRIGHTGATE_LAYOUT.md §3.3, §9, §10 B01-B08, B37-B39; D2000 no mint): the city's new
+// tiles by map char (I panel paving, L glide lane, x crossing, J planter kerb, b Cruiser stand bay, o Old Wick cobbles,
+// d Lamp Works setts, O rail on setts, G company fence, V Concierge pad, N the clipped hedge at the city's edge, & a company
+// flowerbed; lawns use Route 4's mown lawn `l`, which has no mint pixel) and Bright Mart's awning and lantern crate.
+// PAL keys only, drawn from the packet's descriptions; no mint `l` anywhere. PLACEHOLDER art until Pia's pass.
+const BRIGHTGATE_ART = {
+    tiles: {
+      I: ["wwwwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "wwhwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "wwwwwwwhwwwwwwww", "hhhhhhhhhhhhhhhh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwhwwwwh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwwwwwwh", "wwwhwwwwwwwwwwwh", "hhhhhhhhhhhhhhhh"],
+      L: ["mmmmmmmmmmmmmmmm", "mhhhhhhhmhhhhhhh", "mhhhhhhhmhhhhhhh", "mhhhhhhhmhhhhhhh", "mmmmmmmmmmmmmmmm", "hhhhmhhhhhhhmhhh", "hhhhmhhhhhhhmhhh", "hhwwmhwwhhwwmhww", "mmwwmmwwmmwwmmww", "mhhhhhhhmhhhhhhh", "mhhhhhhhmhhhhhhh", "mhhhhhhhmhhhhhhh", "mmmmmmmmmmmmmmmm", "hhhhmhhhhhhhmhhh", "hhhhmhhhhhhhmhhh", "hhhhmhhhhhhhmhhh"],
+      x: ["mmmmmmmmmmmmmmmm", "mwwwhwwwmwwwhwww", "mwwwhwwwmwwwhwww", "mwwwhwwwmwwwhwww", "mwwwmwwwmwwwmwww", "hwwwmwwwhwwwmwww", "hwwwmwwwhwwwmwww", "hwwwmwwwhwwwmwww", "mwwwmwwwmwwwmwww", "mwwwhwwwmwwwhwww", "mwwwhwwwmwwwhwww", "mwwwhwwwmwwwhwww", "mwwwmwwwmwwwmwww", "hwwwmwwwhwwwmwww", "hwwwmwwwhwwwmwww", "hhhhmhhhhhhhmhhh"],
+      J: ["dddddddddddddddd", "dggggggggggggggd", "dggtggggggggtggd", "dgggggggtggggggd", "dggggtgggggggggd", "dgggggggggtggggd", "dddddddddddddddd", "dddddddddddddddd", "dddddddddddddddd", "dddddddddddddddd", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "VVVVVVVVVVVVVVVV", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "kkkkkkkkkkkkkkkk"],
+      b: ["VVVVVVVVVVVVVVVV", "Vhhhhhhhmhhhhhhh", "Vhhhhhhhmhhhhhhh", "Vhhhhhhhmhhhhhhh", "Vmmmmmmmmmmmmmmm", "Vhhhmhhhhhhhmhhh", "Vhhhmhhhhhhhmhhh", "Vhhhmhhhhhhhmhhh", "Vmhhmmhhmmhhmmhh", "Vhhhhhhhmhhhhhhh", "Vhhhhhhhmhhhhhhh", "Vhhhhhhhmhhhhhhh", "Vmmmmmmmmmmmmmmm", "Vhhhmhhhhhhhmhhh", "Vhhhmhhhhhhhmhhh", "VVVVVVVVVVVVVVVV"],
+      o: ["CAAAABCAAAABCAAA", "AAAAABAAAAABAAAA", "AAAAABAAAAABAAAA", "FFFFFBFFFFFBFFFF", "BBBBBBBBBBBBBBBB", "BBCAAAABCAAAABCA", "BBAAAAABAAAAABAA", "BBAAAAABAAAAABAA", "BBFFFFFBFFFFFBFF", "BBBBBBBBBBBBBBBB", "CAAABCAAAABCAAAA", "AAAABAAAAABAAAAA", "AAAABAAAAABAAAAA", "AAAABAAAAABAAAAA", "FFFFBFFFFFBFFFFF", "BBBBBBBBBBBBBBBB"],
+      d: ["mmmmmmmhmmmmmmmh", "mmmmmmmhmmmmmmmh", "dddddddhdddddddh", "hhhhhhhhhhhhhhhh", "mmmhmmmmmmmhmmmm", "mmmhmmmmmmmhmmmm", "dddhdddddddhdddd", "hhhhhhhhhhhhhhhh", "mmmmmmmhmmmmmmmh", "mmmmmmmhmmmmmmmh", "dddddddhdddddddh", "hhhhhhhhhhhhhhhh", "mmmhmmmmmmmhmmmm", "mmmhmmmmmmmhmmmm", "dddhdddddddhdddd", "hhhhhhhhhhhhhhhh"],
+      O: ["mmmwhmmhmmmwhmmh", "mFFwhFFFFFFwhFFh", "dFFwhFFFFFFwhFFh", "hddwhddddddwhddh", "mmmwhmmmmmmwhmmm", "mmmwhmmmmmmwhmmm", "dFFwhFFFFFFwhFFd", "hFFwhFFFFFFwhFFh", "mddwhddddddwhddh", "mmmwhmmhmmmwhmmh", "dddwhddhdddwhddh", "hFFwhFFFFFFwhFFh", "mFFwhFFFFFFwhFFm", "mddwhddddddwhddm", "dddwhddddddwhddd", "hhhwhhhhhhhwhhhh"],
+      G: ["wwwwwwwhwwwwwwww", "wNNwwwwhNNwwwwNN", "wyNwwwwhyNwwwwyN", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "wNNwwwwhNNwwwwNN", "wNNwwwwhNNwwwwNN", "hNNhhhhhNNhhhhNN", "wNNhwwwwNNwwwwNN", "wNNhwwwwNNwwwwNN", "NNNNNNNNNNNNNNNN", "NNNNNNNNNNNNNNNN", "wNNhwwwwNNwwwwNN", "wNNhwwwwNNwwwwNN", "dddddddddddddddd", "hhhhhhhhhhhhhhhh"],
+      V: ["dddddddddddddddd", "dyNNNNVVVVNNNNNN", "dNNNVVVVVVVVNNNN", "dNNVVNNNNNNVVNNN", "dNVVNNNNNNNNVVNN", "dNVNNNNNNNNNNVNN", "dVVNNNNyyNNNNVVN", "dVVNNNyyyyNNNVVN", "dVVNNNyyyyNNNVVN", "dVVNNNNyyNNNNVVN", "dNVNNNNNNNNNNVNN", "dNVVNNNNNNNNVVNN", "dNNVVNNNNNNVVNNN", "dNNNVVVVVVVVNNNN", "dNNNNNVVVVNNNNyN", "dNNNNNNNNNNNNNNN"],
+      roof_bg_terracotta: ["FBGBBBBBFBGBBBBB", "FBBBBBBBFBBBBBBB", "FBBBBBBBFBBBBBBB", "FFFFFFFFFFFFFFFF", "BBBBFBGBBBBBFBGB", "BBBBFBBBBBBBFBBB", "BBBBFBBBBBBBFBBB", "FFFFFFFFFFFFFFFF", "FBGBBBBBFBGBBBBB", "FBBBBBBBFBBBBBBB", "FBBBBBBBFBBBBBBB", "FFFFFFFFFFFFFFFF", "BBBBFBGBBBBBFBGB", "BBBBFBBBBBBBFBBB", "BBBBFBBBBBBBFBBB", "FFFFFFFFFFFFFFFF"],
+      wall_bg_cream: ["AAAAAAAAAAAAAAAA", "CCCCCACCCCCCCCCC", "CCCCCACCCCCCCCCC", "CCCCCACCCCCCCCCC", "CCCCCACCCCGCCCCC", "CCCCCACCCCCCCCCC", "CCCCCACCCCCCCCCC", "CCCCCACCCCCCCCCC", "AAAAAAAAAAAAAAAA", "CCCCCCCCCCCCACCC", "CCCCCCCCCCCCACCC", "CCCCCCCCCCCCACCC", "CCCGCCCCCCCCACCC", "CCCCCCCCCCCCACCC", "CCCCCCCCCCCCACCC", "FFFFFFFFFFFFFFFF"],
+      N: ["tttttttttttttttt", "tggggggggggggggt", "tggtgggggggggtgt", "tggggggggtgggggt", "tggggggtgggggggt", "tggggggggggggggt", "tgggggggggggtggt", "tggggtgggggggggt", "tgtggggggggggggt", "tggggggggggggggt", "dddddddddddddddd", "tttttttttttttttt", "ttgttttgttttgttt", "tttttttttttttttt", "tttttttttttttttt", "kkkkkkkkkkkkkkkk"],
+      "&": ["NNNNNNNNNNNNNNNN", "NttttttttttttttN", "NttgttttttttgttN", "NttVgtttgtttygtN", "NtttttttwgtttttN", "NttttttttttttttN", "NttttttttttttttN", "NttttgtttttttttN", "NttttVgtttgttttN", "NtttttttttwgtttN", "NttttttttttttttN", "NttgtttgttttgttN", "NttygttwgtttVgtN", "NttttttttttttttN", "NttttttttttttttN", "NNNNNNNNNNNNNNNN"],
+    },
+    art: {
+      bg_awning: ["VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VVwwVVwwVVwwVVww", "VV..VV..VV..VV..", "................", "...NNNNNNNNNN...", "...NwwwsNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NssssNsssN...", "...NNNNNNNNNN...", "...yyyyyyyyyy...", "................"],
+      bg_lantern_crate: ["................", "................", "................", "....VV..VV.VV...", "....ww..ww.ww...", "....yw..yw.yw...", "....ww..ww.ww...", "....NN..NN.NN...", "..FFFFFFFFFFFF..", "..FGGGGGGGGGGF..", "..FGGGGGGGGGGF..", "..FFFFFFFFFFFF..", "..FGGGGGGGGGGF..", "..FGGGGGGGGGGF..", "..FFFFFFFFFFFF..", "................"],
+    },
+};
 function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
@@ -3651,6 +3710,25 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   for (const [k, rows] of Object.entries(ROUTE4_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   for (const [k, rows] of Object.entries(ROUTE4_ART.art)) if (!A[k]) A[k] = paint(rows);
   if (!A.water_trough && T.water_trough) A.water_trough = T.water_trough;
+  // BRIGHTGATE_LAYOUT: the city's tiles by map char and its props; the fleet's panel roof, wall, glass door, window strip and
+  // badge plate (glimmer_fleet.js GW_ART) as plain art, so Brightgate's buildings use them outside the preview lot. None of
+  // those five carries mint; the fleet pieces that do (lamp glass, cruiser lights) are copied mint-free where Brightgate places them.
+  for (const [k, rows] of Object.entries(BRIGHTGATE_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  for (const [k, rows] of Object.entries(BRIGHTGATE_ART.art)) if (!A[k]) A[k] = paint(rows);
+  // The built Comfort Lamp and hedge planter carry mint glass and leaves; Brightgate takes honey copies (D2000: no mint in the city).
+  const noMint = img => { if (!img || !img.width) return null; const c = sheetScratch(img.width, img.height), g = c.getContext('2d');
+    const out = document.createElement('canvas'); out.width = img.width; out.height = img.height; const o = out.getContext('2d');
+    g.clearRect(0, 0, img.width, img.height); g.drawImage(img, 0, 0); const d = g.getImageData(0, 0, img.width, img.height), p = d.data;
+    const L = [1, 3, 5].map(i => parseInt(PAL.l.slice(i, i + 2), 16)), Y = [1, 3, 5].map(i => parseInt(PAL.y.slice(i, i + 2), 16));
+    for (let i = 0; i < p.length; i += 4) if (p[i] === L[0] && p[i + 1] === L[1] && p[i + 2] === L[2]) { p[i] = Y[0]; p[i + 1] = Y[1]; p[i + 2] = Y[2]; }
+    o.putImageData(d, 0, 0); return out; };
+  if (!A.bg_comfort_lamp && A.comfort_lamp) { const f = [].concat(A.comfort_lamp).map(noMint).filter(Boolean); if (f.length) { A.bg_comfort_lamp = f.length > 1 ? f : f[0]; if (A.comfort_lamp.ms) A.bg_comfort_lamp.ms = A.comfort_lamp.ms; } }
+  if (!A.bg_hedge_planter && A.hedge_planter) A.bg_hedge_planter = noMint(A.hedge_planter);
+  if (typeof GW_ART === 'object') {
+    for (const k of ['roof_gw_panel', 'wall_gw_panel']) if (!T[k] && GW_ART[k]) T[k] = paint(GW_ART[k][0]);
+    for (const k of ['door_gw_glass', 'win_strip_gw']) if (!A[k] && GW_ART[k]) A[k] = paint(GW_ART[k][0]);
+    if (!A.bg_badge && GW_ART.gw_badge) A.bg_badge = paint(GW_ART.gw_badge[0].map(r => r.replace(/l/g, 'y')));   // the badge plate, honey for mint (D2000)
+  }
   addCrackdownArt(T, A, paint);   // POST_TRIAL_CRACKDOWN + LANTERN_HOUSE_FERNBROOK draft art
 }
 // E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).
