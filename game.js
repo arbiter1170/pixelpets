@@ -7225,6 +7225,9 @@ function glimmerHallSteps(t, pn){
   if (!S.flags['story.tour1_s1'] || !S.flags['story.tour1_s2'] || !S.flags['story.tour1_s3']) return [['run', 'tour1_wait']];
   return [['run', 'tour1_s4']];
 }
+// D1128: Fen's challenge hint (below this lead level). PLACEHOLDER copy (Story).
+const FEN_HINT_LV = 12;
+const FEN_HINT_LINE = "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first.";
 function placeSteps(dr){
   if (dr.panel === 'lantern') {
     const who = dr.keeper || '';
@@ -7258,6 +7261,9 @@ function placeSteps(dr){
     const steps = [['say', pn.who || 'Master Fen', greet]];
     // F2 follows the greet while the first Seal is still open. The rematch line and the won line stay as they are.
     if (!rematchPending('hall1_fen') && !(S.flags && S.flags['story.seal1'])) steps.push(['say', pn.who || 'Master Fen', 'Win my Seal and your Walklings can grow higher than Lv 15. Roots first, then blossoms.']);
+    // D1128 (Vincent, Nov 3, 2026): a hint at the challenge (not the Hall door) while the lead is below Lv 12. It informs and
+    // never blocks: the choice below is the same. PLACEHOLDER copy for June.
+    if (pet() && levelOf(pet()) < FEN_HINT_LV) steps.push(['say', pn.who || 'Master Fen', FEN_HINT_LINE]);
     steps.push(['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]);
     return steps;
   }
@@ -12392,16 +12398,26 @@ async function knockOut(side, id){
   }
 }
 // Battle XP (§7) for a defeated or befriended foe: every participant that is still able (not Fainted, HP > 0) gets the award.
+// D1128 (Vincent, Nov 3, 2026): every other Walkling in the holder's own party (the bench, worn-out ones too) gets the bench
+// share (benchXpAward, stats.js). Caps hold the overflow as usual, and bench level-ups show at the end like a participant's.
+// Only S.party counts: in co-op the partner's game pays its own party.
 function awardFoe(fi){
-  const B = battle, f = B.foes[fi];
-  for (const pid of B.participants[fi]) {
-    const p = petById(pid); if (!p || isFainted(p) || hpOf(p) <= 0) continue;
-    const r = grantBattleXp(p, battleXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer: B.kind === 'trainer' }), true);
+  const B = battle, f = B.foes[fi], trainer = B.kind === 'trainer', took = B.participants[fi];
+  const note = (pid, r) => {
     if (r.held > 0 && B.heldIds) B.heldIds.add(pid);
     if (r.to > r.from) {
       const old = B.levelUps.find(x => x.id === pid);
       if (old) old.to = r.to; else B.levelUps.push({ id: pid, from: r.from, to: r.to });
     }
+  };
+  for (const pid of took) {
+    const p = petById(pid); if (!p || isFainted(p) || hpOf(p) <= 0) continue;
+    note(pid, grantBattleXp(p, battleXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer }), true));
+  }
+  for (const p of S.party) {
+    if (!p || took.has(p.id) || p.id === B.newId) continue;   // the Walkling just befriended earns nothing for its own capture
+    const n = benchXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer });
+    if (n > 0) note(p.id, grantBattleXp(p, n, true));
   }
 }
 async function endCheck(id){

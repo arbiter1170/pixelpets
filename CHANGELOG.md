@@ -195,6 +195,32 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - The HC_PARADE scene itself (the speech staging, Muster Road closed between two tanks) is not built.
   - The RTDB rules precheck of `npm run test:agent` could not run in this sandbox (see the PR).
 
+## 2026-11-03 08:12 ET: Build: Fen's pacing (D1128): the bench XP share and Fen's challenge hint
+- What changed and why: D1128 is built as Vincent settled it (Nov 3, 8:07 AM ET, from the research).
+  - **Bench XP share.** After each foe is beaten or befriended, every other Walkling in the holder's own party gets half of the XP it would earn at its own level: after the level-gap clamp, rounded down (`STAT_RULES.BENCH_SHARE` 0.5, `benchXpAward` in `stats.js`, `awardFoe` in `game.js`).
+    - Worn-out Walklings get it too.
+    - The Walkling just befriended gets nothing for its own capture.
+    - Caps hold any overflow in the existing `bxHeld`, and bench level-ups show on the end panel.
+    - Only the local party is paid.
+  - **Fen's challenge hint.** While the lead is below Lv 12, Fen's Trial panel adds one line before "Begin the trial?": "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first." It is PLACEHOLDER for June, and it never blocks.
+  - Fen's team (12/13/14) and her 420-Acorn purse are unchanged.
+- Files touched: `stats.js`, `game.js`, `tools/GAMEJS_MAP.txt`, `tests/fen_pacing.spec.js` (new), `tests/maps_b8.spec.js` (Fen's panel now has the hint line before the choice when the lead is below Lv 12), `tests/README.md`, `CHANGELOG.md`, `handoff/shots/fen_pacing_d1128/`, plus the build stamp.
+- Commit(s) + build id: claude/fen-pacing-d1128, build 20261103-1948 (first stamped 20261103-0821; restamped after each catch-up with main: 656ae76, 6844bb7, 9041f0d).
+- Tests run and result (widths, checks):
+  - `tests/fen_pacing.spec.js`: 12 of 12 passed at 320, 375 and 390.
+  - 19 battle, level and Fen suites (level_grow, battle_no_reload, day1_flow, maps_b8, glimmer_fernbrook, match_marker, rematch_party, deploy_held, battle_tips_once, fetch_line, arbiter_units, five_answer, hushwater, brinewick, crash_growup_people, cue_rail, qa_gaps, art_pass): 283 passed, 2 failed.
+    - `maps_b8` Fen panel: fixed here (the hint line), and the re-run passed.
+    - `rematch_party:316`: fails the same way on clean main 8cd1510.
+  - After the main catch-up (656ae76, build 20261103-1032): fen_pacing, maps_b8, day1_flow, level_grow, battle_no_reload, trial_hall_contested, seals_both_paths, glimmer_fernbrook, qa_gaps, deploy_held, battle_tips_once and match_marker at 320, 375 and 390: 173 passed, 0 failed, 20 skipped (width-gated).
+  - After the third catch-up (9041f0d: #290-#302; build 20261103-1948): the same four suites, 36 passed, 0 failed, 4 skipped.
+  - After the second catch-up (6844bb7, #287; build 20261103-1200): fen_pacing, maps_b8, level_grow and battle_no_reload at 320, 375 and 390: 36 passed, 0 failed, 4 skipped (width-gated).
+  - Scans pass.
+- Shots (before = main, after = this branch, at 390 and 320): `handoff/shots/fen_pacing_d1128/` (`compare-390.png`, `compare-320.png`).
+- Decisions made (colour + reasoning): D1128 (red), as settled. No new ids. Save stays `pixelpets.save.v2`, `v` 2, no new field.
+- Anything left unfinished:
+  - Nina's Fen test (one clean run of the new flow, 12 tries at Fen, pass at 6 or more wins). If it fails, Fen drops one level to 11/12/13, and the hint line and its threshold move with her.
+  - GROWTH_PACING's sim re-run (Design).
+
 ## 2026-11-03 3:20 PM ET: B-3: RENDEZVOUS_VINCENT's Act 1 list is unlabelled (D1428), docs only
 - What changed and why: Vincent settled D1428 (default A, Tue Nov 3, 2026): the speech's draft line is dropped. In `handoff/specs/RENDEZVOUS_VINCENT.md` the Keeper shift's sheet is now an unlabelled list of holders with Seals (no "roll" heading, no "call-up", no "muster"), NPC Vincent's "That's mustering." is cut (PLACEHOLDER), and the spec no longer seeds the later speech line (the two "HC_PARADE S2" links are gone). Open question 4 drops "the word draft waits". Ids D1395-D1410 unchanged.
 - Files touched: `handoff/specs/RENDEZVOUS_VINCENT.md`, `CHANGELOG.md`.
