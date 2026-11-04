@@ -133,6 +133,18 @@
   // Nothing writes story.act; a stored one is ignored here (game.js honours it only under ?debug=1). Save stays v2.
   const ACT_FLAGS = Object.freeze(['story.ep1_end', 'story.seal5', 'story.seal7', 'story.skyloom_done', 'story.climb_open', 'story.summit_open']);
   const ACT_SEALS = Object.freeze({ 'story.seal5': 5, 'story.seal7': 7 });
+  // MAHOPAC_DREAMS E1 (D1941): which moment the lens shows in Act 5, first match. Pure; reads flags only, writes nothing.
+  // The loyalist's door (also a loyalist who later switched), the switcher's lanyard, the newest kept report (rpt_6 down to
+  // rpt_1), the first letter told, the enrolment, and the starter morning for any save at all.
+  function lensMoment(flags){
+    const F = flags || {};
+    if (F['story.warden_cut']) return 'cut';
+    if (F['story.switched_a3']) return 'switch';
+    for (let i = 6; i >= 1; i--) if (F['story.rpt_' + i] === 'kept') return 'kept';
+    if (F['story.rpt_1'] === 'told') return 'told';
+    if (F['story.keeper_cadet']) return 'cadet';
+    return 'starter';
+  }
   function actOf(flags, sealsHeld){
     const F = flags || {}, n = Number(sealsHeld) || 0;
     return ACT_FLAGS.filter(k => !!F[k] || (ACT_SEALS[k] != null && n >= ACT_SEALS[k])).length + 1;
@@ -267,7 +279,7 @@
   }
 
   const api = { CFG: STANDING_CFG, SIDES, isSide, clampPts, tierOf, tierInfo, switchCost, chapterOf, canSwitch, fill, devCheck,
-    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf, reportsOpen, loyalistOpen,
+    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf, lensMoment, reportsOpen, loyalistOpen,
     RPT, ENDINGS, pathOf, trustOf, presOptions, ilseCanTurn, endingOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.STANDING_CFG = STANDING_CFG;
