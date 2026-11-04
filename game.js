@@ -12598,10 +12598,30 @@ const REGION_MAP = {
       hold: [{ id: 'split', line: "Keepers walk it. Glimmerwell's crates roll down it." }] },    // BRINEWICK (B6): the harbour at the foot of Route 3. A Keepers town with a Glimmerwell depot on the east pier.
     brinewick:     { kind: 'town',  col: 15, row: 10, label: 'BRINEWICK',   labelAt: 'left', blurb: 'Harbour town. Tide Trial Hall.', path: [[17, 9], [16, 10], [15, 10]],
       hold: [{ id: 'split', line: 'Keepers keep the harbour. Glimmerwell leases the east pier.' }] },
+    // ROUTE_TO_GOVERNOR §4 (D1851, D1852): Route 4 on the built (south) sheet, the coach's line from Hearthmoor to the fork and on.
+    route4:        { kind: 'route', col: 4,  row: 5, label: 'ROUTE 4',     labelAt: 'right', blurb: 'The coach road north. The fork, then the river.', path: [[2, 6], [4, 5], [4, 3], [2, 1]],
+      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
+    // The north sheet, "THE AMBERWILD · NORTH" (D1851). None of these maps is built yet, so each stays ??? and grey (not
+    // reachable); Kilnmouth shows its name once the Governor has named it (story.km_assigned). Labels PLACEHOLDER (D1857).
+    kilnmouth:     { sheet: 'north', kind: 'town', col: 8, row: 6, label: 'KILNMOUTH', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', nameWhen: ['story.km_assigned'],
+      coach: { path: [[8, 6], [7, 8], [8, 10], [9, 11]], when: ['story.km_council'] }, hold: [{ id: 'wild' }] },
+    km_road:       { sheet: 'north', kind: 'route', col: 9, row: 9, label: 'CLAYBANK ROAD', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', path: [[9, 11], [9, 9], [8, 6]], hold: [{ id: 'wild' }] },
+    brightgate:    { sheet: 'north', kind: 'town', col: 15, row: 5, label: 'BRIGHTGATE', labelAt: 'below', blurb: 'PLACEHOLDER (Brightgate packet)', hold: [{ id: 'wild' }] },
+  },
+  // ROUTE_TO_GOVERNOR §4 (D1851): two sheets. The seam is column 9 on both; the markers are drawn, not tapped (no 44 px box
+  // fits between the labels), and two buttons under the canvas switch sheets. NORTH shows once the holder has seen the fork.
+  sheets: { south: { title: 'THE AMBERWILD', button: 'THE AMBERWILD' }, north: { title: 'THE AMBERWILD · NORTH', button: 'NORTH', when: ['story.r4_fork | story.km_assigned'] } },
+  seamCol: 9,
+  marks: {
+    south: [{ id: 'river_r4', kind: 'river', path: [[6, 0], [5, 2], [3, 2], [2, 1]] },
+      { id: 'seam_north', kind: 'seam', col: 9, row: 0, label: 'KILNMOUTH', from: [4, 3], via: [8, 2], when: ['story.r4_fork | story.km_assigned'] }],
+    north: [{ id: 'fog', kind: 'fog', cols: [6, 10], rows: [0, 5] }, { id: 'dry_hill', kind: 'hill', col: 11, row: 4 },
+      { id: 'north_road_stub', kind: 'stub', path: [[8, 6], [8, 2], [8, 0]], when: ['story.act>=3'] },
+      { id: 'seam_south', kind: 'seam', col: 9, row: 11, label: 'THE AMBERWILD' }],
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'], route4: ['story.reached_route4'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', hm_store: 'hearthmoor', hm_wardrobe: 'hearthmoor', hm_diner: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook', fbh_press_in: 'fernbrook', fbh_picker_in: 'fernbrook', fbh_stitch_in: 'fernbrook',   // FERNBROOK_HOMES
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
@@ -12611,7 +12631,8 @@ const REGION_MAP = {
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
-    bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick' },
+    bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick',
+    route4_reeds: 'route4', route4_withy: 'route4' },   // ROUTE_TO_GOVERNOR: the river road and the withy beds are Route 4
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -12624,6 +12645,10 @@ function nodeOf(id){
   if (N[REGION_MAP.interiors[id]]) return REGION_MAP.interiors[id];
   const mat = (m.objs || []).find(o => o.kind === 'warp' && N[o.to]); return mat ? mat.to : null;
 }
+// ROUTE_TO_GOVERNOR §4: a node's sheet (south unless it says north); which sheets this save can open; the sheet on show.
+const nodeSheet = id => ((REGION_MAP.nodes[id] || {}).sheet) || 'south';
+const sheetOpen = k => { const sh = REGION_MAP.sheets[k]; return !!sh && (!sh.when || (!!S && sh.when.every(c => cond(c)))); };
+const onSheet = id => nodeSheet(id) === (mapUI.sheet || 'south');
 function markMapSeen(){ const n = nodeOf(S && S.world && S.world.map); if (!n) return; if (!S.mapSeen || typeof S.mapSeen !== 'object') S.mapSeen = {}; S.mapSeen[n] = 1; }
 function mapVisited(id, cur){
   if (!WORLD[id]) return false;                                   // not built in this build: always ??? (§5, test 8)
@@ -12646,7 +12671,7 @@ function syncMapBtn(){
   if (mb) { const grey = !soon; mb.classList.toggle('off', grey); mb.disabled = grey; mb.setAttribute('aria-disabled', grey ? 'true' : 'false'); }
   const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false');
 }
-const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null };
+const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null, sheet: 'south' };
 let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
 // ACT1_KEEPER_JOIN §7 (D1505, E1): one hold condition read on a flags object, the way cond() reads them: `|` first, then `&`,
 // then `!`; 'k=v' compares a flag's value (story.side=glimmer, D1171); 'k>=n', 'k<=n', 'k>n', 'k<n' compare a number, an unset
@@ -12692,7 +12717,8 @@ const sidesShown = () => !!(S && Object.keys(REGION_MAP.nodes).some(id => mapVis
 function nodePoint(n){ return [n.col * 16 + 8, n.row * 16 + 8]; }
 function nodeGeom(id){
   const n = REGION_MAP.nodes[id]; if (!n) return null;
-  const [x, y] = nodePoint(n), known = mapVisited(id, mapUI.cur), label = known ? n.label : REGION_MAP.unknownLabel;
+  const [x, y] = nodePoint(n), known = mapVisited(id, mapUI.cur), named = !known && !!n.nameWhen && !!S && n.nameWhen.every(c => cond(c));
+  const label = known || named ? n.label : REGION_MAP.unknownLabel;
   const out = n.kind === 'town' ? 22 : 18;                       // clear of the claim halo, the you-ring and the quest ring
   let lx = x, ly = y, align = 'center';
   if (n.labelAt === 'right') { lx = x + out; align = 'left'; }
@@ -12709,7 +12735,9 @@ function paintPlaceCard(){
     name = (room ? outdoor + ' · ' + WORLD[S.world.map].name : outdoor).toUpperCase();
     blurb = REGION_MAP.nodes[id].blurb;
   }
-  $('#mapTitle').textContent = REGION_MAP.title;
+  $('#mapTitle').textContent = (REGION_MAP.sheets[mapUI.sheet || 'south'] || {}).title || REGION_MAP.title;
+  if (!known && geo && geo.label !== REGION_MAP.unknownLabel) name = geo.label;   // named, not reached yet (Kilnmouth)
+  syncSheetButtons();
   $('#mapPlaceName').textContent = name;
   $('#mapPlaceBlurb').textContent = blurb;
   const here = $('#mapHere'); if (here) here.hidden = !(id && id === mapUI.cur);
@@ -12748,6 +12776,7 @@ function openMap(opts){
   if (!mapReady()) { sfx('denied'); return; }
   clearMoves(); markMapSeen();
   mapUI.cur = nodeOf(S.world.map); mapUI.sel = mapUI.cur; mapUI.t0 = performance.now();
+  mapUI.sheet = mapUI.cur ? nodeSheet(mapUI.cur) : 'south';   // the map opens on the current node's sheet
   const indoor = !!(CUR && CUR.kind === 'interior');
   const level = (opts && opts.level) || (indoor ? 'room' : 'town');
   showMapLevel(level, opts && opts.id);
@@ -12763,6 +12792,7 @@ function mapNodeAt(px, py){
   const g = ctx($('#regionCanvas'));
   g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font');
   for (const id in REGION_MAP.nodes) {
+    if (!onSheet(id)) continue;
     const geo = nodeGeom(id); if (!geo) continue;
     const icon = Math.hypot(px - geo.x, py - geo.y);
     g.textAlign = geo.align; const tw = g.measureText(geo.label).width;
@@ -12775,10 +12805,12 @@ function mapNodeAt(px, py){
 }
 function mapNudge(dir){
   if (mapUI.level && mapUI.level !== 'region') { nudgeLayer(dir); return; }
-  const from = REGION_MAP.nodes[mapUI.sel || mapUI.cur]; if (!from) return;
+  const fromId = mapUI.sel && onSheet(mapUI.sel) ? mapUI.sel : (mapUI.cur && onSheet(mapUI.cur) ? mapUI.cur : null);
+  const from = REGION_MAP.nodes[fromId];
+  if (!from) { if (dir === 'up' || dir === 'down') flipSheetFor(dir); return; }
   let best = null, bestD = 1e9;
   for (const id in REGION_MAP.nodes) {
-    if (id === (mapUI.sel || mapUI.cur)) continue;
+    if (id === fromId || !onSheet(id)) continue;
     const n = REGION_MAP.nodes[id], dx = n.col - from.col, dy = n.row - from.row;
     const ok = dir === 'left' ? dx < 0 && Math.abs(dy) <= Math.abs(dx) + 1
       : dir === 'right' ? dx > 0 && Math.abs(dy) <= Math.abs(dx) + 1
@@ -12789,6 +12821,29 @@ function mapNudge(dir){
     if (d < bestD) { bestD = d; best = id; }
   }
   if (best) selectMapNode(best);
+  else if (dir === 'up' || dir === 'down') flipSheetFor(dir);   // "up" from a top-row node turns to the north sheet (and down, back)
+}
+function flipSheetFor(dir){
+  const to = dir === 'up' && (mapUI.sheet || 'south') === 'south' ? 'north' : dir === 'down' && mapUI.sheet === 'north' ? 'south' : null;
+  if (to) setMapSheet(to);
+}
+function setMapSheet(k){
+  if (!REGION_MAP.sheets[k] || !sheetOpen(k) || (mapUI.sheet || 'south') === k) return false;
+  mapUI.sheet = k;
+  mapUI.sel = mapUI.cur && nodeSheet(mapUI.cur) === k ? mapUI.cur : (Object.keys(REGION_MAP.nodes).find(id => nodeSheet(id) === k) || null);
+  if (!mapUI.level || mapUI.level === 'region') paintPlaceCard();
+  sfx('tap'); if (!$('#ovMap').hidden) drawMapOverlay(performance.now());
+  return true;
+}
+// Two buttons under the parchment, at least 44 x 44 px (rule 6), on the region level once the north sheet is open.
+function syncSheetButtons(){
+  const box = $('#mapSheets'); if (!box) return;
+  const show = (!mapUI.level || mapUI.level === 'region') && sheetOpen('north');
+  box.hidden = !show;
+  for (const [k, sel] of [['south', '#mapSheetSouth'], ['north', '#mapSheetNorth']]) {
+    const b = $(sel); if (!b) continue;
+    const on = (mapUI.sheet || 'south') === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+  }
 }
 function fitRegionMap(){                                           // whole-number scale only: 2x if there's room for 640 px, else 1x (§2)
   if (mapUI.level && mapUI.level !== 'region') { fitLayerCanvas(); return; }
@@ -12817,7 +12872,9 @@ function mapDevCheck(){
     if (left < 4 || right > 316 || top < 4 || bot > 188) bad.push(id + ': label');
   }
   const pair = (a, b) => { const [ax, ay] = nodePoint(REGION_MAP.nodes[a]), [bx, by] = nodePoint(REGION_MAP.nodes[b]); return Math.hypot(ax - bx, ay - by); };
-  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) if (pair(ids[i], ids[j]) < 28) bad.push('close: ' + ids[i] + ' ' + ids[j]);
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) if (nodeSheet(ids[i]) === nodeSheet(ids[j]) && pair(ids[i], ids[j]) < 28) bad.push('close: ' + ids[i] + ' ' + ids[j]);   // per sheet (ROUTE_TO_GOVERNOR §4)
+  for (const id of ids) if (!REGION_MAP.sheets[nodeSheet(id)]) bad.push(id + ': sheet');
+  for (const [k, list] of Object.entries(REGION_MAP.marks || {})) for (const mk of list) if (mk.kind === 'seam' && mk.col !== REGION_MAP.seamCol) bad.push(k + ': seam col ' + mk.col);
   if (mapHold('cobblecrest', {}) !== 'keepers' || mapHold('cobblecrest', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('cobble');
   if (mapHold('cobble_quarry', {}) !== 'keepers' || mapHold('cobble_quarry', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('quarry');
   if (mapHold('fb_heights', {}) !== 'glimmer' || mapHold('fb_heights', { 'story.sm_done': true }) !== 'split') bad.push('heights');
@@ -12853,13 +12910,48 @@ function mapDevCheck(){
   }
   return bad;
 }
+// ROUTE_TO_GOVERNOR E9 (D1851): the north sheet's parchment, drawn in PAL (the south sheet keeps region_backdrop.png).
+function northBackdrop(R){
+  R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');
+  [[30, 150], [60, 40], [210, 30], [250, 150], [290, 60], [120, 170], [270, 110]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });
+  for (const [cx, cy] of [[24, 24], [36, 36], [276, 24], [292, 172], [212, 172], [40, 120]])   // a few tree clumps (decoration)
+    for (const [dx, dy] of [[0, 0], [7, 3], [-6, 4], [2, 8]]) { R(cx + dx - 2, cy + dy - 2, 5, 5, 't'); R(cx + dx - 1, cy + dy - 2, 2, 2, 'g'); }
+  for (let y = 120; y < 190; y += 2) R(148 + Math.round(Math.sin(y / 9) * 6), y, 2, 2, 'c');      // the stream down the valley
+}
+// Sheet marks: `under` (river, fog, the dry hill) sits below the claims and paths; `over` (the seam markers, the Act 3 stub) above.
+function drawSheetMarks(R, seg, P, sheet, layer){
+  const g = ctx($('#regionCanvas'));
+  for (const mk of (REGION_MAP.marks && REGION_MAP.marks[sheet]) || []) {
+    if (mk.when && !mk.when.every(c => cond(c))) continue;
+    if (layer === 'under' && mk.kind === 'river') for (let i = 0; i < mk.path.length - 1; i++) seg(mk.path[i], mk.path[i + 1], 'c', false);
+    if (layer === 'under' && mk.kind === 'fog') {   // the Act 3 reserve: drawn as fog, not blank (KILNMOUTH A6)
+      const x0 = mk.cols[0] * 16, y0 = mk.rows[0] * 16, x1 = (mk.cols[1] + 1) * 16, y1 = (mk.rows[1] + 1) * 16;
+      for (let y = Math.max(2, y0); y < y1; y++) for (let x = x0; x < x1; x++) { const h = (x * 7 + y * 13) % 5; if (h === 0) R(x, y, 1, 1, 'w'); else if ((x + y) % 2 === 0) R(x, y, 1, 1, 'h'); }
+    }
+    if (layer === 'under' && mk.kind === 'hill') {   // the dry hill: a mark, no node (L1 waits on D976)
+      const [cx, cy] = P([mk.col, mk.row]);
+      for (let i = 0; i < 9; i++) { R(cx - i, cy - 6 + i, 2 * i + 1, 1, 'G'); R(cx - i, cy - 6 + i, 1, 1, 'F'); R(cx + i, cy - 6 + i, 1, 1, 'F'); }
+      R(cx - 8, cy + 3, 17, 1, 'F');
+    }
+    if (layer === 'over' && mk.kind === 'stub') for (let i = 0; i < mk.path.length - 1; i++) seg(mk.path[i], mk.path[i + 1], 'h', true);
+    if (layer === 'over' && mk.kind === 'seam') {   // a drawn arrow at the seam column with the far sheet's name; not a tap target
+      const x = mk.col * 16 + 8, top = mk.row === 0, y = top ? 6 : 186;
+      if (mk.from) { seg(mk.from, mk.via, 'o', true); seg(mk.via, [mk.col, mk.row], 'o', true); }
+      for (let i = 0; i < 5; i++) R(x - i, top ? y + i : y - i, 2 * i + 1, 1, 'k');
+      g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textBaseline = 'middle'; g.textAlign = 'right';
+      g.fillStyle = PAL.k; g.fillText(mk.label, x - 8, top ? y + 4 : y - 4);
+    }
+  }
+}
 function drawRegionMap(t){
   mapLayerMarks = { rings: [], labels: [] };
-  const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, N = REGION_MAP.nodes, cur = mapUI.cur;
+  const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, sheet = mapUI.sheet || 'south', cur = mapUI.cur;
+  const N = {}; for (const [id, n] of Object.entries(REGION_MAP.nodes)) if (nodeSheet(id) === sheet) N[id] = n;   // this sheet's nodes only
   g.setTransform(k, 0, 0, k, 0, 0); g.imageSmoothingEnabled = false;
   const R = (x, y, w, h, col) => { g.fillStyle = PAL[col]; g.fillRect(Math.round(x), Math.round(y), w, h); };
-  const backdrop = regionBackdropOn() ? ensureRegionBackdrop() : null;
+  const backdrop = sheet === 'south' && regionBackdropOn() ? ensureRegionBackdrop() : null;
   if (backdrop && backdrop.complete && backdrop.naturalWidth === 640) g.drawImage(backdrop, 0, 0, 320, 192);
+  else if (sheet === 'north') northBackdrop(R);   // ROUTE_TO_GOVERNOR E9: the north parchment, PAL only
   else {
     R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');                                 // parchment, 2 px orange edge
     [[30, 40], [70, 150], [150, 30], [200, 140], [255, 45], [290, 160], [120, 100]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });   // hill ticks (decoration)
@@ -12869,6 +12961,7 @@ function drawRegionMap(t){
     const [x0, y0] = P(a), [x1, y1] = P(b), n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
     for (let i = 0; i <= n; i++) { if (dashed && Math.floor(i / 4) % 2) continue; R(Math.round(x0 + (x1 - x0) * i / n) - 1, Math.round(y0 + (y1 - y0) * i / n) - 1, 3, 3, col); }
   };
+  drawSheetMarks(R, seg, P, sheet, 'under');
   const discW = (cx, cy, r, yy) => { const dy = yy - cy; if (dy * dy > r * r + r * 0.8) return null; return Math.floor(Math.sqrt(r * r - dy * dy + r * 0.8)); };
   const fillDisc = (cx, cy, r, col, side) => {
     for (let y = cy - r; y <= cy + r; y++) {
@@ -12925,6 +13018,11 @@ function drawRegionMap(t){
     const coach = N[id].link === 'coach';
     for (let i = 0; i < pth.length - 1; i++) seg(pth[i], pth[i + 1], vis[id] ? (coach ? 'g' : 'o') : 'h', !vis[id] || coach);
   }
+  for (const id in N) {   // Kilnmouth's coach (dashed) is drawn only from story.km_council (D1882)
+    const ch = N[id].coach; if (!ch || !(ch.when || []).every(c => cond(c))) continue;
+    for (let i = 0; i < ch.path.length - 1; i++) seg(ch.path[i], ch.path[i + 1], 'g', true);
+  }
+  drawSheetMarks(R, seg, P, sheet, 'over');
   const disc = (cx, cy, r, col) => fillDisc(cx, cy, r, col, 0);
   const ring = (cx, cy, r, col) => { for (let a = 0; a < 360; a += 2) { const x = Math.round(cx + r * Math.cos(a * Math.PI / 180)), y = Math.round(cy + r * Math.sin(a * Math.PI / 180)); R(x - 1, y - 1, 2, 2, col); } };
   g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textBaseline = 'middle';
@@ -13411,6 +13509,7 @@ function syncMapChrome(){
   else paintChips();
   if (region) { mapPinSig = ''; mapUI.pins = []; const pins = $('#mapPins'); if (pins) { pins.hidden = true; pins.innerHTML = ''; } }
   syncMapActs();
+  syncSheetButtons();
 }
 function showMapLevel(level, id){
   ensureMapLayers();
@@ -19227,6 +19326,9 @@ function bindInput(){
   if (roomLv) roomLv.addEventListener('click', () => chooseMapLevel('room'));
   if (townLv) townLv.addEventListener('click', () => chooseMapLevel('town'));
   if (regLv) regLv.addEventListener('click', () => chooseMapLevel('region'));
+  const shS = $('#mapSheetSouth'), shN = $('#mapSheetNorth');   // ROUTE_TO_GOVERNOR §4: the two sheet buttons
+  if (shS) shS.addEventListener('click', () => setMapSheet('south'));
+  if (shN) shN.addEventListener('click', () => setMapSheet('north'));
   const mapSeeBtn = $('#mapSee'), mapBackBtn = $('#mapBack');
   if (mapSeeBtn) mapSeeBtn.addEventListener('click', mapSee);
   if (mapBackBtn) mapBackBtn.addEventListener('click', mapBack);
