@@ -1,4 +1,6 @@
 /* BATTLE_FX_4 (D2050-D2059): frame-sprite impacts, one big and one pop per type, a super ring, a signature crest and a crit sparkle.
+   v0.2 (D2061-D2069): the sprites are tiered by the user's stage (early rects, mid a pop on strong moves, final as v0.1, a signature always
+   wears the crest) and every rect hit is cleaned up (C1-C8). T1-T8 boot a final-stage holder (the v0.1 rule); T9-T12 test the tiers.
    Players never load this file. Every test runs at 320, 375 and 390 in Modern controls; one describe runs with reduced motion.
    The holder fights a Lv 2 foe (HP set to 400). */
 const { test, expect } = require('@playwright/test');
@@ -10,30 +12,35 @@ trackErrors(test, expect);
 const BIG = { EMBER: 'kiln_rush', TIDE: 'undertow', BLOOM: 'thorn_lash', STONE: 'boulder_drop', VOLT: 'arc_bolt', FROST: 'sleet_pelt', GUST: 'gale_slice', SHADE: 'dusk_fang' };
 const POP = { EMBER: 'flick_flame', TIDE: 'ripple_jab', BLOOM: 'seed_toss', STONE: 'pebble_flick', VOLT: 'zap_tap', FROST: 'frost_nip', GUST: 'puff_shot', SHADE: 'gloom_poke' };
 
-function unitSave(effects) {
+// BATTLE_FX_4 v0.2: the tier table, copied from the design packet's battle_fx_4_tiers.json (cells and clean)
+const TIERS = {"0|basic|normal":{"impact":"rect","extra":null,"crit":null},"0|basic|super":{"impact":"rect","extra":"rect_ring","crit":null},"0|basic|crit":{"impact":"rect","extra":null,"crit":"rect_plus"},"0|basic|super+crit":{"impact":"rect","extra":"rect_ring","crit":"rect_plus"},"0|strong|normal":{"impact":"rect","extra":null,"crit":null},"0|strong|super":{"impact":"rect","extra":"rect_ring","crit":null},"0|strong|crit":{"impact":"rect","extra":null,"crit":"rect_plus"},"0|strong|super+crit":{"impact":"rect","extra":"rect_ring","crit":"rect_plus"},"0|signature|normal":{"impact":"pop","extra":"sig_crest","crit":null},"0|signature|super":{"impact":"pop","extra":"sig_crest","crit":null},"0|signature|crit":{"impact":"pop","extra":"sig_crest","crit":"crit_spark"},"0|signature|super+crit":{"impact":"pop","extra":"sig_crest","crit":"crit_spark"},"1|basic|normal":{"impact":"rect","extra":null,"crit":null},"1|basic|super":{"impact":"rect","extra":"rect_ring","crit":null},"1|basic|crit":{"impact":"rect","extra":null,"crit":"rect_plus"},"1|basic|super+crit":{"impact":"rect","extra":"rect_ring","crit":"rect_plus"},"1|strong|normal":{"impact":"pop","extra":null,"crit":null},"1|strong|super":{"impact":"pop","extra":"super_ring","crit":null},"1|strong|crit":{"impact":"pop","extra":null,"crit":"crit_spark"},"1|strong|super+crit":{"impact":"pop","extra":"super_ring","crit":"crit_spark"},"1|signature|normal":{"impact":"big","extra":"sig_crest","crit":null},"1|signature|super":{"impact":"big","extra":"sig_crest","crit":null},"1|signature|crit":{"impact":"big","extra":"sig_crest","crit":"crit_spark"},"1|signature|super+crit":{"impact":"big","extra":"sig_crest","crit":"crit_spark"},"2|basic|normal":{"impact":"pop","extra":null,"crit":null},"2|basic|super":{"impact":"big","extra":"super_ring","crit":null},"2|basic|crit":{"impact":"pop","extra":null,"crit":"crit_spark"},"2|basic|super+crit":{"impact":"big","extra":"super_ring","crit":"crit_spark"},"2|strong|normal":{"impact":"big","extra":null,"crit":null},"2|strong|super":{"impact":"big","extra":"super_ring","crit":null},"2|strong|crit":{"impact":"big","extra":null,"crit":"crit_spark"},"2|strong|super+crit":{"impact":"big","extra":"super_ring","crit":"crit_spark"},"2|signature|normal":{"impact":"big","extra":"sig_crest","crit":null},"2|signature|super":{"impact":"big","extra":"sig_crest","crit":null},"2|signature|crit":{"impact":"big","extra":"sig_crest","crit":"crit_spark"},"2|signature|super+crit":{"impact":"big","extra":"sig_crest","crit":"crit_spark"}};
+const CLEAN = {"min_px":2,"flare_r":8,"core":4,"core_after":100,"box":[13,15,11],"end":360,"ring_r":[6,13],"plus":{"dy":-13,"b":2,"col":"y","ms":240}};
+
+function unitSave(effects, stage) {
   const s = starterSave();
-  s.party = [{ id: 'unit1', species: 'ember', stage: 0, xp: 0, bx: 4 * 8 * 8, hunger: 90, happy: 90, energy: 95, nick: null, origin: 'wild', moves: [], evoMoves: [] }];
+  const st = stage == null ? 2 : stage;   // v0.2: T1-T8 test v0.1's rule, the final-stage row (D2061); evoMoves as newPet, so no stage-move sheet opens
+  s.party = [{ id: 'unit1', species: 'ember', stage: st, xp: 0, bx: 4 * 8 * 8, hunger: 90, happy: 90, energy: 95, nick: null, origin: 'wild', moves: [], evoMoves: Array.from({ length: st }, (_, i) => i + 1) }];
   s.partnerId = 'unit1';
   s.settings.effects = effects || 'full';
   s.settings.textSpeed = 'fast';
   s.settings.controls = 'modern';
   return s;
 }
-async function boot(page, effects) {
-  await installSave(page.context(), unitSave(effects), { quietDay: true });
+async function boot(page, effects, stage) {
+  await installSave(page.context(), unitSave(effects, stage), { quietDay: true });
   await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && PixelPets.state && PixelPets.state.party[0]);
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
-async function open(page, mid, textMs = 0) {
-  await page.evaluate((mid) => {
+async function open(page, mid, textMs = 0, foeForm = null) {
+  await page.evaluate(([mid, foeForm]) => {
     const b = PixelPets.battle; if (b.on) b.close();
     PixelPets.healTeam(); PixelPets.setMoves([mid]);
     // a foe the move hits for 1x, so the tier is the move's own (a super hit always draws big)
     const mt = PixelPets.moves()[mid].type, row = TYPE_CHART[mt] || {};
     const foe = SPECIES.find((sp) => sp.type && !sp.attune && !sp.tableOnly && (row[sp.type] == null || row[sp.type] === 1));
-    return PixelPets.forceBattle(foe.id + '/0', 2);
-  }, mid);
+    return PixelPets.forceBattle(foeForm || (foe.id + '/0'), 2);
+  }, [mid, foeForm]);
   await page.waitForFunction(() => PixelPets.battle.on && PixelPets.battle.state === 'CHOOSE', null, { timeout: 20000 });
   await page.evaluate((textMs) => {
     const b = PixelPets.battle; b.animMs = null; b.textMs = textMs; b.rng = () => 0.2; b.fxLog = []; b.whites = []; b.flashAt = null;
@@ -356,3 +363,165 @@ test('T8 D2059: the save is unchanged: key, v 2, no new fields after a turn of e
     if (keys) expect(now, mid).toEqual(keys); else keys = now;
   }
 });
+
+// ---- BATTLE_FX_4 v0.2 (D2061-D2069): tiers by stage, and the cleaned rects ----
+
+test('T9 D2061, D2063, D2064, D2065, D2068: every pick follows the tier table (each type and PLAIN x stage x kind x outcome)', async ({ page }) => {
+  await boot(page, 'full');
+  const bad = await page.evaluate((cells) => {
+    const out = [], pw = { basic: 30, strong: 70, signature: 30 };
+    for (const [key, cell] of Object.entries(cells)) {
+      const [stg, kind, oc] = key.split('|');
+      for (const ty of Object.keys(MV_SPR.types).concat(['PLAIN'])) {
+        const p = mvSprPick(ty, pw[kind], oc, kind === 'signature', +stg), plain = ty === 'PLAIN', spr = cell.impact !== 'rect';
+        const want = { main: plain || !spr ? null : MV_SPR.types[ty][cell.impact],
+          extra: plain ? null : (cell.extra === 'sig_crest' || cell.extra === 'super_ring' ? cell.extra : null),
+          crit: cell.crit === 'crit_spark' ? 'crit_spark' : null };
+        const got = { main: p ? p.main : null, extra: p ? p.extra : null, crit: p ? p.crit : null };
+        if (JSON.stringify(got) !== JSON.stringify(want)) out.push(key + ' ' + ty + ' ' + JSON.stringify(got));
+        if (mvTier(+stg, pw[kind], kind === 'signature', oc) !== cell.impact) out.push(key + ' tier');
+      }
+    }
+    // a missing stage reads as final (v0.1's rule), so the CALM and OFF picks are unchanged (D2067)
+    for (const ty of Object.keys(MV_SPR.types)) for (const [pw, oc] of [[30, 'normal'], [70, 'normal'], [30, 'super'], [30, 'crit']]) {
+      if (mvSprPick(ty, pw, oc, false) !== mvSprPick(ty, pw, oc, false, 2)) out.push(ty + ' ' + pw + ' ' + oc + ' default');
+    }
+    return out;
+  }, TIERS);
+  expect(bad).toEqual([]);
+  const r = await page.evaluate(() => ({
+    weak: mvTier(1, 70, false, 'weak'), edge: mvTier(1, 50, false, 'normal'), under: mvTier(1, 49, false, 'normal'),
+    crest: Object.values(SIGNATURES).filter((m) => { const p = mvSprPick(MOVES[m].type, MOVES[m].power, 'normal', true, 0); return p && p.extra === 'sig_crest'; }).length,
+    plain: Object.values(SIGNATURES).filter((m) => MOVES[m].type === 'PLAIN').sort(),
+  }));
+  expect(r.weak, 'a weak hit reads as normal').toBe('pop');
+  expect(r.edge, '50 power is strong').toBe('pop');
+  expect(r.under).toBe('rect');
+  expect(r.crest, 'every typed signature wears the crest, at stage 0 too (D2065)').toBe(27);
+  expect(r.plain).toEqual(['neon_zip', 'ping_pulse']);
+});
+
+test('T10 D2061, D2062: real FULL turns draw by the user\'s stage, the holder\'s and a foe\'s', async ({ page }) => {
+  test.setTimeout(300000);
+  const cases = [
+    [0, 'flick_flame', 'mvTierRect', []],
+    [0, 'kiln_rush', 'mvTierRect', []],
+    [0, 'foxfire_flick', 'mvTierPop', ['ember_pop', 'sig_crest']],
+    [1, 'flick_flame', 'mvTierRect', []],
+    [1, 'kiln_rush', 'mvTierPop', ['ember_pop']],
+    [1, 'foxfire_flick', 'mvTierBig', ['ember_bloom', 'sig_crest']],
+    [2, 'flick_flame', 'mvTierPop', ['ember_pop']],
+    [2, 'kiln_rush', 'mvTierBig', ['ember_bloom']],
+  ];
+  let cur = -1;
+  for (const [stage, mid, tag, want] of cases) {
+    if (stage !== cur) { await boot(page, 'full', stage); cur = stage; }
+    await open(page, mid, 600);
+    await putLog(page);
+    const log = await tap(page, mid);
+    await page.waitForTimeout(500);
+    const drawn = [...new Set((await puts(page)).map((x) => x[0]))].sort();
+    expect(log, stage + ' ' + mid).toContain(tag);
+    expect(log, stage + ' ' + mid).toContain('mvHit');
+    if (!want.length) expect(log, stage + ' ' + mid + ' draws no sprite').not.toContain('mvSpr');
+    expect(drawn, stage + ' ' + mid).toEqual(want.slice().sort());
+  }
+  // a final-stage foe's strong move on an early-stage holder: the holder's hit is rects, the foe's the big impact
+  await boot(page, 'full', 0);
+  await open(page, 'flick_flame', 600, 'ember/2');
+  await page.evaluate(() => { PixelPets.battle.foePlan = { move: 'kiln_rush' }; });
+  await putLog(page);
+  const log = await tap(page, 'flick_flame');
+  await page.waitForTimeout(600);
+  const drawn = new Set((await puts(page)).map((x) => x[0]));
+  expect(log.filter((x) => /^mvTier/.test(x))).toEqual(['mvTierRect', 'mvTierBig']);
+  expect(drawn.has('ember_bloom'), 'the foe draws big').toBe(true);
+  expect(drawn.has('ember_pop')).toBe(false);
+});
+
+test('T11 D2066: every rect hit is cleaned (2 px pieces, on the target, face clear, over by 360 ms; ring and plus in the canvas)', async ({ page }) => {
+  test.setTimeout(120000);
+  await boot(page, 'full', 0);
+  await open(page, 'kiln_rush');
+  const r = await page.evaluate((CLEAN) => {
+    const v = PixelPets.battle.view, cv = document.getElementById('battleCanvas'), W = cv.width, H = cv.height;
+    const bad = []; let pieces = 0, peak = 0;
+    for (const mid of Object.keys(MOVES)) {
+      if (!(MOVES[mid].power > 0)) continue;
+      const rows = mvCleanRow(mvHitRows(MOVES[mid].type, mid, 0, 0));
+      for (const [S, T] of [[v.sc, v.tc], [v.tc, v.sc]]) for (let age = 0; age < 420; age += 10) {
+        mvPoolReset(); mvShadowSet(true); mvCleanSet(T, age);
+        for (const sg of rows) { const k = mvSegK(sg, age); if (k >= 0) mvShape(sg, k, mvCleanT(sg), S, T, mvCleanPut); }
+        peak = Math.max(peak, mvPoolCount());
+        for (let i = 0; i < mvPoolCount(); i++) {
+          const p = MV_POOL[i], dx = p.x + p.w / 2 - T[0], dy = p.y + p.h / 2 - T[1]; pieces++;
+          if (p.w < CLEAN.min_px || p.h < CLEAN.min_px) bad.push(mid + ' C1 size at ' + age);
+          if (dx < -CLEAN.box[0] || dx > CLEAN.box[0] || dy < -CLEAN.box[1] || dy > CLEAN.box[2]) bad.push(mid + ' C4 box at ' + age);
+          const c = CLEAN.core;   // C3: no piece touches the 9x9 core once the impact frame is over
+          if (age >= CLEAN.core_after && p.x <= T[0] + c && p.x + p.w > T[0] - c && p.y <= T[1] + c && p.y + p.h > T[1] - c) bad.push(mid + ' C3 core at ' + age);
+          if (age >= CLEAN.end) bad.push(mid + ' C6 late at ' + age);
+          if (p.x < 0 || p.y < 0 || p.x + p.w > W || p.y + p.h > H) bad.push(mid + ' canvas at ' + age);
+          if (p.col === 'w') bad.push(mid + ' white');
+        }
+        for (const sg of rows) if (sg.shape === 'flare' && sg.r < CLEAN.flare_r) bad.push(mid + ' C2 flare');
+      }
+    }
+    // C5: a blink shape draws the same pieces wherever its segment is (its clock holds the segment's start)
+    let blinks = 0;
+    for (const mid of Object.keys(MV_MOVE)) for (const sg of mvCleanRow((MV_MOVE[mid].hit || []))) {
+      if (['speck', 'crackle', 'leaves'].indexOf(sg.shape) < 0) continue;
+      const a = [], b = [];
+      mvShape(sg, 0.2, mvCleanT(sg), v.sc, v.tc, (x, y, w, h, c) => a.push([x, y, w, h, c].join()));
+      mvShape(sg, 0.8, mvCleanT(sg), v.sc, v.tc, (x, y, w, h, c) => b.push([x, y, w, h, c].join()));
+      blinks++;
+      if (sg.shape !== 'leaves' && a.join('|') !== b.join('|')) bad.push(mid + ' C5 ' + sg.shape);
+      if (sg.shape === 'leaves' && a.map((s) => s.split(',').slice(2).join()).join('|') !== b.map((s) => s.split(',').slice(2).join()).join('|')) bad.push(mid + ' C5 leaves');
+    }
+    mvPoolReset(); mvShadowSet(false);
+    return { same: JSON.stringify(MV_CLEAN) === JSON.stringify(CLEAN), bad: bad.slice(0, 10), nbad: bad.length, pieces, peak, blinks };
+  }, CLEAN);
+  expect(r.same, 'MV_CLEAN is the packet\'s').toBe(true);
+  expect(r.bad, r.nbad + ' problems').toEqual([]);
+  expect(r.pieces).toBeGreaterThan(1000);
+  expect(r.peak).toBeLessThanOrEqual(24);
+  expect(r.blinks).toBeGreaterThan(5);
+  // C7 and C8 through drawBattle itself: a rect-tier super + crit hit, frozen 100 ms after contact
+  const live = await page.evaluate(async () => {
+    const B = PixelPets.battle, out = [];
+    for (const [type, mid] of [['EMBER', 'kiln_rush'], ['GUST', 'gale_slice'], ['PLAIN', 'full_tilt'], ['SHADE', 'deep_hum']]) {
+      B.fx.length = 0;
+      const t = performance.now();
+      B.fx.push({ who: 'foe', kind: 'mvHit', type, variant: 'super+crit', mid, v: 0, st: 0, hm: 0, spr: null, t0: t - 100, hold0: t, hold1: t + 1e7, dur: 1e8 });
+      await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(res))));
+      const cv = document.getElementById('battleCanvas'), rects = [];
+      for (let i = 0; i < mvPoolCount(); i++) { const p = MV_POOL[i]; if (p.on) rects.push([p.x, p.y, p.w, p.h, p.col]); }
+      out.push({ type, mid, W: cv.width, H: cv.height, T: B.view.tc, light: mvLightFx(type), rects });
+    }
+    B.fx.length = 0;
+    return out;
+  });
+  for (const L of live) {
+    expect(L.rects.length, L.mid).toBeGreaterThanOrEqual(13);
+    expect(L.rects.slice(0, 8).every((p) => p[4] === L.light), L.mid + ' C7 ring first, in the light').toBe(true);
+    expect(L.rects.slice(8, 13).every((p) => p[4] === 'y'), L.mid + ' C8 plus next, in y').toBe(true);
+    expect(L.rects.every((p) => p[0] >= 0 && p[1] >= 0 && p[0] + p[2] <= L.W && p[1] + p[3] <= L.H), L.mid + ' inside the canvas').toBe(true);
+    expect(L.rects.some((p) => p[4] === 'w'), L.mid + ' no white').toBe(false);
+  }
+});
+
+for (const [name, effects, reduce, tag] of [['CALM', 'calm', false, 'mvSprCalm'], ['reduced motion', 'full', true, 'mvSprCalm'], ['OFF', 'off', false, 'mvSprOff']]) {
+  test.describe(`T12 D2067 ${name}`, () => {
+    if (reduce) test.use({ reducedMotion: 'reduce' });
+    test(`${name} at stage 0: the v0.1 mark, not tiered`, async ({ page }) => {
+      test.setTimeout(120000);
+      await boot(page, effects, 0);
+      for (const mid of ['flick_flame', 'kiln_rush']) {
+        await open(page, mid, 600);
+        const log = await tap(page, mid);
+        expect(log, mid).toContain(tag);
+        expect(log.filter((x) => /^mvTier/.test(x)), mid).toEqual([]);
+        expect(log, mid).not.toContain('mvGo');
+      }
+    });
+  });
+}

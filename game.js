@@ -12095,7 +12095,7 @@ function show(s, mode){
     // BATTLE_FX_4 (D2052): the impact sprite starts lead ms before contact, so its first frames close the travel and its impact frame
     // lands on contact, where the hit-stop holds it. Contact reuses this fx; without a wind-up (fast-forward, animMs 0) contact starts it.
     B.sprWind = null;
-    const spr = mode === 'full' && mvMs > 0 && !B.ff && typeof mvSprPick === 'function' ? mvSprPick(s.type || 'PLAIN', s.pw, s.variant || 'normal', s.sig) : null;
+    const spr = mode === 'full' && mvMs > 0 && !B.ff && typeof mvSprPick === 'function' ? mvSprPick(s.type || 'PLAIN', s.pw, s.variant || 'normal', s.sig, s.stg) : null;
     if (spr) {
       B.sprWind = { who: (s.tgt || '').indexOf('me') === 0 ? 'me' : 'foe', kind: 'mvSpr', type: s.type || 'PLAIN', spr: spr, t0: t + mvMs - spr.lead, dur: 420 + spr.lead };
       B.fx.push(B.sprWind);
@@ -12111,7 +12111,8 @@ function show(s, mode){
     const tgtMon = (s.who || '').indexOf('me') === 0 ? 'me' : 'foe';
     if (mode === 'full') {
       const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(s.mid) : null;
-      const spr = typeof mvSprPick === 'function' ? mvSprPick(typ, s.pw, variant, s.sig) : null;   // BATTLE_FX_4 (D2053): the hit's frame sprites
+      const spr = typeof mvSprPick === 'function' ? mvSprPick(typ, s.pw, variant, s.sig, s.stg) : null;   // BATTLE_FX_4 (D2053): the hit's frame sprites
+      if (typeof mvTier === 'function') { const tier = mvTier(s.stg, s.pw, s.sig, variant); B.fxLog.push('mvTier' + (tier === 'big' ? 'Big' : tier === 'pop' ? 'Pop' : 'Rect')); }   // D2061
       B.fx.push({ who: tgtMon, kind: 'mvHit', type: typ, variant: variant, mid: mvRow ? s.mid : null, v: mvRow ? B.mvN | 0 : 0, st: s.st | 0, hm: s.hm | 0, spr: spr, t0: t, dur: 420 });
       B.fxLog.push('mvHit');
       // BATTLE_FX_4 (D2052): the sprites are their own fx, so the next charge (mvYield) ends the rects but the after-shape lingers; the lane caps them
@@ -12586,6 +12587,7 @@ async function doMove(side, mid, id){
   const typ = mv.type || 'PLAIN';
   const mvSt = SPECIES[SP_INDEX[line]] && SPECIES[SP_INDEX[line]].attune ? ((mine ? p.stage : f.stage) | 0) : 0;   // MOVE_FX_3 (D905): the user's Answerer tier
   const mvHm = SPECIES[SP_INDEX[line]] && SPECIES[SP_INDEX[line]].attune ? 1 : 0;   // MOVE_FX_4 (D936): an Answerer's shared moves wear the hum
+  const mvStg = Math.max(0, Math.min(2, (mine ? p.stage : f.stage) | 0));   // BATTLE_FX_4 v0.2 (D2062): the user's stage picks its tier (D2061)
   if (mode === 'full') step('go', { who: side, type: typ, sig: sig, status: mv.power === 0, effect: mv.effect || null, mid: mid, st: mvSt, hm: mvHm });   // MOVE_FX_2 (D831)
   else step('lunge', { who: side });
   step('text', { s: uName + ' tries ' + mv.name + '!' });
@@ -12622,8 +12624,8 @@ async function doMove(side, mid, id){
     B.shown = { who: whoKey, hpFrom: hpFrom, hpTo: hpTo, max: max };
     renderBattleCards(); if (!mine) save();
     const variant = typeof mvVariant === 'function' ? mvVariant(r.mult, r.crit) : (r.mult > 1 ? 'super' : r.mult < 1 ? 'weak' : 'normal');
-    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey, mid: mid, st: mvSt, hm: mvHm, pw: mv.power, sig: sig });   // MOVE_FX_2 (D827): the travel rides the wind-up
-    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant, mid: mid, st: mvSt, hm: mvHm, pw: mv.power, sig: sig });   // BATTLE_FX_4 (D2053): power and signature pick the sprites
+    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey, mid: mid, st: mvSt, hm: mvHm, pw: mv.power, sig: sig, stg: mvStg });   // MOVE_FX_2 (D827): the travel rides the wind-up
+    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant, mid: mid, st: mvSt, hm: mvHm, pw: mv.power, sig: sig, stg: mvStg });   // BATTLE_FX_4 (D2053, D2061): power, signature and stage pick the sprites
     step('sfx', { name: r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit' });
     const stopMs = mode === 'full' && typeof mvScaled === 'function' ? mvScaled(typ, variant).stop : 0;
     step('stop', { ms: stopMs });
@@ -17101,14 +17103,22 @@ function drawBattle(t, dt){
         }
       } else if (e.kind === 'mvHit') {
         const rows = typeof mvHitRows === 'function' ? mvHitRows(e.type, e.mid, e.st, e.hm) : (mvPunchType(e.type).hit_v2 || []);   // MOVE_FX_2 (D831), MOVE_FX_3 (D905), MOVE_FX_4 (D936)
-        const hitUser = e.who === 'me' ? Tc : Sc, hitT = e.who === 'me' ? Sc : Tc;
-        for (let s = 0; s < rows.length; s++) { const k = mvSegK(rows[s], age); if (k >= 0) mvShape(rows[s], k, age, hitUser, hitT, put); }
+        const hitUser = e.who === 'me' ? Tc : Sc, hitT = e.who === 'me' ? Sc : Tc, CL = typeof MV_CLEAN !== 'undefined' ? MV_CLEAN : null;
+        // BATTLE_FX_4 v0.2 (D2066): the rect ring (C7) and the rect crit plus (C8) take their slots first, then the row's pieces, cleaned
         if (e.variant && e.variant.indexOf('super') >= 0 && age < 200 && !(e.spr && e.spr.extra)) {
-          const rk = age / 200, rr = 6 + 12 * rk;
+          const rk = age / 200, rr = CL ? CL.ring_r[0] + (CL.ring_r[1] - CL.ring_r[0]) * rk : 6 + 12 * rk;
           mvShape(mvRow ? { shape: 'ring', r: [rr, rr], col: mvLightFx(e.type), ms: [0, 200], b: 2, n: 8, at: 'target' }   // D827: 8 slots for a bespoke hit; MOVE_FX_4 (D937): never white
-            : { shape: 'ring', r: [rr, rr], col: mvLight(e.type), ms: [0, 200], b: 1, at: 'target' }, rk, age, hitUser, hitT, put);
+            : { shape: 'ring', r: [rr, rr], col: mvLightFx(e.type), ms: [0, 200], b: 2, n: 8, at: 'target' }, rk, age, hitUser, hitT, put);
         }
-        if (e.variant && e.variant.indexOf('crit') >= 0 && age < 240 && !(e.spr && e.spr.crit)) drawGlyph(g, 'spark', hitT[0], hitT[1] - 14);
+        if (e.variant && e.variant.indexOf('crit') >= 0 && age < (CL ? CL.plus.ms : 240) && !(e.spr && e.spr.crit)) {
+          if (CL) mvShape({ shape: 'sparkle', col: CL.plus.col, at: 'user', ms: [0, CL.plus.ms], b: CL.plus.b }, 1, age, hitT, hitT, put);   // C8: sparkle sits 13 px above its S
+          else drawGlyph(g, 'spark', hitT[0], hitT[1] - 14);
+        }
+        if (CL) {
+          const cr = mvCleanRow(rows);
+          mvCleanSet(hitT, age);
+          for (let s = 0; s < cr.length; s++) { const k = mvSegK(cr[s], age); if (k >= 0) mvShape(cr[s], k, mvCleanT(cr[s]), hitUser, hitT, mvCleanPut); }
+        } else for (let s = 0; s < rows.length; s++) { const k = mvSegK(rows[s], age); if (k >= 0) mvShape(rows[s], k, age, hitUser, hitT, put); }
       } else if (e.kind === 'mvTravel' && mvRow && mvRow.travel) {   // MOVE_FX_2 (D827): S to T across the wind-up, the head on T at contact
         const ta = age * 140 / Math.max(1, e.dur), segs = mvRow.travel;
         for (let s = 0; s < segs.length; s++) { const k = mvSegK(segs[s], ta); if (k >= 0) mvShape(segs[s], k, ta, user, tgt, put); }

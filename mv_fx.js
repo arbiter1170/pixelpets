@@ -478,19 +478,57 @@ function mvSprKey(id, type) { return id + ':' + mvSprRamp(id, type).join(''); }
     else for (const t in MV_SPR.types) build(id, MV_SPR.types[t].ramp);
   }
 })();
-// D2053: which sprites a hit wears. A move under pop_below power draws its type's pop, 50 and over its big impact; a super-effective
-// hit and a signature always draw big. Super adds the ring, a signature the crest (the crest wins if both), a crit the sparkle.
-// PLAIN has no sprite impact (it stays the smallest), but a PLAIN crit still sparkles. Made once per key and kept.
+// BATTLE_FX_4 v0.2 (D2061-D2065, Vincent Nov 4): the detailed sprite impacts are for final-stage Walklings and signature moves.
+// stg is the user's stage (0 early, 1 mid, 2 final; an Answerer's hum tier). Missing reads as final, which is v0.1's by-power rule (D2053).
+// Early: rects only, except a signature (pop + crest). Mid: a pop on strong (50+) moves, big + crest on a signature. Final: pop under 50,
+// big at 50+ or on a super hit, big + crest on a signature. CALM and OFF pick without stg (D2067: not tiered).
+function mvTier(stg, power, sig, variant) {
+  const s = stg == null ? 2 : Math.max(0, Math.min(2, stg | 0)), strong = (power | 0) >= MV_SPR.pop_below, sup = (variant || '').indexOf('super') >= 0;
+  if (sig) return s === 0 ? 'pop' : 'big';
+  if (s === 2) return strong || sup ? 'big' : 'pop';
+  if (s === 1) return strong ? 'pop' : 'rect';
+  return 'rect';
+}
+// Which sprites a hit wears (D2053, D2061). A sprite tier draws its type's pop or big; super adds the ring, a signature the crest (the crest
+// wins if both), a crit the sparkle. A rect tier draws no sprite: drawBattle keeps the cleaned rect ring and rect plus (D2066 C7, C8).
+// PLAIN has no impact sprite and no crest (D2065), but its crit sparkles in a sprite tier. Made once per key and kept.
 const MV_SPR_PICK = {};
-function mvSprPick(type, power, variant, sig) {
-  const v = variant || 'normal', sup = v.indexOf('super') >= 0, crit = v.indexOf('crit') >= 0, big = sup || !!sig || (power | 0) >= MV_SPR.pop_below;
-  const key = type + '|' + (big ? 1 : 0) + (sup ? 1 : 0) + (sig ? 1 : 0) + (crit ? 1 : 0);
+function mvSprPick(type, power, variant, sig, stg) {
+  const v = variant || 'normal', sup = v.indexOf('super') >= 0, crit = v.indexOf('crit') >= 0, tier = mvTier(stg, power, !!sig, v);
+  const key = type + '|' + tier + (sup ? 1 : 0) + (sig ? 1 : 0) + (crit ? 1 : 0);
   if (MV_SPR_PICK[key] !== undefined) return MV_SPR_PICK[key];
-  const t = MV_SPR.types[type], p = { type: type, main: t ? (big ? t.big : t.pop) : null, extra: t ? (sig ? 'sig_crest' : (sup ? 'super_ring' : null)) : null, crit: crit ? 'crit_spark' : null, lead: 0 };
+  const t = MV_SPR.types[type], spr = tier !== 'rect';
+  const p = { type: type, tier: tier, main: t && spr ? t[tier] : null, extra: t && spr ? (sig ? 'sig_crest' : (sup ? 'super_ring' : null)) : null, crit: crit && spr ? 'crit_spark' : null, lead: 0 };
   // lead: the impact's frames before its impact frame. In FULL they play as the last ms of the travel, so the impact frame lands on contact.
   if (p.main) { const e = MV_SPR.fx[p.main]; for (let i = 0; i < e.impact; i++) p.lead += e.ms[i]; }
   return (MV_SPR_PICK[key] = (p.main || p.crit) ? p : null);
 }
+// BATTLE_FX_4 v0.2 (D2066): the basic animations, cleaned up. MV_MOVE stays verbatim; every rect hit draws a cached copy of its row
+// (C2 flare radius) through mvCleanPut (C1 size, C3 core, C4 box, C6 end), with blink shapes held on their first phase (C5).
+// C7 (rect super ring 6 to 13 px) and C8 (rect crit plus) are drawn by drawBattle with these numbers, before the row's pieces.
+const MV_CLEAN = {"min_px":2,"flare_r":8,"core":4,"core_after":100,"box":[13,15,11],"end":360,"ring_r":[6,13],"plus":{"dy":-13,"b":2,"col":"y","ms":240}};
+function mvCleanRow(rows) {
+  if (!rows || !rows.length) return rows || [];
+  if (rows.clean) return rows.clean;
+  const out = rows.map((s) => (s.shape === 'flare' && (s.r == null ? 4 : s.r) < MV_CLEAN.flare_r) ? Object.assign({}, s, { r: MV_CLEAN.flare_r }) : s);
+  Object.defineProperty(rows, 'clean', { value: out, enumerable: false });
+  return out;
+}
+const MV_CLEAN_T = [0, 0];
+let mvCleanAge = 0;
+function mvCleanSet(T, age) { MV_CLEAN_T[0] = T[0]; MV_CLEAN_T[1] = T[1]; mvCleanAge = age; }
+function mvCleanPut(x, y, w, h, col) {
+  const C = MV_CLEAN, m = C.min_px;
+  if (mvCleanAge >= C.end) return;                                       // C6
+  if (w < m) w = m; if (h < m) h = m;                                    // C1
+  const dx = x + w / 2 - MV_CLEAN_T[0], dy = y + h / 2 - MV_CLEAN_T[1];
+  if (dx < -C.box[0] || dx > C.box[0] || dy < -C.box[1] || dy > C.box[2]) return;   // C4
+  const T = MV_CLEAN_T, c = C.core;                                      // C3: nothing touches the 9x9 core once the impact frame is over
+  if (mvCleanAge >= C.core_after && x <= T[0] + c && x + w > T[0] - c && y <= T[1] + c && y + h > T[1] - c) return;
+  mvPoolPut(x, y, w, h, col);
+}
+// C5: the shape clock for a cleaned hit segment. Blink shapes read t_ms only for their on/off phase, so the segment's start holds it.
+function mvCleanT(seg) { return seg.ms[0]; }
 // The frame an effect shows at age ms (stepped: each frame holds its own ms), or -1 once it is over. FULL plays every frame;
 // CALM (and reduced motion) plays only its calm frames, 120 ms each, with no after-shape; OFF holds its one static frame for 240 ms.
 function mvSprFrame(id, age, mode) {
