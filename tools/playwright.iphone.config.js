@@ -17,7 +17,8 @@ const { defineConfig, devices } = require('@playwright/test');
 const ROOT = path.join(__dirname, '..');
 
 const port = process.env.PP_PORT || '8080';
-const external = process.env.PP_URL;
+// Trailing slash keeps the base path (specs navigate with './').
+const external = process.env.PP_URL ? process.env.PP_URL.replace(/\/?$/, '/') : '';
 const phone = (w, h, dpr, base) => ({ ...devices[base], browserName: 'webkit', viewport: { width: w, height: h }, screen: { width: w, height: h }, deviceScaleFactor: dpr, isMobile: true, hasTouch: true });
 
 module.exports = defineConfig({

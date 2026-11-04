@@ -81,7 +81,7 @@ function trackErrors(test, expect) {
 async function gotoGame(page, search = '') {
   // 'commit' returns once the document starts. The app wait uses the test's own time,
   // so a slow script parse is not failed by a shorter navigation cap.
-  await page.goto('/' + search, { waitUntil: 'commit' });
+  await page.goto('./' + search, { waitUntil: 'commit' });
   await page.waitForFunction(() => window.PixelPets && window.BUILD);
 }
 

@@ -59,7 +59,7 @@ test('a player with Walklings boots onto the map, and a refresh from the PARTNER
   await page.evaluate(() => PixelPets.showTab('pet'));
   await page.evaluate(() => location.reload()); await page.waitForTimeout(300); await ready(page);
   expectMap(await where(page), 'script reload');
-  await page.goto('/?b=boot.20991231-0000', { waitUntil: 'commit' }); await ready(page);
+  await page.goto('./?b=boot.20991231-0000', { waitUntil: 'commit' }); await ready(page);
   expectMap(await where(page), 'boot-retry URL');
 });
 
