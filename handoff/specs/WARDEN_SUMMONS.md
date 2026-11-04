@@ -32,7 +32,7 @@ June (Story). Staging a scene every player sees is red, so the real quest waits 
 
 | Who | Where | Want / fear | Verbal habit | Never says | To a young holder |
 |---|---|---|---|---|---|
-| **Warden Ilse Marrow** (`ilse_lodge_after`) | `hm_lodge_in` 5,3, fixed | wants her holders safe and the lantern's promise kept; fears the Keepers forgetting what they're for | lantern and road images ("Trust is a slow lantern"); asks for "the shape" of things, as with dreams; short, warm sentences | anything of the cover-up (she doesn't know it, D979); "Professor"; a bad word about the Keepers as a whole; who to pick | steady, proud, never talks down |
+| **Warden Ilse Marrow** (`ilse_lodge_after`) | `hm_lodge_in` 5,3, fixed | wants her holders safe and the lantern's promise kept; fears the Keepers forgetting what they're for | lantern and road images ("Trust is a slow lantern"); asks for "the shape" of things, as with dreams; short, warm sentences | anything she can't know yet (story detail: private design STORY.md; D979); "Professor"; a bad word about the Keepers as a whole; who to pick | steady, proud, never talks down |
 | **Keeper Amos** (`amos`) | `fb_lantern_in` 6,3, wire desk 7,3 | wants the Lantern House to be a safe place again; fears it became a cell last night | quiet, practical, ledger talk | that the Commander was right | gentle, a little ashamed |
 | **Master Fen** (she) | `fen_dawn` fernbrook 10,9 (orchard gate) for the whole trip | wants her Hall back and her holder treated fairly; angry at the boots | plant talk: roots, pruning, seasons | a bad word about the Keepers as a whole | warm, protective |
 | **Mom** (`mom`) | `hm_home_in` 5,4, fixed (`whereNow` "home") | wants her child home and fed | small jobs, kettle, "love" | "Professor" | plain warmth. Optional detour, never a target |
@@ -108,7 +108,7 @@ Talking to Ilse with `story.warden_called & !story.warden_met` plays it. The hol
 
 Then `bond` (amount PLACEHOLDER, Q6) and `setFlag story.warden_met`. The hub follows walklings-story-craft's return-to-hub talk: both
 topics are optional, so the critical path stands without them. The second choice differs in kind (act vs ask) and its effect is felt
-in the next line. Ilse never says who to pick, never praises or blames the President, and never hints at the cover-up.
+in the next line. Ilse never says who to pick, never praises or blames the President, and never hints at what she can't know yet (story detail: private design STORY.md).
 
 **Lore drip.** After `story.warden_met`, the `lodge_ledger` prop (9,2) adds the key `story.warden_met`: "Ilse's ledger. A fresh page
 headed Fernbrook, with Fen's letter pinned beside it." (PLACEHOLDER, tier 2). Payoff: Act 5, Ilse and Lumen's decision (Story).
