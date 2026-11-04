@@ -89,16 +89,17 @@ D1424-D1430 reserved: Design, Vincent's lore corrections of Tue Nov 3, 2026 (des
 
 D1431-D1457 reserved: Design, the lore decision cards of Tue Nov 3, 2026 (design repo specs/STORY_DECISIONS.md v0.74); all settled by Vincent except D1457 (open, Story). D1428 and D1430 settled.
 D1458-D1589 are held by Design packets in the design repo (its specs/STORY_DECISIONS.md lists them). D1590-D1599 reserved: Design, WEIR_HUT v0.1 (design repo specs/WEIR_HUT.md); all ten settled by Vincent, Tue Nov 3, 2026 (all defaults; archive/DECISIONS_SETTLED.md).
+D1600-D1889 and D1910-D1939 are held or reserved by Design packets in the design repo (its specs/STORY_DECISIONS.md v0.99.2 and later list them). D1890-D1909 reserved: Design, SCENE_MUSIC v0.1 (design repo specs/SCENE_MUSIC.md; the scene-music motifs and cue sheet); reds D1890-D1902 open with Vincent, deadline Thu Nov 5, 2026, 10:30 PM EST.
+Next free id is D1940.
 D1730-D1769 reserved: Design, NAMES_PASS v0.1 (design repo specs/NAMES_PASS.md; the placeholder-names pass); all 40 settled by Vincent, Wed Nov 4, 2026 (defaults, except D1730: Vincent Chi is shown as Jacob Chi). Built display-only on `claude/names-apply`; the crackdown Commander (Commander Brack), the slip Constable (Constable Dunn) and the parade "Officer" labels land in their own open PRs.
 D1500-D1519 reserved: Design, ACT1_ALIGNMENT_OPTIONS (design specs/ACT1_ALIGNMENT_OPTIONS.md); SETTLED by Vincent, Tue Nov 3, 2026: "Alignment rulings: defaults on D1500, D1501, D1502, D1504-D1519; D1503 B".
 
 D1520-D1544 reserved: Design, Vincent's 25 answers on the new Act 1 (design specs/STORY_DECISIONS.md v0.77); all SETTLED.
 
-D1545-D1589 reserved: Design, ACT1_KEEPER_JOIN v0.1 (design specs/ACT1_KEEPER_JOIN.md); D1545-D1562 used and settled by Vincent (D1546 B, D1561 the Fernbrook post, D1562 always undercover); D1563-D1589 held. D1590-D1599 reserved: WEIR_HUT. D1700-D1702: Ilse's arc (D1700 built here). Next free id is D1600 (design repo owns D1600 and above).
+D1545-D1589 reserved: Design, ACT1_KEEPER_JOIN v0.1 (design specs/ACT1_KEEPER_JOIN.md); D1545-D1562 used and settled by Vincent (D1546 B, D1561 the Fernbrook post, D1562 always undercover); D1563-D1589 held. D1590-D1599 reserved: WEIR_HUT. D1700-D1702: Ilse's arc (D1700 built here). The design repo owns D1600 and above.
 
 D2020: Design, ACT1_KEEPER_JOIN v0.1.6 (design specs/ACT1_KEEPER_JOIN.md §13): where the Lantern Council plays for a recalled holder. Settled by Vincent, Wed Nov 4, 2026, on the default (High Charity, after the Governor); built in claude/recall-9e-council.
 
-Next free id is D1600.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
@@ -120,6 +121,7 @@ Vincent's direction for the start of the game (Mon Nov 2, 2026, 3:55 PM ET, via 
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
+| D1898 | SCENE_MUSIC, the weir hut's room loop, RED, OPEN (Vincent) | Vincent hears `weir` (design `specs/scene_music_preview/weir.wav`, or in the game) and says yes or no to it as the hut's room music. The other SCENE_MUSIC reds (D1890-D1897, D1899-D1902: the motifs and the cues for scenes not built yet) are in the design spec; none is built here | `hw_weir_hut_in` plays its own loop `weir` (D minor, 72 bpm, 26.7 s) day and night, on both paths; before, it played `town` like any interior with no `music`. No other map, scene or setting changes | `data/detail_zz_weir_hut.json` (`"music": "weir"`; drop the key to go back to `town`, then `python3 tools/gen_mapdata.py`); `sfx.js` `MUSIC.weir` |
 | D1560 | green, ACT1_KEEPER_JOIN build (claude/act1-keeper-join) | PLACEHOLDER copy that needs Story (June): every new line of the investigation, the lean, the enrolment, the letters, the recall, the post-recall Lantern Council and the old-save Lodge talk; "eleven" Walklings; Vincent Chi's name check (D1524); the Keeper Constable's name; the engineer's draft lines (Vincent Chi's jar line and lean line, Ilse's in-between reminders, the lanyard line that replaced the pin question under D1562, Juniper's handset line, the runner's note, the Lantern Council after the recall, the Constable's line at the post, D1561) | Plays the drafted copy; every path is in `data/detail_zz_keeper_join.json` `_placeholders` | `data/detail_zz_keeper_join.json`, `data/detail_zz_crackdown.json` |
 | D1515-act2 | green, ACT1_KEEPER_JOIN build | Rook's one Act 2 line for an old save whose Rook came over ("They offered me a desk. I took it.") has no Act 2 Rook body to stand on yet | Kept as data (`lines.rook_desk_ally` in the overlay); the Act 2 packet places it | `data/detail_zz_keeper_join.json` |
 | D1629-build | green, ACT1_KEEPER_JOIN build | The report skips read `story.switched_a3` (D1629, REPORTS_AND_ENDINGS); nothing writes that flag yet (the switch packet does) | Letters, R3 and the chain rows skip on `story.switched_a3` or `story.warden_cut`; `PPStanding.reportsOpen` (K2) still reads `story.switches` | `data/detail_zz_keeper_join.json`, `quests.js`, `standing.js` |

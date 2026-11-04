@@ -42,8 +42,8 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
+  // The Hearthmoor coach (hm_to_hc) left this list when it moved off the Keeper House roof to (16,9).
   expect(audit.reachGaps).toEqual([
-    'hearthmoor:hm_to_hc walk-on tile is solid or blocked',
     'fernbrook:fb_east walk-on tile is solid or blocked',
     'fernbrook:fb_tour2 walk-on tile is solid or blocked',
     'route2:r2_east walk-on tile is solid or blocked',

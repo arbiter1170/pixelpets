@@ -115,8 +115,8 @@ test('every mouth warps to its partner one tile inward, and back (tap-walk on th
 });
 
 test('the coach still lands on 32,37 facing north and sets hc_arrived; the Event Hall door (the quest target) stays 32,29', async ({ page }) => {
-  // The Hearthmoor coach tile (12,9) is a roof tile on main in both modes (a separate, earlier issue, noted in the PR), so this
-  // checks the warp's data and its landing on the rebuilt Lantern Square rather than stepping on it.
+  // This checks the warp's data and its landing on the rebuilt Lantern Square. Stepping onto the Hearthmoor coach (now at 16,9,
+  // off the Keeper House roof) is tests/coach_hall_faction.spec.js.
   await boot(page);
   const r = await page.evaluate(() => {
     const o = WORLD.hearthmoor.objs.find(o => o.id === 'hm_to_hc');
