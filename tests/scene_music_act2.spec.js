@@ -186,7 +186,7 @@ test.describe('SCENE_MUSIC slices 4-5 on the Act 2 opener: the posting and Mom\'
     const back = await page.evaluate(() => PixelPets.mapTrack('hm_home_room'));
     await expect.poll(() => page.evaluate(() => [PPSound.musicWant, PPSound.musicTrack])).toEqual([back, back]);
     expect((await calls(page)).filter(c => c === 'hearth').length).toBe(2);
-    expect(await page.evaluate(() => window.__music.filter(c => c[0] === 'hearth').map(c => c[1]))).toEqual([{ fadeOut: 180, fadeIn: 140 }, { fadeOut: 180, fadeIn: 140 }]);
+    expect(await page.evaluate(() => window.__music.filter(c => c[0] === 'hearth').map(c => c[1]))).toEqual([{ fadeOut: 180, fadeIn: 140, near: false }, { fadeOut: 180, fadeIn: 140, near: false }]);
   });
 
   test('T9 C12: a pin save gets supper as one line at the gate or at home, on hearth', async ({ page }) => {
@@ -277,6 +277,6 @@ test.describe('SCENE_MUSIC slices 4-5 on the Act 2 opener: the posting and Mom\'
     expect(keys(s1.flags).filter(k => !(k in s0.flags))).toEqual(['story.beat.a2_posting', 'story.gov_posted']);
     for (const id of SCENE_IDS) expect(JSON.stringify(s1), id).not.toContain('"' + id + '"');
     // the same calls a full-motion posting makes (T9 C10): the cue with the built quick fade, then the room's loop again
-    expect((await page.evaluate(() => window.__music)).slice(-2)).toEqual([['ledger', { fadeOut: 180, fadeIn: 140 }], ['town', { fadeOut: 400, fadeIn: 500 }]]);
+    expect((await page.evaluate(() => window.__music)).slice(-2)).toEqual([['ledger', { fadeOut: 180, fadeIn: 140, near: false }], ['town', { fadeOut: 400, fadeIn: 500 }]]);
   });
 });
