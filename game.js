@@ -4438,6 +4438,8 @@ function switchSide(to, opts){
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
   S.flags['story.switch_via'] = 'rook';
+  // REPORTS_AND_ENDINGS §9 (D1629, D1725): only a switch from Act 3 on makes the switcher's path and stops the reports.
+  if (to === SC_STANDING.switch.oneWay && actNow(false) >= SC_STANDING.switch.openAct) S.flags['story.switched_a3'] = true;
   noteRepJoin();   // D178: the side you left, met people only, once per switch
   syncSide(); save();
   return true;

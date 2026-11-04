@@ -2,6 +2,18 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 23:23 ET: Build: the endings readers and the report skip (REPORTS_AND_ENDINGS v0.1.1 core E1; REPORT_FLAGS; D1620-D1629, D1720, D1725, D1726 B)
+- What changed and why:
+  - `standing.js`: the pure readers `pathOf`, `trustOf`, `presOptions`, `ilseCanTurn`, `endingOf` (§3.3), the fixed report list `RPT` (`story.rpt_1`-`_6`, told / kept; D1720: never a prefix scan, so `story.rpt_gov` and `story.rpt_old_seen` stay guards) and the eight ending ids `ENDINGS`. Nothing is stored; no ending scene is built. R6 is now a letter after the third sitting (D1726 B); the readers only count the flag, so the timing changes nothing here.
+  - `reportsOpen` skips on `story.switched_a3` or `story.warden_cut`, never `story.switches` (D1725): an old save moved to the Keepers keeps its reports even if it carries a switch from Rook's old offer.
+  - `switchSide` writes `story.switched_a3` on a switch to Glimmerwell from Act 3 on (§9), so an Act 3 switch still stops the reports.
+  - `canSwitch` says `closed` once `story.solvane_met` is set (D1625; nothing writes it yet).
+- Files touched: `standing.js`, `game.js` (`switchSide`), `tools/GAMEJS_MAP.txt`, `tests/endings.spec.js` (new).
+- Commit(s) + build id: claude/act2-opener, build 20261103-2323.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1620-D1629 settled by Vincent, readers as written; D1725 (yellow, settled) applied to `reportsOpen`; D1726 B noted (no reader change).
+- Anything left unfinished: E2-E5 (R4-R6 scenes, the President's office buttons, Ilse's talks, the eight epilogues and `story.ending`) are later packets'. ILSE_ARC's `ilseFails` / `ilseTurns` will refine `ilseCanTurn`.
+
 ## 2026-11-03 22:42 ET: Build: Act 2 cover story, the opening slices: Mom's Supper and Juniper's point (ACT2_COVER_STORY v0.1.1; D1680-D1699, D1921)
 - What changed and why:
   - Mom's "Supper" (C-M, D1682): on the first step out of the Lodge after the posting, Mom waits at the gate (a temporary body), says m1 and walks home ahead; in your room the drawer (the chest) plays the rest: the lanyards, Hattie's post, and "Tell the truth" / "Cover story" / "Say nothing" (D1681) writing `story.cv_mom` told / cover / quiet. Talking to Mom at your door plays the same scene. Fallback: the first step inside home for a save that never passed the gate. An interrupted scene writes nothing and replays.
