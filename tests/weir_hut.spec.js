@@ -232,7 +232,7 @@ test('every prop answers its line by tap (the desk from beside Vincent Chi), and
     expect(got.text, p.id).toBe(want);
     expect(got.text.length, p.id).toBeLessThanOrEqual(110);
     expect(got.text, p.id).not.toMatch(/[{}]/);
-    if (p.id === 'chi_hut') expect(String(got.who)).toContain('Vincent Chi');
+    if (p.id === 'chi_hut') expect(String(got.who)).toContain('Vincent Chi');   // the raw speaker key; it shows as Jacob Chi (D1730, names_pass.spec.js)
     if (p.id === 'weir_desk_r') expect(got.at).toEqual({ x: 4, y: 3 });
     seen.push(p.id);
     await page.evaluate(() => PixelPets.endScene());

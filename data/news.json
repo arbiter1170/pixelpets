@@ -169,7 +169,7 @@
    ],
    "headline": "Bell at 8, out at 3, Buddy never late",
    "body": [
-    "Lizzy teaches 8-3 on weekdays. Pip and Wren hold the front row, mostly upright.",
+    "Lizzy teaches 8-3 on weekdays. Pip and Tilly hold the front row, mostly upright.",
     "Her Walkling Buddy is a Harvestail and is never wild. Please stop trying to befriend it at the gate."
    ],
    "art": "fetch/1",
@@ -281,7 +281,7 @@
    "body": [
     "Fernbrook: orchard village, home of the Fernbrook Trial Hall. Pomlets live in the orchard and act like it.",
     "Keepers keep the town. Glimmerwell keeps a stand. The square has opinions about both.",
-    "Keeper Amos hosts the Lantern House: beds, a rest, and a proper explanation."
+    "Host Amos hosts the Lantern House: beds, a rest, and a proper explanation."
    ],
    "art": "beetle",
    "lore": [
@@ -643,7 +643,7 @@
    "headline": "Meet the ridge lab of 'decent people'",
    "body": [
     "RegenX, the lab on the ridge, is a lab of 'decent people'. Atten is its brew.",
-    "On the floor: Nia, Cal and Dr. Ivo. Out on the ridge: clerk Jed. Wave at all of them."
+    "On the floor: Nia, Cal and Dr. Weller. Out on the ridge: clerk Jed. Wave at all of them."
    ],
    "lore": [
     "faction.regenx",
@@ -1396,9 +1396,9 @@
    "when": [
     "story.hc_arrived"
    ],
-   "headline": "Porters Bram and Quin: mind the step",
+   "headline": "Porters Dunmore and Aldous: mind the step",
    "body": [
-    "Porters Bram and Quin see holders onto the Lantern Coach, the way into the capital.",
+    "Porters Dunmore and Aldous see holders onto the Lantern Coach, the way into the capital.",
     "Their tip for new arrivals: lanterns on every roof, so look up. Be kind in the streets, so look out."
    ],
    "lore": [
@@ -1415,11 +1415,11 @@
     "story.hc_arrived",
     "story.reached_fernbrook"
    ],
-   "headline": "Ines keeps the capital's beds made",
+   "headline": "Maudie keeps the capital's beds made",
    "body": [
-    "Host Ines runs the High Charity Lantern House: beds, a rest, and a plain word on how healing works.",
+    "Host Maudie runs the High Charity Lantern House: beds, a rest, and a plain word on how healing works.",
     "A rest costs 5 Acorns. Short? Pay what you have. Empty pockets? It's free.",
-    "Beds don't cure Fade. Care does. Ines will say it twice if you need it twice."
+    "Beds don't cure Fade. Care does. Maudie will say it twice if you need it twice."
    ],
    "lore": [
     "person.lantern_hosts",
@@ -2576,9 +2576,9 @@
    "when": [
     "story.met_bram"
    ],
-   "headline": "At the door: Sergeant Bram, and that is that",
+   "headline": "At the door: Sergeant Drummond, and that is that",
    "body": [
-    "Sergeant Bram keeps the Keeper House door. If you've met him, you know the door is mostly him.",
+    "Sergeant Drummond keeps the Keeper House door. If you've met him, you know the door is mostly him.",
     "House rule: say your piece, then step back. With the Sergeant, holders report stepping back first saves time."
    ],
    "lore": [
@@ -2909,7 +2909,7 @@
    ],
    "headline": "Overheard at the Lantern House: 'Grey a cold?'",
    "body": [
-    "Overheard at Fernbrook's Lantern House: a holder asking Keeper Amos whether a bed would fix a grey Walkling.",
+    "Overheard at Fernbrook's Lantern House: a holder asking Host Amos whether a bed would fix a grey Walkling.",
     "The short answer, as the house explains it: no. Lantern Houses do not cure Fade. Care does, day by day.",
     "A Faded Walkling can't grow up until its colour is back. When it is, 'It remembers who it is.'"
    ],
@@ -3012,13 +3012,13 @@
    "headline": "Staff spotlight: the decent people of RegenX!",
    "body": [
     "Partner spotlight! RegenX on the ridge is a lab of 'decent people', and the partnership adores decent people.",
-    "Say hi to Nia, Cal and Dr. Ivo. They brew Atten. We admire Atten. Quarterly, we admire it a great deal."
+    "Say hi to Nia, Cal and Dr. Weller. They brew Atten. We admire Atten. Quarterly, we admire it a great deal."
    ],
    "replies": [
     {
      "name": "Lab visitor",
      "handle": "ridgelab",
-     "text": "Cal held the door. Dr. Ivo said hello. The spotlight felt a bit bright for them."
+     "text": "Cal held the door. Dr. Weller said hello. The spotlight felt a bit bright for them."
     }
    ],
    "lore": [
@@ -5745,7 +5745,7 @@
    "id": "vo-hearthmoor-spelling",
    "who": "Schoolhouse parent",
    "region": "hearthmoor",
-   "text": "Wren says Buddy helps with spelling. Lizzy says Buddy sits. Honestly, both can be true.",
+   "text": "Tilly says Buddy helps with spelling. Lizzy says Buddy sits. Honestly, both can be true.",
    "when": [
     "story.lizzy_met"
    ],
@@ -5899,7 +5899,7 @@
    "id": "vo-heights-ivo",
    "who": "Lab visitor, RegenX",
    "region": "heights",
-   "text": "Dr. Ivo said good morning to my Walkling first. Decent people, they told me. They weren't wrong.",
+   "text": "Dr. Weller said good morning to my Walkling first. Decent people, they told me. They weren't wrong.",
    "when": [
     "story.heights_done",
     "story.rx_enter",
@@ -6367,7 +6367,7 @@
    "id": "vo-keepers-bram",
    "who": "Keeper House caller",
    "region": "",
-   "text": "Sergeant Bram minds the Keeper House door like it might wander off. Kindly, but firmly.",
+   "text": "Sergeant Drummond minds the Keeper House door like it might wander off. Kindly, but firmly.",
    "when": [
     "story.met_bram"
    ],
@@ -6748,7 +6748,7 @@
    "when": [
     "story.reached_fernbrook"
    ],
-   "text": "Lantern Houses do not cure Fade. Care does. Keeper Amos will explain, kindly.",
+   "text": "Lantern Houses do not cure Fade. Care does. Host Amos will explain, kindly.",
    "lore": [
     "term.fade",
     "person.lantern_hosts"
@@ -7155,7 +7155,7 @@
    "when": [
     "story.hc_arrived"
    ],
-   "text": "Porters Bram and Quin will see you aboard. Be kind in the streets, and in the queue.",
+   "text": "Porters Dunmore and Aldous will see you aboard. Be kind in the streets, and in the queue.",
    "lore": [
     "thing.lantern_coach"
    ]
@@ -7169,7 +7169,7 @@
     "story.hc_arrived",
     "story.reached_fernbrook"
    ],
-   "text": "Host Ines keeps beds ready. Rest is 5 Acorns, or what you have. Fade needs care.",
+   "text": "Host Maudie keeps beds ready. Rest is 5 Acorns, or what you have. Fade needs care.",
    "lore": [
     "person.lantern_hosts",
     "term.lantern_house",
@@ -7367,7 +7367,7 @@
    "id": "no-fernbrook-amos",
    "kind": "notice",
    "title": "FERNBROOK LANTERN HOUSE",
-   "text": "Keeper Amos has beds and explains healing. 5 Acorns, or what you have. Fade needs care.",
+   "text": "Host Amos has beds and explains healing. 5 Acorns, or what you have. Fade needs care.",
    "region": "fernbrook",
    "when": [
     "story.reached_fernbrook"
