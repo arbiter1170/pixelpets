@@ -28,6 +28,7 @@ function save(opts = {}) {
   if (opts.side === 'glimmer') s.flags['story.side'] = 'glimmer';
   if (opts.act) s.flags['story.act'] = opts.act;
   if (opts.govMet) s.flags['story.hc_gov_met'] = true;
+  if (opts.posted) s.flags['story.gov_posted'] = true;   // GOVERNOR_MEETING D1473: the door opens on Ilse's posting
   s.world = Object.assign({ map: 'highcharity', x: 32, y: 37, facing: 'up', respawn: 'hearthmoor' }, opts.world || {});
   return s;
 }
@@ -98,10 +99,10 @@ test('every mouth warps to its partner one tile inward, and back (tap-walk on th
   const mouths = await page.evaluate(() => {
     const out = [];
     for (const id of ['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college'])
-      for (const o of WORLD[id].objs) if (o.kind === 'warp' && /_2$/.test(o.id) && /^m_c/.test(o.id)) out.push({ map: id, id: o.id, x: o.x, y: o.y, to: o.to, tx: o.tx, ty: o.ty, w: WORLD[id].w, h: WORLD[id].h });
+      for (const o of WORLD[id].objs) if (o.kind === 'warp' && /_2$/.test(o.id) && /^m_c/.test(o.id) && o.to !== 'route4_reeds') out.push({ map: id, id: o.id, x: o.x, y: o.y, to: o.to, tx: o.tx, ty: o.ty, w: WORLD[id].w, h: WORLD[id].h });
     return out;
   });
-  expect(mouths.length).toBe(12);   // six paired mouths, both ends
+  expect(mouths.length).toBe(12);   // six paired mouths, both ends (the river road's north mouth m_c1_n: route_to_governor.spec.js)
   for (const m of mouths) {
     // stand one tile inside the middle cell and step onto it
     const dir = m.y === 0 ? 'up' : m.y === m.h - 1 ? 'down' : m.x === 0 ? 'left' : 'right';
@@ -115,8 +116,8 @@ test('every mouth warps to its partner one tile inward, and back (tap-walk on th
 });
 
 test('the coach still lands on 32,37 facing north and sets hc_arrived; the Event Hall door (the quest target) stays 32,29', async ({ page }) => {
-  // The Hearthmoor coach tile (12,9) is a roof tile on main in both modes (a separate, earlier issue, noted in the PR), so this
-  // checks the warp's data and its landing on the rebuilt Lantern Square rather than stepping on it.
+  // This checks the warp's data and its landing on the rebuilt Lantern Square. Stepping onto the Hearthmoor coach (now at 16,9,
+  // off the Keeper House roof) is tests/coach_hall_faction.spec.js.
   await boot(page);
   const r = await page.evaluate(() => {
     const o = WORLD.hearthmoor.objs.find(o => o.id === 'hm_to_hc');
@@ -219,10 +220,12 @@ test('§5.3 gates: the Governor\'s House opens on the Keepers path in Act 2, the
     { side: 'glimmer', govMet: false, lobby: false, top: false },
     { side: 'glimmer', act: 2, govMet: false, lobby: false, top: false },
     { side: 'glimmer', act: 5, govMet: true, lobby: false, top: false },
-    { side: 'keepers', act: 2, govMet: false, lobby: true, top: false },
-    { side: 'keepers', act: 2, govMet: true, lobby: true, top: false },
-    { side: 'keepers', act: 5, govMet: false, lobby: true, top: false },
-    { side: 'keepers', act: 5, govMet: true, lobby: true, top: true },
+    { side: 'keepers', act: 2, govMet: false, lobby: false, top: false },   // D1473: Act 2 alone is not enough
+    { side: 'glimmer', act: 2, govMet: false, posted: true, lobby: false, top: false },
+    { side: 'keepers', act: 2, govMet: false, posted: true, lobby: true, top: false },
+    { side: 'keepers', act: 2, govMet: true, posted: true, lobby: true, top: false },
+    { side: 'keepers', act: 5, govMet: false, posted: true, lobby: true, top: false },
+    { side: 'keepers', act: 5, govMet: true, posted: true, lobby: true, top: true },
   ];
   for (const c of cases) {
     await boot(page, save(c));
@@ -325,11 +328,12 @@ test('the preview never reaches the cloud save: the state hook gives null and no
 test('D1426, D1439: Governor Merriden is Act 2 and civil (cast faction none); the President stays Act 5 and a Keeper', async () => {
   const gov1 = DATA.rooms.hc_gov_1.objs, gov3 = DATA.rooms.hc_gov_3.objs;
   const door = DATA.maps.hc_civic.objs.find(o => o.id === 'hc_gov');
-  expect(door.need).toBe('!story.side=glimmer & story.act>=2');
+  expect(door.need).toBe('!story.side=glimmer & story.act>=2 & story.gov_posted');   // GOVERNOR_MEETING D1473
   expect(door.deny).toBe('By appointment.');
   const gov = gov1.find(o => o.id === 'hc_governor');
   expect(gov.when).toEqual(['story.act>=2']);
   expect(gov.lines.else).toContain('Act 2');
+  expect(gov.lines['story.gov_posted & !story.hc_gov_met']).toBe('@hc_gov_meet');   // GOVERNOR_MEETING §5
   expect(gov.lines.else).not.toContain('Act 5');
   expect(gov1.find(o => o.id === 'hc_gov_up').need).toBe('!story.side=glimmer & story.act>=5 & story.hc_gov_met');
   expect(gov1.find(o => o.id === 'hc_chute_mouth')).toBeTruthy();   // HB12 sits on floor 1, behind the Act 2 door

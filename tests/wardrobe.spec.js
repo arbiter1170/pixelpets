@@ -369,7 +369,7 @@ test('the six prop lines are the P3 copy @w1', async ({ page }) => {
     ward_counter: 'A cutting table, deep in Keeper green sash cloth.',
     ward_rack_a: 'Sashes, satchels and beanies, all in your size.',
     ward_rack_b: 'Scarves and crowns, sized for Walklings.',
-    ward_mirror: 'A tall mirror. Keeper Marigold does the fittings.',
+    ward_mirror: 'A tall mirror. Tailor Marigold does the fittings.',
     ward_curtain: 'A fitting curtain, both halves hung now.',
     ward_hat: 'A hat stand. Goggles and a lamp cap on the pegs.',
     ward_sash: 'Sash thread in Keeper green and gold.',

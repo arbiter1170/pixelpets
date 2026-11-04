@@ -284,7 +284,7 @@ test('T10 all: a move without a row keeps main\'s rows, no shadow and variation 
   expect(r.same).toBe(true);
   expect(r.anim).toBe(true);
   expect(r.pose).toEqual({ lunge: 6, hop: 0, lift: 0 });
-  expect(n).toBe(122);   // the 12 pilot rows, MOVE_FX_3's 32 (D903) and MOVE_FX_4's 78 (D934)
+  expect(n).toBe(126);   // the 12 pilot rows, MOVE_FX_3's 32 (D903), MOVE_FX_4's 78 (D934) and the four Act 2 signatures
   await turn(page, 'tumble_charge', { textMs: 300 });
   const flags = await page.evaluate(() => { const o = []; for (let i = 0; i < mvPoolCount(); i++) o.push(MV_POOL[i].sh | 0); return o; });
   expect(flags.every((x) => x === 0)).toBe(true);

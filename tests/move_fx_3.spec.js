@@ -236,7 +236,7 @@ test('T6 D903: every bespoke row stays at 24 slots or under at every tier, varia
     for (const mid of Object.keys(MV_MOVE)) for (let st = 0; st < 3; st++) sweep(mid, st);
     return { peak, worst, n: Object.keys(MV_MOVE).length };
   });
-  expect(r.n).toBe(122);   // with MOVE_FX_4's 78 (D934)
+  expect(r.n).toBe(126);   // with MOVE_FX_4's 78 (D934) and the four Act 2 signatures (ROUTE_TO_GOVERNOR D1858, KILNMOUTH)
   expect(r.peak, r.worst).toBeLessThanOrEqual(24);
 });
 
@@ -299,7 +299,7 @@ test('T10 all: MV_MOVE holds every move (122) including MOVE_FX_3\'s 32, MV_ECHO
   test.skip(page.viewportSize().width !== 390, '390 only');
   await boot(page, 'ember', 0);
   const r = await page.evaluate((all) => ({ n: Object.keys(MV_MOVE).length, missing: all.filter((m) => !MV_MOVE[m]), echo: Object.keys(MV_ECHO).sort() }), Object.keys(ALL));
-  expect(r.n).toBe(122);   // with MOVE_FX_4's 78 (D934)
+  expect(r.n).toBe(126);   // with MOVE_FX_4's 78 (D934) and the four Act 2 signatures (ROUTE_TO_GOVERNOR D1858, KILNMOUTH)
   expect(r.missing).toEqual([]);
   expect(r.echo).toEqual(['cordhound', 'dimlamp', 'filecrow', 'humwisp', 'tallybat']);
 });

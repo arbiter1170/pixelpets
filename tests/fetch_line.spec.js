@@ -110,8 +110,8 @@ test('the Fetchling line stays out of the wild and the journal', async ({ page }
   expect(info.odds.every(v => v === 0)).toBe(true);
   expect(info.tables).toEqual([]);
   expect(info.starters).toEqual(['ember', 'tide', 'bloom']);
-  expect(info.forms).toBe(75);   // ARBITER_UNITS appended five lines after snail
-  expect(info.lastId).toBe('humwisp');
+  expect(info.forms).toBe(87);   // ARBITER_UNITS appended five lines after snail
+  expect(info.lastId).toBe('jugwasp');
   expect(info.v).toBe(2);
   expect(info.species).toBe('ember');
   for (const stage of info.art) {
@@ -133,13 +133,13 @@ test('the Fetchling line stays out of the wild and the journal', async ({ page }
     header: document.querySelector('#dexCount').textContent,
     fetch: document.querySelectorAll('[data-form^="fetch/"]').length,
   }));
-  expect(grid.n).toBe(57);
-  expect(grid.header).toContain('Out there 57');
+  expect(grid.n).toBe(69);
+  expect(grid.header).toContain('Out there 69');
   expect(grid.fetch).toBe(0);
   await shot(page, 'fetch-line');
   await page.evaluate(() => PixelPets.openStats(PixelPets.state.partnerId));
   await expect(page.locator('#ovStats')).toBeVisible();
-  await expect(page.locator('#scStatsHead')).toContainText('best of 57 forms');
+  await expect(page.locator('#scStatsHead')).toContainText('best of 69 forms');
 });
 
 function fetchSave() {
@@ -229,7 +229,7 @@ test('a Fetchling grows up into Harvestail and Hearthound @w1', async ({ page })
     header: document.querySelector('#dexCount').textContent,
     fetch: document.querySelectorAll('[data-form^="fetch/"]').length,
   }));
-  expect(journal.n).toBe(57);
-  expect(journal.header).toContain('Out there 57');
+  expect(journal.n).toBe(69);
+  expect(journal.header).toContain('Out there 69');
   expect(journal.fetch).toBe(0);
 });

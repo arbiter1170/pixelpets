@@ -115,20 +115,27 @@ test.describe('post-Trial crackdown', () => {
     expect(await sceneId(page)).toBe('warden_meet');
     await drive(page);
     expect((await flags(page))['story.warden_met']).toBe(true);
-    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('pick');
+    expect(await page.evaluate(() => PixelPets.quest.id)).toBe('chi_meet');   // ACT1_KEEPER_JOIN: Ilse sends the holder to Vincent Chi
     expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
     expect(await sceneId(page)).toBe('warden_after');
     await drive(page);
-    // Now the built pick runs.
+    // ACT1_KEEPER_JOIN: the Wickerglen investigation, the lean and the enrolment come next (played in
+    // tests/act1_keeper_join.spec.js); here the investigation's flags stand in, then the lean and the pin face.
+    await page.evaluate(() => { for (const k of ['story.chi_met', 'story.shift_g', 'story.shift_k', 'story.chi_done']) PixelPets.setFlag(k, true); });
     await stepOnto(page, 'fernbrook', 9, 9, 'down');
     expect(await sceneId(page)).toBe('side_pick');
-    await drive(page, ['Open the crates with Fen', 'Yes, the Keepers']);
+    await drive(page, ['Open the crates with Fen']);
+    await page.evaluate(() => { PixelPets.setFlag('story.orchard_cleared', true); PixelPets.setFlag('story.ilse_call2', true); });
+    expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);
+    await drive(page);   // D1562: no pin-or-lanyard question; the face is set at Juniper's step
+    expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+    await drive(page);
     expect((await flags(page))['story.side_pick_done']).toBe(true);
     // The pick lifts the curfew order: posts and notice go, the townsfolk come back, the Hall stays shut (D1224).
     const after = (await objs(page)).map(o => o.id);
     for (const id of ['cd_post_lantern', 'cd_post_hall', 'cd_cordon', 'cd_notice', 'juniper_east', 'fen_dawn']) expect(after, id).not.toContain(id);
     expect(after).toEqual(expect.arrayContaining(['odile', 'fb_wynne']));
-    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('held_keepers');
+    expect(await page.evaluate(() => PixelPets.fbPlazaPhase())).toBe('held_keepers');   // the opened crates settle the Keepers (D1674)
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 

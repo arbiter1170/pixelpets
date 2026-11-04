@@ -28,6 +28,7 @@ def note(msg): notes.append(msg)
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--layout', default=os.path.join(ROOT, 'design', 'specs', 'high_charity_layout.json'))
+ap.add_argument('--rotor', default=None, help='design specs/rotor_craft_preview/rotor_craft_frames.json (ROTOR_CRAFT draft frames); default: next to --layout')
 args = ap.parse_args()
 if not os.path.exists(args.layout):
     sys.exit('layout JSON not found: ' + args.layout + ' (clone the design repo to design/ or pass --layout)')
@@ -35,6 +36,7 @@ L = json.load(open(args.layout))
 OLD = json.load(open(os.path.join(ROOT, 'data', 'highcharity.json')))
 B4 = json.load(open(os.path.join(ROOT, 'data', 'detail_b4.json')))['slicePatch']['maps']['highcharity']['set']['roofs']
 CH = {c['id']: c for c in L['chunks']}
+
 OLD_MAP = OLD['maps']['highcharity']
 OLD_OBJ = {o['id']: o for o in OLD_MAP['objs']}
 
@@ -70,6 +72,21 @@ TXT = {
     'hb15_keeper': "Shut since the war, holder. Come back with seven on the roll.",
     'gov_door': "By appointment.",
     'gov_line': "[PLACEHOLDER: Governor Merriden's Act 2 lines are Story's.]",
+    # GOVERNOR_MEETING v0.2.1 §5 (D1471, D1472, D1473), all PLACEHOLDER until Story signs them
+    'gov_desk': "The Governor will see you, Cadet. Go on through.",
+    'gov_m2': "Warden Ilse's new Cadet. Don't sit. You won't be here long enough to need a chair.",
+    'gov_m3': "I've work for you. Kilnmouth's springs have gone cold this season. Nobody there can tell me why.",
+    'gov_m4': "A Calm Tower went up there the same season. Its permit is in order. I checked it myself.",
+    'gov_m5': "And their council has an empty seat. Everyone has a name for it. I'd like the town's.",
+    'gov_m6': "Go and look. Listen more than you talk. Then come back and tell me what you found.",
+    'gov_m7a': "You know where Fernbrook's Seals went.",
+    'gov_tell': "Tell him about the ledger",
+    'gov_keep': "Keep it to myself",
+    'gov_told_n': "You tell him about the crate ledger: LAMP STOCK, from the Fernbrook allotment. By permit.",
+    'gov_told': "Lamp stock. My office signs a hundred permits a week. I'll ask. Kindly, but I'll ask.",
+    'gov_kept': "You've the look of someone holding something back. Keep it, then. Bring it when it's ready.",
+    'gov_m8': "Kilnmouth, then. Safe roads, Cadet.",
+    'gov_after': "Kilnmouth's springs, and the empty seat. Come back when you know more.",
     'gov_stair': "[PLACEHOLDER] Upstairs is the President's floor. Not today, holder.",
     'court': "The Court is not sitting.",
     'closed': "Closed for now.",                                # PLACEHOLDER facade line (Store Row a-c, the Exchange, Ferry House, College)
@@ -212,6 +229,14 @@ def roof_entry(box, style):
 
 # ---------- the five chunks ----------
 CHUNKS = {cid: Chunk(c) for cid, c in CH.items()}
+# ROUTE_TO_GOVERNOR §5.9 (D1853): Charter Hill gains a north mouth, m_c1_n, five cells at x 46-50 on the top row (trees in the
+# layout, so T becomes P). It opens into the lane between the Governor's House and the east block; it pairs with the river road
+# (route4_reeds, outside the city), so it is built here rather than in the layout's chunk-to-chunk mouths.
+R4_MOUTH = {'id': 'm_c1_n', 'cells': [(x, 0) for x in range(46, 51)], 'to': 'route4_reeds', 'tx': 1, 'ty0': 8, 'facing': 'right'}
+_c1 = CHUNKS['hc_civic']
+for (x, y) in R4_MOUTH['cells']:
+    if _c1.grid[y][x] != 'T' or _c1.grid[y + 1][x] not in WALK: fail(f'hc_civic: north mouth cell {(x, y)} is not a tree over a walk tile')
+    _c1.grid[y] = _c1.grid[y][:x] + 'P' + _c1.grid[y][x + 1:]
 for c in CHUNKS.values():
     if c.w > 64 or c.h > 48: fail(f'{c.id}: {c.w}x{c.h} over the 64x48 cap')
     if c.ch(*c.arrival) not in WALK: fail(f'{c.id}: arrival not walkable')
@@ -246,7 +271,7 @@ NEW_STYLE = {
 # Doors: kept ids carry from WORLD; new doors are authored here.
 GOV1 = '!story.side=glimmer & story.act>=2'   # the Governor's House floors 1-2 (layout v0.4 §5.3); floor 3 is GOV3
 NEW_DOORS = {
-    'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': GOV1, 'deny': TXT['gov_door']},   # D1426/D1439: Act 2 on
+    'hc_gov':  {'to': 'hc_gov_1', 'tx': 7, 'ty': 14, 'facing': 'up', 'need': GOV1 + ' & story.gov_posted', 'deny': TXT['gov_door']},   # D1426/D1439: Act 2 on; D1473: after Ilse's posting
     'hc_news': {'to': 'hc_news_1', 'tx': 7, 'ty': 14, 'facing': 'up'},
     'hc_trial': {'need': 'story.hc_trial_called', 'deny': {'seals>=7': TXT['hb15_door_seven'], 'else': TXT['hb15_door']}},   # §5.2 keyed deny; seals>= counts Seals held (D1329)
     'hc_court': {'need': 'story.hc_no_room', 'deny': TXT['court']},
@@ -412,6 +437,24 @@ for cid, c in CHUNKS.items():
                    'text': f"{DISTRICT[cid]} · This way: {to}."})
         else: fail(f"{cid}: no tile for the {m['id']} signpost")
 
+# ROUTE_TO_GOVERNOR §5.9 (D1853, D1867): the north mouth's warps (no `when`: walking out of the capital always works), the
+# gate arch and the signpost one tile inside, two clipped trees down the lane, and the walk-in trigger (Moss's welcome, unchanged).
+for i, (x, y) in enumerate(R4_MOUTH['cells']):
+    _c1.add({'kind': 'warp', 'id': f"{R4_MOUTH['id']}_{i}", 'x': x, 'y': y, 'to': R4_MOUTH['to'], 'tx': R4_MOUTH['tx'], 'ty': R4_MOUTH['ty0'] + i,
+             'facing': R4_MOUTH['facing']}, blocks=False)
+    _c1.reserved.add((x, y))
+    if not _c1.free(x, y + 1): fail(f'hc_civic: north mouth landing {(x, y + 1)} is not free')
+    _c1.reserved.add((x, y + 1))
+_c1.targets['mouth:' + R4_MOUTH['id']] = R4_MOUTH['cells'][2]
+_c1.add({'kind': 'decal', 'id': 'hc2_arch_' + R4_MOUTH['id'], 'x': R4_MOUTH['cells'][0][0], 'y': 1, 'sprite': 'hc_gate_arch'})
+_c1.add({'kind': 'trigger', 'id': 'hc_walk_in', 'x': 48, 'y': 1, 'r': 2, 'when': ['story.r4_walked', '!story.hc_arrived | !story.hc_greeted'],
+         'scene': 'r4_walk_in'}, blocks=False)
+for oid, (x, y), kw in (('hc2_post_' + R4_MOUTH['id'], (47, 2), {'kind': 'sign', 'sprite': 'signpost', 'text': f"{DISTRICT['hc_civic']} · This way: THE RIVER ROAD."}),
+                        ('hc2_lane_tree_w', (47, 5), {'kind': 'prop', 'sprite': 'clipped_tree'}),
+                        ('hc2_lane_tree_e', (49, 8), {'kind': 'prop', 'sprite': 'clipped_tree'})):
+    if not _c1.safe_block(x, y): fail(f'hc_civic: {oid} at {(x, y)} would block the lane')
+    _c1.add(dict(kw, id=oid, x=x, y=y))
+
 # ---------- tank posts (§4.4): one parked tank on each 4x2 bay, drawn across it (ox shifts the 64 px art) ----------
 for cid, c in CHUNKS.items():
     tanks = 0
@@ -572,6 +615,34 @@ for cid, c in CHUNKS.items():
             if pt['when']: o['when'] = list(pt['when'])
             c.add(o, blocks=False)
 
+# ---------- HC_PARADE (design specs/HC_PARADE.md v0.2): the parade, the speech and the street battles (tools/hc_parade.py) ----------
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hc_parade
+PARADE = hc_parade.build(CHUNKS, keep, fail)
+# ROTOR_CRAFT v0.1.1 (D1385-D1394, settled): Design's draft frames, read from the design repo and carried into the city data
+# (rows deduplicated); sprites.js paints them on first draw. Without the file the engineer's own draft in sprites.js stands in.
+ROTOR = args.rotor or os.path.join(os.path.dirname(os.path.abspath(args.layout)), 'rotor_craft_preview', 'rotor_craft_frames.json')
+PARADE_ART = None
+if os.path.exists(ROTOR):
+    RF = json.load(open(ROTOR)); rows, idx, sprites = [], {}, {}
+    for k, sp in RF['sprites'].items():
+        def ri(r):
+            if r not in idx: idx[r] = len(rows); rows.append(r)
+            return idx[r]
+        e = {'w': sp['w'], 'h': sp['h'], 'ms': sp['ms'], 'frames': [[ri(r) for r in f] for f in sp['frames']]}
+        if sp.get('legend'): e['legend'] = sp['legend']
+        sprites[k] = e
+    PARADE_ART = {'_about': 'ROTOR_CRAFT v0.1.1 draft frames (design specs/rotor_craft_preview/rotor_craft_frames.json), Pia redraws; '
+                            'rows of PAL keys, "." clear, legend chars are [PAL key, alpha]. Painted on first draw (sprites.js).',
+                  'rows': rows, 'sprites': sprites}
+    for k in ('keeper_rotor_r', 'keeper_rotor_front', 'rotor_shadow', 'rotor_shadow_front', 'rotor_beam_down'):
+        if k not in sprites: fail(f'ROTOR_CRAFT frames: no {k}')
+else:
+    note('ROTOR_CRAFT frames not found (' + ROTOR + '): the engineer draft rotor art stands in')
+hc_parade.use_rotor_frames(PARADE_ART is not None)
+SC.update(PARADE['scenes'])
+LOOKS.update(PARADE['looks'])
+
 # ---------- the final outdoor checks ----------
 for cid, c in CHUNKS.items():
     blocked = frozenset(c.block)
@@ -648,7 +719,7 @@ for bid, (x, y) in zip(bed_ids, beds):
 objs += [P(f'hc2_quiet_{x}_{y}', x, y, 'bench_long', name='a quiet bench') for y in (5, 7, 9, 11, 13, 15) for x in (11, 13)]
 room_keep['hc_lantern_in:hc_lantern_light'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 9}
 objs.append(P('hc2_lh_wireset', 7, 13, 'tv_set', name='the wire set'))
-objs += [P(f'hc2_lh_counter_{x}', x, 17, 'stall_counter', name="Host Ines's counter") for x in (6, 8)]
+objs += [P(f'hc2_lh_counter_{x}', x, 17, 'stall_counter', name="Host Maudie's counter") for x in (6, 8)]
 room_keep['hc_lantern_in:hc_lantern_host'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 16, 'facing': 'down'}
 room_keep['hc_lantern_in:hc_lantern_note'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 17}   # the 5-Acorn note on the counter
 room_keep['hc_lantern_in:hc_clinic_shelf'] = {'map': 'hc_lantern_in', 'x': 14, 'y': 20}
@@ -701,12 +772,29 @@ objs = [{'kind': 'warp', 'id': 'hc_gov_1_mat', 'x': 7, 'y': 15, 'to': 'hc_civic'
         {'kind': 'warp', 'id': 'hc_gov_up', 'x': 1, 'y': 2, 'to': 'hc_gov_3', 'tx': 2, 'ty': 12, 'facing': 'up', 'need': GOV3},
         D('hc2_gov_stair_1', 1, 2, 'stair_flight')]
 objs += [P(f'hc2_lobbydesk_{x}', x, 9, 'keep_desk', name='the Keeper desk') for x in (2, 3, 4)]
-objs.append(N('hc_gov_keeper_a', 'Keeper', 'officer', 3, 8, 'down', lines={'else': 'Welcome to the Governor\'s House, holder.'}))
+objs.append(N('hc_gov_keeper_a', 'Keeper', 'officer', 3, 8, 'down', lines={'story.gov_posted & !story.hc_gov_met': TXT['gov_desk'], 'else': 'Welcome to the Governor\'s House, holder.'}))
 objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
 objs += [P(f'hc2_govdesk_{x}', x, 4, 'keep_desk', name="the Governor's desk") for x in (11, 12)]
 SC['hc2_chute'] = [['say', '', TXT['hb12_chute']], ['setFlag', 'story.hc_chute', True]]
 objs.append(P('hc_chute_mouth', 13, 4, 'hc_chute_mouth', name='the ORDERS DOWN chute', scene='hc2_chute', lines={'else': TXT['hb12_chute']}))
-objs.append(N('hc_governor', 'Governor Merriden', 'hc_governor', 12, 3, 'down', when=['story.act>=2'], lines={'else': TXT['gov_line']}))
+# GOVERNOR_MEETING v0.2.1 §5 (D1471-D1473): the meeting, one scene for every holder (no @glimmer variant, D1543). He comes
+# round the chute end of his desk (13,3 / 14,3 / 14,4); the player stands at governor_front (12,5). The only choice shows
+# when the holder saw Fernbrook's ledger (story.shift_g). Flags are written at the end, so an interrupted meeting replays.
+GM = 'Governor Merriden'
+SC['hc_gov_meet'] = [
+    ['walkTo', 'hc_governor', 14, 4],
+    ['say', GM, TXT['gov_m2']], ['say', GM, TXT['gov_m3']], ['say', GM, TXT['gov_m4']], ['say', GM, TXT['gov_m5']], ['say', GM, TXT['gov_m6']],
+    ['if', 'story.shift_g', [
+        ['choice', TXT['gov_m7a'], [
+            [TXT['gov_tell'], [['say', '', TXT['gov_told_n']], ['say', GM, TXT['gov_told']], ['setFlag', 'story.gov_told', 'told']]],
+            [TXT['gov_keep'], [['say', GM, TXT['gov_kept']], ['setFlag', 'story.gov_told', 'kept']]],
+        ], ''],
+    ]],
+    ['say', GM, TXT['gov_m8']],
+    ['setFlag', 'story.km_assigned', True], ['setFlag', 'story.hc_gov_met', True],
+]
+objs.append(N('hc_governor', GM, 'hc_governor', 12, 3, 'down', when=['story.act>=2'],
+              lines={'story.gov_posted & !story.hc_gov_met': '@hc_gov_meet', 'story.km_assigned': TXT['gov_after'], 'else': TXT['gov_line']}))
 objs += [P('hc2_gov_flag_w', 10, 2, 'banner_keeper'), P('hc2_gov_flag_e', 14, 2, 'banner_keeper')]
 ROOMS['hc_gov_1'] = room('hc_gov_1', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_1', objs, (7, 14))
 
@@ -763,10 +851,22 @@ for cid, c in CHUNKS.items():
         walk_text({k: o.get(k) for k in ('text', 'lines', 'deny', 'name')}, f'{cid}:{o["id"]}')
 for rid, r in ROOMS.items():
     for o in r['objs']: walk_text({k: o.get(k) for k in ('text', 'lines', 'deny', 'name')}, f'{rid}:{o["id"]}')
+def walk_says(steps, sid):   # every say, at any depth (if and choice branches), and every choice label
+    for st in steps if isinstance(steps, list) else []:
+        if not isinstance(st, list) or not st: continue
+        if st[0] == 'say' and len(st[2]) > 110: fail(f'{sid}: say over 110')
+        if st[0] == 'choice':
+            if len(st[1]) > 110: fail(f'{sid}: choice prompt over 110')
+            for opt in st[2]:
+                if len(opt[0]) > 30: fail(f'{sid}: choice over 30')
+                walk_says(opt[1], sid)
+        if st[0] == 'if': walk_says(st[2], sid); walk_says(st[3] if len(st) > 3 else [], sid)
 for sid, steps in SC.items():
     walk_text(steps, sid)
-    for st in steps:
-        if st[0] == 'say' and len(st[2]) > 110: fail(f'{sid}: say over 110')
+    walk_says(steps, sid)
+# GOVERNOR_MEETING §5 (D1473): one scene for every holder; the build fails if a Glimmer variant of the meeting ever appears.
+for sid in SC:
+    if sid.startswith('hc_gov_meet') and sid != 'hc_gov_meet': fail(f'{sid}: no variant of hc_gov_meet (D1543)')
 
 # ---------- the reputation cast (every named body needs an entry; only added while the city is on) ----------
 # D1439: the Governor is a civil post, not a Keeper; the cast has no civil value, so he takes 'none' (as civilians do)
@@ -774,6 +874,7 @@ KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
 CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
+CAST += [r for r in PARADE['castRows'] if r['name'] not in names]   # HC_PARADE's generic labels (D1361)
 for e in CAST:   # NPC_RANKS: a Keeper cast entry needs a rank, a pending proposal or a flag; the city's ranks are Story's to set
     if e['faction'] == 'keepers': e['rankFlag'] = 'D1374: city cast, ranks PLACEHOLDER until Story'
 
@@ -815,12 +916,15 @@ out = {
     'roomPatch': room_patch,
     'matMoves': mat_moves,
     'linesPatch': lines_patch,
+    'art': PARADE_ART,
     'scenes': SC,
     'looks': LOOKS,
     'speakers': SPEAKERS,
     'cast': CAST,
+    'castAt': PARADE['castAt'],
     'notStepFlags': ['story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',
-                     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called'],
+                     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
+                     'story.gov_told'] + PARADE['notStepFlags'],   # GOVERNOR_MEETING §6.2; story.km_assigned is the gov_meet chain step
 }
 for n in notes: print('note:', n)
 if fails:

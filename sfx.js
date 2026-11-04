@@ -644,6 +644,22 @@ const PPSound = (() => {
         [41,2],[53,2],[48,2],[53,2],  [45,2],[57,2],[52,2],[57,2],
         [46,2],[58,2],[48,2],[60,2],  [41,2],[48,2],[41,2],[48,1],[52,1] ] },
       drums: ['k.hhs.hk','k.h.s.h.','k.hhs.hk','k.h.s.h.','k.hhs.hk','k.h.s.h.','k.hhs.hk','k.s.s.ss'] },
+    // SCENE_MUSIC v0.1 (design specs/SCENE_MUSIC.md §4.1, D1898): the Weir Hut's room loop. Suspense pedal, the Keeper anthem's head
+    // in the minor, and the call once a loop. `motifs` is for the design checker only; nothing here reads it.
+    weir: { key: 'D minor', bpm: 72, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.3, motifs: ['suspense', 'keepers', 'call'],
+      lead: { wave: 'triangle', gain: 0.13, notes: [
+        [69,3],[74,1],[77,2],[74,2],          // 1 Dm  A D F D: the Keepers' head, minor, alone (the lantern under a cloth)
+        [76,3],[74,1],[73,4],                 // 2 A   E D C#
+        [0,4],[70,2],[69,2],                  // 3 Bb  . Bb A
+        [69,6],[0,2],                         // 4 A   A
+        [69,3],[74,1],[77,2],[79,2],          // 5 Dm  A D F G: the head again, reaching
+        [77,3],[76,1],[74,4],                 // 6 Dm  F E D
+        [0,2],[81,1],[82,1],[81,2],[0,2],     // 7 Gm  . A Bb A: the call, once (the lamps' hum)
+        [0,8] ] },                            // 8 A   breath
+      bass: { wave: 'triangle', gain: 0.2, notes: [
+        [50,2],[50,2],[51,2],[50,2],  [45,2],[45,2],[46,2],[45,2],  [46,2],[46,2],[47,2],[46,2],  [45,2],[45,2],[46,2],[45,2],
+        [50,2],[50,2],[51,2],[50,2],  [50,2],[50,2],[51,2],[50,2],  [43,2],[43,2],[44,2],[43,2],  [45,2],[45,2],[46,2],[45,1],[49,1] ] },
+      drums: ['k.....h.','...h....','.h......','....h..h','k.....h.','..h.....','.....h..','h...h...'] },
   };
   function musicCheck(){
     const bad = [];
@@ -785,6 +801,8 @@ const PPSound = (() => {
     startWanted();
     return true;
   }
+  // MAHOPAC_DREAMS §8 (MD-M2, MD-M6): a scene's silence. No loop is wanted until the next music() call; nothing new is played.
+  function hush(ms){ want = null; token++; if (trk) stopTrack(Math.max(0, ms != null ? ms : 400) / 1000); return true; }
   function pauseMusic(){ token++; if (trk) stopTrack(0.03); }
   function resumeMusic(){
     if (!want || !MUSIC_ON || muted || document.hidden || !ac) return;
@@ -819,7 +837,7 @@ const PPSound = (() => {
   return { play, setMuted, toggle: () => setMuted(!muted), get muted(){ return muted; }, get available(){ return !!AC; },
     get state(){ return ac ? ac.state : 'none'; }, get session(){ return { playThroughSilent: IOS_PLAY_THROUGH_SILENT, type: navigator.audioSession ? navigator.audioSession.type : null, loop: keep ? (keep.paused ? 'paused' : 'playing') : 'none', warmed }; }, get played(){ return played.slice(); },
     names: Object.keys(SFX).concat(Object.keys(STINGERS).map(k => 'stinger_' + k)), get stingers(){ return live.map(s => s.id); },
-    music, setMusic, pauseMusic, resumeMusic, musicCheck, musicSpec, musicIds: () => Object.keys(MUSIC),
+    music, hush, setMusic, pauseMusic, resumeMusic, musicCheck, musicSpec, musicIds: () => Object.keys(MUSIC),
     get musicOn(){ return MUSIC_ON; }, get musicTrack(){ return trk ? trk.id : null; }, get musicWant(){ return want; },
     get musicVol(){ return MUSIC_VOL; },
     get musicSwell(){ return trk && trk.swell ? Object.assign({}, trk.swell) : null; },   // KEEPER_ANTHEM M4: read-only, for tests
