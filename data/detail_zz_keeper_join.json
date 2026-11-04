@@ -31,7 +31,7 @@
   "story.rpt_1": "4.8 R1 (after Hall 2): told / kept, Ilse's first letter. Endings only (D1534)",
   "story.rpt_2": "4.8 R2 (after the chapter finale): told / kept",
   "story.rpt_3": "4.9 R3 (after Brinewick, at the Lodge): told / kept",
-  "story.ilse_call3": "4.9: the recall call answered (an undercover Cadet after Brinewick)",
+  "story.ilse_call3": "4.9: the recall call answered (an undercover Cadet after Brinewick); also writes story.a2_called (GOVERNOR_MEETING §4.1: the recall is a cover holder's one Act 2 call)",
   "story.cover_done": "9b: the cover is over (or there was none); the recall guard",
   "story.warden_cut": "reserved: the Act 3 loyalist choice (D1514). Stops the reports",
   "story.ilse_call_old": "§9.1 (D1546 B): the old-save move is written (at load, once); its own guard",
@@ -1091,6 +1091,11 @@
       true
      ]
     ]
+   ],
+   [
+    "setFlag",
+    "story.a2_called",
+    true
    ]
   ],
   "recall": [

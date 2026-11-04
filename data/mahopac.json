@@ -1,10 +1,10 @@
 {
   "spec": "MAHOPAC",
   "version": "1.0",
-  "status": "playable side story. Optional after the starter. Does not gate the main chain.",
+  "status": "playable story chain. Required on new saves (D1167, quests.js home_trip). Telling Ilse stays optional.",
   "_about": "Mom's upstairs, a north trail to Mahopac, and a dream at Breckenridge Observatory. Time in Mahopac is stuck: people drift a step, then hold still. The dream is three memories (a 2004 pop-toy, a seventh birthday, dinner with Dad at MacRonalds) that teach the partner to trust the player. Mom then sends you to Warden Ilse, who keeps a dream ledger.",
   "decisions": {
-    "1_optional": "The side chain never blocks Route 1. Old saves with a Walkling can start it by going upstairs.",
+    "1_optional": "Was optional (D27). Since D1167 the dream is a main-chain step on new saves. Old saves that skipped it still load and go on.",
     "2_ilse": "Mom calls her Warden Ilse, like everyone else (STORY v0.5, Oct 29). Dreams are part of a Warden's work.",
     "3_dream_art": "Dream maps set dream to young or child. The map gets a soft wash, and the keeper draws smaller.",
     "4_no_conflict": "Mahopac has no trainers, no faction stands, and no wild battles."
@@ -36,7 +36,11 @@
     "story.dream_party": "Finished the seventh-birthday memory.",
     "story.dream_dad": "Finished the drive-through memory.",
     "story.dream_woke": "Woke at home. Mom asked about the dream.",
-    "story.dream_study": "Told Warden Ilse about the dream."
+    "story.dream_study": "Told Warden Ilse about the dream.",
+    "story.mom_mah_ask": "MAHOPAC_DREAMS §4.2 (D1944): walked north with Mom (written at the warp, so an interrupted walk resumes in the Observatory).",
+    "story.mom_mahopac": "MAHOPAC_DREAMS §4.3 (D1944, D1945): told / held, the holder's answer at the lens with Mom.",
+    "story.lens_note": "MAHOPAC_DREAMS §3.1 (D1940): Warden Ilse's note at a Lantern House Host, after the Ledger Night and the Spire.",
+    "story.lens_seen": "MAHOPAC_DREAMS §3.2 (D1941): cut / switch / kept / told / cadet / starter, the moment the lens showed (lines only)."
   },
   "newNames": ["Mahopac", "Breckenridge Observatory", "Mom", "Dad", "Nora", "Cal", "Bess", "MacRonalds"],
   "slicePatch": {
@@ -82,7 +86,7 @@
         {"kind": "sign", "id": "mah_sign", "x": 4, "y": 7, "text": "Breckenridge Observatory. The lens remembers."},
         {"kind": "npc", "id": "nora", "name": "Nora", "look": "nora", "x": 8, "y": 10, "facing": "right", "frozen": true,
           "loop": [[8, 10], [9, 10]],
-          "chatter": {"else": "Still waving. The minute will not end."},
+          "chatter": {"story.mom_mahopac & !story.seal5": "Your mom waved. I'm still waving back.", "else": "Still waving. The minute will not end."},
           "lines": {"else": "I started a wave. I think I am still in it. The next second will not come."}},
         {"kind": "npc", "id": "cal", "name": "Cal", "look": "cal", "x": 12, "y": 9, "facing": "down", "frozen": true,
           "loop": [[12, 9], [12, 10]],
@@ -109,9 +113,24 @@
       "objs": [
         {"kind": "warp", "id": "obs_out", "x": 4, "y": 6, "to": "mahopac", "tx": 5, "ty": 8, "facing": "down"},
         {"kind": "prop", "id": "obs_scope", "x": 4, "y": 2, "sprite": "telescope", "lines": {
+          "story.mom_mah_ask & !story.mom_mahopac": "@mom_lens_look",
+          "story.lens_note & !story.lens_seen & !story.climb_open": "@lens_step",
           "!story.dream_started": "@dream_begin",
           "!story.dream_woke": "@dream_resume",
-          "else": "The lens is quiet. It remembers you, and it lets you leave."}}
+          "story.lens_seen": "The lens is quiet. It keeps what it saw, exactly.",
+          "else": "The lens is quiet. It remembers you, and it lets you leave."}},
+        {"kind": "npc", "id": "mom_obs", "name": "Mom", "look": "mom", "x": 5, "y": 2, "facing": "left",
+          "when": ["story.mom_mah_ask", "!story.mom_mahopac"],
+          "_note": "MAHOPAC_DREAMS §4.2: Mom's temporary body while she is up the hill; talking to her replays her scene from MV1.",
+          "lines": {"else": "@mom_lens"}},
+        {"kind": "npc", "id": "lens_ilse", "name": "Warden Ilse", "look": "ilse", "x": 3, "y": 2, "facing": "right",
+          "when": ["story.lens_note", "!story.lens_seen", "!story.climb_open"],
+          "_note": "MAHOPAC_DREAMS §3.1: Ilse's temporary body by the lens in Act 5, until the moment is filed or Act 6 opens.",
+          "lines": {"else": "@lens_step"}},
+        {"kind": "sign", "id": "obs_sill", "name": "the sill", "x": 6, "y": 2, "sprite": "none",
+          "when": ["story.lens_note", "!story.lens_seen", "!story.climb_open"],
+          "_note": "MAHOPAC_DREAMS §3.5 (E2): the sill, an invisible tap beside the lens; it reads nothing outside the scene.",
+          "lines": {"else": "@lens_step"}}
       ]
     },
     "dream_2004": {
@@ -313,6 +332,157 @@
       ["say", "Mom", "Dreams are her other work. She will want the shape of this one."],
       ["bond", 6],
       ["setFlag", "story.dream_woke", true]
+    ],
+    "mom_lens_offer": [
+      ["if", "story.cv_mom=told & !story.cv_mom_day", [["run", "cv_mom_snack"]]],
+      ["choice", "Walk north with me? I'd like to see this lens of yours.", [
+        ["Walk with her", [
+          ["music", "hearth"],
+          ["say", "", "You walk north together. Maze trots ahead and waits at every bend."],
+          ["setFlag", "story.mom_mah_ask", true],
+          ["warp", "mahopac_obs", 4, 4, "up"],
+          ["run", "mom_lens"]
+        ]],
+        ["Not today", [
+          ["say", "Mom", "Another day, then. The lens will keep."]
+        ]]
+      ], "Mom"]
+    ],
+    "mom_lens": [
+      ["music", "hearth"],
+      ["if", "!story.cover", [
+        ["say", "Mom", "A Keeper pin, and now a lens. You've had a busy year, love."]
+      ], [
+        ["if", "story.cv_mom=told", [
+          ["say", "Mom", "You told me the truth at supper. I wanted to see one more true thing."]
+        ], [
+          ["if", "story.cv_mom=cover", [
+            ["say", "Mom", "A better offer, you said at supper. Up here, nobody's offering anything."]
+          ], [
+            ["say", "Mom", "You didn't answer me at supper. That's all right. Nobody talks much up here."]
+          ]]
+        ]]
+      ]],
+      ["say", "Mom", "Go on, then. Show me how it works."]
+    ],
+    "mom_lens_look": [
+      ["say", "", "The glass blooms for you, not for her: the drive-through, the tray light, the seat beside you."],
+      ["choice", "What does it show you?", [
+        ["The drive-through", [
+          ["say", "", "You tell her. The fries, the tray light, the talk about someday."],
+          ["say", "Mom", "The MacRonalds one."],
+          ["say", "", "Mom opens her mouth to say something. Then she doesn't."],
+          ["setFlag", "story.mom_mahopac", "told"]
+        ]],
+        ["Nothing much", [
+          ["say", "Mom", "All right."],
+          ["say", "", "She looks at the glass a long time anyway, as if it might bloom for her."],
+          ["setFlag", "story.mom_mahopac", "held"]
+        ]]
+      ], "Mom"],
+      ["music", "hush"],
+      ["say", "", "Neither of you says the next thing. The lens hums. On the sill, Maze sighs in her sleep."],
+      ["say", "Mom", "Right. The kettle won't keep itself. Don't stay up here too long."],
+      ["music", "town"],
+      ["say", "", "She squeezes your shoulder on the way out. The door creaks shut behind her."]
+    ],
+    "lens_note": [
+      ["setFlag", "story.lens_note", true]
+    ],
+    "lens_step": [
+      ["if", "talked:lens_part_b", [["run", "lens_sill"]], [
+        ["if", "talked:lens_part_a", [["run", "lens_look"]], [["run", "lens_moment"]]]
+      ]]
+    ],
+    "lens_moment": [
+      ["music", "ledger"],
+      ["say", "", "Warden Ilse waits by the lens with a small book. Not the Lodge ledger. Her other one."],
+      ["if", "story.dream_study", [
+        ["say", "Warden Ilse", "You told me the shape of a dream once. I said: if {pet} dreams again, tell me."]
+      ], [
+        ["if", "story.dream_woke", [
+          ["say", "Warden Ilse", "Your mother says {pet} dreamed here once. You never told me the shape."]
+        ], [
+          ["say", "Warden Ilse", "They say this lens remembers. I'd like to see what it keeps of you."]
+        ]]
+      ]],
+      ["say", "Warden Ilse", "Let {pet} look first."],
+      ["mark", "lens_part_a"]
+    ],
+    "lens_look": [
+      ["music", "ledger"],
+      ["say", "", "{pet} leans into the glass first. Its shape flickers, watching, the way it always watches you."],
+      ["music", "hush"],
+      ["say", "", "The glass blooms. Not a childhood room. Something {pet} saw, right at your side."],
+      ["if", "lens:cut", [
+        ["say", "", "The Cabinet Room door. A Commander. Your own voice: I answer to the Commander now."],
+        ["say", "Warden Ilse", "He told me you said it. I wanted to see your face when you did."]
+      ], [
+        ["if", "lens:switch", [
+          ["if", "story.cover", [
+            ["say", "", "Brightgate's lobby. Juniper clips your old lanyard back on. You hold still for it."]
+          ], [
+            ["say", "", "Brightgate's lobby. Juniper clips a new lanyard on your coat. You hold still for it."]
+          ]],
+          ["say", "Warden Ilse", "They told me you went to them. I wondered if you'd flinch. You held still."]
+        ], [
+          ["if", "lens:kept", [
+            ["say", "", "Your report to Ilse. You give her all of it but one line. The lens shows that line too."],
+            ["say", "Warden Ilse", "So that's the line. I'd rather have it late than never."]
+          ], [
+            ["if", "lens:told", [
+              ["say", "", "Your first letter to Ilse, at a Host's counter after Hall 2. Every line goes in."],
+              ["say", "Warden Ilse", "Word for word, the letter I got. I never doubted it. It's good to see it whole."]
+            ], [
+              ["if", "lens:cadet", [
+                ["say", "", "The Lodge, the night she made you her Cadet. Your own face, saying yes."],
+                ["say", "Warden Ilse", "I've only seen that from my side of the desk. You looked surer than I felt."]
+              ], [
+                ["say", "", "The Lodge, your first morning. Ilse holds out a small Walkling. It's {pet}."],
+                ["say", "Warden Ilse", "Your name went in my ledger that morning. Here's the morning itself."]
+              ]]
+            ]]
+          ]]
+        ]]
+      ]],
+      ["mark", "lens_part_b"]
+    ],
+    "lens_sill": [
+      ["music", "hush"],
+      ["say", "", "Ilse opens the small book on the sill. Tucked inside: the Commander's order. Its top line is blank."],
+      ["if", "story.ilse_paper=given", [
+        ["say", "", "Under it, the Governor's paper you brought her. The one they read from."]
+      ], [
+        ["if", "story.ilse_copy_seen", [
+          ["say", "", "Under it, Lizzy's school order. Its top line is blank too."]
+        ]]
+      ]],
+      ["say", "", "She writes the shape in, in ink, beside them. One pass. She doesn't strike anything."],
+      ["say", "Warden Ilse", "That goes in my other book. Not the Court's."],
+      ["if", "lens:cut & story.solvane_met", [
+        ["say", "", "You tell her about the bell tower at low tide. She doesn't laugh."],
+        ["say", "Warden Ilse", "I dreamed a bell tower once. It's in this book."]
+      ]],
+      ["music", "ledger"],
+      ["say", "", "The lens dims. It remembers you, and it lets you leave."],
+      ["if", "lens:cut", [["setFlag", "story.lens_seen", "cut"]], [
+        ["if", "lens:switch", [["setFlag", "story.lens_seen", "switch"]], [
+          ["if", "lens:kept", [["setFlag", "story.lens_seen", "kept"]], [
+            ["if", "lens:told", [["setFlag", "story.lens_seen", "told"]], [
+              ["if", "lens:cadet", [["setFlag", "story.lens_seen", "cadet"]], [["setFlag", "story.lens_seen", "starter"]]]
+            ]]
+          ]]
+        ]]
+      ]]
+    ],
+    "mahopac_card": [
+      ["say", "", "MAHOPAC · {date}"],
+      ["say", "", "Nora's wave finishes. Across the green, someone waves back."],
+      ["say", "", "Cal's kite finds the wind it lost and tugs at his hand."],
+      ["say", "", "Bess winds the stopped clock. It keeps time now, like any other."],
+      ["if", "story.mom_mahopac", [
+        ["say", "", "Mom hears it from Hattie and puts the kettle on."]
+      ]]
     ],
     "ilse_gate": [
       ["if", "story.dream_study", [["run", "ilse_chat"]], [["run", "ilse_dreams"]]]

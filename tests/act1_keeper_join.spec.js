@@ -782,7 +782,7 @@ test.describe('ACT1_KEEPER_JOIN: the old-save move at load (K8, T16)', () => {
         const g = await flags(page);
         for (const k of want.report) expect(g['story.' + k], k).toBe('told');
         expect(g['story.rpt_old_seen']).toBe(true);
-        expect((await quest(page)).id).toBe('end');
+        expect((await quest(page)).id).toBe('gov_post');   // GOVERNOR_MEETING §6.3: Act 2 opens with Ilse's posting
       }
       // O11 (every kind): reloading never moves twice; nothing new is written.
       const once = JSON.stringify((await stored(page)).flags);
