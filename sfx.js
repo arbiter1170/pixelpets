@@ -215,6 +215,16 @@ const PPSound = (() => {
       [0, 41, 300, 'triangle', 0.5], [300, 46, 220, 'triangle', 0.45], [520, 48, 230, 'triangle', 0.45], [760, 53, 620, 'triangle', 0.5],
       [760, 6000, 300, 'noise', 0.08],
     ],
+    // SCENE_MUSIC v0.1 §4.1 (D1904): Ilse's correction and the high flicker over a hum; same player, queue and duck as above.
+    ink: [                                         // ~1.1 s  Ilse's motif as one gesture: the count, the slip, the correction
+      [0, 74, 80, 'square', 0.1], [110, 74, 80, 'square', 0.1], [220, 76, 80, 'square', 0.1], [330, 77, 80, 'square', 0.1],
+      [460, 80, 100, 'square', 0.11], [460, 5000, 60, 'noise', 0.05],               // A-flat struck (the pen's scratch)
+      [580, 79, 520, 'square', 0.11], [580, 62, 520, 'triangle', 0.35], [580, 50, 520, 'triangle', 0.4],   // G written beside it
+    ],
+    call: [                                        // ~1.5 s  a low hum and one high semitone flicker
+      [0, 47, 1500, 'triangle', 0.4], [0, 59, 1500, 'triangle', 0.2],
+      [250, 83, 200, 'triangle', 0.14], [480, 84, 200, 'triangle', 0.14], [710, 83, 760, 'triangle', 0.12],
+    ],
   };
 
   // Player (STINGERS §5-§6): a different stinger queues behind the one sounding (80 ms gap), at most one playing + one queued;
@@ -256,6 +266,125 @@ const PPSound = (() => {
     h: ['highpass', 6500, 30, 0.04],
   };
   const MUSIC = {
+    // SCENE_MUSIC v0.1 (design specs/SCENE_MUSIC.md §4.1, D1890-D1909): the scene loops and `hush`, pasted from the spec literal
+    // (the Weir Hut's `weir`, #309, is at the end of MUSIC). A scene picks one with its own ["music", id] step; `motifs` is for the design checker
+    // only (musicSpec() does not copy it). `hush` is one bar of rests: ["music", "hush"] fades the loop out and plays nothing.
+    curfew: { key: 'G minor', bpm: 80, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.45, motifs: ['suspense', 'keepers'],
+      lead: { wave: 'triangle', gain: 0.15, notes: [
+        [62,3],[67,1],[70,2],[67,2],          // 1 G   D G Bb G: the Keepers' head, minor
+        [69,3],[67,1],[66,4],                 // 2 G   A G F# (over the pedal)
+        [62,3],[67,1],[70,2],[74,2],          // 3 G   D G Bb D
+        [72,3],[70,1],[69,4],                 // 4 D   C Bb A
+        [79,6],[0,2],                         // 5 Eb  the bell: G5
+        [0,8],                                // 6 C
+        [79,6],[0,2],                         // 7 Eb  the bell
+        [0,4],[62,2],[66,2] ] },              // 8 D   D F# back to the top
+      bass: { wave: 'triangle', gain: 0.24, notes: [
+        [55,2],[55,2],[56,2],[55,2],  [55,2],[55,2],[56,2],[55,2],  [55,2],[55,2],[56,2],[55,2],  [50,2],[50,2],[51,2],[50,2],
+        [51,2],[51,2],[52,2],[51,2],  [48,2],[48,2],[49,2],[48,2],  [51,2],[51,2],[52,2],[51,2],  [50,2],[50,2],[51,2],[50,1],[54,1] ] },
+      drums: ['k.h.h.h.','k.h.h.h.','k.h.h.h.','k.h.h.hh','k.h.h.h.','k.h.h.h.','k.h.h.h.','k.h.s.hh'] },
+
+    president: { key: 'Eb major', bpm: 84, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.25, motifs: ['president'],
+      lead: { wave: 'triangle', gain: 0.18, notes: [
+        [70,2],[67,1],[68,1],[65,2],[63,2],   // 1 Eb  Bb G Ab F Eb: his line, falling home
+        [63,4],[65,2],[67,2],                 // 2 Eb  Eb F G
+        [68,3],[67,1],[65,2],[68,2],          // 3 Ab  Ab G F Ab
+        [67,6],[0,2],                         // 4 Eb  G
+        [70,2],[67,1],[68,1],[65,2],[63,2],   // 5 Eb  his line again
+        [72,3],[71,1],[70,4],                 // 6 Abm C Cb Bb: the borrowed minor four
+        [68,2],[67,2],[65,2],[62,2],          // 7 Bb  Ab G F D
+        [63,6],[0,2] ] },                     // 8 Eb  Eb
+      bass: { wave: 'triangle', gain: 0.24, notes: [
+        [51,2],[58,2],[51,2],[58,2],  [51,2],[58,2],[55,2],[58,2],  [44,2],[51,2],[44,2],[51,2],  [51,2],[58,2],[51,2],[58,2],
+        [51,2],[58,2],[51,2],[58,2],  [44,2],[51,2],[47,2],[51,2],  [46,2],[53,2],[46,2],[53,2],  [51,4],[58,2],[51,1],[46,1] ] },
+      drums: ['k...s...','k...s...','k...s...','k...s...','k...s...','k...s...','k...s...','k...s.s.'] },
+
+    ledger: { key: 'D minor', bpm: 92, bars: 8, stepsPerBar: 8, gate: 0.6, perc: 0.45, motifs: ['ilse'],
+      lead: { wave: 'square', gain: 0.05, notes: [
+        [62,1],[62,1],[64,1],[65,1],[68,1],[67,3],         // 1 Dm  D D E F, Ab struck, G written beside it
+        [69,2],[67,1],[65,1],[64,4],                       // 2 A   A G F E
+        [62,1],[62,1],[64,1],[65,1],[67,1],[69,1],[70,2],  // 3 Dm  down the column: D D E F G A Bb
+        [69,4],[0,4],                                      // 4 A   A
+        [74,1],[74,1],[76,1],[77,1],[80,1],[79,3],         // 5 Dm  the correction again, an octave up
+        [77,2],[76,1],[74,1],[73,4],                       // 6 Bb A  F E D C#
+        [74,1],[73,1],[74,1],[76,1],[77,2],[76,2],         // 7 Gm A  D C# D E F E
+        [74,6],[0,2] ] },                                  // 8 Dm  D
+      bass: { wave: 'triangle', gain: 0.22, notes: [
+        [50,2],[57,2],[50,2],[57,2],  [45,2],[52,2],[45,2],[52,2],  [50,2],[57,2],[46,2],[53,2],  [45,2],[52,2],[45,2],[49,2],
+        [50,2],[57,2],[50,2],[57,2],  [46,2],[53,2],[45,2],[52,2],  [43,2],[50,2],[45,2],[52,2],  [50,4],[45,2],[45,1],[49,1] ] },
+      drums: ['k.h.h.h.','..h.h.h.','k.h.h.h.','..h.k...','k.h.h.h.','..h.h.h.','k.h.h.h.','..h.s...'] },
+
+    dawn: { key: 'F major', bpm: 76, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.3, motifs: ['home'],
+      lead: { wave: 'triangle', gain: 0.18, notes: [
+        [0,2],[69,2],[72,2],[77,2],           // 1 F   . A C F
+        [76,4],[72,4],                        // 2 C   E C: home, slow, first light
+        [74,2],[77,2],[81,4],                 // 3 Dm  D F A
+        [79,6],[0,2],                         // 4 C   G
+        [0,2],[69,2],[72,2],[77,2],           // 5 F   . A C F
+        [79,2],[77,2],[76,4],                 // 6 C   G F E
+        [74,2],[72,2],[74,2],[76,2],          // 7 Bb  D C D E
+        [77,4],[72,2],[69,2] ] },             // 8 F   F C A
+      bass: { wave: 'triangle', gain: 0.2, notes: [
+        [41,4],[48,4],  [48,4],[55,4],  [50,4],[45,4],  [48,4],[43,4],
+        [41,4],[48,4],  [48,4],[52,4],  [46,4],[48,4],  [41,4],[48,3],[40,1] ] },
+      drums: ['h.......','......h.','...h....','.....h..','h.......','.....h..','..h.....','....h...'] },
+
+    hearth: { key: 'F major', bpm: 72, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.15, motifs: ['home'],
+      lead: { wave: 'triangle', gain: 0.16, notes: [
+        [69,2],[72,2],[77,3],[76,1],          // 1 F   A C F E
+        [72,4],[0,2],[72,2],                  // 2 Dm  C . C: home, over a minor chord
+        [74,2],[72,2],[70,2],[69,2],          // 3 Bb  D C Bb A
+        [67,6],[0,2],                         // 4 C   G, left open (the question)
+        [69,2],[72,2],[77,3],[76,1],          // 5 F   A C F E
+        [74,4],[72,2],[70,2],                 // 6 Bb  D C Bb
+        [69,2],[70,2],[72,2],[67,2],          // 7 C   A Bb C G
+        [65,6],[0,2] ] },                     // 8 F   F
+      bass: { wave: 'triangle', gain: 0.22, notes: [
+        [41,2],[48,2],[53,2],[48,2],  [38,2],[45,2],[50,2],[45,2],  [46,2],[53,2],[58,2],[53,2],  [48,2],[55,2],[53,2],[55,2],
+        [41,2],[48,2],[53,2],[48,2],  [46,2],[53,2],[50,2],[53,2],  [48,2],[55,2],[52,2],[55,2],  [41,2],[48,2],[53,2],[48,1],[40,1] ] },
+      drums: ['k.......','........','........','........','k.......','........','........','........'] },
+
+    sweet: { key: 'F Lydian', bpm: 100, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.4, motifs: ['glimmer'],
+      lead: { wave: 'triangle', gain: 0.17, notes: [
+        [65,2],[69,2],[72,2],[71,1],[72,1],   // 1 F   F A C B C: the sweet lean
+        [77,4],[76,2],[74,2],                 // 2 G   F E D
+        [72,2],[76,2],[79,2],[77,2],          // 3 C   C E G F
+        [76,6],[0,2],                         // 4 C   E
+        [65,2],[69,2],[72,2],[71,1],[72,1],   // 5 F   the lean again
+        [81,4],[79,2],[77,2],                 // 6 Dm  A G F
+        [76,2],[74,2],[71,2],[72,2],          // 7 G   E D B C
+        [77,6],[0,2] ] },                     // 8 F   F: home, too neatly
+      bass: { wave: 'triangle', gain: 0.22, notes: [
+        [41,2],[48,2],[45,2],[48,2],  [43,2],[50,2],[47,2],[50,2],  [48,2],[55,2],[52,2],[55,2],  [48,2],[55,2],[52,2],[55,2],
+        [41,2],[48,2],[45,2],[48,2],  [38,2],[45,2],[50,2],[45,2],  [43,2],[50,2],[47,2],[48,2],  [41,2],[48,2],[45,2],[48,1],[40,1] ] },
+      drums: ['k.h.s.h.','k.h.s.h.','k.h.s.h.','k.h.s.hh','k.h.s.h.','k.h.s.h.','k.h.s.h.','k.h.s.s.'] },
+
+    storm: { key: 'C minor', bpm: 104, bars: 8, stepsPerBar: 16, gate: 0.9, perc: 0.7, motifs: ['suspense', 'call'],
+      lead: { wave: 'triangle', gain: 0.15, notes: [
+        [60,4],[63,4],[67,4],[68,4],          // 1 Cm  C Eb G Ab
+        [67,8],[63,4],[62,4],                 // 2 Ab  G Eb D
+        [60,4],[63,4],[67,4],[70,4],          // 3 Cm  C Eb G Bb
+        [68,8],[67,8],                        // 4 G   Ab G
+        [0,16],                               // 5     the tune stops
+        [0,8],[84,2],[85,2],[84,4],           // 6     C Db C: a high flicker, once
+        [0,16],                               // 7
+        [0,16] ] },                           // 8
+      bass: { wave: 'triangle', gain: 0.24, notes: [
+        [48,2],[48,2],[48,2],[49,2],[48,2],[48,2],[48,2],[49,2],   // 1 the pedal, rolling
+        [44,2],[44,2],[44,2],[45,2],[44,2],[44,2],[44,2],[45,2],   // 2
+        [48,2],[48,2],[48,2],[49,2],[48,2],[48,2],[48,2],[49,2],   // 3
+        [43,2],[43,2],[43,2],[44,2],[43,2],[43,2],[43,2],[44,2],   // 4
+        [48,4],[48,4],[48,4],[48,4],                               // 5 held flat, a slow tread
+        [48,4],[48,4],[48,4],[48,4],                               // 6
+        [48,4],[48,4],[49,4],[48,4],                               // 7
+        [48,4],[48,4],[48,4],[43,2],[43,1],[47,1] ] },                           // 8
+      drums: ['k.......k...s...','k.......k.s.ssss','k.......k...s...','k.k.k.k.ssssssss',
+              'k...............','................','................','................'] },
+
+    hush: { key: 'C major', bpm: 60, bars: 1, stepsPerBar: 8, gate: 0.9, perc: 0, motifs: [],   // silence as a cue: no engine change
+      lead: { wave: 'triangle', gain: 0.01, notes: [[0,8]] },
+      bass: { wave: 'triangle', gain: 0.01, notes: [[0,8]] },
+      drums: ['........'] },
     town: { key: 'F major', bpm: 96, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.55,
       lead: { wave: 'triangle', gain: 0.22, notes: [
         [69,2],[72,1],[77,1],[76,2],[72,2],
