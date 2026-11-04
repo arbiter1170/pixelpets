@@ -12,7 +12,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 const MAPS = ['hearthmoor', 'route1', 'fernbrook', 'route2', 'cobblecrest'];
 
 test('the worker does not take over an open page and does not return a manual redirect @w1', async ({ request }) => {
-  const sw = await (await request.get('/sw.js')).text();
+  const sw = await (await request.get('./sw.js')).text();
   expect(sw).not.toMatch(/\.skipWaiting\s*\(/);
   expect(sw).not.toMatch(/redirect:\s*['"]manual['"]/);
   expect(sw).toMatch(/version\.json/);
@@ -31,7 +31,7 @@ test('a boot failure reloads once even when sessionStorage is wiped @w1', async 
     if (docs > 2) return route.fulfill({ status: 200, contentType: 'text/html', body: '<!DOCTYPE html><title>stop</title>' });
     return route.fulfill({ status: 200, contentType: 'text/html', body: html });
   });
-  await page.goto('/', { waitUntil: 'commit' });
+  await page.goto('./', { waitUntil: 'commit' });
   await page.waitForURL(/[?&]b=boot\./, { timeout: 15000 });
   await page.waitForTimeout(1200);
   expect(docs).toBe(2);

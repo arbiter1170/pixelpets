@@ -315,7 +315,7 @@ test('T10 all: save unchanged, debug hooks inert without ?debug=1, 26 holders in
   }
   expect(n).toBe(32);
   // Without debug (?debug=0 turns this tab's debug session off) the debug reads are inert.
-  await page.goto('/?debug=0');
+  await page.goto('./?debug=0');
   await page.waitForFunction(() => window.PixelPets);
   expect(await page.evaluate(() => typeof PixelPets.matchMarks === 'function' ? PixelPets.matchMarks() : undefined)).toBeUndefined();
 });

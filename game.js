@@ -176,6 +176,7 @@ for (const [id, sk] of Object.entries(SKINS)) if (sk.wall) Object.assign(TILES, 
 const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
 const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
 const fadedCol = col => Object.fromEntries(Object.entries(col).map(([ch, v]) => [ch, PAL[FADE_KEY[PAL_KEY[v]]] || v]));
+if (typeof SA === 'object') SA.fade = { col: fadedCol, key: FADE_KEY };   // SPRITE_ANIM: faded pets' pose frames fade the same way
 function fadedStage(st){
   if (!st.grid) return { src: st.half, col: fadedCol(st.col) };
   return { src: st.grid.map(row => [...row].map(ch => ch === '.' ? '.' : (FADE_KEY[ch] || ch)).join('')), col: null };
@@ -3886,6 +3887,9 @@ if (MD.interiors && MD.interiors.dialog) {
 // Map-pass overlays (handoff/maps): data/detail_*.json, ours, one file per batch, so the verbatim design copies stay untouched.
 // Each may carry `tiles` (new map chars only, never a redefinition) and a `slicePatch`, applied after every other patch.
 const DETAIL_KEYS = Object.keys(MD).filter(k => k.startsWith('detail_')).sort();
+// BRIGHTGATE_LAYOUT: an overlay may add reputation cast entries (`cast`); a name the cast already has keeps its entry.
+if (MD.reputation && Array.isArray(MD.reputation.cast)) for (const k of DETAIL_KEYS) for (const e of MD[k].cast || [])
+  if (e && e.name && !MD.reputation.cast.some(c => c && c.name === e.name)) MD.reputation.cast.push(Object.assign({}, e));
 const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles, (MD.cobblecrest && MD.cobblecrest.tiles) || {}, (MD.cobblecrest && MD.cobblecrest.roomTiles) || {}, (MD.highcharity && MD.highcharity.tiles) || {},
   ...DETAIL_KEYS.map(k => MD[k].tiles || {}));
 function applyMapPatch(W, patch){
@@ -4784,7 +4788,7 @@ let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };   // per map visit, never saved
 let edgeExitCache = null;   // MAP_EDGE_TAPS P1: rebuilt on the next tap after arrive (useMap)
 function useMap(id){
-  CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
+  CUR = WORLD[id] || WORLD.hearthmoor; if (CUR.tilePatch) patchCells(CUR); MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };
   patrolClock = 0;
   edgeExitCache = null;
@@ -4802,6 +4806,7 @@ function trackFor(map){
   }
   if (!map) return null;
   if (map.music && PPSound.musicIds().includes(map.music)) return map.music;
+  if (map.music === 'sweet') return 'town_glimmer';   // BRIGHTGATE_LAYOUT: SCENE_MUSIC's `sweet` is a data ask until its slice lands
   if (map.id === 'cobble_quarry') return 'quarry';
   if (map.dream) return 'dream';
   if (map.backdrop === 'grove') return 'grove';
@@ -4823,7 +4828,7 @@ function battleTrack(kind, trainerId){
   if (kind === 'wild') return WILD_TRACKS[wildTune % WILD_TRACKS.length];
   const base = trainerMusicId(trainerId);
   if (kind === 'trainer' && RIVAL_IDS.indexOf(base) >= 0) return 'rival';
-  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale' || base === 'hall3_marisol')) return 'trial';
+  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale' || base === 'hall3_marisol' || base === 'hall4_master')) return 'trial';
   if (kind === 'trainer' && trainerFaction(base) === 'glimmer' && side() !== 'glimmer')
     return (S && S.flags['music.glimmer_fought']) ? 'glimmer_battle' : 'glimmer_first';
   return 'battle';
@@ -5007,12 +5012,27 @@ function present(o){
 }
 // A pushed dream prop that was left mid-circuit (reload, resume) starts where it stopped, not back at its first tile.
 const rollSpot = o => { const st = +S.flags[o.rollFlag] || 0, c = o.circuit[st % o.circuit.length]; return st && c ? { x: c[0], y: c[1] } : o; };
+// BRIGHTGATE_LAYOUT §4.3 (D1488): a `glide` object (a Courtesy Cruiser, a Sky Concierge) runs its lane x0..x1 on row y and back,
+// `speed` tiles a second with `pause` seconds at each end, on the shared clock. It never blocks, never talks, and reduced
+// motion parks it at its west end. Drawn on the y-sorted layer.
+function glidePos(o){
+  const gl = o.glide || {}, x0 = gl.x0 != null ? gl.x0 : o.x, x1 = gl.x1 != null ? gl.x1 : o.x, sp = gl.speed || 3.2, pa = gl.pause != null ? gl.pause : 1.4;
+  if (prefersReduced() || x1 === x0) return { x: o.x, y: o.y, fx: x0, fy: o.y, moving: false, facing: 'right' };
+  const d = Math.abs(x1 - x0) / sp, cyc = 2 * (d + pa), p = (now() / 1000) % cyc;
+  if (p < pa) return { x: o.x, y: o.y, fx: x0, fy: o.y, moving: false, facing: 'right' };
+  if (p < pa + d) return { x: o.x, y: o.y, fx: x0 + (x1 - x0) * (p - pa) / d, fy: o.y, moving: true, facing: 'right' };
+  if (p < 2 * pa + d) return { x: o.x, y: o.y, fx: x1, fy: o.y, moving: false, facing: 'left' };
+  return { x: o.x, y: o.y, fx: x1 + (x0 - x1) * (p - 2 * pa - d) / d, fy: o.y, moving: true, facing: 'left' };
+}
 function objPos(o){
+  if (o && o.kind === 'glide') return glidePos(o);
   const sched = schedPos(o);
   if (sched) { const P = mapRT.pos[o.id]; return P && P.sk === sched.x + ',' + sched.y ? P : sched; }   // NPC_LIFE: a walk around this row's tile
   return mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
 }
-function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
+// KILNMOUTH perf (K-T11): the tile test runs before present(), so a path search no longer reads every object's `when` for every cell
+// (the same object is found: the three tests are all required, only their order changed).
+function objAt(x, y, pred){ return CUR.objs.find(o => { const q = objPos(o); return q.x === x && q.y === y && present(o) && (!pred || pred(o)); }) || null; }
 const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind] && !o.fly);   // HC_PARADE E7: a flyer never blocks
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
 // Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; that skin's walk table wins over TILE_DEF.
@@ -6052,6 +6072,16 @@ function findPath(goals){
   const prev = new Map([[key(sx, sy), null]]), q = [[sx, sy]];
   const isGoal = (x, y) => goals.some(g => g.x === x && g.y === y);
   if (isGoal(sx, sy)) return [];
+  // KILNMOUTH perf (K-T11): file the map's objects by tile once, so each step reads only its own tile's objects (the same tests
+  // as solid(), warpBlocked() and warpAt(): the first present object there, in map order).
+  const byTile = new Map();
+  for (const o of CUR.objs) { const p = objPos(o), k = key(p.x, p.y), l = byTile.get(k); if (l) l.push(o); else byTile.set(k, [o]); }
+  const here = (x, y, pred) => (byTile.get(key(x, y)) || []).find(o => present(o) && pred(o)) || null;
+  const stopAt = (x, y) => {
+    if (solidTile(x, y) || here(x, y, o => BLOCK_KINDS[o.kind])) return true;
+    const wp = here(x, y, o => o.kind === 'warp');
+    return !!wp && ((!!wp.need && !needMet(wp.need)) || !isGoal(x, y));
+  };
   let visits = 0;
   while (q.length && visits < cap) {
     const [x, y] = q.shift();
@@ -6059,7 +6089,7 @@ function findPath(goals){
     for (const [dx, dy] of Object.values(DIRS)) {
       const hop = hopLanding(x + dx, y + dy, dx, dy);   // a hop ledge is one edge, one way (D560)
       const nx = hop ? hop.x : x + dx, ny = hop ? hop.y : y + dy, k = key(nx, ny);
-      if (prev.has(k) || solid(nx, ny) || wildAt(nx, ny) || warpBlocked(nx, ny) || (warpAt(nx, ny) && !isGoal(nx, ny))) continue;
+      if (prev.has(k) || stopAt(nx, ny) || wildAt(nx, ny)) continue;
       prev.set(k, [x, y]);
       if (isGoal(nx, ny)) { const out = []; let c = [nx, ny]; while (c && !(c[0] === sx && c[1] === sy)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); } return out; }
       q.push([nx, ny]);
@@ -7277,7 +7307,7 @@ function settleHop(){
 function warpTo(at, after){
   if (fade.busy) return;
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('warp');
-  fade.busy = true; fade.t0 = now(); settleHop(); clearMoves();
+  fade.busy = true; fade.t0 = now(); settleHop(); clearMoves(); kmPrevMap = CUR ? CUR.id : null;   // KILNMOUTH E6: the map a warp leaves
   setTimeout(() => { arriveAt(at); }, FADE_MS / 2);
   setTimeout(() => { fade.busy = false; if (after) after(); maybeLanternGuide(); }, FADE_MS);
 }
@@ -7292,12 +7322,13 @@ function arriveAt(at){
   }
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null; walk.hop = false;
-  resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
+  resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; if (CUR.id === 'brightgate') S.flags['story.reached_brightgate'] = true; bump.talked = null; markMapSeen();
   placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); humOnArrive(); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
   try { syncPlaceYield(true); } catch (e) {}
   try { noteMhcRestRoom(); } catch (e) {}
   try { sideBarArrive(); } catch (e) {}   // SIDE_BADGE: who holds the town or route you just walked into
+  try { kmArrive(); } catch (e) {}   // KILNMOUTH E6: the visit counter
   if (CUR.objs.some(o => o.load)) {   // HC_PARADE E10: once the warp's fade has cleared, a `load` trigger on this map may play
     const mid = CUR.id, tryLoad = n => { if (!CUR || CUR.id !== mid || scene) return; if (fade.busy && n < 40) { setTimeout(() => tryLoad(n + 1), 60); return; } checkLoadTriggers(); };
     setTimeout(() => tryLoad(0), 0);
@@ -7397,10 +7428,12 @@ function factionOfMap(id){
   if (!id) return null;
   if (id === 'gw_preview') return window.PPFleet ? PPFleet.previewFaction() : null;   // the preview lot follows its chosen hold
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
+  if (id === 'kilnmouth' || id.indexOf('km_') === 0) return kmFaction(id);   // KILNMOUTH E8: the town follows its hold (CAB §3.6)
   if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
   if (id === 'bw_depot_in') return 'glimmer';                               // BRINEWICK (B6): a Keepers harbour with a Glimmerwell depot
   if (id === 'brinewick' || id.indexOf('bw_') === 0) return 'keepers';
   if (id === 'highcharity' || id.indexOf('hc_') === 0) return 'keepers';   // the capital wears the same gold and green as Hearthmoor
+  if (id === 'brightgate' || id.indexOf('bg_') === 0) return 'glimmer';    // BRIGHTGATE_LAYOUT D1496: the company's city; no hold flips it here
   if (id === 'hearthmoor' || id.indexOf('hm_') === 0 || id === 'fernbrook' || id === 'route1' || id === 'route2') return 'keepers';
   return null;
 }
@@ -7408,7 +7441,8 @@ function factionOfMap(id){
 // along the wall), trim (a PAL key) and shape ('gable', 'steep', 'point', 'dome', 'arch', 'drum', 'flat' or 'stepped', plus any of
 // '+chimney', '+mast', '+bell', '+clock', '+bunting', '+emblem', '+slit'). An entry with none of these draws exactly as before.
 // Each styled building is painted once per map and faction, then cut into 16x16 cells that replace its R and H tiles.
-const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPpt', bldCache = new Map(), BLD_CAP = 3;
+// BRIGHTGATE_LAYOUT: l (mown lawn), I (panel paving) and o (cobbles) show behind a cut roof too, so no grass with mint shows there (D2000).
+const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPptlIo', bldCache = new Map(), BLD_CAP = 3;
 const bldKey = (x, y) => y * 4096 + x;
 function buildingsOf(m){
   const out = [], at = (x, y) => (m.grid[y] && m.grid[y][x]) || '';
@@ -7909,7 +7943,7 @@ function drawMap(t){
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
   drawBubbles(g, cx, cy, t);
-  if (!isRoom()) drawWeather(g, VW, VH, t);   // weather tint is skipped indoors (INTERIORS §2.1)
+  if (!isRoom()) { drawMapOverlays(g, cx, cy, VW, VH, t); drawWeather(g, VW, VH, t); }   // weather tint is skipped indoors (INTERIORS §2.1); KILNMOUTH E4 clouds under it
   drawDream(g, VW, VH, t);
   drawObjectiveCue(g, cx, cy, t);
   drawNeedBubble(g, cx, cy, t);
@@ -8672,7 +8706,7 @@ function drawFlyers(g, cx, cy, VW, VH, t){
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   const wide = o.ox ? 48 : 0;   // a 64 px tank or 32 px car drawn across its bay: cull by its full width
-  const wm = Math.max(wide, o.kind === 'prop' ? propCullMargin(o) : 0);   // E4 (D1204): wide art (a 64 px tank, a 96 px beam) keeps drawing past the edge
+  const wm = Math.max(wide, o.kind === 'prop' || o.kind === 'glide' ? propCullMargin(o) : 0);   // E4 (D1204): wide art (a 64 px tank, a 96 px beam) keeps drawing past the edge
   if (X < -26 - wm || Y < -24 - wide || X > VW + 10 + wm || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
@@ -8695,6 +8729,10 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   else if (o.kind === 'prop') {
     let key = propArtKey(o); if (q.moving && WART[key + '_move']) key += '_move';   // E3 (D1204): a moving prop shows its `_move` frames
     const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X + (o.ox || 0), Y + (o.oy || 0));   // ox/oy: wide art across its bay (a parked car or tank)
+  }
+  else if (o.kind === 'glide') {   // BRIGHTGATE_LAYOUT: a gliding vehicle; `_move` frames while it moves, `_l` facing west
+    const k = o.sprite + (q.moving && WART[o.sprite + '_move'] ? '_move' : '') + (q.facing === 'left' ? '_l' : ''), a = WART[k] || WART[o.sprite];
+    if (a) drawArt(g, artFrame(a, t), X + (o.ox || 0), Y + (o.oy || 0));
   }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') {
@@ -9357,6 +9395,9 @@ function interact(o){
   if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) { noteContact(objName(o)); npcReact(o, null, 'hop', REACT_HOP_MS); } }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
+    // BRIGHTGATE_LAYOUT §5.2: a Master whose row names a `crew` waits until each of them is beaten (Hall 4; Fen keeps hallCrewDone).
+    if (!S.flags['trainer.' + o.id] && t && Array.isArray(t.crew) && t.crew.some(c => TRAINERS[c] && !S.flags['trainer.' + c]))
+      return runSteps([['say', t.name, (t.lines && t.lines.crew) || 'Beat my crew first.']], ctx);
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
     if (o.id === 'rc_tobin' && S.flags['story.gb_hollis_told'] && !S.flags['story.gb_tobin']) {
       return runSteps([
@@ -10128,7 +10169,7 @@ async function execStep(st){
     // DAY1_TRIAL1_FLOW (D1154): ["take", id, n] uses up n of an item (the wick goes on Amos's lamp). Nothing happens if it is not held.
     case 'take': { const n = Math.min(itemCount(a), Math.max(1, b | 0)); if (n > 0) pend(() => { S.bag[a] = Math.max(0, (S.bag[a] | 0) - n); if (!S.bag[a]) delete S.bag[a]; }); return; }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
-    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity' || r === 'brinewick') S.world.respawn = r; }); return; }
+    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity' || r === 'brinewick' || r === 'brightgate') S.world.respawn = r; }); return; }
     case 'play': {
       sc.skip = false;
       $('#ovScene').hidden = true;
@@ -10201,6 +10242,7 @@ async function execStep(st){
     case 'walkTo': await cutWalkTo(sc, a, b, c, d); return;
     case 'walkAll': { await Promise.all((a || []).map(w => cutWalkTo(sc, w[0], w[1], w[2], w[3]))); return; }   // E5 (D1204): [[id, x, y, opts], ...] walk together
     case 'wait': { if (!cutFast(sc)) await cutWait(a | 0); return; }
+    case 'sky': sc.sky = a || null; return;   // KILNMOUTH E2 (D1831): this scene's sky; the clock comes back when it ends
     case 'curtain': { cutCurtain(a === 'on', cutFast(sc)); return; }
     case 'castAt': { cutCastAt(sc, a, b, c, d); return; }
     // HC_PARADE: ["hide", "people" | [ids]] keeps the map's own people (and parked tanks) off the map until the scene ends.
@@ -11129,7 +11171,7 @@ const SPAWNS = {
 };
 // HUSHWATER E1: detail spawn tables join the same loop. Rows whose species is not in SPECIES are skipped until B2.
 for (const src of [MD.act1_route2, MD.cobblecrest, ...DETAIL_KEYS.map(k => MD[k])]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = (src === MD.act1_route2 || src === MD.cobblecrest) ? v : Object.assign({}, v, { table: (v.table || []).filter(row => SP_INDEX[row[0]] != null) });
-const spawnKey = () => (CUR && CUR.spawns) || 'proto';
+const spawnKey = () => (CUR && (spawnsWhen(CUR) || CUR.spawns)) || 'proto';   // KILNMOUTH E5: spawnsWhen first
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
 function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
@@ -11443,8 +11485,9 @@ function drawDream(g, VW, VH, t){
 /* ---------- weather overlay (cheap, stateless pixel particles) ---------- */
 const WX_RND = Array.from({ length: 360 }, (_, i) => { const v = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); });
 function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/flake count (the Pet tab canvas is small)
-  const tags = envTags(), has = k => tags.includes(k);
-  if (window.PPClock) {
+  const tags = envTags(), has = k => tags.includes(k), forced = forcedSky();   // KILNMOUTH E2: a scene or map sky wins over the clock tint
+  if (forced) drawForcedSky(g, VW, VH, forced);
+  else if (window.PPClock) {
     const r = PPClock.now(), mins = r.hh * 60 + r.mm;
     if (r.phase === 'dawn') {
       const k = 1 - (mins - 5 * 60) / 120;
@@ -11456,7 +11499,7 @@ function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/fl
       g.fillRect(0, 0, VW, VH);
     }
   }
-  if (has('night')) { g.fillStyle = 'rgba(16,18,52,.42)'; g.fillRect(0, 0, VW, VH); }
+  if (has('night') && !forced) { g.fillStyle = 'rgba(16,18,52,.42)'; g.fillRect(0, 0, VW, VH); }
   if (has('fog')) { g.fillStyle = 'rgba(244,244,244,.18)'; g.fillRect(0, 0, VW, VH); }
   if (has('rain') || has('storm')) {
     if (!has('night')) { g.fillStyle = 'rgba(41,54,111,.22)'; g.fillRect(0, 0, VW, VH); }   // overcast
@@ -11858,7 +11901,7 @@ function closeBattle(){
 // free only at 0 Acorns; a holder with fewer pays what they have. A party with nothing to restore pays nothing. Home naps stay free.
 const LANTERN_REST_COST = 5;
 const lanternRestNeeded = () => !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow) || Math.round(p.energy) < 100));
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1, bg_lantern_in: 1 };
 // BED_TUCK (Vincent, Nov 3, 2026): every Lantern House rest, the first one included, is shown, not told. The holder walks the
 // partner over to a bed, tucks it in, it sleeps (eyes shut, a "z"), wakes with a heart, and hops back out, healed. The bed is
 // the nearest one this holder can stand beside (a prop whose line is `@lantern_rest`). Runtime only; nothing is saved.
@@ -11985,9 +12028,11 @@ function blockLanternExit(){
   mark('fernbrook', 'fb_lantern_sign');
   mark('highcharity', 'hc_lantern_sign');
   mark('brinewick', 'bw_lantern_sign');   // BRINEWICK
+  mark('brightgate', 'bg_lantern_sign');   // BRIGHTGATE_LAYOUT §9 (rule 10)
+  put('bg_lantern_in', 'bg_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns, or what you have."');   // §7: the note as everywhere
 })();
 // Lantern House guides (D617, D618). One additive flag. The cost in the first line is LANTERN_REST_COST.
-const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1, bw_lantern_host: 1 };
+const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1, bw_lantern_host: 1, bg_lantern_host: 1 };
 const LANTERN_GUIDE_G2 = 'Lose a battle and you wake at the closest Lantern House. Tap me any time to hear this again.';
 function lanternCostLine(){
   return 'Welcome in. Talk to a bed and your whole team rests and heals, for ' + LANTERN_REST_COST + ' Acorns, or what you have.';
@@ -12029,6 +12074,7 @@ const TOWN_DOOR_ART = {
   hm_lantern: 'heal_lantern', cc_lantern: 'heal_lantern', fb_lantern: 'heal_lantern', hc_lantern: 'heal_lantern',
   hm_store: 'acorn_board',
   bw_lantern: 'heal_lantern', bw_store: 'acorn_board',   // BRINEWICK: the Lantern House and the Chandlery read like every other town's
+  bg_lantern: 'heal_lantern', bg_store: 'acorn_board',   // BRIGHTGATE_LAYOUT §3.5, §9 (D1490, D2001): rule 10 in a Glimmerwell city
 };
 const TOWN_STALL_ART = {
   cobblecrest: [['dottie', 'acorn_board']],
@@ -12059,8 +12105,9 @@ const LANTERN_NEAR = {
   fb_heights: [['fernbrook']],
   route3: [['cobblecrest', 'brinewick']],   // BRINEWICK: Route 3 runs from Cobblecrest's east gate down to the harbour
   brinewick: [['brinewick']],
+  brightgate: [['brightgate']],   // BRIGHTGATE_LAYOUT: every bg_ chunk is the brightgate node (REGION_MAP.interiors)
 };
-const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1, brinewick: 1 };
+const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1, brinewick: 1, brightgate: 1 };
 function respawnTown(){
   const cur = nodeOf(S.world.map);
   const tiers = (cur && LANTERN_NEAR[cur]) || [];
@@ -12969,7 +13016,10 @@ const REGION_MAP = {
     kilnmouth:     { sheet: 'north', kind: 'town', col: 8, row: 6, label: 'KILNMOUTH', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', nameWhen: ['story.km_assigned'],
       coach: { path: [[8, 6], [7, 8], [8, 10], [9, 11]], when: ['story.km_council'] }, hold: [{ id: 'wild' }] },
     km_road:       { sheet: 'north', kind: 'route', col: 9, row: 9, label: 'CLAYBANK ROAD', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', path: [[9, 11], [9, 9], [8, 6]], hold: [{ id: 'wild' }] },
-    brightgate:    { sheet: 'north', kind: 'town', col: 15, row: 5, label: 'BRIGHTGATE', labelAt: 'below', blurb: 'PLACEHOLDER (Brightgate packet)', hold: [{ id: 'wild' }] },
+    // BRIGHTGATE_LAYOUT §5.1, §9 (D1481): built, but no route or coach reaches it yet, so it stays ??? and grey until a save has
+    // been there (story.reached_brightgate; ?debug=1 places in this build). Blurb and hold line PLACEHOLDER (Story).
+    brightgate:    { sheet: 'north', kind: 'town', col: 15, row: 5, label: 'BRIGHTGATE', labelAt: 'below', blurb: "Glimmerwell's city. Brightgate HQ.",
+      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the city. Have a bright day!' }] },
   },
   // ROUTE_TO_GOVERNOR §4 (D1851): two sheets. The seam is column 9 on both; the markers are drawn, not tapped (no 44 px box
   // fits between the labels), and two buttons under the canvas switch sheets. NORTH shows once the holder has seen the fork.
@@ -12984,7 +13034,7 @@ const REGION_MAP = {
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'], route4: ['story.reached_route4'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'], brightgate: ['story.reached_brightgate'], route4: ['story.reached_route4'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', hm_store: 'hearthmoor', hm_wardrobe: 'hearthmoor', hm_diner: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook', fbh_press_in: 'fernbrook', fbh_picker_in: 'fernbrook', fbh_stitch_in: 'fernbrook',   // FERNBROOK_HOMES
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
@@ -12995,7 +13045,9 @@ const REGION_MAP = {
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
     bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick',
-    route4_reeds: 'route4', route4_withy: 'route4' },   // ROUTE_TO_GOVERNOR: the river road and the withy beds are Route 4
+    route4_reeds: 'route4', route4_withy: 'route4',   // ROUTE_TO_GOVERNOR: the river road and the withy beds are Route 4
+    bg_campus: 'brightgate', bg_works: 'brightgate', bg_oldtown: 'brightgate', bg_partner: 'brightgate', bg_lantern_in: 'brightgate',   // BRIGHTGATE_LAYOUT §9: one node
+    bg_store_in: 'brightgate', bg_hq_lobby: 'brightgate', bg_review_in: 'brightgate', bg_gala_in: 'brightgate', bg_hall_in: 'brightgate' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -13060,6 +13112,99 @@ function matchHold(id, flags){
 }
 function mapHold(id, flags){ return matchHold(id, flags).id; }
 function holdLine(id, flags){ const rule = matchHold(id, flags); return rule.line || MAP_HOLD_LINE[rule.id] || MAP_HOLD_LINE.wild; }
+/* ---------- KILNMOUTH v0.1.1 (design repo, private; D1820-D1849, settled Wed Nov 4, 2026) ---------- */
+// Claybank Road (km_road) and the town (kilnmouth) live in data/detail_zzzzz_kilnmouth.json. This block registers them with
+// the built tables (the region node and its hold rows, the Lantern House, the rule 10 door marks, the respawn tiers) and holds
+// the packet's small engine asks (§12.2): E2 a scene sky and a map sky, E3 state tile patches, E4 the flat cloud, E5
+// spawnsWhen, E6 the visit counter, E8 the hold. Blurbs are PLACEHOLDER (Story).
+Object.assign(REGION_MAP.nodes.kilnmouth, { blurb: 'Spa town of cold springs and bottle kilns.', sway: true,
+  hold: [{ id: 'keepers', when: ['story.km_settled', 'story.sway_kilnmouth>=2'], line: 'Kilnmouth sits its own seat. The Keepers walk its lanes.' },
+    { id: 'glimmer', when: ['story.km_settled', 'story.sway_kilnmouth<=-2'], line: "Glimmerwell holds the town. The water's warm again." },
+    { id: 'split', when: ['story.km_settled'], line: 'Kilnmouth sits its seat. Both sides wait at the springs.' },
+    { id: 'split' }] });   // CAB §3.6 rule 4: split, before the sitting
+Object.assign(REGION_MAP.nodes.km_road, { blurb: 'Up the clay valley from the fork, beside a low creek.' });
+REGION_MAP.flags.kilnmouth = ['story.reached_kilnmouth']; REGION_MAP.flags.km_road = ['story.reached_kilnmouth'];
+LANTERN_ROOMS.km_lantern_in = 1; LANTERN_GUIDE_IDS.km_lantern_host = 1; LANTERN_TOWNS.kilnmouth = 1;
+TOWN_DOOR_ART.km_lantern = 'heal_lantern'; TOWN_DOOR_ART.km_store = 'acorn_board';
+LANTERN_NEAR.kilnmouth = [['kilnmouth']]; LANTERN_NEAR.km_road = [['kilnmouth']];   // a loss on the road wakes you in town once seen, else at the last one
+(function kmLanternSigns(){
+  const find = (map, id) => WORLD[map] && WORLD[map].objs.find(o => o.id === id), n = LANTERN_REST_COST;
+  const sign = find('kilnmouth', 'km_lantern_sign'); if (sign) sign.lines = { else: 'LANTERN HOUSE · Rest and recover. ' + n + ' Acorns, or what you have.' };
+  const note = find('km_lantern_in', 'km_lantern_note'); if (note) note.text = 'A note by the door: "Rest the whole party. ' + n + ' Acorns, or what you have. Kilnmouth"';
+})();
+// E8: the town wears its hold (first matching row of the node); the road is wild. Split shows no band.
+function kmFaction(id){ if (id === 'km_road') return null; const h = mapHold('kilnmouth'); return h === 'keepers' || h === 'glimmer' ? h : null; }
+// E5: a map's `spawnsWhen` rows ([{ when, spawns }], first match) replace its `spawns` table while they hold.
+function spawnsWhen(m){
+  if (!S || !m || !m.spawnsWhen) return null;
+  for (const r of m.spawnsWhen) if (r && r.spawns && (r.when || []).every(c => cond(c, false))) return r.spawns;
+  return null;
+}
+// E3: a map's `tilePatch` rows ([{ when, rows: { y: row } }]) swap whole grid rows while their `when` holds, read on arrival.
+// The base grid stays as drawn (NPC paths, dev checks and the checker read it); nothing is saved.
+function patchCells(m){
+  if (!S || !m.tilePatch) return;
+  const rows = m.grid.slice();
+  for (const p of m.tilePatch) if (p && p.rows && (p.when || []).every(c => cond(c, false)))
+    for (const [y, row] of Object.entries(p.rows)) if (rows[+y] != null && row.length === rows[+y].length) rows[+y] = row;
+  const sig = rows.join('\n'); if (m._patchSig === sig) return;
+  m._patchSig = sig; m.cells = rows.map(r => r.split(''));
+}
+// E2 (D1831): a scene's ['sky', 'dusk' | 'night' | 'dawn'] tints the map for that scene only; a map's `skyWhen` rows force a
+// look while they hold (the curfew's night). The real-sky clock never moves.
+function forcedSky(){
+  if (scene && scene.sky) return scene.sky;
+  if (!S || !CUR || !CUR.skyWhen) return null;
+  for (const r of CUR.skyWhen) if (r && r.sky && (r.when || []).every(c => cond(c, false))) return r.sky;
+  return null;
+}
+function drawForcedSky(g, VW, VH, sky){
+  g.fillStyle = sky === 'night' ? 'rgba(16,18,52,.42)' : sky === 'dusk' ? 'rgba(214,140,48,.25)' : 'rgba(232,164,132,.2)';
+  g.fillRect(0, 0, VW, VH);
+}
+// E4: `overlays` on a map: the flat cloud (one static band at a tile rect, under the HUD) and B4's rolling storm (its scene only).
+// Reduced motion: the storm's edge holds still.
+function drawMapOverlays(g, cx, cy, VW, VH, t){
+  if (!CUR || !CUR.overlays) return;
+  for (const ov of CUR.overlays) {
+    if (ov.scene ? !(scene && scene.id === ov.scene) : !(S && (ov.when || []).every(c => cond(c, false)))) continue;
+    const [x0, y0, x1, y1] = ov.rect, X = x0 * TS - cx, Y = y0 * TS - cy, Wd = (x1 - x0 + 1) * TS, Ht = (y1 - y0 + 1) * TS;
+    if (X > VW || Y > VH || X + Wd < 0 || Y + Ht < 0) continue;
+    if (ov.kind === 'flat') kmFlatCloud(g, X, Y, Wd, Ht);
+    else if (ov.kind === 'storm') kmStormCloud(g, X, Y, Wd, Ht, prefersReduced() ? 0 : t, cx);
+  }
+}
+function kmFlatCloud(g, X, Y, Wd, Ht){
+  g.save(); g.globalAlpha = 0.86;
+  g.fillStyle = PAL.h; g.fillRect(X, Y, Wd, Ht - 3);
+  g.fillStyle = PAL.w; for (let x = 0; x < Wd; x += 24) g.fillRect(X + x + 4, Y, 14, 3);
+  g.fillStyle = PAL.m; g.fillRect(X, Y + Ht - 3, Wd, 3);   // the ruler-straight bottom edge
+  g.restore();
+}
+function kmStormCloud(g, X, Y, Wd, Ht, t, cx){
+  const flat = (CUR.overlays || []).find(o => o.kind === 'flat'), roll = Math.round(Math.sin(t / 900) * 6);
+  const fx0 = flat ? flat.rect[0] * TS - cx : X + Wd / 3, fx1 = flat ? (flat.rect[2] + 1) * TS - cx : X + Wd * 2 / 3, fh = flat ? (flat.rect[3] - flat.rect[1] + 1) * TS : 5 * TS;
+  g.save(); g.globalAlpha = 0.8; g.fillStyle = PAL.d;
+  for (let x = 0; x < Wd; x += 8) {
+    const sx = X + x; if (sx >= fx0 && sx < fx1) continue;   // over the tower the cloud has gone flat
+    g.fillRect(sx, Y, 8, Math.max(8, Ht - 10 + Math.round(Math.sin((x + roll * 3) / 19) * 8)));
+  }
+  g.fillStyle = PAL.m; g.fillRect(fx0, Y, fx1 - fx0, fh);
+  g.restore();
+}
+// ?debug=1 (and the debug pref) only, like window.WORLD: the pieces tests/kilnmouth.spec.js reads.
+if (DEBUG) window.PPKm = Object.freeze({ spawnKey: () => spawnKey(), tileBox: (x, y) => tileBox(x, y), factionOfMap: id => factionOfMap(id), holdLine: id => holdLine(id),
+  mapVisited: (id, cur) => mapVisited(id, cur), forcedSky: () => forcedSky(), respawnTown: () => respawnTown(), artFrame: (a, t) => artFrame(a, t), cond: c => cond(c, false),
+  get WART(){ return WART; }, get TILE_DEF(){ return TILE_DEF; }, get TOWN_DOOR_ART(){ return TOWN_DOOR_ART; }, get LANTERN_NEAR(){ return LANTERN_NEAR; } });
+// E6 (D1841): one visit a game day, entering the town from the road or the coach (not from its own rooms, never at load).
+let kmPrevMap = null;   // set by warpTo (a load or a debug jump sets nothing, so nothing is counted then)
+function kmArrive(){
+  const prev = kmPrevMap; kmPrevMap = null;
+  if (CUR.id !== 'kilnmouth' || !prev || prev === 'kilnmouth' || (WORLD[prev] && WORLD[prev].outdoor === 'kilnmouth')) return;
+  const day = window.PPClock ? Math.floor(PPClock.now().gameMinute / 1440) : 0;
+  if (S.flags['story.km_visit_day'] === day) return;
+  S.flags['story.km_visit_day'] = day; S.flags['story.km_visits'] = Math.min(9, (+S.flags['story.km_visits'] || 0) + 1); save();
+}
 function nodeSeal(id){
   if (!S) return false;
   const seals = S.seals || {}, f = S.flags || {};
@@ -13447,7 +13592,8 @@ const ML_SECTION = {
 };
 const ML_CHIPS = { hm_flats_lobby: 'LOBBY', hm_flats_5: '5B', sm_yard: 'YARD', sm_tunnel: 'TUNNEL', sm_hold: 'HOLD', sm_den: 'DEN' };
 const ML_LABEL = { hc_gym_in: 'DOJO' };
-const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K', y: 't', h: 'm', l: 'g' };   // y h l: ROUTE_TO_GOVERNOR's reeds, drystone wall, mown lawn
+const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K', y: 't', h: 'm', l: 'g',   // y h l: ROUTE_TO_GOVERNOR's reeds, drystone wall, mown lawn
+  I: 'w', L: 'h', x: 'w', J: 'N', b: 'V', o: 'A', d: 'm', O: 'F', G: 'N', V: 'N', N: 'J', '&': 'g' };   // BRIGHTGATE_LAYOUT's paving, lane, crossing, kerb, bay, cobbles, setts, rail, fence, pad, hedge, flowerbed
 const mapLayers = { ready: false, byId: {}, byFloor: {} };
 let regionBackdropImg = null;
 let mapPinSig = '';
@@ -16898,7 +17044,14 @@ SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL
 // SEALS_BOTH_PATHS §4.6 (D1327): on the Glimmer path the Seal card shows Glimmerwell's cord clipped to the Seal. The overlay
 // reads side(), not the save's tags: the Hall-win card shows before onWin writes the tag. SEAL_CORD holds Pia's 16x16 overlays
 // (design §8, '.' = transparent); until they land the slots are null and the card draws the plain Seal.
-const SEAL_CORD_TIER = Object.freeze({ seal_fernbrook: 1, seal_cobblecrest: 2, seal_brinewick: 3 });   // Halls 4-8 add rows
+const SEAL_CORD_TIER = Object.freeze({ seal_fernbrook: 1, seal_cobblecrest: 2, seal_brinewick: 3, seal_brightgate: 4 });   // Halls 4-8 add rows
+// BRIGHTGATE_LAYOUT §5.2 (Hall 4, VOLT): Seal 4 is `seal_brightgate`. PLACEHOLDER art (a honey bolt in a navy ring) until
+// ICONS_SEALS draws Seal 4; PAL keys only, no mint.
+SEAL_ART.seal_brightgate = [
+  '.....nnnnnn.....', '...nnyyyyyynn...', '..nyybbbbbbyyn..', '.nybbbbbyybbbyn.', '.nybbbbyyybbbyn.', 'nybbbbyyybbbbbyn',
+  'nybbbyyyyyyybbyn', 'nybbbbbbyyybbbyn', 'nybbbbbyyybbbbyn', 'nybbbbyyybbbbbyn', 'nybbbyyybbbbbbyn', '.nybbyybbbbbbyn.',
+  '.nybbybbbbbbbyn.', '..nyybbbbbbyyn..', '...nnyyyyyynn...', '.....nnnnnn.....',
+];
 const SEAL_CORD = [null, null, null];   // PLACEHOLDER: Pia's SEAL_CORD_1-3 (design SEALS_BOTH_PATHS §8)
 function sealCardGrid(id){
   const base = SEAL_ART[id] || SEAL_ART.seal_fernbrook;
@@ -16925,7 +17078,7 @@ async function presentFieldSeal(id){
   $('#btSeal').hidden = true; ov.classList.remove('seal-only'); ov.hidden = true;
   if (!battle.on) setPanel('busy');
 }
-const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard', seal_brinewick: 'Brinewick Seal', seal_glim_3: 'Bright Tier 3 Lanyard' };
+const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard', seal_brinewick: 'Brinewick Seal', seal_glim_3: 'Bright Tier 3 Lanyard', seal_brightgate: 'Brightgate Seal' };
 const sealName = id => SEAL_NAMES[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal';
 
 /* --- learning moves (§3): after RESULTS, after evolving, and the §3.4 sheet --- */
@@ -17159,13 +17312,19 @@ function drawBattle(t, dt){
     if (shy > 4) shy = 4; else if (shy < -4) shy = -4;
     if (ms > end) B.punch = null;
   } else if (punch && punch.mode !== 'full' && t - punch.t0 > 700) B.punch = null;
-  if (auraMode() !== 'full') { shx = 0; shy = 0; meDx = 0; foeDx = 0; }
+  const am = auraMode();
+  if (am !== 'full') { shx = 0; shy = 0; meDx = 0; foeDx = 0; }
+  const saSeen = B.saSeen || (B.saSeen = {});   // SPRITE_ANIM (D2070-D2089): the frame each battler drew this frame (B.view.frames)
+  saSeen.me = saSeen.foe = saSeen.foe2 = saSeen.ally = undefined;
   g.save();
   if (shx || shy) g.translate(shx, shy);
   g.fillStyle = PAL.t; g.fillRect(fx0 - 2, fy0 + 15, 22, 3); g.fillRect(mx0 - 2, my0 + 15, 22, 3);
   const drawMon = (who, si, stage, x0, y0, mirror, faded) => {
     let x = x0, y = y0, mode = (fxT % 2600) < 130 ? 'b' : 'n', hide = false;
-    y += Math.floor(fxT / 450) % 2;
+    // SPRITE_ANIM (D2070-D2089): the pose frame from the idle clock and the step queue. OFF (and SA.on false) is today's bob and blink.
+    const pose = typeof saPose === 'function' ? saPose(am, who, fxT, t, B) : null;
+    if (pose && am !== 'off' && SA.on) saWarm(si, stage, faded);
+    if (pose) { mode = pose.blink ? 'b' : 'n'; y += pose.bob; } else y += Math.floor(fxT / 450) % 2;
     const sq = who === 'me' ? meSq : who === 'foe' ? foeSq : [0, 0];
     for (let i = 0; i < B.fx.length; i++) {
       const e = B.fx[i];
@@ -17185,12 +17344,14 @@ function drawBattle(t, dt){
     if (B.white && B.white.who === who && t >= B.white.t0 && t < B.white.until) mode = 'w';
     if (who === 'me' && !B.meShown) hide = true;
     if (hide) return null;
-    const img = sprSet(si, stage, faded)[mode];
+    const fset = pose && pose.f !== 'base' && mode !== 's' && typeof saSet === 'function' ? saSet(si, stage, faded, pose.f) : null;
+    const img = (fset && fset[mode]) || sprSet(si, stage, faded)[mode];
+    saSeen[who] = fset ? pose.f : 'base';
     const dw = Math.max(1, 18 + (sq[0] || 0)), dh = Math.max(1, 18 + (sq[1] || 0));
     const ox = Math.round(x - (dw - 18) / 2), oy = Math.round(y - (dh - 18) / 2);
     if (mirror) { g.save(); g.translate(ox + dw, oy); g.scale(-1, 1); g.drawImage(img, 0, 0, dw, dh); g.restore(); }
     else g.drawImage(img, ox, oy, dw, dh);
-    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, ox, oy, !!faded, sprSet(si, stage, faded).n);
+    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, ox, oy, !!faded, (fset || sprSet(si, stage, faded)).n);
     if (B.calm && B.calm.who === who) {
       const age = t - B.calm.t0;
       if (age >= 0 && age < B.calm.ms) {
@@ -17284,7 +17445,7 @@ function drawBattle(t, dt){
   g.restore();
   B.view = { t: t, shakeX: shx, shakeY: shy, white: !!(B.white && t >= B.white.t0 && t < B.white.until), tint: tintA,
     meX: mx0 + meDx, foeX: fx0 + foeDx, meRest: mx0, foeRest: fx0, pool: typeof mvPoolCount === 'function' ? mvPoolCount() : 0,
-    sc: Sc, tc: Tc };   // MOVE_FX_2 tests: the user and target centres this frame
+    sc: Sc, tc: Tc, frames: saSeen };   // MOVE_FX_2 tests: the user and target centres this frame; SPRITE_ANIM: each battler's frame
 }
 
 /* ---------- evolution ---------- */
@@ -18733,6 +18894,16 @@ const DEBUG_EXTRAS = {
     a2_met: { place: 'Act 2 met, ledger told', text: 'Ilse hears how it went.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up',
       flags: A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.gov_told=told', 'story.shift_g']) },
   });
+  // BRIGHTGATE_LAYOUT §9 (D1481, D2008): three ?debug=1 places on Gate Plaza's arrival, the only way in until the Act 2 route or
+  // coach link exists. A Keeper guest in Act 2; an unswitched Keeper with an open offer in Act 3; a switcher (story.switched_a3).
+  const BG = A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned']);
+  const BG_AT = { map: 'brightgate', x: 32, y: 36, facing: 'up' };   // debugStand lands one tile south: the arrival 32,37, facing north
+  Object.assign(DEBUG_EXTRAS, {
+    bg_keeper: Object.assign({ place: 'Brightgate (Act 2, Keeper)', text: 'A guest in the company town.', flags: BG.concat(['story.act=2']) }, BG_AT),
+    bg_offer: Object.assign({ place: 'Brightgate (Act 3, open offer)', text: "Rook's guest, floor 2 only.", flags: BG.concat(['story.act=3', 'story.a3_offer']) }, BG_AT),
+    bg_switched: Object.assign({ place: 'Brightgate (Act 3, switched)', text: 'Staff: the lanyard gate opens.',
+      flags: BG.concat(['story.act=3', 'story.side=glimmer', 'story.switched_a3']) }, BG_AT),
+  });
 }
 // MAHOPAC_DREAMS E4: four places for Mom's walk and the lens (Seal 4, Seal 5, the Ledger Night and the Spire are later builds,
 // so these places seed their flags). Debug only, like every place here.
@@ -18793,6 +18964,7 @@ const DEBUG_TRAINER_GATES = [
   ['story.seal2', 'hall2_hale'],
   ['story.brine_dorian', 'bw_dorian'],
   ['story.seal3', 'hall3_marisol'],
+  ['story.seal4', 'hall4_master'],   // BRIGHTGATE_LAYOUT: Hall 4
 ];
 function debugWhy(reason){
   return {
@@ -20506,6 +20678,9 @@ function boot(){
       const c = document.createElement('canvas'); c.width = W; c.height = H;
       c.wet = BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode || 'day', wf ? 1 : 0), layer); return c; },
     battleSceneIds: () => DEBUG && window.BattleBG ? Object.keys(BattleBG.scenes) : null,
+    // SPRITE_ANIM (D2070-D2089): debug only. Draw the open battle once at time t (returns battle.view.frames); the Effects mode.
+    drawBattleAt: t => { if (!DEBUG || !battle.on) return null; drawBattle(t, 0); return battle.view ? battle.view.frames : null; },
+    auraMode: () => DEBUG ? auraMode() : null,
     debugToast: msg => { if (!DEBUG) return null; toast(msg); const t = $('#toast'); return t ? t.textContent : ''; },
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
@@ -20597,6 +20772,7 @@ function boot(){
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk, auditTaps: () => auditTapReport(),
     care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
+    viewTiles: () => { const c = $('#mapCanvas'); return c ? { x: walk.cam.x / TS, y: walk.cam.y / TS, w: c.width / TS, h: c.height / TS } : null; },   // BRIGHTGATE_LAYOUT §3.5: the arrival frame, read-only
     tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab floor keeps its old tile name.
       const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
       const sk = CUR.skin && SKINS[CUR.skin];
@@ -20979,7 +21155,7 @@ function boot(){
   window.setAura = setAura;
   window.ownsLook = ownsLook;
   window.lookChoices = lookChoices;
-  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; window.WORLD = WORLD; }
+  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; window.WORLD = WORLD; window.WART = WART; }   // WART: BRIGHTGATE_LAYOUT's no-mint sprite test (debug only)
   window.fillWalklingExtras = fillWalklingExtras;
 }
 // P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()

@@ -41,11 +41,15 @@
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
+    'story.km_ask_yard', 'story.km_ask_market', 'story.km_ask_springs', 'story.km_pitch_f', 'story.km_pitch_c', 'story.km_crew', 'story.km_permit_to',   // KILNMOUTH §12.1 / CAB K2-K4
+    'story.slip_kilnmouth', 'story.pres_hint_default', 'story.km_twin_lead', 'story.wb_springs', 'story.kr_s1_met', 'story.kr_s4_met',   // K4, B4, the hill path (D1990), the placed S1 / S4
     'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
     'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
     'story.mom_mah_ask', 'story.mom_mahopac', 'story.lens_note',   // MAHOPAC_DREAMS §9: Mom's walk north (the warp), her answer at the lens, Ilse's note
     'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
+    'story.reached_brightgate', 'story.bg_insign', 'story.bg_crate', 'story.bg_vane', 'story.seal4', 'story.ada_sky',
+    'story.bg_dipper', 'story.bg_shuttle', 'story.bg_shuttle_hm', 'story.bg_f2_guest',   // BRIGHTGATE_LAYOUT §9, §17 (H4's chain row is the Act 2 chain's): the first arrival on Gate Plaza and three first reads (places and hooks, not steps; B5's chain row is Story's)
 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
@@ -345,9 +349,23 @@
       npc: 'Governor Merriden', npcIds: ['hc_governor'],
       text: "Report to Governor Merriden at the Governor's House on Charter Hill, High Charity.", place: "Governor's House",
       target: { map: 'hc_gov_1', x: 12, y: 3 } },
-    // §6.3 holding row (pacing audit, Nov 4): Kilnmouth is not built, so the chain does not point there. It waits on the
-    // Kilnmouth packet's first flag (B2: story.km_arrived), which nothing sets yet; that packet replaces this row.
-    { id: 'a2_hold', when: ['story.km_assigned'], done: ['story.km_arrived'],
+    // KILNMOUTH v0.1.1 (D1820, D1821; builds 2-3 of ACT2_BEAT_SHEET v3 §8): the holding row's place. The east fork and Claybank
+    // Road (B2a), the Reeve (K1), the three names and the storm (B3-B4), the permit (K4). Text PLACEHOLDER.
+    { id: 'km_walk', when: ['story.km_assigned'], done: ['story.reached_kilnmouth'],
+      text: 'Take the east fork from Route 4 and walk Claybank Road up to Kilnmouth.', place: 'Route 4, the fork',
+      target: { map: 'route4', x: 22, y: 2 } },
+    { id: 'km_reeve', when: ['story.km_assigned'], done: ['story.km_arrived'],
+      npc: 'Reeve Agna', npcIds: ['km_reeve'],
+      text: 'Find Reeve Agna at the council house in Kilnmouth.', place: 'Kilnmouth council house',
+      target: { map: 'km_council_in', x: 11, y: 3 } },
+    { id: 'km_listen', when: ['story.km_arrived'], done: ['story.km_storm'],
+      text: 'Listen to the town: the springs, the market and the kiln yard.', place: 'Kilnmouth, the springs',
+      target: { map: 'kilnmouth', x: 27, y: 29 } },
+    { id: 'km_permit', when: ['story.km_storm'], done: ['story.km_permit_seen'],
+      text: "The tower crew holds the fence gate. Get past them and read the tower's permit.", place: 'Kilnmouth, the common',
+      target: { map: 'kilnmouth', x: 27, y: 20 } },
+    // Brightgate (B5) is its own build: until a route or coach reaches it, the chain holds here.
+    { id: 'a2_hold', when: ['story.km_permit_seen'], done: ['story.reached_brightgate'],
       text: 'Await your next orders.', place: 'The Amberwild' },
     // CABINET_AND_COUNCILS v0.2.2 §4.3 (1b): after the Kilnmouth report-back (story.km_reported, the Kilnmouth packet's K6, 1a), Lumen's
     // lead-in in the Governor's House lobby, then the stair to the Cabinet Room and the twelfth chair. S1 plays there once K2a has

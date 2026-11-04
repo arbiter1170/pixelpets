@@ -313,23 +313,24 @@ test('an old spotted flag does not re-arm, and a fresh loss does', async ({ page
   expect(quiet.rematch).toBe(false);
 });
 
-test('Tobin does not move the orchard step on a loss, and the win runs it once', async ({ page }) => {
+// DAY1_TRIAL1_FLOW moved Tobin's battle after the pick (fernbrook_rooms.json: fern_associate needs story.side_pick_done),
+// and on the new flow its step is `tobin_crates` (quests.js). Before that flow it was `orchard`, straight after met_fen;
+// a save there now sits on `crates` with no Tobin to battle. The guarantee is unchanged: a loss keeps the step, the win runs it once.
+test('Tobin does not move his crates step on a loss, and the win runs it once', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, 'one width');
   test.setTimeout(90000);
   await boot(page);
   await page.evaluate(() => {
     const f = PixelPets.state.flags;
-    f['story.rival1_done'] = true;
-    f['story.first_wild_met'] = true;
-    f['story.reached_route1'] = true;
-    f['story.reached_fernbrook'] = true;
-    f['story.met_glimmerwell'] = true;
-    f['story.met_fen'] = true;
+    for (const k of ['rival1_done', 'first_wild_met', 'reached_route1', 'reached_fernbrook', 'met_glimmerwell', 'met_fen',
+      'tally_done', 'tl_amos', 'tl_done', 'crates_seen', 'fen_sent_home', 'class_sent', 'lizzy_class', 'seal1', 'post_trial_done',
+      'side_pick_done', 'heights_done']) f['story.' + k] = true;
+    f['story.side'] = 'keepers';
     PixelPets.showTab('walk');
     PixelPets.goto('fernbrook', 9, 18, 'up');
     PixelPets.clearWild();
   });
-  expect(await page.evaluate(() => PixelPets.quest && PixelPets.quest.id)).toBe('orchard');
+  expect(await page.evaluate(() => PixelPets.quest && PixelPets.quest.id)).toBe('tobin_crates');
   const started = await page.evaluate(() => {
     const sight = PixelPets.showSight().find((o) => o.id === 'fern_associate');
     const far = sight.line[sight.line.length - 1];
@@ -347,7 +348,7 @@ test('Tobin does not move the orchard step on a loss, and the win runs it once',
     cleared: !!PixelPets.state.flags['story.orchard_cleared'],
     rematch: PixelPets.state.flags['rematch.fern_associate'] === true,
   }));
-  expect(mid.quest).toBe('orchard');
+  expect(mid.quest).toBe('tobin_crates');
   expect(mid.cleared).toBe(false);
   expect(mid.rematch).toBe(true);
   await page.evaluate(() => { if (PixelPets.scene) PixelPets.endScene(); PixelPets.clearHold(); });
@@ -376,6 +377,25 @@ test('Tobin does not move the orchard step on a loss, and the win runs it once',
   await page.waitForFunction(() => PixelPets.scene && /crates pop open/.test(PixelPets.scene.text || ''), null, { timeout: 8000 });
   expect(await page.evaluate(() => PixelPets.state.flags['trainer.fern_associate'] === true)).toBe(true);
   expect(await page.evaluate(() => !!PixelPets.state.flags['rematch.fern_associate'])).toBe(false);
+  // Once: the scene plays to its end and clears the step, and his sight line no longer starts a battle.
+  await advanceUntil(page, () => !PixelPets.scene && !PixelPets.fading, 12);
+  const after = await page.evaluate(() => {
+    PixelPets.goto('fernbrook', 9, 18, 'up');
+    PixelPets.clearWild();
+    const quest = PixelPets.quest && PixelPets.quest.id;
+    const sight = PixelPets.showSight().find((o) => o.id === 'fern_associate');
+    const tile = sight.line[sight.line.length - 1], near = sight.line[0];
+    const toward = tile.y > near.y ? 'up' : tile.y < near.y ? 'down' : tile.x > near.x ? 'left' : 'right';
+    const away = { up: 'down', down: 'up', left: 'right', right: 'left' }[toward];
+    PixelPets.goto('fernbrook', tile.x, tile.y, toward);
+    PixelPets.clearWild();
+    const steps = [PixelPets.walkStep(toward), PixelPets.walkStep(away), PixelPets.walkStep(toward)];
+    return { quest, cleared: !!PixelPets.state.flags['story.orchard_cleared'], scenes: steps.map((st) => !!st.scene), battle: !!(PixelPets.battle && PixelPets.battle.on) };
+  });
+  expect(after.cleared).toBe(true);
+  expect(after.quest).not.toBe('tobin_crates');
+  expect(after.scenes).toEqual([false, false, false]);
+  expect(after.battle).toBe(false);
 });
 
 test('Hale opens with the rematch line, then Begin the trial', async ({ page }) => {
