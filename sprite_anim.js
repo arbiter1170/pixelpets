@@ -23,36 +23,38 @@ const SA = {
 
 // The pose for one battler this frame. who: 'me' | 'foe' | 'foe2' | 'ally'. ft: the battle's fx clock (fxT), t: now.
 // Returns { f, blink, bob }: f a frame name ('base' is today's sprite), blink true for today's blink sprite, bob 0/1 px.
+// One shared result object (no per-frame allocation): read it before the next saPose call.
+const SA_OUT = { f: 'base', blink: false, bob: 0 };
+function saOut(f, blink, bob) { SA_OUT.f = f; SA_OUT.blink = blink; SA_OUT.bob = bob; return SA_OUT; }
 function saPose(mode, who, ft, t, B) {
-  const today = { f: 'base', blink: (ft % SA.blinkEvery) < SA.blinkMs, bob: Math.floor(ft / 450) % 2 };
-  if (!SA.on || mode === 'off' || mode === 'calm' && !B) return today;
+  const blink0 = (ft % SA.blinkEvery) < SA.blinkMs, bob0 = Math.floor(ft / 450) % 2;   // today's idle
+  if (!SA.on || mode === 'off' || !B) return saOut('base', blink0, bob0);
   const side = who === 'me' || who === 'foe' ? who : null;
   if (mode === 'calm') {
     if (side && B.fx) for (let i = 0; i < B.fx.length; i++) {
       const e = B.fx[i];
-      if (e.who === side && e.kind === 'lunge' && ft - e.t0 >= 0 && ft - e.t0 < e.dur) return { f: 'strike', blink: false, bob: today.bob };
+      if (e.who === side && e.kind === 'lunge' && ft - e.t0 >= 0 && ft - e.t0 < e.dur) return saOut('strike', false, bob0);
     }
-    if (side && B.calm && B.calm.who === side) { const a = t - B.calm.t0; if (a >= 0 && a < Math.max(SA.hitMinMs, B.calm.ms)) return { f: 'hit', blink: false, bob: today.bob }; }
-    if (side && saHearts(B, side, ft)) return { f: 'happy', blink: false, bob: today.bob };
-    return today;
+    if (side && B.calm && B.calm.who === side) { const a = t - B.calm.t0; if (a >= 0 && a < Math.max(SA.hitMinMs, B.calm.ms)) return saOut('hit', false, bob0); }
+    if (side && saHearts(B, side, ft)) return saOut('happy', false, bob0);
+    return saOut('base', blink0, bob0);
   }
-  if (side && B && B.punch && B.punch.mode === 'full' && !B.ff && typeof MV_PUNCH !== 'undefined') {
+  if (side && B.punch && B.punch.mode === 'full' && !B.ff && typeof MV_PUNCH !== 'undefined') {
     const P = B.punch, ms = t - P.t0, C = MV_PUNCH.common.contact_ms;
     const stop = typeof mvScaled === 'function' ? mvScaled(P.type, P.variant).stop : 60;
     if (P.who === side && ms >= 0) {
-      if (ms < SA.windupMs) return { f: 'windup', blink: false, bob: 0 };
-      if (ms < C + stop) return { f: 'strike', blink: false, bob: 0 };
+      if (ms < SA.windupMs) return saOut('windup', false, 0);
+      if (ms < C + stop) return saOut('strike', false, 0);
     }
     if (P.who !== side && ms >= C) {
-      const kn = typeof mvPunchType === 'function' ? mvPunchType(P.type).knock : { out: 60, back: 160 };
-      if (ms - C < Math.max(SA.hitMinMs, stop + kn.out + kn.back)) return { f: 'hit', blink: false, bob: 0 };
+      const kn = typeof mvPunchType === 'function' ? mvPunchType(P.type).knock : null;
+      if (ms - C < Math.max(SA.hitMinMs, stop + (kn ? kn.out + kn.back : 220))) return saOut('hit', false, 0);
     }
   }
-  if (side && B && saHearts(B, side, ft)) return { f: 'happy', blink: false, bob: 0 };
+  if (side && saHearts(B, side, ft)) return saOut('happy', false, 0);
   const lag = who === 'me' || who === 'ally' ? 0 : 1;
   const breathe = Math.floor((ft + lag * SA.foeLag) / SA.idleMs) % 2 === 1;
-  const blink = ((ft + lag * SA.foeBlinkLag) % SA.blinkEvery) < SA.blinkMs;
-  return { f: breathe ? 'breathe' : 'base', blink: blink, bob: 0 };
+  return saOut(breathe ? 'breathe' : 'base', ((ft + lag * SA.foeBlinkLag) % SA.blinkEvery) < SA.blinkMs, 0);
 }
 function saHearts(B, who, ft) {
   if (!B.fx) return false;
@@ -95,6 +97,15 @@ function saSet(si, stage, faded, f) {
     set = { n: n, b: n, w: buildSprite(g, null, PAL.w) };
   }
   return (SA_CACHE[k] = set);
+}
+
+// Build every frame of one form once, on the battle's first idle draw, so no frame is painted mid-punch (a hitch before contact).
+const SA_WARM = [];
+function saWarm(si, stage, faded) {
+  const k = (si | 0) * 8 + (stage | 0) * 2 + (faded ? 1 : 0);
+  if (SA_WARM[k]) return;
+  SA_WARM[k] = 1;
+  for (let i = 0; i < SA.frames.length; i++) saSet(si, stage, faded, SA.frames[i]);
 }
 
 // <sprite_anim rows: tools/gen_sprite_anim.js keeps by:'hand' rows and regenerates the rest>

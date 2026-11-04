@@ -16712,7 +16712,8 @@ function drawBattle(t, dt){
   } else if (punch && punch.mode !== 'full' && t - punch.t0 > 700) B.punch = null;
   const am = auraMode();
   if (am !== 'full') { shx = 0; shy = 0; meDx = 0; foeDx = 0; }
-  const saSeen = {};   // SPRITE_ANIM (D2070-D2089): the frame each battler drew this frame, for B.view and the tests
+  const saSeen = B.saSeen || (B.saSeen = {});   // SPRITE_ANIM (D2070-D2089): the frame each battler drew this frame (B.view.frames)
+  saSeen.me = saSeen.foe = saSeen.foe2 = saSeen.ally = undefined;
   g.save();
   if (shx || shy) g.translate(shx, shy);
   g.fillStyle = PAL.t; g.fillRect(fx0 - 2, fy0 + 15, 22, 3); g.fillRect(mx0 - 2, my0 + 15, 22, 3);
@@ -16720,6 +16721,7 @@ function drawBattle(t, dt){
     let x = x0, y = y0, mode = (fxT % 2600) < 130 ? 'b' : 'n', hide = false;
     // SPRITE_ANIM (D2070-D2089): the pose frame from the idle clock and the step queue. OFF (and SA.on false) is today's bob and blink.
     const pose = typeof saPose === 'function' ? saPose(am, who, fxT, t, B) : null;
+    if (pose && am !== 'off' && SA.on) saWarm(si, stage, faded);
     if (pose) { mode = pose.blink ? 'b' : 'n'; y += pose.bob; } else y += Math.floor(fxT / 450) % 2;
     const sq = who === 'me' ? meSq : who === 'foe' ? foeSq : [0, 0];
     for (let i = 0; i < B.fx.length; i++) {
