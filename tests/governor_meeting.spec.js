@@ -343,12 +343,13 @@ test.describe('GOVERNOR_MEETING Part 3, one scene for every holder, old saves (D
     expect(await sceneId(page)).toBe('a2_posting');
     expect(says(await drive(page))).toEqual(POSTING);
     expect(await doorOpen(page)).toBe(true);
-    // The quest chain still sends the holder to the Lantern Council first (it sits earlier in the chain), then the Governor.
-    expect((await quest(page)).id).toBe('hc_council');
-    await page.evaluate(() => PixelPets.setFlag('story.hc_council_done', true));
+    // D2020 (#322): a recalled cover holder meets the Lantern Council in High Charity after the Governor, so the posting leads
+    // straight to the walk; the Council comes up once the Governor is met.
     expect((await quest(page)).id).toBe('gov_walk');   // ROUTE_TO_GOVERNOR §6: on foot first (D1854)
     await page.evaluate(() => PixelPets.setFlag('story.r4_walked', true));
     expect((await quest(page)).id).toBe('gov_meet');
+    await page.evaluate(() => PixelPets.setFlag('story.hc_gov_met', true));
+    expect((await quest(page)).id).toBe('hc_council');
     expect((await stored(page)).v).toBe(2);
   });
 
