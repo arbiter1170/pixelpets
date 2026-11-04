@@ -156,7 +156,7 @@
      "x": 26,
      "y": 0,
      "to": "kilnmouth",
-     "tx": 26,
+     "tx": 27,
      "ty": 38,
      "facing": "up",
      "setFlag": "story.reached_kilnmouth"
@@ -178,7 +178,7 @@
      "x": 28,
      "y": 0,
      "to": "kilnmouth",
-     "tx": 28,
+     "tx": 27,
      "ty": 38,
      "facing": "up",
      "setFlag": "story.reached_kilnmouth"
@@ -189,7 +189,7 @@
      "x": 29,
      "y": 0,
      "to": "kilnmouth",
-     "tx": 29,
+     "tx": 27,
      "ty": 38,
      "facing": "up",
      "setFlag": "story.reached_kilnmouth"
@@ -2780,8 +2780,8 @@
    "variants": true,
    "wall": {
     "windows": [
-     3,
-     10
+     5,
+     9
     ]
    },
    "safe": {

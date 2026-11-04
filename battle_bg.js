@@ -378,7 +378,7 @@ const KM_OUT = {
     S.deco(() => { S.art('km_gauge', 10, S.hz + 16, 0.75) || S.art('lamp_post', 10, S.hz + 16); });
   },
 };
-const KM_ROOMS = { km_hall_in: { hall: true, banner: ['B', 'N'], ring: 'o', back: ['km_vent'], front: ['km_vent'] },
+const KM_ROOMS = { km_hall_in: { hall: true, banner: ['r', 'o'], ring: 'y', back: ['km_vent_lit'], front: ['km_vent'] },
   km_lantern_in: {}, km_store_in: {}, km_bath_in: {}, km_council_in: {}, km_stone_in: {} };
 Object.assign(OUT, KM_OUT); Object.assign(ROOMS, KM_ROOMS);
 Object.keys(KM_OUT).forEach(id => { scenes[id] = { room: false }; });

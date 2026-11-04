@@ -240,10 +240,10 @@ test.describe('ROUTE_TO_GOVERNOR: the coach, the gap and Route 4 (D1854, D1866, 
     expect(lines.find(l => l[0] === '>')[2]).toEqual(['Rest a while', 'Not now']);
     const after = await page.evaluate(() => ({ money: PixelPets.state.money, hp: PixelPets.state.party[0].hpNow }));
     expect(after).toEqual({ money: 7, hp: undefined });
-    // East: the bars stand and no warp to km_road (Kilnmouth is not built: the bars stand even after the assignment).
+    // East: the bars stand before the assignment. Once KILNMOUTH lands its warps (23, 1-3) are there behind them, shut until story.km_assigned.
     const ids = await objIds(page);
     expect(ids).toEqual(expect.arrayContaining(['r4_east_bar_n', 'r4_east_bar_c', 'r4_east_bar_s']));
-    expect(ids.filter(id => /^r4_east_[ncs]$/.test(id))).toEqual([]);
+    expect(ids.filter(id => /^r4_east_[ncs]$/.test(id))).toEqual(KILN ? ['r4_east_n', 'r4_east_c', 'r4_east_s'] : []);
     await shot(page, 'r4-fork');
   });
 

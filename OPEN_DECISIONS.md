@@ -94,6 +94,7 @@ D1680-D1699 reserved: Design, ACT2_COVER_STORY (design repo specs/ACT2_COVER_STO
 D1620-D1629 reserved: Design, REPORTS_AND_ENDINGS v0.1 (design repo specs/REPORTS_AND_ENDINGS.md); all SETTLED by Vincent, Tue Nov 3, 2026 (defaults); the readers (E1) built in claude/act2-opener. D1720-D1729 reserved: Design, REPORT_FLAGS v0.1; SETTLED Wed Nov 4, 2026 (D1726 B: R6 after the third sitting).
 D1850-D1879 reserved: Design, ROUTE_TO_GOVERNOR (design repo specs/ROUTE_TO_GOVERNOR.md v0.1.1; D1850-D1876 used, D1877-D1879 held). D1850-D1876 SETTLED by Vincent, Wed Nov 4, 2026 (defaults), with ACT2_PACING D1880-D1884; built on branch claude/route4. Every line, sign, holder name, map label and species name stays PLACEHOLDER (D1857) until Story signs it and Vincent names it.
 
+D1820-D1849 reserved: Design, KILNMOUTH v0.1.1 (design repo specs/KILNMOUTH.md); all thirty SETTLED by Vincent, Wed Nov 4, 2026; built in claude/kilnmouth (Claybank Road, the town, its rooms, B2-B4, the states and holds; Hall 5's battles wait on the Hall 5 build).
 Next free id is D1600.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 

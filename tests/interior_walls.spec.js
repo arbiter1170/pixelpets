@@ -157,7 +157,7 @@ test('Your Home draws the wall kit, and rooms without it keep their tiles', asyn
   expect(report.keys.slice().sort()).toEqual(PAL_KEYS.slice().sort());
   expect(report.wall).toEqual(HOME_WALL);
   expect(report.opted).toContain('house_home');
-  expect(report.opted.length).toBe(47);   // 37 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT
+  expect(report.opted.length).toBe(53);   // 37 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT + KILNMOUTH's six
   expect(report.lists).toEqual({ home: [2, 6], up: [3, 5] });
   expect(report.parts).toEqual([
     'house_home__cap_n', 'house_home__cap_ne', 'house_home__cap_nw', 'house_home__cap_s', 'house_home__cap_se', 'house_home__cap_sw',
@@ -262,6 +262,13 @@ const ROOMS = [
   { id: 'bw_store_in', skin: 'bw_store', windows: [2, 7], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },
   { id: 'bw_hall_in', skin: 'bw_hall', windows: [2, 8], doors: [], jambs: [[4, 12, 'jamb_l'], [6, 12, 'jamb_r']] },
   { id: 'bw_depot_in', skin: 'bw_depot', windows: [3, 8], doors: [], jambs: [[4, 9, 'jamb_l'], [6, 9, 'jamb_r']] },
+  // KILNMOUTH (D1834): six rooms, each its own skin and wall row (the packet's row 1 is the face; the Lantern House keeps two bed alcoves).
+  { id: 'km_lantern_in', skin: 'km_lantern', windows: [3, 8], doors: [], jambs: [[4, 11, 'jamb_l'], [6, 11, 'jamb_r']] },
+  { id: 'km_store_in', skin: 'km_store', windows: [], doors: [], jambs: [[4, 8, 'jamb_l'], [6, 8, 'jamb_r']] },
+  { id: 'km_bath_in', skin: 'km_bath', windows: [], doors: [], jambs: [[6, 13, 'jamb_l'], [8, 13, 'jamb_r']] },
+  { id: 'km_council_in', skin: 'km_council', windows: [5, 9], doors: [], jambs: [[5, 11, 'jamb_l'], [7, 11, 'jamb_r']] },
+  { id: 'km_hall_in', skin: 'km_hall', windows: [], doors: [], jambs: [[6, 23, 'jamb_l'], [8, 23, 'jamb_r']] },
+  { id: 'km_stone_in', skin: 'km_stone', windows: [], doors: [], jambs: [[3, 8, 'jamb_l'], [5, 8, 'jamb_r']] },
   // FERNBROOK_HOMES (D1248): three south-lane homes, each with its own skin and wall row.
   { id: 'fbh_press_in', skin: 'fbh_press', windows: [3, 8], doors: [], jambs: [[4, 13, 'jamb_l'], [6, 13, 'jamb_r']] },
   { id: 'fbh_picker_in', skin: 'fbh_picker', windows: [3, 10], doors: [], jambs: [[5, 11, 'jamb_l'], [7, 11, 'jamb_r']] },
@@ -361,7 +368,7 @@ test('every interior uses its own wall row, windows, doors and jambs @w1', async
   }, ROOMS);
 
   expect(report.v).toBe(2);
-  expect(report.n).toBe(53);   // 43 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT
+  expect(report.n).toBe(59);   // 43 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT + KILNMOUTH's six
   expect(report.problems).toEqual([]);
   expect(report.cap).toEqual([]);
   for (const row of report.shares) expect(row.share, row.id + ' ' + row.tile).toBeLessThanOrEqual(0.7);
