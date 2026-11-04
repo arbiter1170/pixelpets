@@ -95,7 +95,7 @@ TXT = {
     'gallery': "[PLACEHOLDER] The gallery stair is roped off for now.",
     'apt_b': None,                                              # kept text
     # CABINET_AND_COUNCILS v0.2.2 phase 1b. thr_cabinet_lead is CHIP_HINTS' four SIGNED lines (D1470: unchanged). The rest is the
-    # packet's v0.1 words, which Story's CABINET_LINES (draft, D2152) keeps as written: PLACEHOLDER until Design signs that file.
+    # packet's v0.1 words, which Story's CABINET_LINES keeps as written (D2152; settled by Vincent, Wed Nov 4, 2026, all defaults).
     'lead_1': "Sit a moment, {name}. A new report on the lamps came in this morning. Half of it was gone by noon.",
     'lead_2': "People tell us their Walklings come home quiet. A week later, the same people won't say a word.",
     'lead_3': "The Governor wants you at the cabinet table in High Charity. Take the seat. Keep your ears open.",
@@ -111,6 +111,10 @@ TXT = {
     's1_3c': "A sensible name. Kilnmouth will be warm by spring.",
     's1_3d': "Then go back and listen. The matter waits for you.",
     's1_4': "Then it's confirmed. Take the letter to the Reeve, Cadet.",
+    # CABINET §3.5 K6, the report-back (CABINET_LINES K6.1-K6.3, KEEP; settled by Vincent Wed Nov 4 with the rest of that file)
+    'k6_1': "In default of the council? I stamped that. It was in order. It was also a tie.",
+    'k6_2': "Two names were on my desk before you left. One came down from upstairs.",
+    'k6_3': "A seat is confirmed at the cabinet, Cadet, not in an office. Bring the name to the table.",
 }
 # District signposts one tile inside each mouth (names are placeholders until Story's name check, D1277).
 DISTRICT = {'highcharity': 'LANTERN SQUARE', 'hc_civic': 'CHARTER HILL', 'hc_exchange': 'EXCHANGE QUARTER',
@@ -823,8 +827,11 @@ SC['hc_gov_meet'] = [
     ['say', GM, TXT['gov_m8']],
     ['setFlag', 'story.km_assigned', True], ['setFlag', 'story.hc_gov_met', True],
 ]
+# CABINET §3.5 K6 (1a): the Kilnmouth report-back replaces his repeat once the fence permit is read; it opens the lead-in (§4.3).
+SC['km_report'] = [['say', GM, TXT['k6_1']], ['say', GM, TXT['k6_2']], ['say', GM, TXT['k6_3']], ['setFlag', 'story.km_reported', True]]
 objs.append(N('hc_governor', GM, 'hc_governor', 12, 3, 'down', when=['story.act>=2'],
-              lines={'story.gov_posted & !story.hc_gov_met': '@hc_gov_meet', 'story.km_assigned': TXT['gov_after'], 'else': TXT['gov_line']}))
+              lines={'story.gov_posted & !story.hc_gov_met': '@hc_gov_meet', 'story.km_permit_seen & !story.km_reported': '@km_report',
+                     'story.km_assigned': TXT['gov_after'], 'else': TXT['gov_line']}))
 objs += [P('hc2_gov_flag_w', 10, 2, 'banner_keeper'), P('hc2_gov_flag_e', 14, 2, 'banner_keeper')]
 ROOMS['hc_gov_1'] = room('hc_gov_1', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_1', objs, (7, 14))
 

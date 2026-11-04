@@ -1164,7 +1164,7 @@
      "lines": {
       "story.km_permit_seen": "First one's in Brightgate. Never switched on. Ask them why ours was.",
       "story.km_arrived & !story.km_pitch_f": "@km_pitch_f",
-      "story.km_pitch_f": "I grew up in that bathhouse. Give me the seat and the works will heat it again. Warm by spring.",
+      "story.km_pitch_f": "Warm by spring. You'll see.",
       "else": "I grew up in that bathhouse."
      },
      "look": "km_foreman"
@@ -1178,6 +1178,7 @@
      "facing": "down",
      "lines": {
       "story.km_arrived & !story.km_pitch_c": "@km_pitch_c",
+      "story.km_pitch_c": "Order first. The water can wait.",
       "else": "Years in the watch. This town needs order before it needs warm water."
      },
      "look": "km_nominee"
@@ -1215,7 +1216,7 @@
      "facing": "left",
      "lines": {
       "story.km_arrived & !story.km_ask_yard": "@km_ask_yard",
-      "story.km_ask_yard": "Ask who keeps the springs clean when nobody pays them. That's who I'd vote for.",
+      "story.km_ask_yard": "The springs. Ask who keeps them.",
       "else": "One kiln of three is warm. The other two have soot on cold brick."
      },
      "look": "km_kilnhand"
@@ -1229,7 +1230,7 @@
      "facing": "down",
      "lines": {
       "story.km_arrived & !story.km_ask_market": "@km_ask_market",
-      "story.km_ask_market": "The Bathkeeper. Kept the water warm for years and never asked a thing back.",
+      "story.km_ask_market": "Never asked a thing back. Not once.",
       "else": "Coal's dear. Everyone's heating water by hand."
      },
      "look": "km_seller",
@@ -1246,7 +1247,7 @@
      "facing": "left",
      "lines": {
       "story.km_arrived & !story.km_ask_springs": "@km_ask_springs",
-      "story.km_ask_springs": "If the town could vote tonight, it'd be the Bathkeeper. It can't. Curfew.",
+      "story.km_ask_springs": "No vote after dark. So no vote.",
       "else": "It used to be under, that white ring. Mind the frost."
      },
      "look": "km_regular",
@@ -1262,6 +1263,7 @@
      "y": 29,
      "facing": "down",
      "lines": {
+      "story.km_settled & story.km_seat_pick=commander": "The new councillor salutes the Keepers. The town doesn't.",
       "story.km_storm": "No storm again! The tower's the best thing that ever happened here.",
       "else": "Coats on in a spa town. Gran says that never used to happen."
      },
@@ -2662,6 +2664,7 @@
      "y": 2,
      "sprite": "km_notches",
      "lines": {
+      "story.km_council & story.km_seat_pick=company": "The pipe hums and the water's warm. Outside, the springs are still cold.",
       "else": "Notches in red paint, each one dated in a neat hand. The newest is the lowest."
      }
     },
@@ -2822,7 +2825,9 @@
      "facing": "left",
      "lines": {
       "story.km_assigned & !story.km_arrived": "@km_k1",
-      "story.km_arrived": "The seventh chair's been empty since the tower went up. Ask anyone why. Then ask me again.",
+      "story.km_seat_filled & !story.km_council": "@km_k7",
+      "story.km_council": "Seven hands. It feels like a town.",
+      "story.km_arrived": "Six hands. Still six. Ask around.",
       "else": "Six chairs sit. Six hands. Every vote ends three and three, and the capital signs the rest."
      },
      "look": "km_reeve"
@@ -4039,6 +4044,211 @@
     "story.wb_springs",
     true
    ]
+  ],
+  "km_k7": [
+   [
+    "say",
+    "Reeve Agna",
+    "Seven chairs. Seven hands. First matter: the tower's lease."
+   ],
+   [
+    "if",
+    "story.km_seat_pick=town",
+    [
+     [
+      "say",
+      "Reeve Agna",
+      "Four to three. The lease ends at term. The tower goes quiet."
+     ]
+    ],
+    [
+     [
+      "say",
+      "Reeve Agna",
+      "Four to three. The lease stands."
+     ],
+     [
+      "if",
+      "story.km_seat_pick=company",
+      [
+       [
+        "say",
+        "Reeve Agna",
+        "And a works contract. The bathhouse will be heated by machine."
+       ]
+      ],
+      []
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Reeve Agna",
+    "Second matter: fuel for the Hall's kiln. Seven to none. Light it."
+   ],
+   [
+    "if",
+    "story.km_seat_pick=town",
+    [
+     [
+      "setFlag",
+      "story.km_lease",
+      "ended"
+     ],
+     [
+      "setFlag",
+      "story.km_springs",
+      "warm"
+     ],
+     [
+      "inc",
+      "story.sway_kilnmouth",
+      2
+     ]
+    ],
+    [
+     [
+      "setFlag",
+      "story.km_lease",
+      "renewed"
+     ],
+     [
+      "setFlag",
+      "story.km_springs",
+      "cold"
+     ],
+     [
+      "if",
+      "story.km_seat_pick=commander",
+      [
+       [
+        "inc",
+        "story.sway_kilnmouth",
+        1
+       ]
+      ],
+      [
+       [
+        "inc",
+        "story.sway_kilnmouth",
+        -2
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "setFlag",
+    "story.km_hall_lit",
+    true
+   ],
+   [
+    "setFlag",
+    "story.km_council",
+    true
+   ],
+   [
+    "setFlag",
+    "story.km_settled",
+    true
+   ]
+  ],
+  "rpt_4": [
+   [
+    "say",
+    "",
+    "Ilse's letter asks one thing: what did you see? Nothing else."
+   ],
+   [
+    "choice",
+    "What do you write back?",
+    [
+     [
+      "Tell her all of it",
+      [
+       [
+        "if",
+        "story.km_permit_to=town",
+        [
+         [
+          "say",
+          "",
+          "You write it plain: the cold springs, the tower's paper, the words \"in default\". The bathhouse knows."
+         ]
+        ],
+        [
+         [
+          "say",
+          "",
+          "You write it plain: the cold springs, the tower's paper, the words \"in default\". Only she knows."
+         ]
+        ]
+       ],
+       [
+        "if",
+        "story.km_seat_pick=town",
+        [
+         [
+          "say",
+          "",
+          "And the seventh chair: the Bathkeeper. The town's own name."
+         ]
+        ],
+        [
+         [
+          "if",
+          "story.km_seat_pick=commander",
+          [
+           [
+            "say",
+            "",
+            "And the seventh chair: Edwin Garth, with a Commander's letter."
+           ]
+          ],
+          [
+           [
+            "say",
+            "",
+            "And the seventh chair: Foreman Dray. His name came down from upstairs."
+           ]
+          ]
+         ]
+        ]
+       ],
+       [
+        "say",
+        "Warden Ilse",
+        "A permit in default of a council. I'll write it down. Watch who signs the next one."
+       ],
+       [
+        "setFlag",
+        "story.rpt_4",
+        "told"
+       ]
+      ]
+     ],
+     [
+      "Keep some back",
+      [
+       [
+        "say",
+        "",
+        "You fold the letter with half of it left out."
+       ],
+       [
+        "setFlag",
+        "story.rpt_4",
+        "kept"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "A chair at his table. Sit in it. Remember whose Cadet you are."
+   ]
   ]
  },
  "spawnTables": {
@@ -4323,6 +4533,26 @@
   "story.kr_s1_met": "NOT_STEPS: placed S1",
   "story.kr_s4_met": "NOT_STEPS: placed S4",
   "story.km_visits": "NOT_STEPS: E6 counter (game.js)",
-  "story.km_visit_day": "NOT_STEPS: E6 once-per-day key (game.js)"
- }
+  "story.km_visit_day": "NOT_STEPS: E6 once-per-day key (game.js)",
+  "story.km_council": "CHAIN: km_council (K7, Reeve Agna; CABINET 1a)",
+  "story.km_lease": "NOT_STEPS: K7 (ended / renewed)",
+  "story.km_springs": "NOT_STEPS: K7 (warm / cold)",
+  "story.km_hall_lit": "NOT_STEPS: K7, opens Hall 5 (K8)",
+  "story.km_settled": "NOT_STEPS: K7; the hold reads the sway only after it (§3.6)",
+  "story.rpt_4": "NOT_STEPS: R4 (told / kept), CABINET 1a",
+  "story.km_reported": "CHAIN: km_report (K6, Governor Merriden; tools/build_hc_city.py)"
+ },
+ "hostNotes": [
+  {
+   "_note": "CABINET_AND_COUNCILS §3.5 R4 (D1512 shape, v0.2 D1725 key): Act 2's report, a letter through any Lantern House Host after the council sits. Skipped after a switch or the loyalist's choice. R1-R3 are in detail_zz_keeper_join.",
+   "when": [
+    "story.keeper_cadet",
+    "story.km_council",
+    "!story.rpt_4",
+    "!story.switched_a3 & !story.warden_cut"
+   ],
+   "line": "A letter for you, sealed with the Warden's lantern. She wants one back.",
+   "scene": "rpt_4"
+  }
+ ]
 }

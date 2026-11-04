@@ -1,7 +1,7 @@
 /* CABINET_AND_COUNCILS v0.2.2 (design repo, private), phase 1b: the Cabinet Room hc_gov_2, Lumen's lead-in, the stair and S1.
    tools/build_hc_city.py (the city is the ?debug=1&hccity=2 preview until HC_CITY_V2 ships), sprites.js (CABINET_ROOM_ART), quests.js.
-   §7 C-T1 to C-T3 and the 1b parts of C-T7. Kilnmouth (1a, story.km_reported) and K2a (story.pres_cabinet_first, after the parade)
-   are not built on this branch, so the saves here carry the flags they would set. Save stays pixelpets.save.v2, v 2, story.* keys only.
+   §7 C-T1 to C-T3 and the 1b parts of C-T7. K2a (story.pres_cabinet_first, after the parade) is not built, so the saves here carry
+   the flag it would set; Kilnmouth's 1a (story.km_reported, K6) is tested in tests/kilnmouth_seat.spec.js. Save stays pixelpets.save.v2, v 2, story.* keys only.
    Runs at 320, 375 and 390 (@w1 rows at 320 only); one run in reduced motion; zero console errors. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');

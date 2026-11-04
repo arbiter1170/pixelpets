@@ -41,6 +41,7 @@
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
+    'story.km_lease', 'story.km_springs', 'story.km_hall_lit', 'story.km_settled', 'story.rpt_4',   // CABINET 1a: K7's results and R4
     'story.km_ask_yard', 'story.km_ask_market', 'story.km_ask_springs', 'story.km_pitch_f', 'story.km_pitch_c', 'story.km_crew', 'story.km_permit_to',   // KILNMOUTH §12.1 / CAB K2-K4
     'story.slip_kilnmouth', 'story.pres_hint_default', 'story.km_twin_lead', 'story.wb_springs', 'story.kr_s1_met', 'story.kr_s4_met',   // K4, B4, the hill path (D1990), the placed S1 / S4
     'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
@@ -367,9 +368,14 @@
     // Brightgate (B5) is its own build: until a route or coach reaches it, the chain holds here.
     { id: 'a2_hold', when: ['story.km_permit_seen'], done: ['story.reached_brightgate'],
       text: 'Await your next orders.', place: 'The Amberwild' },
-    // CABINET_AND_COUNCILS v0.2.2 §4.3 (1b): after the Kilnmouth report-back (story.km_reported, the Kilnmouth packet's K6, 1a), Lumen's
-    // lead-in in the Governor's House lobby, then the stair to the Cabinet Room and the twelfth chair. S1 plays there once K2a has
-    // (story.pres_cabinet_first; K2a waits on the parade). Keepers path only. Text PLACEHOLDER (OPEN_DECISIONS, CABINET 1b rows).
+    // CABINET_AND_COUNCILS v0.2.2 (1a, 1b; ACT2_BEAT_SHEET B7, B11): the report-back to the Governor (K6, story.km_reported), Lumen's
+    // lead-in in the Governor's House lobby, the stair to the Cabinet Room and the twelfth chair (S1 plays there once K2a has,
+    // story.pres_cabinet_first; K2a waits on the parade), then Kilnmouth's council sits (K7). Keepers path only. Row text is the
+    // engineer's (no packet wrote it; OPEN_DECISIONS D1608-copy).
+    { id: 'km_report', when: ['story.km_permit_seen', '!story.side=glimmer'], done: ['story.km_reported'],
+      npc: 'Governor Merriden', npcIds: ['hc_governor'],
+      text: "Tell Governor Merriden about the tower's permit. He's at the Governor's House in High Charity.", place: "Governor's House",
+      target: { map: 'hc_gov_1', x: 12, y: 3 } },
     { id: 'cab_lead', when: ['story.km_reported', '!story.side=glimmer'], done: ['story.thr_chip_rumour'],
       npc: 'Captain Lumen', npcIds: ['cab_lumen_lobby'],
       text: "Captain Lumen is waiting in the lobby of the Governor's House.", place: "Governor's House",
@@ -377,6 +383,10 @@
     { id: 'cab_seat', when: ['story.thr_chip_rumour', '!story.side=glimmer'], done: ['story.km_seat_pick'],
       text: "Take the stair in the Governor's House up to the Cabinet Room. A chair is set for you.", place: 'Cabinet Room',
       target: { map: 'hc_gov_2', x: 6, y: 8 } },
+    { id: 'km_council', when: ['story.km_seat_filled', '!story.side=glimmer'], done: ['story.km_council'],
+      npc: 'Reeve Agna', npcIds: ['km_reeve'],
+      text: "Take the Governor's letter to Reeve Agna at Kilnmouth's council house. The council can sit.", place: 'Kilnmouth council house',
+      target: { map: 'km_council_in', x: 11, y: 3 } },
     // WALK_BESIDE §3.3 (D1961): Archivist Mo waits at the Lodge steps from the first sitting (CABINET S1 sets story.cab_seat; not
     // built, so this row is inert today) until the cut is shown. Never for a switcher or the company's face.
     { id: 'wb_cut', when: ['story.cab_seat', '!story.switched_a3', '!story.side=glimmer'], done: ['story.wb_cut'], noImply: true,

@@ -2,6 +2,20 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 15:05 ET: Build: Kilnmouth's empty seat folded into the cabinet build: K6, K7, R4 and the repeats (CABINET_AND_COUNCILS v0.2.2 phase 1a)
+- What changed and why:
+  - #318 built Kilnmouth and K1-K5; the coordinator cleared folding 1a into claude/cabinet-v02 (PR #332) once it merged. Merged `origin/main` (9e65883) first, with a merge commit.
+  - K6, the report-back: once the fence permit is read, Governor Merriden's three settled lines replace his repeat and write `story.km_reported`, which opens Lumen's lead-in (1b). Chain row `km_report` after `a2_hold` (Brightgate first, as the beat sheet orders B5 before B7).
+  - K7, the council sits: on Reeve Agna after S1 (`story.km_seat_filled & !story.km_council`): the lease ends (the town's name) or stands (the Commander's, the company's, plus the works contract), the kiln is lit; writes `story.km_lease`, `story.km_springs`, `story.km_hall_lit`, `story.km_council`, `story.km_settled` and the sway (+2 / +1 / -2, clamped), all at its last steps. Chain row `km_council` after `cab_seat`. #318's curfew and morning states, the hold lines, the Hall 5 door and the coach already read these flags.
+  - R4, Ilse's letter through any Lantern House Host after the council (D1725 key; R1/R2's built shape): told lines by `story.km_permit_to` and `story.km_seat_pick`, Ilse's two answers; skipped after an Act 3 switch or the loyalist's choice.
+  - The repeats (CABINET_LINES, settled): Reeve Agna before and after the council, the three askers, Foreman Dray, Edwin Garth; the company's pipe on the bathhouse gauge; the Commander's plaza line.
+  - The room's ten library pieces now come from #319 (merged); the branch's verbatim copies are gone.
+- Files touched: `data/detail_zzzzz_kilnmouth.json`, `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `data/mapdata.js` (regenerated), `quests.js`, `tests/kilnmouth_seat.spec.js` (new), `tests/standing.spec.js` (the chain rows), `tests/cabinet.spec.js` (header), `tests/README.md`, `OPEN_DECISIONS.md`, `index.html`, `version.json`.
+- Commit(s) + build id: claude/cabinet-v02, build 20261104-1505.
+- Tests run and result (widths, checks): `npm run test:agent` (proxy variables unset, so the RTDB rules stage runs and passes): tests/kilnmouth_seat.spec.js at 320, 375 and 390, 18 passed; with cabinet, kilnmouth, standing, hc_city_v2, governor_meeting, walk_beside, route_to_governor, interior_walls, act1_town_switch and tap_interact at 390, passed.
+- Decisions made (colour + reasoning): green, OPEN_DECISIONS D1608-build, -copy, -stage (updated): chain rows' text; K7.p on the bathhouse gauge and H1c on the town kid; K7 writes at its end.
+- Anything left unfinished: K2a (the parade, #296); 1c; K-T8 (PT2, phase 2).
+
 ## 2026-11-04 10:56 ET: Build: the Cabinet Room, Lumen's lead-in, the stair and S1 (CABINET_AND_COUNCILS v0.2.2 phase 1b; D1600-D1619)
 - What changed and why:
   - The Cabinet Room `hc_gov_2` (14x12), floor 2 of the Governor's House, as Vincent approved the rule-9 previews (Wed Nov 4, 2026: 14x12, the seat tells as drawn, a third floor tile variant). Long table (3x5), twelve chairs (even seats west), the gallery with its rail and open gate, the wall pieces (order paper, seating board, towns map, chute pipe, OUT slot, clock), charter case, records, flag, sideboard and minutes desk. Tells as drawn: the Treasury's folder with its `r` ribbon (table slice 2) and Roads and Coaches' newer chair (seat 4). Art in `sprites.js` `CABINET_ROOM_ART`, PAL keys only, no Glimmerwell key; ten PROP_LIBRARY pieces copied verbatim (the same rows as #319), registered only when their id is free. New tile `floor_keep_d`; skin `hc_gov_2` shares floor 1's wall row.
