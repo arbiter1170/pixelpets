@@ -1,5 +1,5 @@
-/* PROP_LIBRARY v0.1: the shared prop art (sprites.js PROP_LIBRARY_ART). Art only: no map places these props yet,
-   so nothing a player sees changes. Widths are the Playwright projects (320, 375, 390); every boot is Modern controls.
+/* PROP_LIBRARY v0.1: the shared prop art (sprites.js PROP_LIBRARY_ART). The library itself is art only; maps place its
+   props only in approved room builds (rule 9), the first being PROP_DRESS (D2032, D2035; tests/prop_dress.spec.js). Widths are the Playwright projects (320, 375, 390); every boot is Modern controls.
    Save stays pixelpets.save.v2 with v 2 and no new field. */
 const fs = require('fs');
 const path = require('path');
@@ -56,7 +56,8 @@ test('the library block is well formed: 60+ props, sizes match cells, PAL keys o
 
 test('no library id or slice id collides with another name in the repo', () => {
   const files = ['game.js', 'keeper.js', 'glimmer_fleet.js', 'battle_bg.js', 'quests.js', 'data/mapdata.js', 'data/hc_city_v2.js', 'data/nav_art.js']
-    .map(f => [f, fs.readFileSync(path.join(ROOT, f), 'utf8')]);
+    // a placement names its art in a "sprite" field (PROP_DRESS); that is a use of the id, not a second name for it
+    .map(f => [f, fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/"sprite":\s*"[^"]*"/g, '"sprite":""')]);
   files.push(['sprites.js (outside the library)', SPRITES.slice(0, START) + SPRITES.slice(END)]);
   const hits = [];
   for (const id of IDS.concat(SLICES)) {
@@ -155,8 +156,23 @@ test('a test room with every prop draws in the walk view with no console errors,
   if (saved) expect(saved.v).toBe(2);
 });
 
-test('main maps place no library prop yet (art only; rooms adopt it in their own builds)', () => {
-  const md = fs.readFileSync(path.join(ROOT, 'data/mapdata.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'data/hc_city_v2.js'), 'utf8');
-  const used = IDS.concat(SLICES).filter(id => md.includes('"' + id + '"'));
-  expect(used).toEqual([]);
+// Rule 9: a room or town places library props only in its own approved build. PROP_DRESS (D2032, D2035) is the first:
+// data/detail_zzzzzz_prop_dress.json. Any other data file that names a library prop fails here until its build lists it.
+const PLACING = ['detail_zzzzzz_prop_dress.json'];
+test('library props are placed only by approved room builds (PROP_DRESS so far), and only as sprites', () => {
+  const dataDir = path.join(ROOT, 'data');
+  const ids = IDS.concat(SLICES), outside = [];
+  for (const f of fs.readdirSync(dataDir).filter(f => f.endsWith('.json') && PLACING.indexOf(f) < 0)) {
+    const src = fs.readFileSync(path.join(dataDir, f), 'utf8');
+    for (const id of ids) if (src.includes('"' + id + '"')) outside.push(id + ' in data/' + f);
+  }
+  const city = fs.readFileSync(path.join(ROOT, 'data/hc_city_v2.js'), 'utf8');
+  for (const id of ids) if (city.includes('"' + id + '"')) outside.push(id + ' in data/hc_city_v2.js');
+  expect(outside).toEqual([]);
+  for (const f of PLACING) {
+    const used = [];
+    JSON.stringify(JSON.parse(fs.readFileSync(path.join(dataDir, f), 'utf8')), (k, v) => { if (typeof v === 'string' && ids.indexOf(v) >= 0) used.push([k, v]); return v; });
+    expect(used.length, f).toBeGreaterThan(0);
+    expect(used.filter(([k]) => k !== 'sprite'), f + ': a library id only ever appears as a sprite').toEqual([]);
+  }
 });
