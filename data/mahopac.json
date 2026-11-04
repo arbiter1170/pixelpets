@@ -459,6 +459,10 @@
       ]],
       ["say", "", "She writes the shape in, in ink, beside them. One pass. She doesn't strike anything."],
       ["say", "Warden Ilse", "That goes in my other book. Not the Court's."],
+      ["if", "lens:cut & story.solvane_met", [
+        ["say", "", "You tell her about the bell tower at low tide. She doesn't laugh."],
+        ["say", "Warden Ilse", "I dreamed a bell tower once. It's in this book."]
+      ]],
       ["music", "ledger"],
       ["say", "", "The lens dims. It remembers you, and it lets you leave."],
       ["if", "lens:cut", [["setFlag", "story.lens_seen", "cut"]], [

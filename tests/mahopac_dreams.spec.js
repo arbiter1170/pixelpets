@@ -328,6 +328,7 @@ const DET = JSON.parse(fs.readFileSync(path.join(DATA, 'detail_zzzz_mahopac_drea
 const COVER = JSON.parse(fs.readFileSync(path.join(DATA, 'detail_zzz_act2_cover.json'), 'utf8'));
 const MOM_SCENES = ['mom_lens_offer', 'mom_lens', 'mom_lens_look'];
 const LENS_SCENES = ['lens_note', 'lens_step', 'lens_moment', 'lens_look', 'lens_sill', 'mahopac_card'];
+const SPIRE_SCENES = ['spire_echo'];
 function linesOf(steps, out = []) {   // [{ who, text, kind }] for every say, choice prompt and label in a step list
   for (const st of steps || []) {
     if (!Array.isArray(st)) continue;
@@ -361,7 +362,7 @@ test.describe('MD lines: the D1921 scan and the line limits (T5, T11)', () => {
   });
 
   test('T11: every new line meets its limit; the wording scan finds nothing @w1', async () => {
-    const lines = MOM_SCENES.concat(LENS_SCENES).flatMap(id => linesOf(MAH.scenes[id] || []));
+    const lines = MOM_SCENES.concat(LENS_SCENES).flatMap(id => linesOf(MAH.scenes[id] || [])).concat(SPIRE_SCENES.flatMap(id => linesOf((DET.scenes || {})[id] || [])));
     expect(lines.length).toBeGreaterThan(20);
     for (const l of lines) {
       if (l.kind === 'label') expect(len(l.text), l.text).toBeLessThanOrEqual(30);
@@ -518,6 +519,7 @@ test.describe('MD-3: the lens moment (D1940-D1943, D1950)', () => {
       expect(r.c.includes(LM6.paper)).toBe(lm6 === 'paper');
       expect(r.c.includes(LM6.copy)).toBe(lm6 === 'copy');
       expect(r.c.slice(-1)).toEqual([LM9]);
+      expect(r.c.includes("You tell her about the bell tower at low tide. She doesn't laugh.")).toBe(want === 'cut');   // MD-4 (D1948)
       expect((await stored(page)).flags['story.lens_seen']).toBe(want);
     });
   }
@@ -575,5 +577,32 @@ test.describe('MD-3: the lens moment (D1940-D1943, D1950)', () => {
     expect(await plain.evaluate(() => typeof PixelPets.checkpoint === 'function' ? PixelPets.checkpoint('md_lens_kept') : undefined)).toBeFalsy();
     expect(await plain.evaluate(() => PixelPets.state && PixelPets.state.flags['story.lens_note'])).toBeFalsy();
     await ctx.close();
+  });
+});
+
+// ---- MD-4: the echoes (§5, D1947, D1948) ----
+const LME = ["You tell her about the bell tower at low tide. She doesn't laugh.", "I dreamed a bell tower once. It's in this book."];
+const SE = ['As Lumen goes, Ilse stays by the window a moment.', "A bell tower at low tide. I dreamed one once. It's in my other book."];
+test.describe('MD-4: the echoes (D1947, D1948)', () => {
+  for (const [p, hears] of [['cut', true], ['cutSwitched', true], ['switch', false], ['kept', false]]) {
+    test(`T9 (D1948): ${p}: the loyalist's echo at the lens ${hears ? 'plays after LM8' : 'never plays'} @w1`, async ({ page }) => {
+      test.setTimeout(120000);
+      await boot(page, save(Object.assign({}, LENS, PATH[p]), OBS));
+      const r = await lensRun(page);
+      const i = r.c.indexOf(LM8);
+      expect(i).toBeGreaterThan(0);
+      if (hears) expect(r.c.slice(i + 1)).toEqual(LME.concat([LM9]));
+      else { expect(r.c.slice(i + 1)).toEqual([LM9]); for (const t of LME) expect(r.c).not.toContain(t); }
+    });
+  }
+  test('T9 (D1947): the Spire echo is SE1-SE2, ready for the debrief; nothing runs it until the debrief is built @w1', async ({ page }) => {
+    expect(linesOf(DET.scenes.spire_echo).map(l => [l.who, l.text])).toEqual([['', SE[0]], ['Warden Ilse', SE[1]]]);
+    const refs = JSON.stringify([MAH, DET]).split('"spire_echo"').length - 1;
+    expect(refs).toBe(1);   // its own key only: the Spire debrief (STORMBELL_SPIRE, REPORTS §5) is a later build
+    await boot(page, save(Object.assign({}, LENS, PATH.kept), OBS));
+    expect(await page.evaluate(() => PixelPets.runScene('spire_echo'))).toBe(true);   // debug: the two boxes play as written
+    expect(says(await drive(page))).toEqual(SE);
+    const st = await stored(page);
+    expect(Object.keys(st.flags).filter(k => /echo|spire/.test(k))).toEqual([]);   // no flag (the debrief is one-shot)
   });
 });

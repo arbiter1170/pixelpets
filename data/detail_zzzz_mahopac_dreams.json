@@ -3,7 +3,14 @@
   "_about": "Ours, not a design copy. Applied after detail_zzz_act2_cover.json. Mahopac's own objects, flags and scenes are in data/mahopac.json; this file holds what lives outside Mahopac: Mom's offer and repeats at home (DA3; data/interiors.json stays verbatim). Save stays pixelpets.save.v2, v 2; new additive story.* keys only; nothing written at load. Gates nothing in the game sets yet (story.seal4, story.seal5) keep it inert in normal play.",
   "_placeholders": {
     "note": "PLACEHOLDER copy (Story/June to replace; MAHOPAC_DREAMS §3-§5; OPEN_DECISIONS D1940-D1959). Every line in this file and every line MAHOPAC_DREAMS adds to data/mahopac.json is a placeholder.",
-    "paths": ["objPatch", "hostNotes"]
+    "paths": ["objPatch", "hostNotes", "scenes"]
+  },
+  "_waits": "§5.1 (D1947): spire_echo is SE1-SE2, for the Spire debrief after d3 and before the Keepers' decision scene (W only). The debrief (STORMBELL_SPIRE, REPORTS §5) is not built, so nothing runs it yet; its build adds [\"run\", \"spire_echo\"] after d3.",
+  "scenes": {
+    "spire_echo": [
+      ["say", "", "As Lumen goes, Ilse stays by the window a moment."],
+      ["say", "Warden Ilse", "A bell tower at low tide. I dreamed one once. It's in my other book."]
+    ]
   },
   "hostNotes": [
     {
