@@ -6,7 +6,7 @@ trackErrors(test, expect);
 
 const KEEPERS = [
   'You beat Fen? Me too! Well... almost.',
-  'So. Being late on partner day. The jingle. The mint sticker. That was all one thing.',
+  'So. Being late on partner day. The jingle. The wine sticker. That was all one thing.',   // D1087 (lineSwaps)
   'Glimmerwell picked me for "Junior Bright". They asked in spring. I said yes that morning.',
   "Don't make the Lizzy face. It's clean energy, Tester. It's a real chance for me.",
   'And their crews cleared the rockslide overnight. Race you up Route 2!',

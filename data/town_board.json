@@ -203,7 +203,7 @@
         },
         {
           "id": "cc_hale_note_bright",
-          "text": "Hale's door has a bright chalk note about the quarry meeting. Mint pens provided.",
+          "text": "Hale's door has a bright chalk note about the quarry meeting. Company pens provided.",
           "when": [
             "story.quarry_bought",
             "!story.seal2"
@@ -297,7 +297,7 @@
       "hearthmoor": {
         "gridRows": {
           "7": "TggpggppppgpgfggpgggTTTT",
-          "9": "TgggggppppRRRRpggggggTTT"
+          "9": "TgggggppppRRRRpgpggggTTT"
         },
         "addObjs": [
           {

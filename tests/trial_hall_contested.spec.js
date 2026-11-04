@@ -100,6 +100,26 @@ test('flag off: the Hall is exactly today\'s room, and ?hall2=1 does nothing wit
   await p2.close();
 });
 
+// Rule 7: ?hall2=1 without debug is never stored, so a later ?debug=1 in the same tab (same sessionStorage) keeps it off.
+test('?hall2=1 without debug is not kept: a later ?debug=1 in the same tab leaves the Hall off', async ({ page }) => {
+  test.setTimeout(60000);
+  await installSave(page.context(), hallSave(beaten()), { quietDay: true });
+  await gotoGame(page, '?hall2=1');
+  expect(await page.evaluate(() => [PixelPets.debug, PixelPets.hall2(), sessionStorage.getItem('pixelpets.hall2')])).toEqual([false, false, null]);
+  await gotoGame(page, OFF);
+  await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true);
+  expect(await page.evaluate(() => PixelPets.hall2())).toBe(false);
+  expect(await page.evaluate(() => sessionStorage.getItem('pixelpets.hall2'))).toBeNull();
+  // A key left by an older build is cleared by a debug-off load too.
+  await page.evaluate(() => sessionStorage.setItem('pixelpets.hall2', '1'));
+  await gotoGame(page, '?debug=0');
+  expect(await page.evaluate(() => sessionStorage.getItem('pixelpets.hall2'))).toBeNull();
+  // With debug on, ?hall2=1 still turns the preview on (and ?hall2=0 off).
+  await gotoGame(page, ON);
+  await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true);
+  expect(await page.evaluate(() => PixelPets.hall2())).toBe(true);
+});
+
 test('T1 T2 T10: same walk mask, west half untouched, runs of 6 at most, floor cap', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390');
   test.setTimeout(60000);

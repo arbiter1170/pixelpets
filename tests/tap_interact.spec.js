@@ -38,12 +38,15 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // WEIR_HUT (D1590-D1599): the hut door, its mat, the first-step trigger, and 27 talk taps (Vincent Chi, 14 room props, eight
     // jar shelves (one shows per sill tile at a time), the lamp, barrel and nets outside) add door 1, warp 1, trigger 1, talk 27.
     // ACT1_KEEPER_JOIN: +7 talk (Imogen's and the Keeper Scout's Wickerglen bodies, the Constable, three lamp lines, the ledger crate).
-    door: 49, warp: 101, sign: 97, talk: 812, scene: 40, trigger: 44, board: 7,
-    trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
+    // ACT2_COVER_STORY (#312): Mom at the Lodge gate and at your door add talk 2; the gate step and the home fallback add trigger 2.
+    // ROUTE_TO_GOVERNOR (#315): Route 4, its sightings and the north road add warp 22, sign 7, talk 19, scene 1, trigger 6,
+    // trainer 3, pickup 4, wild 3 (recounted on the merged tree, Wed Nov 4, 2026).
+    door: 49, warp: 123, sign: 104, talk: 833, scene: 41, trigger: 52, board: 7,
+    trainer: 31, pickup: 21, wild: 12, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
+  // The Hearthmoor coach (hm_to_hc) left this list when it moved off the Keeper House roof to (16,9).
   expect(audit.reachGaps).toEqual([
-    'hearthmoor:hm_to_hc walk-on tile is solid or blocked',
     'fernbrook:fb_east walk-on tile is solid or blocked',
     'fernbrook:fb_tour2 walk-on tile is solid or blocked',
     'route2:r2_east walk-on tile is solid or blocked',
@@ -71,10 +74,13 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // WEIR_HUT (D1591): the desk is two tiles; while Vincent Chi stands at (3,3) its left half is boxed in and the right half
     // (weir_desk_r, the same line) answers from (4,3). tests/weir_hut.spec.js taps it.
     'hw_weir_hut_in:weir_desk_l has no free neighbour',
+    // ROUTE_TO_GOVERNOR (#315): the top bar of the closed east road (22,1) sits under the tree line; the middle bar gives the same line.
+    'route4:r4_east_bar_n neighbour is off the safe region',
   ]);
   expect(audit.n).toBeGreaterThan(100);
   const sceneOnly = audit.rows.filter((r) => r.kind === 'prop' && r.act === 'scene' && !r.talkable).map((r) => r.id).sort();
-  expect(sceneOnly).toEqual(['balloon_blue', 'balloon_red', 'balloon_yellow']);
+  // ROUTE_TO_GOVERNOR (#315): the Route 4 trough is a tap scene ("Rest a while" / "Not now"), tested in route_to_governor.spec.js.
+  expect(sceneOnly).toEqual(['balloon_blue', 'balloon_red', 'balloon_yellow', 'r4_trough']);
   for (const id of sceneOnly) {
     const row = audit.rows.find((r) => r.id === id);
     expect(row.tappable).toBe(true);

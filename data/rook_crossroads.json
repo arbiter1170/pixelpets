@@ -76,7 +76,7 @@
       [
         "say",
         "",
-        "Rook stands by the BRINEWICK ROAD sign. His mint lanyard is on. He won't meet your eye at first."
+        "Rook stands by the BRINEWICK ROAD sign. His Glimmerwell lanyard is on. He won't meet your eye at first."
       ],
       [
         "say",
@@ -165,7 +165,7 @@
                   [
                     "say",
                     "",
-                    "THUNK. The stamp leaves a bright mint star. The Pebblit does not wake."
+                    "THUNK. The stamp leaves a bright wine star. The Pebblit does not wake."
                   ],
                   [
                     "inc",
@@ -308,7 +308,7 @@
                       [
                         "say",
                         "",
-                        "Rook steps between you and the crates. His mint lanyard still hangs. Hands shake once."
+                        "Rook steps between you and the crates. His Glimmerwell lanyard still hangs. Hands shake once."
                       ],
                       [
                         "say",

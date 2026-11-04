@@ -250,7 +250,7 @@
       ["setFlag", "story.arbiter_test_active", true],
       ["readWalk", "to"],
       ["say", "", "{chip} walks to the cradle on its own. You say its name. It does not turn around."],
-      ["say", "", "Mint light runs along its fur, then back down into the floor."],
+      ["say", "", "Wine-red light runs along its fur, then back down into the floor."],
       ["readWalk", "back"],
       ["say", "", "{chip} blinks, finds you, and comes back. A little slower than it left."],
       ["if", "story.rx_bitlet", [

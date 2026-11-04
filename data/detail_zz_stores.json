@@ -1,13 +1,13 @@
 {
  "spec": "WORLD_CLOCK_TOWN P4 Stores (design section 10). Sorts after detail_zz_market, so hm_store exists when its replaceObjs run.",
  "friendSlots": {
-  "ROUTE_VENDOR": "Keeper Halvard",
+  "ROUTE_VENDOR": "Pedlar Halvard",
   "MEADOW_FARMER": "Farmer Tibbet",
-  "ORCHARD_STALL": "Wynne",
-  "WATCH_HATCH": "Watch Saffie",
+  "ORCHARD_STALL": "Brisa",
+  "WATCH_HATCH": "Trader Saffie",
   "GLEN_WEAVER": "Weaver Ilka",
   "QUARRY_TOOLS": "Toolwright Brannoch",
-  "WARDEN_POST": "Warden Teodor"
+  "WARDEN_POST": "Sergeant Teodor"
  },
  "looks": {
   "r1_halvard": {
