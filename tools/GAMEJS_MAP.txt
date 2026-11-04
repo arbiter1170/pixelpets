@@ -2454,11 +2454,12 @@
 3616-3651  const WEIR_HUT_ART
 3652-3784  const PROP_LIBRARY_ART
 3785-3808  const ROUTE4_ART
-3809-3852  const BRIGHTGATE_ART
-3853-3943  function addExteriorArt
-3944-4046  function addHcParadeArt
-4047-4050  const OUTDOOR_SKIN
-4051-4174  const KILNMOUTH_ART
+3809-3855  const BRIGHTGATE_ART
+3856-3917  const PROP_LIBRARY_2_ART
+3918-4019  function addExteriorArt
+4020-4122  function addHcParadeArt
+4123-4126  const OUTDOOR_SKIN
+4127-4250  const KILNMOUTH_ART
 
 # stats.js
 9-10  const EVO_XP

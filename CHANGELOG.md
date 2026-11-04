@@ -10,6 +10,18 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): green; Vincent's ruling applied to tests and the QA docs. Arcade stays covered by its own opt-in specs (`controls`, `arcade_grips` and the rows named in the PR).
 - Anything left unfinished: Modern shows no DBG tag in a debug session (the tag lives in the Arcade header), so `debug_mode.spec.js` opts into Arcade; a Modern way to see that debug is on is a call for the Supervisor. The `walklings-team` local skill copies are not in this repo and were not synced.
 
+## 2026-11-04 09:47 ET: Prop library v0.2: 60 more original props as art only (PROP_LIBRARY_2; D2110-D2116)
+- What changed and why:
+  - Vincent asked for a second prop pass: more clocks, desks, machines, wall pieces and faction-themed sets, mostly for interiors. Design's PROP_LIBRARY v0.2 draws 60 original props; this PR lands the art only, so later room builds can place them. No map places any of them, so nothing a player sees changes.
+  - `sprites.js`: `PROP_LIBRARY_2_ART` (copied verbatim from design `specs/prop_library_2.json`): clocks (`pt_`), desks and work surfaces (`pf_`), in-world machines and terminals (`pm_`), wall accessories (`pu_`), Walkling care (`po_`), a rocking chair (`ph_`) and a kiln gauge post (`pw_`), themed for the Keepers, Glimmerwell, civic High Charity, Kilnmouth, homes and Lantern Houses. `PAL` keys only; no mint on any piece; Glimmerwell pieces are wine and soot.
+  - `addExteriorArt` registers each v0.2 prop like v0.1 (its id, and `<id>_0..n` slices for a multi-cell prop). Six props have two slow frames (an array that `artFrame` already loops; reduced motion holds frame 0); the sundial plaque also registers `_am` and `_pm` faces, picked by nothing yet. Existing art names are never replaced.
+  - Prop library v0.1 (PR #319) was not on `main` when this branch was cut, so `origin/claude/prop-library` is merged in; once #319 merges, this diff shrinks to the v0.2 parts.
+- Files touched: `sprites.js`, `tests/prop_library_2.spec.js` (new), `tests/README.md`, `handoff/shots/prop_library_2/` (contact sheets and the faction showcase), `index.html` + `version.json` (build stamp), `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`; plus #319's files through the merge.
+- Commit(s) + build id: claude/prop-library-2, build 20261104-0947. Design: `claude/prop-library-2` (PROP_LIBRARY v0.2).
+- Tests run and result (widths, checks): see the PR body (`tests/prop_library_2.spec.js` at 320, 375 and 390 in Modern; `prop_library` at all three widths; `tap_interact` and `data_integrity` on the 320 project, where their `@w1` tag runs them).
+- Decisions made (colour + reasoning): D2110 (yellow, art only), D2111 (yellow, tech level by faction), D2112 (yellow, faction sets) built on their defaults; D2113-D2116 (green: prefixes, slow two-frame motion with reduced motion on frame 0, no mint, which variants). The other rows in the design packet stay open there; nothing here builds them.
+- Anything left unfinished: placing the props in rooms is each room build's job, after Vincent's yes on its previews (rule 9). Picking the sundial face by the game clock is not wired.
+
 ## 2026-11-04 08:20 ET: Cal → Jory and Kit → Mabry, each under its own key (NAMES_PASS G8, G9; D1766)
 - What changed and why:
   - The names pass (#307) held two renames because each body shared its raw name, and so its trust, contact and portrait key, with a person who keeps the name. Vincent ruled (Wed Nov 4, 2026): each renamed character gets its own key. The RegenX floor tech and lab ally is now **Jory** (was Cal; the Mahopac dream's Cal keeps "Cal"). High Charity's kite seller is now **Mabry** (was Kit; the Heights stock-up Kit keeps "Kit").
