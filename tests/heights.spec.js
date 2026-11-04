@@ -13,8 +13,10 @@ test('keepers offer points at the Heights tunnels and holds the trial @w1', asyn
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   expect(await page.evaluate(() => PixelPets.heightsCheck.concat(PixelPets.questCheck))).toEqual([]);
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
+  // ACT1_KEEPER_JOIN: the Keepers offer (know_us) plays with the public Keepers face (an old save's, after the move).
+  await page.evaluate(() => { PixelPets.setFaction('keepers'); PixelPets.setFlag('story.met_fen', true); });   // the gate met Fen
+  expect(await page.evaluate(() => PixelPets.runScene('know_us'))).toBe(true);
+  await playScene(page, []);
   const after = await page.evaluate(() => ({
     path: PixelPets.heights.path,
     know: PixelPets.heights.know,
@@ -33,8 +35,12 @@ test('glimmer offer points at the RegenX lab @w1', async ({ page }) => {
   test.setTimeout(60000);
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
+  // ACT1_KEEPER_JOIN: the Pack lean, then the lanyard face at Juniper's step (D1562), which plays know_us@glimmer.
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Pack crates with Tobin', 'Yes, Glimmerwell', 'Pat the crate', "They'll be comfy"]);
+  await playScene(page, ['Help Tobin pack', 'Pat the crate', "They'll be comfy"]);
+  await page.evaluate(() => { PixelPets.setFlag('story.keeper_cadet', true); PixelPets.setFlag('story.cover', 'glimmer'); });
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
   const after = await page.evaluate(() => ({
     path: PixelPets.heights.path,
     side: PixelPets.side,

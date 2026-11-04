@@ -2828,8 +2828,14 @@
         "lab"
       ],
       [
-        "run",
-        "orchard"
+        "if",
+        "!story.orchard_cleared",
+        [
+          [
+            "run",
+            "orchard"
+          ]
+        ]
       ]
     ],
     "stock_up": [

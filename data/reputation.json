@@ -879,9 +879,19 @@
       "base": 50
     },
     {
+      "name": "Keeper Constable",
+      "faction": "keepers",
+      "base": 50,
+      "rank": "Constable",
+      "given": "Dunn",
+      "note": "Shown name: NAMES_PASS (D1741), the Wickerglen slip Constable. Display only (D1768): the key, S.rep and the phone book keep the raw name."
+    },
+    {
       "name": "Vincent Chi",
+      "label": "Jacob Chi",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "Shown name: NAMES_PASS (D1730). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     }
   ],
   "tiers": [
