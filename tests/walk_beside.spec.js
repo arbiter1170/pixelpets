@@ -6,7 +6,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, withOverlay } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -523,3 +523,232 @@ test.describe('WALK_BESIDE the mechanic (D1973-D1979)', () => {
   });
 });
 
+// ---------------------------------------------------------------------------------------------------------------------------
+// Slice 4: scenes whose triggers belong to unbuilt beats, built behind their real flags (inert in normal play) and proved here on
+// seeded saves: the charter, Mo's cut at the Lodge steps, the springs stop, the Act 3-5 lines, the Summit line, the ending cards.
+const S4 = { 'story.reached_route1': true, 'story.reached_fernbrook': true, 'story.side_pick_done': true, 'story.keeper_cadet': true, 'story.ilse_call_old': true, 'story.met_mo': true };
+const ACT2 = Object.assign({}, S4, { 'story.ep1_end': true, 'story.cab_seat': true });
+const sayTexts = lines => lines.filter(l => l[0] !== '>').map(l => l[1]);
+const CHOICE_MIN = 44;
+
+test.describe('WALK_BESIDE scenes behind their flags (D1960-D1969, D1978)', () => {
+  test('WB-T12: wb_charter chains after cab_pt1 on story.cab_seat; four boxes, then the choice; both answers set story.wb_charter', async ({ page }) => {
+    test.setTimeout(90000);
+    // cab_pt1 is CABINET S1's scene (not built): a test stand-in that sets story.cab_seat proves the chain.
+    await withOverlay(page, { scenes: { cab_pt1: [['say', 'Governor Merriden', 'Test stand-in for the last petition.']] } }, 'detail_zy_test_cab');
+    await boot(page, save(Object.assign({}, S4, { 'story.cab_seat': true })));
+    expect(await page.evaluate(() => PixelPets.sceneScript('cab_pt1').slice(-1))).toEqual([['if', 'story.cab_seat & !story.wb_charter', [['run', 'wb_charter']]]]);
+    const heights = [];
+    const lines = await (async () => { expect(await page.evaluate(() => PixelPets.runScene('cab_pt1'))).toBe(true); return drive(page, ['Why only the first?'], (l, h) => heights.push(...h)); })();
+    const t = sayTexts(lines);
+    expect(t.slice(1, 5)).toEqual([
+      'As the room empties, the Governor stops you at a glass case by the stair.',
+      'Under the glass, an old page with a wax seal like a feather: WALK BESIDE THEM, NOT AHEAD.',
+      'Below it, a second line: WHERE THEY STOP, STOP. WHERE THEY TURN, LOOK.',
+      "Lovely, isn't it? We print the first line. It fits on a notice.",
+    ]);
+    expect(lines.find(l => l[0] === '>')[1]).toBe('Why only the first?');
+    expect(t[t.length - 1]).toBe('Before my time. Your Keepers keep older paper than I do. Ask at home.');
+    for (const h of heights) expect(h).toBeGreaterThanOrEqual(CHOICE_MIN);
+    expect((await flags(page))['story.wb_charter']).toBe('asked');
+    // A second sitting never replays it; "It fits, sir." records read.
+    expect(await page.evaluate(() => PixelPets.runScene('cab_pt1'))).toBe(true);
+    expect(sayTexts(await drive(page))).toEqual(['Test stand-in for the last petition.']);
+    await page.evaluate(() => PixelPets.setFlag('story.wb_charter', null));
+    const l2 = await playScene(page, 'wb_charter', ['It fits, sir.']);
+    expect(sayTexts(l2).pop()).toBe("Doesn't it? Brass and glass, and still the best line in the building.");
+    expect((await flags(page))['story.wb_charter']).toBe('read');
+    // Normal play: no cab_pt1 on main, so the tail is skipped and nothing runs.
+    expect(OVERLAY.sceneTails.cab_pt1).toBeTruthy();
+    expect((await stored(page)).v).toBe(2);
+  });
+
+  test('WB-T12: the charter case lines by key (a stand-in prop with the CABINET id)', async ({ page }) => {
+    test.setTimeout(60000);
+    await withOverlay(page, { slicePatch: { maps: { hm_hq_f1: { addObjs: [{ kind: 'prop', id: 'hc_gov_charter', x: 6, y: 2, sprite: 'travel_shelf', lines: {} }] } } } }, 'detail_zy_test_case');
+    await boot(page, save(S4, { map: 'hm_hq_f1', x: 6, y: 4, facing: 'up', respawn: 'hearthmoor' }));
+    const tap = async () => { expect(await page.evaluate(() => PixelPets.talkTo('hc_gov_charter'))).toBe(true); return sayTexts(await drive(page))[0]; };
+    expect(await tap()).toBe('THE FIRST WORD. Walk beside them, not ahead. Where they stop, stop. Where they turn, look.');
+    await page.evaluate(() => PixelPets.setFlag('story.wb_springs', true));
+    const springs = await tap();
+    expect(springs).toMatch(/^THE FIRST WORD\. Where they stop, stop\. .+ did, on the Kilnmouth hill path\.$/);
+    expect(springs).not.toMatch(/[{}]/);
+    await page.evaluate(() => PixelPets.setFlag('story.wb_cut', 'asked'));
+    expect(await tap()).toBe('Both lines, under glass. Every notice in the country prints the first.');
+  });
+
+  for (const reduce of [false, true]) {
+    test('WB-T12: wb_cut plays once at the Lodge steps on story.cab_seat, backfills story.wb_charter, then Mo repeats' + (reduce ? ' (reduced motion)' : ''), async ({ page }) => {
+      test.setTimeout(120000);
+      await boot(page, save(ACT2, { map: 'hearthmoor', x: 15, y: 8, facing: 'up', respawn: 'hearthmoor' }), { reduce });
+      for (const d of ['down', 'up']) { await page.evaluate(d => PixelPets.walkStep(d), d); await page.waitForTimeout(60); }   // the built care records
+      const before = await savedNow(page);
+      const ids = await page.evaluate(() => PixelPets.mapObjs.map(o => o.id));
+      expect(ids).toContain('hm_mo_steps');
+      // The quest row: with every earlier chain row done, story.cab_seat makes it current; without it the chain ends as before.
+      const row = await page.evaluate(() => { const C = PPQuests.CHAIN, f = {}; for (const e of C) { if (e.id === 'wb_cut') break; for (const c of e.done) { if (c[0] === '!') continue; const m = c.split('='); f[m[0]] = m.length > 1 ? m[1] : true; } }
+        delete f['story.cover']; const a = PPQuests.current({ flags: f, seals: {}, pets: 2 }); f['story.cab_seat'] = true; const b = PPQuests.current({ flags: f, seals: {}, pets: 2 });
+        f['story.wb_cut'] = 'asked'; const c = PPQuests.current({ flags: f, seals: {}, pets: 2 }); return [a.id, b.id, b.text, b.place, c.id]; });
+      expect(row).toEqual(['end', 'wb_cut', 'Archivist Mo is waiting at the Lodge.', 'Hearthmoor, the Lodge', 'end']);
+      // The one way to the Lodge door (15,6) is the trigger tile (15,7).
+      const blocked = await page.evaluate(() => [[14, 6], [16, 6]].map(([x, y]) => { const p = PixelPets.findPath([{ x: 15, y: 6 }]); return p && p.map(q => q.x + ',' + q.y); }));
+      expect(blocked[0]).toContain('15,7');
+      expect((await page.evaluate(() => PixelPets.walkStep('up'))).scene).toBe(true);
+      const heights = [];
+      const lines = await drive(page, ['Who knows the whole word?'], (l, h) => heights.push(...h));
+      const t = sayTexts(lines);
+      expect(t[0]).toBe('Archivist Mo is waiting by the Lodge steps with a flat tin box.');
+      expect(t[1]).toBe("Cadet. You sit at the Governor's table now. Then you should see what it signed.");
+      expect(t).toContain('The second line is struck through in red. In the margin: FIRST LINE ONLY. FOR THE DURATION.');
+      expect(t).toContain('Commanders get both lines with their rank. Old Scouts kept it by mouth. The rest of us get the notice.');
+      expect(t[t.length - 1]).toBe('I write it down. I do not say what it means.');
+      expect(t).not.toContain('In the company\'s back room they asked Walklings to listen too. They meant something else.');
+      expect(t.length).toBe(9);   // m1, m2', m3-m7 (m7 is the choice box), m9a, m10
+      expect(t.indexOf('So the table kept the half that keeps you together. It cut the half that lets them lead.')).toBe(6);   // seven boxes, then the choice
+      for (const h of heights) expect(h).toBeGreaterThanOrEqual(CHOICE_MIN);
+      for (const x of t) expect(Array.from(x).length, x).toBeLessThanOrEqual(110);
+      const f = await flags(page);
+      expect(f['story.wb_cut']).toBe('asked');
+      expect(f['story.wb_charter']).toBe('read');   // backfilled for a save that met no charter (D1978)
+      await expect.poll(() => toasts(page)).toContain('The whole word is on your STANDING card.');
+      const after = await stored(page);   // before the Keeper House (its floor record is the built game's)
+      expect(after.v).toBe(2);
+      expect(Object.keys(after).sort()).toEqual(Object.keys(before).sort());
+      expect(Object.keys(after.flags).filter(k => !(k in before.flags)).sort()).toEqual(['story.beat.wb_cut', 'story.wb_charter', 'story.wb_cut']);   // story.beat.* is the engine's built record of a played scene
+      expect(await page.evaluate(() => PixelPets.mapObjs.map(o => o.id))).not.toContain('hm_mo_steps');
+      expect(await page.evaluate(() => PixelPets.quest && PixelPets.quest.id)).not.toBe('wb_cut');
+      // Once: off the tile and back on, no scene.
+      await page.evaluate(() => PixelPets.walkStep('down'));
+      expect((await page.evaluate(() => PixelPets.walkStep('up'))).scene).toBe(false);
+      // Mo's repeat in the Keeper House.
+      await goto(page, 'hm_hq_f1', 3, 6, 'up');
+      expect(await page.evaluate(() => PixelPets.talkTo('hq_mo'))).toBe(true);
+      expect(sayTexts(await drive(page))[0]).toBe('Both lines are still in the tin.');
+    });
+  }
+
+  test('WB-T12: wb_cut reads the charter answer (m2), the undercover line (m11) and Put it back; never for a switcher or the company face', async ({ page }) => {
+    test.setTimeout(120000);
+    await boot(page, save(Object.assign({}, ACT2, { 'story.wb_charter': 'asked', 'story.cover': 'glimmer', 'story.cover_done': true })));
+    const lines = await playScene(page, 'wb_cut', ['Put it back']);
+    const t = sayTexts(lines);
+    expect(t[1]).toBe("The Governor's office wired: a Cadet asked about the glass. I have the answer.");
+    expect(t).toContain('Back in the tin, then. The war ended. Nobody ever lifted the order.');
+    expect(t[t.length - 1]).toBe("In the company's back room they asked Walklings to listen too. They meant something else.");
+    const f = await flags(page);
+    expect(f['story.wb_cut']).toBe('shelved');
+    expect(f['story.wb_charter']).toBe('asked');   // kept, not overwritten
+    // A switcher and the company face: no Mo, no trigger, no quest row.
+    for (const extra of [{ 'story.switched_a3': true }, { 'story.side': 'glimmer' }]) {
+      await page.evaluate(x => { PixelPets.setFlag('story.wb_cut', null); for (const [k, v] of Object.entries(x)) PixelPets.setFlag(k, v); }, extra);
+      await goto(page, 'hearthmoor', 15, 8, 'up');
+      expect(await page.evaluate(() => PixelPets.mapObjs.map(o => o.id))).not.toContain('hm_mo_steps');
+      expect((await page.evaluate(() => PixelPets.walkStep('up'))).scene).toBe(false);
+      expect(await page.evaluate(() => PixelPets.quest && PixelPets.quest.id)).not.toBe('wb_cut');
+      await page.evaluate(x => { for (const k of Object.keys(x)) PixelPets.setFlag(k, null); }, extra);
+    }
+  });
+
+  test('WB-T12: in normal play nothing waits or plays: no Mo, no trigger, no row without story.cab_seat', async ({ page }) => {
+    await boot(page, save(Object.assign({}, S4, { 'story.ep1_end': true }), { map: 'hearthmoor', x: 15, y: 8, facing: 'up', respawn: 'hearthmoor' }));
+    expect(await page.evaluate(() => PixelPets.mapObjs.map(o => o.id))).not.toContain('hm_mo_steps');
+    expect((await page.evaluate(() => PixelPets.walkStep('up'))).scene).toBe(false);
+    expect(await page.evaluate(() => PixelPets.quest && PixelPets.quest.id)).not.toBe('wb_cut');
+    expect(await page.evaluate(() => PixelPets.questCheck)).toEqual([]);
+    const f = await flags(page);
+    expect(Object.keys(f).filter(k => k.startsWith('story.wb_'))).toEqual([]);
+  });
+
+  test('WB-T12: the springs stop sets story.wb_springs; its Kilnmouth trigger waits with its key', async ({ page }) => {
+    await boot(page, save(Object.assign({}, ACT2, { 'story.km_storm': true })));
+    const t = sayTexts(await playScene(page, 'wb_springs'));
+    expect(t[0]).toMatch(/^.+ stops at the foot of the hill path and won't go on\.$/);
+    expect(t[1]).toBe('You stop with it. Up the hill the cloud sits flat, and nothing moves.');
+    expect((await flags(page))['story.wb_springs']).toBe(true);
+    expect(OVERLAY.waits.wb_springs.obj).toEqual({ kind: 'trigger', id: 'km_wb_springs', r: 0, when: ['story.km_storm', '!story.wb_springs'], scene: 'wb_springs' });
+    expect(await page.evaluate(() => !!PixelPets.mapInfo && Object.prototype.hasOwnProperty.call(WORLD, 'kilnmouth'))).toBe(false);   // the map is another branch's
+  });
+
+  test('WB-T13: the Act 3-5 lines by path: Quinn, the stayer\'s Host letter, L13a, the President, the Spire twins', async ({ page }) => {
+    test.setTimeout(120000);
+    const STAYER = Object.assign({}, S4, { 'story.ep1_end': true, 'story.a3_offer': true, 'story.rpt_5': true });
+    await boot(page, save(STAYER, { map: 'hm_lantern_in', x: 5, y: 6, facing: 'up', respawn: 'hearthmoor' }));
+    expect(sayTexts(await playScene(page, 'wb_quinn_n2k2'))).toEqual(['Your Keepers cut their own word in half. We kept the half that says look.']);
+    expect(sayTexts(await playScene(page, 'wb_ledger_l13a'))).toEqual(['Feed, rest, listen. I listened so well they could follow my counts.']);
+    // The stayer's letter: the first Lantern House Host, once.
+    const host = await page.evaluate(() => PixelPets.mapObjs.filter(o => o.kind === 'npc').map(o => o.id));
+    const hostId = host.find(id => /host|della|lantern/i.test(id)) || host[0];
+    expect(await page.evaluate(i => PixelPets.talkTo(i), hostId)).toBe(true);
+    let t = sayTexts(await drive(page));
+    expect(t[0]).toBe("A letter for you, sealed with the Warden's lantern.");
+    expect(t.slice(1)).toEqual(['A letter from Warden Ilse, in her small, exact hand.', 'Word travels along the lanterns. They say the company offered you a desk.', "Steering is walking ahead with a lamp. I'd sooner walk beside in the dark."]);
+    expect((await flags(page))['story.wb_ilse_letter']).toBe(true);
+    expect(await page.evaluate(i => PixelPets.talkTo(i), hostId)).toBe(true);
+    t = sayTexts(await drive(page));
+    expect(t).not.toContain('A letter from Warden Ilse, in her small, exact hand.');
+    // Never for a loyalist or a switcher.
+    for (const k of ['story.warden_cut', 'story.switched_a3']) {
+      await page.evaluate(k => { PixelPets.setFlag('story.wb_ilse_letter', null); PixelPets.setFlag(k, true); }, k);
+      expect(await page.evaluate(i => PixelPets.talkTo(i), hostId)).toBe(true);
+      expect(sayTexts(await drive(page))).not.toContain('A letter from Warden Ilse, in her small, exact hand.');
+      await page.evaluate(k => PixelPets.setFlag(k, null), k);
+    }
+    // The President after K2b: the glance at the case only after the cut.
+    t = sayTexts(await playScene(page, 'wb_pres'));
+    expect(t).toEqual(['Walk beside them, by all means. Somebody still walks ahead of the country.']);
+    expect((await flags(page))['story.wb_pres']).toBe(true);
+    await page.evaluate(() => { PixelPets.setFlag('story.wb_pres', null); PixelPets.setFlag('story.wb_cut', 'asked'); });
+    t = sayTexts(await playScene(page, 'wb_pres'));
+    expect(t[0]).toBe('On his way out, the President stops at the glass case by the stair.');
+    expect(OVERLAY.sceneTails.pres_cabinet_last).toEqual([['if', 'story.pres_cabinet_last & !story.wb_pres', [['run', 'wb_pres']]]]);
+    // The Spire: one twin by path.
+    t = sayTexts(await playScene(page, 'wb_spire'));
+    expect(t).toHaveLength(1);
+    expect(t[0]).toMatch(/^Your Keepers kept my first words and lost the rest\. .+ kept all of it\.$/);
+    await page.evaluate(() => PixelPets.setFlag('story.switched_a3', true));
+    t = sayTexts(await playScene(page, 'wb_spire'));
+    expect(t[0]).toMatch(/^The company kept my last words and dropped the first\. .+ kept all of it\.$/);
+    expect((await stored(page)).v).toBe(2);
+  });
+
+  test('WB-T13: the Summit (su1 last words, then su2 or su2\') and one notice card per ending id', async ({ page }) => {
+    await boot(page, save(S4));
+    let t = sayTexts(await playScene(page, 'wb_summit'));
+    expect(t[0]).toBe('Walk beside them. It was the only thing I ever asked of you.');   // D1936, settled wording
+    expect(t[1]).toMatch(/^.+ comes to stand beside you\. Where it looks, you look\.$/);
+    await page.evaluate(() => PixelPets.setFlag('story.switched_a3', true));
+    t = sayTexts(await playScene(page, 'wb_summit'));
+    expect(t[1]).toMatch(/comes to stand beside you/);   // a switcher whose partner is not chipped
+    const ids = Object.keys(OVERLAY.endCards).filter(k => k[0] !== '_');
+    expect(ids).toEqual(['k_restored', 'k_court', 'k_desk', 'l_hand', 'l_witness', 'g_turned', 'g_order', 'g_road']);
+    const su2b = OVERLAY.scenes.wb_summit[1];
+    expect(su2b[1]).toBe('story.switched_a3 & chip:any');
+    expect(su2b[2][0][2]).toBe('{pet} turns late, the way it does now. You are beside it to see.');
+  });
+
+  test('WB-T15: every line meets its limit; the wording scan is clean; no banned word', async ({ page }) => {
+    await boot(page, save());
+    const says = [], shorts = [], choices = [];
+    const walk = n => { if (!Array.isArray(n)) return;
+      if (n[0] === 'say') says.push(n[2]);
+      else if (n[0] === 'choice') { says.push(n[1]); for (const o of n[2]) { choices.push(o[0]); walk(o[1]); } return; }
+      else if (n[0] === 'toast') shorts.push(n[1]);
+      n.forEach(walk); };
+    for (const [id, steps] of Object.entries(OVERLAY.scenes)) walk(steps);
+    for (const p of Object.values(OVERLAY.objPatch)) if (p && typeof p === 'object') for (const b of [p.linesFirst, p.linesBefore && p.linesBefore.add]) if (b) for (const v of Object.values(b)) (v.length <= 40 ? shorts : says).push(v);
+    for (const n of OVERLAY.hostNotes) says.push(n.line);
+    for (const [k, v] of Object.entries(OVERLAY.endCards)) if (k[0] !== '_') says.push(v);
+    const len = s => Array.from(s.replace(/\{(\w+)\}/g, 'x'.repeat(10))).length;
+    for (const s of says) { expect(len(s), s).toBeLessThanOrEqual(110); expect(s, s).not.toMatch(/  /); }
+    for (const s of shorts) expect(len(s), s).toBeLessThanOrEqual(40);
+    for (const s of choices) expect(len(s), s).toBeLessThanOrEqual(30);
+    const lines = await page.evaluate(() => [PixelPets.holdLine('route1', {}), PixelPets.holdLine('route2', {}), PixelPets.holdLine('route2_glen', {}), PixelPets.holdLine('proto', {}), STANDING_CFG.sides.keepers.asksLong]);
+    const all = says.concat(shorts, choices, lines);
+    for (const s of all) {
+      expect(s, s).not.toMatch(/\b(faint(ed)?|evolv\w*|coins?|appeared|[a-z]+dex|trainer|chip|relay|tuning|call-up|muster|alien|god)\b/i);
+      expect(s, s).not.toMatch(/\bkeeper\b/);   // capital K
+      expect(s, s).not.toMatch(/\{(?!pet\})/);  // only the {pet} token
+    }
+    expect(await page.evaluate(() => PixelPets.questCheck)).toEqual([]);
+  });
+});

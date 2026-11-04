@@ -37,6 +37,7 @@
     'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
     'story.chi_jars', 'story.shift_lamp_w', 'story.shift_lamp_n', 'story.shift_lamp_e', 'story.shift_ledger', 'story.chi_told_ledger', 'story.chi_told_lamps', 'story.chi_told_list',   // ACT1_KEEPER_JOIN: Vincent Chi's jars (WEIR_HUT §3.3) and his report hub, not steps
     'story.sway_fernbrook', 'story.cover', 'story.ilse_call2', 'story.ilse_call3', 'story.rpt_1', 'story.rpt_2', 'story.warden_cut', 'story.ilse_call_old',   // ACT1_KEEPER_JOIN: sway, face, calls, reports, the old-save move
+    'story.wb_springs', 'story.wb_charter', 'story.wb_cut', 'story.wb_ilse_letter', 'story.wb_pres',   // WALK_BESIDE §9: scene results, not steps
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -316,6 +317,12 @@
       npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
       text: 'Warden Ilse wants to see you at the Lodge.', place: 'Hearthmoor, the Lodge',
       target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    // WALK_BESIDE §3.3 (D1961): Archivist Mo waits at the Lodge steps from the first sitting (CABINET S1 sets story.cab_seat; not
+    // built, so this row is inert today) until the cut is shown. Never for a switcher or the company's face.
+    { id: 'wb_cut', when: ['story.cab_seat', '!story.switched_a3', '!story.side=glimmer'], done: ['story.wb_cut'], noImply: true,
+      npc: 'Archivist Mo', npcIds: ['hm_mo_steps'],
+      text: 'Archivist Mo is waiting at the Lodge.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hearthmoor', x: 15, y: 7 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];
