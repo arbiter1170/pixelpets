@@ -78,9 +78,11 @@ const HALL2_KEY = 'pixelpets.hall2';
 const HALL2_ON = (() => {
   if (HALL2_RELEASED) return true;
   let on = false;
+  // Without debug the key is never stored, and any left over is cleared (as readHcCityPref), so a later ?debug=1 in this tab can't turn it on.
+  if (!DEBUG) { try { sessionStorage.removeItem(HALL2_KEY); } catch (e) {} return false; }
   try { const q = new URLSearchParams(location.search).get('hall2'); if (q === '1') sessionStorage.setItem(HALL2_KEY, '1'); else if (q === '0') sessionStorage.removeItem(HALL2_KEY); } catch (e) {}
   try { on = sessionStorage.getItem(HALL2_KEY) === '1'; } catch (e) {}
-  return DEBUG && on;
+  return on;
 })();
 /* HIGH_CHARITY_LAYOUT v0.2.1 phase 1 ("the capital, day one"; D1268, D1270-D1281). The five-chunk city lives in
    data/hc_city_v2.js (window.PP_HC_V2, built by tools/build_hc_city.py), outside MAPDATA. HC_CITY_V2 is the ship switch:
@@ -387,13 +389,17 @@ let resetting = false, gameReplaced = false;
 // Tell the player once per page load; the game keeps playing in memory.
 let saveFailTold = false;
 let hcPreviewTold = false;
+// A debug preview is open: the High Charity city preview (HC_CITY_V2) or the Glimmerwell preview lot (GLIMMERWELL_VEHICLES_BUILDINGS).
+// While it is, nothing writes the save, and the cloud hooks see no state, so preview play never uploads or adopts.
+function previewActive(){
+  return HC_PREVIEW || !!(window.PPFleet && PPFleet.holdSave()) || !!(S && S.world && S.world.map === 'gw_preview');
+}
 function save(){
   if (!S || readOnly || resetting) return;
-  if (HC_PREVIEW) {   // the city preview never writes the save (see HC_CITY_V2)
-    if (!hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
+  if (previewActive()) {
+    if (HC_PREVIEW && !hcPreviewTold && typeof toast === 'function') { hcPreviewTold = true; try { toast('City preview: not saved'); } catch (e) {} }
     return;
   }
-  if (window.PPFleet && PPFleet.holdSave()) return;   // GLIMMERWELL_VEHICLES_BUILDINGS: no write while the ?debug=1 preview lot is open
   S.last = Date.now(); if (DEBUG) S.debugSave = true;
   if (PPSave.writeV2(S) !== false || saveFailTold) return;
   saveFailTold = true;
@@ -19413,10 +19419,10 @@ function cloudSummary(raw){
 }
 function startCloud(){
   PPCloud.start({
-    getState: () => (readOnly || resetting) ? null : S,
+    getState: () => (readOnly || resetting || previewActive()) ? null : S,   // a debug preview never reaches the cloud save
     save, toast, sfx, summary: cloudSummary,
     drawPet: (cv, sp, st) => spriteCanvas(cv, sp, st, 'n'),
-    busy: () => overlayOpen() || !!(battle && battle.on),
+    busy: () => overlayOpen() || !!(battle && battle.on) || previewActive(),   // no compare (so no adopt reload) under a preview
     beforeOverlay: () => { clearMoves(); lockTabs(true); },
     afterOverlay: () => lockTabs(!$('#ovSettings').hidden),
     // adopt a cloud save: this page stops writing, the v2 key gets the cloud copy as-is (its `last` keeps away-time decay), reload

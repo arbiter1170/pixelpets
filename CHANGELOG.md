@@ -2,6 +2,17 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 19:56 ET: Debug previews never reach the cloud save; ?hall2=1 needs debug to stick
+- What changed and why:
+  - QA pass (Nov 3): the High Charity city preview and the Glimmerwell preview lot already held the local save, but the cloud hook in `game.js` (`getState`) ignored both, so a signed-in `?debug=1` tester could upload preview state (for example the Act 5 checkpoint) and a second device would adopt it. New `previewActive()` (the city preview, the open lot, or `world.map` `gw_preview`) is now used by `save()`, by the cloud `getState` hook (null while a preview is open) and by the cloud `busy` hook (no compare, so no adopt reload, under a preview). `cloud.js` already treats a null state as "nothing to upload"; it is unchanged.
+  - `?hall2=1` was stored in sessionStorage even without debug, so a later `?debug=1` in the same tab turned the contested Hall on unasked. The key is now only written or cleared with debug on, and a debug-off load clears it, as `readHcCityPref` does.
+  - `HC_STREET_SOLID_BAYS` / `HC_TANK_POSTS` / `HC_GOV_HOUSE` left as they are (votes pending).
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `tests/cloud_stub.js` (new), `tests/hc_city_v2.spec.js`, `tests/glimmer_fleet.spec.js`, `tests/trial_hall_contested.spec.js`, `tests/README.md`, `CHANGELOG.md`, build stamp.
+- Commit(s) + build id: claude/fix-preview-cloud-hole, build 20261103-1956.
+- Tests run and result (widths, checks): the three new checks fail on main and pass with the fix; `cloud_link`, `cloud_off`, `glimmer_fleet`, `hc_city_v2`, `hc_court_move` and `trial_hall_contested` at 320, 375 and 390: 122 passed, 16 skipped (tagged @slow / single-width), 0 failed, no retries; zero console errors. The cloud checks run the real `cloud.js` on `?cloud=block` with the Firebase SDK stubbed; nothing signs in or writes to `walklings-4cc89`. Scans: wording, decisions, symlinks, gamejs_map, test_mistakes PASS. Save unchanged (`pixelpets.save.v2`, `v` 2, no new field).
+- Decisions made (colour + reasoning): green (engineer): the cloud `busy` hook also counts a preview, so a cloud compare cannot adopt and reload mid-preview (a null state would otherwise read as "no game yet").
+- Anything left unfinished: none.
+
 ## 2026-11-03 17:05 ET: No more mint for Glimmerwell: text and art go wine (B-12; D1087, D1448)
 - What changed and why:
   - D1087 (Vincent, Tue Nov 3, 2026, SETTLED): "no more mint color" for Glimmerwell, anywhere; wine replaces it. PR #294 already moved the vests. This sweeps what was left.
