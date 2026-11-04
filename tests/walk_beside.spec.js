@@ -19,7 +19,7 @@ function save(flags, world) {
   s.settings.controls = 'modern';
   s.settings.textSpeed = 'fast';
   s.steps = 40;
-  Object.assign(s.flags, { 'story.early_done': true, 'story.phone_got': true }, flags || {});
+  Object.assign(s.flags, { 'story.early_done': true, 'story.phone_got': true, 'story.unlock_phone': true, 'story.unlock_sides': true, 'story.unlock_rep': true }, flags || {});   // the unlock cards are seen
   s.world = Object.assign({ map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' }, world || {});
   s.standing = { keepers: 0, glimmer: 0 };
   s.party[0].xp = 4000;
@@ -581,7 +581,9 @@ test.describe('WALK_BESIDE scenes behind their flags (D1960-D1969, D1978)', () =
     test('WB-T12: wb_cut plays once at the Lodge steps on story.cab_seat, backfills story.wb_charter, then Mo repeats' + (reduce ? ' (reduced motion)' : ''), async ({ page }) => {
       test.setTimeout(120000);
       await boot(page, save(ACT2, { map: 'hearthmoor', x: 15, y: 8, facing: 'up', respawn: 'hearthmoor' }), { reduce });
-      for (const d of ['down', 'up']) { await page.evaluate(d => PixelPets.walkStep(d), d); await page.waitForTimeout(60); }   // the built care records
+      for (const d of ['left', 'right']) { await page.evaluate(d => PixelPets.walkStep(d), d); await page.waitForTimeout(60); }   // the built care records (Porter Bram stands on 15,9)
+      expect(await page.evaluate(() => PixelPets.scene)).toBeNull();
+      await page.evaluate(() => { PixelPets.state.world.facing = 'up'; });
       const before = await savedNow(page);
       const ids = await page.evaluate(() => PixelPets.mapObjs.map(o => o.id));
       expect(ids).toContain('hm_mo_steps');

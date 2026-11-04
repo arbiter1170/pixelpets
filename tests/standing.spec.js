@@ -389,6 +389,7 @@ const COPY = {
   recall: ['Warden Ilse wants you home at the Lodge. Take the lanyard off first.', 'Hearthmoor, the Lodge'],
   cadet_report: ['Warden Ilse wants the last of it in person. Go to the Lodge.', 'Hearthmoor, the Lodge'],
   rpt_lodge: ['Warden Ilse wants to see you at the Lodge.', 'Hearthmoor, the Lodge'],
+  wb_cut: ['Archivist Mo is waiting at the Lodge.', 'Hearthmoor, the Lodge'],   // WALK_BESIDE §3.3 (D1961)
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -425,7 +426,7 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
   let overrides = 0;
   // ACT1_KEEPER_JOIN rows key on story states this one-flag walk cannot build (a lean value, a face, an old-save move);
   // their copy is checked as written, and tests/act1_keeper_join.spec.js checks where each one shows.
-  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge']);
+  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge', 'wb_cut']);   // WALK_BESIDE: wb_cut needs the Keepers face (tests/walk_beside.spec.js)
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
     if (COPY_ONLY.has(id)) {

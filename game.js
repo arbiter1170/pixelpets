@@ -11097,7 +11097,10 @@ function drawWild(g, w, cx, cy, VW, VH, t){
   // WALK_BESIDE R6, E6: the built notice "!" over it as it stops and turns (SPOT_BANG_MS), never under reduced motion. The
   // overworld wild sprites have no left/right flip, so the turn is its `face` only (no facing change drawn).
   const B = w.beside;
-  if (B && B.phase === 'look' && wild.clock < B.glyphUntil && !prefersReduced()) { drawGlyph(g, 'emote_bang', x + 5, y0 - 13); B.glyphs++; }
+  if (B && B.phase === 'look' && wild.clock < B.glyphUntil && !prefersReduced()) {
+    const under = S.world.x === Math.round(w.fx) && S.world.y === Math.round(w.fy) - 1;   // the holder stands on the tile above: beside, not on them
+    drawGlyph(g, 'emote_bang', x + (under ? 15 : 5), y0 - (under ? 6 : 13)); B.glyphs++;
+  }
 }
 /* ---------- WALK_BESIDE §6 (D1973-D1979): "walk beside" ----------
    Stand still within WB.near tiles of a wild for WB.stillMs and it walks beside you for WB.steps landings, then stops and turns
