@@ -201,6 +201,19 @@ test('§8.2 scheduled townsfolk: each body stands on its row\'s map and tile by 
   expect(await page.evaluate(() => [PixelPets.shownName('Student A'), PixelPets.shownName('Dockhand B'), PixelPets.shownName('Exchange Clerk')])).toEqual(['Student', 'Dockhand', 'Clerk']);
 });
 
+test('HB14 the capital road (D1279): a sealed sea gate on the Quay\'s south end at 21,38 answers a tap with its line; no flag', async ({ page }) => {
+  const gate = DATA.maps.hc_waterfront.objs.find(o => o.id === 'hc_sea_gate');
+  expect([gate.x, gate.y]).toEqual([21, 38]);
+  await boot(page);
+  const before = await page.evaluate(() => Object.keys(PixelPets.state.flags).length);
+  await page.evaluate(() => PixelPets.goto('hc_waterfront', 21, 37, 'down'));
+  await settle(page);
+  await page.keyboard.press('Space');
+  await expect(page.locator('#sbText')).toContainText('Sealed. The tide decides.');
+  await endScene(page);
+  expect(await page.evaluate(() => Object.keys(PixelPets.state.flags).length)).toBe(before);
+});
+
 test('rule 9: rooms with no approved preview are held (not in WORLD); floor 1\'s stair still goes to floor 3; the built rooms stand', async ({ page }) => {
   await boot(page);
   const held = Object.keys(DATA.rule9Held);
@@ -291,9 +304,9 @@ test('Charter Hill gates: the north mouth always lets you out; walkers are turne
     await page.evaluate(() => PixelPets.goto('hc_civic', 48, 1, 'up'));
     await settle(page);
     await page.evaluate(() => PixelPets.walkStep('up'));
-    await settle(page);
     await expect.poll(() => where(page).then(w => w.map), tag).toBe('route4_reeds');
-    await endScene(page);
+    await endScene(page);   // a first-visit scene on the river road may hold the fade until it ends
+    await settle(page);
     // inward: from the river road's gate, step west
     await page.evaluate(() => PixelPets.goto('route4_reeds', 1, 10, 'left'));
     await settle(page);

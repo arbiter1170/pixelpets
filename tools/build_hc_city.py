@@ -95,6 +95,7 @@ TXT = {
     'boarded': "Boarded up.",                                   # PLACEHOLDER (Store Row d, the Glimmerwell named slot)
     'fish': "The stalls are packed away for now.",              # PLACEHOLDER
     'gallery': "[PLACEHOLDER] The gallery stair is roped off for now.",
+    'hb14_gate': "Sealed. The tide decides.",                  # §11 HB14, Design's stub for Story (PLACEHOLDER)
     'news_bill': 'A Block News bill. BLOCK NEWS · Who. Where. What changed.',
     'apt_b': None,                                              # kept text
     # §8.2 scheduled townsfolk: the layout gives roles, not lines; Story writes them (PLACEHOLDER)
@@ -673,6 +674,20 @@ SC['hc2_gran'] = [['say', 'Old holder', TXT['hb8_gran']], ['setFlag', 'story.hc_
 prop('hc_college', 'hc2_college_clock', 36, 24, 'lm_statue', r=2)
 for i, (x, y) in enumerate([(15, 40), (30, 36), (38, 30)]): prop('hc_college', f'hc2_park_bench_{i}', x, y, 'bench_long', r=2)
 for i, (x, y) in enumerate([(5, 26), (20, 30), (42, 42), (6, 44)]): prop('hc_college', f'hc2_park_tree_{i}', x, y, 'lm_big_tree', r=3)
+
+# Phase 2, the hooks and P1 props that need no new room (layout §10, §11, §12):
+# HB14 the capital road (D1279, yellow at its default, behind HC_SPIRE_ROAD_HOOK): a sealed sea gate at the Quay's south end,
+# 21,38 (the layout's hook_spire_road), tap only, no flag, no content. A52's art is P1 (Pia); the built weir sluice stands in.
+HC_SPIRE_ROAD_HOOK = True
+if HC_SPIRE_ROAD_HOOK:
+    hook = next(h for h in CH['hc_waterfront']['hooks'] if h['id'] == 'hook_spire_road')
+    o = prop('hc_waterfront', 'hc_sea_gate', hook['x'], hook['y'], 'weir_sluice', r=0, name='a sealed sea gate',
+             lines={'else': TXT['hb14_gate']})
+    if not o or (o['x'], o['y']) != (hook['x'], hook['y']): fail('hc_waterfront: the sea gate must stand on its hook tile 21,38')
+# A46-A48 (P1, reuse): cafe tables by the Lantern Market, a Block News bill on the Square, bikes by the College steps.
+for i, (x, y) in enumerate([(44, 30), (50, 30)]): prop('highcharity', f'hc2_sq_cafe_{i}', x, y, 'cafe_table', r=2)
+prop('highcharity', 'hc2_sq_news_poster', 37, 30, 'poster_stand', r=3, lines={'else': TXT['news_bill']})
+for i, x in enumerate((17, 29)): prop('hc_college', f'hc2_college_bike_{i}', x, 12, 'bike', r=2)
 
 # Parks are spotless: clipped hedges and flowerbeds on open grass, a few per chunk, never on a way through.
 # The Court's old corner (v0.3, D1354; the layout's §7.6) stays plain grass: nothing is placed there.

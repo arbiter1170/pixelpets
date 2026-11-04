@@ -16,9 +16,12 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - §8.2 scheduled townsfolk (phase 2): nine bodies on schedule rows (Child and Parent, the old holder, two students, the
     Exchange clerk, the pier dockhand, the shopper, the office worker), home off the map outside their rows. Shown labels drop
     the letters (NAMES_PASS D1744's rule); lines the layout does not give are PLACEHOLDER.
+  - HB14, the capital road (D1279, behind `HC_SPIRE_ROAD_HOOK` in the tool): a sealed sea gate at Lantern Quay 21,38, tap
+    only ("Sealed. The tide decides.", PLACEHOLDER); the built weir sluice stands in for art A52. P1 reuse props: cafe tables
+    and a Block News bill on the Square, bikes by the College steps.
 - Files touched: `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tests/high_charity_v04.spec.js` (new),
   `tests/hc_court_move.spec.js`, build stamp files.
-- Commit(s) + build id: claude/high-charity-v04, one commit per slice; build 20261104-0227 (slice 1), 20261104-0306 (slice 2).
+- Commit(s) + build id: claude/high-charity-v04, one commit per slice; build 20261104-0227 (slice 1), 20261104-0306 (slice 2), 20261104-0318 (merge of main with #313), 20261104-0336 (slice 3).
 - Tests run and result (widths, checks): in the PR.
 - Decisions made (colour + reasoning): no new ids. The road rule is the layout's own (§4.1, D1271); the stands follow D1354 and
   HC_PARADE's settled rows; the holds follow AGENTS rule 9.
