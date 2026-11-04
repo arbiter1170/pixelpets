@@ -28,6 +28,7 @@ def note(msg): notes.append(msg)
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--layout', default=os.path.join(ROOT, 'design', 'specs', 'high_charity_layout.json'))
+ap.add_argument('--rotor', default=None, help='design specs/rotor_craft_preview/rotor_craft_frames.json (ROTOR_CRAFT draft frames); default: next to --layout')
 args = ap.parse_args()
 if not os.path.exists(args.layout):
     sys.exit('layout JSON not found: ' + args.layout + ' (clone the design repo to design/ or pass --layout)')
@@ -35,6 +36,7 @@ L = json.load(open(args.layout))
 OLD = json.load(open(os.path.join(ROOT, 'data', 'highcharity.json')))
 B4 = json.load(open(os.path.join(ROOT, 'data', 'detail_b4.json')))['slicePatch']['maps']['highcharity']['set']['roofs']
 CH = {c['id']: c for c in L['chunks']}
+
 OLD_MAP = OLD['maps']['highcharity']
 OLD_OBJ = {o['id']: o for o in OLD_MAP['objs']}
 
@@ -572,6 +574,34 @@ for cid, c in CHUNKS.items():
             if pt['when']: o['when'] = list(pt['when'])
             c.add(o, blocks=False)
 
+# ---------- HC_PARADE (design specs/HC_PARADE.md v0.2): the parade, the speech and the street battles (tools/hc_parade.py) ----------
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hc_parade
+PARADE = hc_parade.build(CHUNKS, keep, fail)
+# ROTOR_CRAFT v0.1.1 (D1385-D1394, settled): Design's draft frames, read from the design repo and carried into the city data
+# (rows deduplicated); sprites.js paints them on first draw. Without the file the engineer's own draft in sprites.js stands in.
+ROTOR = args.rotor or os.path.join(os.path.dirname(os.path.abspath(args.layout)), 'rotor_craft_preview', 'rotor_craft_frames.json')
+PARADE_ART = None
+if os.path.exists(ROTOR):
+    RF = json.load(open(ROTOR)); rows, idx, sprites = [], {}, {}
+    for k, sp in RF['sprites'].items():
+        def ri(r):
+            if r not in idx: idx[r] = len(rows); rows.append(r)
+            return idx[r]
+        e = {'w': sp['w'], 'h': sp['h'], 'ms': sp['ms'], 'frames': [[ri(r) for r in f] for f in sp['frames']]}
+        if sp.get('legend'): e['legend'] = sp['legend']
+        sprites[k] = e
+    PARADE_ART = {'_about': 'ROTOR_CRAFT v0.1.1 draft frames (design specs/rotor_craft_preview/rotor_craft_frames.json), Pia redraws; '
+                            'rows of PAL keys, "." clear, legend chars are [PAL key, alpha]. Painted on first draw (sprites.js).',
+                  'rows': rows, 'sprites': sprites}
+    for k in ('keeper_rotor_r', 'keeper_rotor_front', 'rotor_shadow', 'rotor_shadow_front', 'rotor_beam_down'):
+        if k not in sprites: fail(f'ROTOR_CRAFT frames: no {k}')
+else:
+    note('ROTOR_CRAFT frames not found (' + ROTOR + '): the engineer draft rotor art stands in')
+hc_parade.use_rotor_frames(PARADE_ART is not None)
+SC.update(PARADE['scenes'])
+LOOKS.update(PARADE['looks'])
+
 # ---------- the final outdoor checks ----------
 for cid, c in CHUNKS.items():
     blocked = frozenset(c.block)
@@ -648,7 +678,7 @@ for bid, (x, y) in zip(bed_ids, beds):
 objs += [P(f'hc2_quiet_{x}_{y}', x, y, 'bench_long', name='a quiet bench') for y in (5, 7, 9, 11, 13, 15) for x in (11, 13)]
 room_keep['hc_lantern_in:hc_lantern_light'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 9}
 objs.append(P('hc2_lh_wireset', 7, 13, 'tv_set', name='the wire set'))
-objs += [P(f'hc2_lh_counter_{x}', x, 17, 'stall_counter', name="Host Ines's counter") for x in (6, 8)]
+objs += [P(f'hc2_lh_counter_{x}', x, 17, 'stall_counter', name="Host Maudie's counter") for x in (6, 8)]
 room_keep['hc_lantern_in:hc_lantern_host'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 16, 'facing': 'down'}
 room_keep['hc_lantern_in:hc_lantern_note'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 17}   # the 5-Acorn note on the counter
 room_keep['hc_lantern_in:hc_clinic_shelf'] = {'map': 'hc_lantern_in', 'x': 14, 'y': 20}
@@ -774,6 +804,7 @@ KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
 CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
+CAST += [r for r in PARADE['castRows'] if r['name'] not in names]   # HC_PARADE's generic labels (D1361)
 for e in CAST:   # NPC_RANKS: a Keeper cast entry needs a rank, a pending proposal or a flag; the city's ranks are Story's to set
     if e['faction'] == 'keepers': e['rankFlag'] = 'D1374: city cast, ranks PLACEHOLDER until Story'
 
@@ -815,12 +846,14 @@ out = {
     'roomPatch': room_patch,
     'matMoves': mat_moves,
     'linesPatch': lines_patch,
+    'art': PARADE_ART,
     'scenes': SC,
     'looks': LOOKS,
     'speakers': SPEAKERS,
     'cast': CAST,
+    'castAt': PARADE['castAt'],
     'notStepFlags': ['story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',
-                     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called'],
+                     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called'] + PARADE['notStepFlags'],
 }
 for n in notes: print('note:', n)
 if fails:

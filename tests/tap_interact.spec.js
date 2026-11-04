@@ -33,16 +33,17 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // PARTNER_DAY (#258): the new hall and bedroom (hm_home_hall, hm_home_room), Mom (moved down from hm_home_up) and Maze,
     // the home pegs, the up_cushion, and hm_buddy_pre / hm_lizzy_pre in Hearthmoor add talk 12, warp 4 (hall_mom,
     // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
-    // WEIR_HUT (D1590-D1599): the hut door, its mat, the first-step trigger, and 27 talk taps (Vincent Chi, 14 room props, eight
-    // jar shelves (one shows per sill tile at a time), the lamp, barrel and nets outside) add door 1, warp 1, trigger 1, talk 27.
     // POST_TRIAL_CRACKDOWN: +1 sign (the curfew notice), +21 talk (curfew posts, Fen at the gate, Juniper's camp, the six Lantern House
     // townsfolk and the wire station's props), +3 triggers (cd_start, cd_resume, ilse_call).
-    door: 49, warp: 101, sign: 97, talk: 805, scene: 40, trigger: 44, board: 7,
+    // WEIR_HUT (D1590-D1599): the hut door, its mat, the first-step trigger, and 27 talk taps (Vincent Chi, 14 room props, eight
+    // jar shelves (one shows per sill tile at a time), the lamp, barrel and nets outside) add door 1, warp 1, trigger 1, talk 27.
+    // ACT1_KEEPER_JOIN: +7 talk (Imogen's and the Keeper Scout's Wickerglen bodies, the Constable, three lamp lines, the ledger crate).
+    door: 49, warp: 101, sign: 97, talk: 812, scene: 40, trigger: 44, board: 7,
     trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
+  // The Hearthmoor coach (hm_to_hc) left this list when it moved off the Keeper House roof to (16,9).
   expect(audit.reachGaps).toEqual([
-    'hearthmoor:hm_to_hc walk-on tile is solid or blocked',
     'fernbrook:fb_east walk-on tile is solid or blocked',
     'fernbrook:fb_tour2 walk-on tile is solid or blocked',
     'route2:r2_east walk-on tile is solid or blocked',

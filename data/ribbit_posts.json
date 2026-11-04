@@ -115,7 +115,7 @@
    "when": [
     "story.lizzy_met"
    ],
-   "text": "Lizzy teaches 8-3 on weekdays. Buddy the Harvestail has better attendance than Pip and Wren.",
+   "text": "Lizzy teaches 8-3 on weekdays. Buddy the Harvestail has better attendance than Pip and Tilly.",
    "lore": [
     "person.lizzy",
     "person.lizzy_circle",
@@ -1426,7 +1426,7 @@
    "when": [
     "story.hc_arrived"
    ],
-   "text": "Porter Quin helped my Walkling onto the Lantern Coach. It took the window seat.",
+   "text": "Porter Aldous helped my Walkling onto the Lantern Coach. It took the window seat.",
    "lore": [
     "thing.lantern_coach"
    ]
@@ -1513,7 +1513,7 @@
    "when": [
     "story.hc_arrived"
    ],
-   "text": "Ines at the Lantern House explained healing twice. Kindly. I needed it twice.",
+   "text": "Maudie at the Lantern House explained healing twice. Kindly. I needed it twice.",
    "lore": [
     "person.lantern_hosts"
    ]
