@@ -92,7 +92,9 @@ async function drive(page, picks = [], onLine = null, ms = 120000) {
       await page.waitForTimeout(40); continue;
     }
     if (sc.mode === 'say' && sc.waiting) {
-      if (!sc.full) { await page.keyboard.press('Space'); await page.waitForTimeout(30); continue; }
+      // Let the line finish typing (text speed fast) rather than tapping: under load a tap sent while the line types can land
+      // after it is full and skip it unread.
+      if (!sc.full) { await page.waitForTimeout(30); continue; }
       const key = sc.who + '|' + sc.text;
       if (key !== last) { lines.push([sc.who || '', sc.text]); last = key; if (onLine) await onLine(sc.text, sc.who || ''); }
       await page.keyboard.press('Space'); await page.waitForTimeout(30); continue;
@@ -243,7 +245,9 @@ test.describe('ACT1_KEEPER_JOIN: Vincent Chi in the weir hut (K4)', () => {
     expect(picks).toEqual(['The ledger', 'The lamps', 'The list', "That's all"]);
     expect(said(lines, /^Six Seals, held by permit\./)).toBe(true);
     expect(said(lines, /one story: the Seals, the lamps, the tanks\.$/)).toBe(true);
-    expect(lines[lines.length - 1][1]).toBe("Go home by the orchard. Fen's crates are still at the gate.");
+    // WALK_BESIDE D1970: Jacob Chi's one-step run (the old lantern) follows the built report's last line.
+    expect(lines[lines.length - 3][1]).toBe("Go home by the orchard. Fen's crates are still at the gate.");
+    expect(lines.slice(-2).map(l => l[1])).toEqual(['Jacob Chi lifts the cloth off the old lantern on the shelf.', 'Scouts learned the long version once. Nobody asks for it now.']);
     for (const l of lines) expect(Array.from(l[1]).length, l[1]).toBeLessThanOrEqual(110);
     const f = await flags(page);
     expect(f['story.chi_done']).toBe(true);
@@ -610,7 +614,8 @@ test.describe('ACT1_KEEPER_JOIN: reports, the recall and the STANDING line (K7)'
     expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
     expect(await sceneId(page)).toBe('cadet_sendoff');
     lines = await drive(page, ['Tell her all of it']);
-    expect(said(lines, /^Captain Lumen has asked for you\. The capital is waiting, Cadet\.$/)).toBe(true);
+    expect(said(lines, /^That's their work done\. Don't go yet, Cadet\. Something came for you\.$/)).toBe(true);   // 9e, v0.1.6
+    expect(said(lines, /Captain Lumen|capital/)).toBe(false);
     expect((await flags(page))['story.rpt_3']).toBe('told');
     // E8 (D1556): the STANDING line; no bag item (D1557).
     await goto(page, 'hearthmoor', 11, 7, 'down');
@@ -652,10 +657,25 @@ test.describe('ACT1_KEEPER_JOIN: reports, the recall and the STANDING line (K7)'
     expect(f['story.switches'] | 0).toBe(0);   // not a switch
     expect(Object.keys(await page.evaluate(() => PixelPets.state.seals)).sort()).toEqual(['seal_fernbrook', 'seal_glim_1', 'seal_glim_2']);
     expect(await page.evaluate(() => PixelPets.side)).toBe('keepers');
-    // D1562: the Keepers-side finale, the Lantern Council, follows the recall, so the holder sees both finales in order.
+    // 9e (v0.1.6) leads into Ilse's posting; nothing in the recall sends the holder to Captain Lumen or the capital.
+    expect(lines[lines.length - 1]).toEqual(['Warden Ilse', "That's their work done. Don't go yet, Cadet. Something came for you."]);
+    expect(said(lines, /Captain Lumen|capital|Lantern Council/)).toBe(false);
+    // D2020 (default): the Lantern Council waits for the Governor (story.hc_gov_met), so it is not the open row after the recall.
     expect(f['story.hc_council_done']).toBeUndefined();
+    await page.evaluate(() => PixelPets.setFlag('story.cobble_end', true));   // the fixture skips Cobblecrest; a real recall has it
+    expect(await rowOpen(page, 'hc_council')).toBe(false);
+    const after = await quest(page);
+    expect(after.id).not.toBe('hc_council');
+    expect(after.text).not.toMatch(/Lumen|Lantern Council|Sky-Dock/);
+    expect((await gate(page, 'hc_command_in', 'hc_council_trig')).whenOk).toBe(false);
+    await goto(page, 'hc_command_in', 4, 5, 'up');
+    expect(await page.evaluate(() => PixelPets.npcLine('hc_lumen'))).toBe('Lantern ships. No thunder, no guns.');
+    expect(await sceneId(page)).toBeNull();
+    // After the Governor, the Council opens in High Charity (the row, the Sky-Dock trigger and Lumen's talk).
+    await page.evaluate(() => PixelPets.setFlag('story.hc_gov_met', true));
     expect(await rowOpen(page, 'hc_council')).toBe(true);
-    expect(lines[lines.length - 1][1]).toBe('Captain Lumen has asked for you. The capital is waiting, Cadet.');
+    expect((await gate(page, 'hc_command_in', 'hc_council_trig')).whenOk).toBe(true);
+    expect(await page.evaluate(() => PixelPets.npcLine('hc_lumen'))).toBe('@hc_council');
     expect(await page.evaluate(() => PixelPets.runScene('hc_council'))).toBe(true);
     const council = await drive(page);
     len110(council);
@@ -735,6 +755,10 @@ test.describe('ACT1_KEEPER_JOIN: the old-save move at load (K8, T16)', () => {
       // The one toast, on the first free moment.
       await page.waitForFunction(() => PixelPets.toasts.includes("You're a Keeper Cadet now. See Ilse."), null, { timeout: 8000 });
       if (want.quest) expect([].concat(want.quest)).toContain((await quest(page)).id);
+      if (kind === 'O5') {   // D2020 keeps a moved save's Council where it was: cover_done with no story.cover is not a recall
+        expect(await rowOpen(page, 'hc_council')).toBe(true);
+        expect((await gate(page, 'hc_command_in', 'hc_council_trig')).whenOk).toBe(true);
+      }
       if (want.tobin) expect((await gate(page, 'fernbrook', 'fern_associate')).whenOk).toBe(true);   // O1: Tobin's battle, then the Keepers result
       if (want.hold) expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe(want.hold);
       if (want.hale) {   // O4: Hale's floor stays open for the real Seal (D1547)
@@ -755,7 +779,8 @@ test.describe('ACT1_KEEPER_JOIN: the old-save move at load (K8, T16)', () => {
         const lines = await drive(page, ['Tell her all of it']);
         expect(lines[0]).toEqual(['Warden Ilse', 'What did they show you? What did you show them?']);
         expect(said(lines, /^Someone I trust found Fernbrook's Seals in a lamp ledger\. Remember that\.$/)).toBe(true);
-        expect(said(lines, /^Captain Lumen has asked for you\./)).toBe(true);
+        expect(said(lines, /^That's their work done\. Don't go yet, Cadet\. Something came for you\.$/)).toBe(true);   // 9e, v0.1.6
+        expect(said(lines, /Captain Lumen|capital/)).toBe(false);
         const g = await flags(page);
         for (const k of want.report) expect(g['story.' + k], k).toBe('told');
         expect(g['story.rpt_old_seen']).toBe(true);

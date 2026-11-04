@@ -37,18 +37,23 @@
     'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
     'story.chi_jars', 'story.shift_lamp_w', 'story.shift_lamp_n', 'story.shift_lamp_e', 'story.shift_ledger', 'story.chi_told_ledger', 'story.chi_told_lamps', 'story.chi_told_list',   // ACT1_KEEPER_JOIN: Vincent Chi's jars (WEIR_HUT §3.3) and his report hub, not steps
     'story.sway_fernbrook', 'story.cover', 'story.ilse_call2', 'story.ilse_call3', 'story.rpt_1', 'story.rpt_2', 'story.warden_cut', 'story.ilse_call_old',   // ACT1_KEEPER_JOIN: sway, face, calls, reports, the old-save move
+    'story.wb_springs', 'story.wb_charter', 'story.wb_cut', 'story.wb_ilse_letter', 'story.wb_pres',   // WALK_BESIDE §9: scene results, not steps
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
     'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
     'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
+    'story.mom_mah_ask', 'story.mom_mahopac', 'story.lens_note',   // MAHOPAC_DREAMS §9: Mom's walk north (the warp), her answer at the lens, Ilse's note
     'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
+    'story.reached_brightgate', 'story.bg_insign', 'story.bg_crate', 'story.bg_vane', 'story.seal4', 'story.ada_sky',
+    'story.bg_dipper', 'story.bg_shuttle', 'story.bg_shuttle_hm', 'story.bg_f2_guest',   // BRIGHTGATE_LAYOUT §9, §17 (H4's chain row is the Act 2 chain's): the first arrival on Gate Plaza and three first reads (places and hooks, not steps; B5's chain row is Story's)
 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
     'story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',   // HIGH_CHARITY_LAYOUT §11 hooks
     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
+    'story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen',   // HC_PARADE (D1365): beats inside the parade scene (city only); story.hc_greeted stays the step
     'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue',   // High Charity and Mahopac bits; neither is a main-chain step
     // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
     'story.know_us', 'story.heights_path', 'story.stock_warned', 'story.rx_enter', 'story.met_nia', 'story.rx_f1',
@@ -267,7 +272,10 @@
       target: { map: 'cobblecrest', x: 25, y: 7 } },
     // ACT1_KEEPER_JOIN §9.3 (D1548): a moved old save that finished the Signal Review skips the Lantern Council. D1562: a new
     // save plays the Signal Review undercover, then the Council after Ilse's recall (side keepers again), so it sees both.
-    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'], skipIf: ['story.gb_done & story.ilse_call_old'], noImply: true,
+    // D2020 (v0.1.6, default): a recalled holder (story.cover=glimmer plus story.cover_done) meets the Council in High Charity
+    // after the Governor (story.hc_gov_met), not straight after the recall. An old save moved at load sets cover_done with no
+    // story.cover, so its Council stays open as before (O5).
+    { id: 'hc_council', when: ['!story.side=glimmer', '!story.cover=glimmer | !story.cover_done | story.hc_gov_met'], done: ['story.hc_council_done'], skipIf: ['story.gb_done & story.ilse_call_old'], noImply: true,
       text: 'High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', place: 'High Charity, sky-dock',
       target: { map: 'hc_command_in', x: 2, y: 3 } },
     { id: 'gb_invite', when: ['story.side=glimmer'], done: ['story.gb_invited'],
@@ -342,6 +350,12 @@
     // Kilnmouth packet's first flag (B2: story.km_arrived), which nothing sets yet; that packet replaces this row.
     { id: 'a2_hold', when: ['story.km_assigned'], done: ['story.km_arrived'],
       text: 'Await your next orders.', place: 'The Amberwild' },
+    // WALK_BESIDE §3.3 (D1961): Archivist Mo waits at the Lodge steps from the first sitting (CABINET S1 sets story.cab_seat; not
+    // built, so this row is inert today) until the cut is shown. Never for a switcher or the company's face.
+    { id: 'wb_cut', when: ['story.cab_seat', '!story.switched_a3', '!story.side=glimmer'], done: ['story.wb_cut'], noImply: true,
+      npc: 'Archivist Mo', npcIds: ['hm_mo_steps'],
+      text: 'Archivist Mo is waiting at the Lodge.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hearthmoor', x: 15, y: 7 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];
@@ -508,6 +522,13 @@
       { id: 'gov_report', label: 'How it went', when: ['story.hc_gov_met', '!story.switched_a3', '!story.warden_cut'], done: ['story.rpt_gov'],
         text: 'Warden Ilse would like to hear how it went.', place: 'Hearthmoor, the Lodge',
         npc: 'Warden Ilse', target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    ],
+    // MAHOPAC_DREAMS §3.1 (D1950): the lens moment, Act 5. Opened by Ilse's note at a Lantern House Host; never on the main row;
+    // it closes at story.climb_open (Act 6). The label is ours (the packet gives none; PLACEHOLDER).
+    [
+      { id: 'lens_moment', label: 'The lens at Mahopac', when: ['story.lens_note', '!story.climb_open'], done: ['story.lens_seen'],
+        text: 'Warden Ilse is waiting at the lens in Mahopac.', place: 'Breckenridge Observatory',
+        target: { map: 'mahopac_obs', x: 3, y: 2 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();
