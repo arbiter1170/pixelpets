@@ -79,7 +79,8 @@ function expectLayout(box) {
 
 test('a first run walks the tour and the care buttons are real', async ({ page }) => {
   test.setTimeout(60000);
-  await openTour(page, tourSave());
+  const s = tourSave(); s.settings.controls = 'arcade';   // Arcade opt-in: walks the Arcade tour's copy (pad, d-pad row, tabs)
+  await openTour(page, s);
   await expect(page.locator('#tutLine')).toHaveText('Pipkit is your partner now! Want a quick tour of how to look after them?');
   const where = await page.evaluate(() => ({ map: PixelPets.state.world.map, steps: PixelPets.state.steps, v: PixelPets.state.v }));
   expect(where).toEqual({ map: 'hm_lodge_in', steps: 0, v: 2 });
@@ -229,6 +230,7 @@ test('Settings replay highlights care and does not spend it', async ({ page }) =
   save.party[0].happy = 80;
   save.party[0].energy = 90;
   delete save.party[0].cd;
+  save.settings.controls = 'arcade';   // Arcade opt-in: the replay walks the Arcade tour's copy (pad, d-pad row, tabs)
   await installSave(page.context(), save, { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));

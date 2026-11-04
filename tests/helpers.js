@@ -184,6 +184,9 @@ async function showScreen(page, name) {
     if (await back.count()) await back.click();
     return;
   }
+  // The dock buttons live on the walk screen: from PARTNER or WALKLINGS, go back to WALK first.
+  const back = page.locator('.screen.active .scr-back');
+  if (await back.count()) await back.click();
   return page.locator(name === 'pet' ? '#petFloat' : '#colFloat').click();
 }
 // A finger on the map canvas over tile (x, y), once the walk camera has stopped easing. In Modern a tap on a person or a
