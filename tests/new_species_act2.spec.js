@@ -215,7 +215,8 @@ test('N6: an old v2 save with 25 lines loads unchanged; a save holding a new lin
     stored: JSON.parse(localStorage.getItem('pixelpets.save.v2')).v, partner: PixelPets.state.party[0].species }));
   expect(r).toEqual({ v: 2, box: ['humwisp/0:petold2', 'adder/1:petnew1'], orphans: 0, stored: 2, partner: 'ember' });
   // No data names a new line before its species slice: the only tables naming S1 and S4 are their own road's (KILNMOUTH, once it lands).
-  const md = read('data/mapdata.js'), km = /"km_road":\{/.test(md) ? read('data/detail_zzzzz_kilnmouth.json') : '';
+  // BRIGHTGATE (#316) also places one wild dipper (bg_wild_dipper, after Kilnmouth in the walk), so its file counts beside Kilnmouth's.
+  const md = read('data/mapdata.js'), km = (/"km_road":\{/.test(md) ? read('data/detail_zzzzz_kilnmouth.json') : '') + read('data/detail_zzzzz_brightgate.json');
   const n = (t, id) => (t.match(new RegExp('"' + id + '(/\\d)?"', 'g')) || []).length;
   for (const id of ['dipper', 'jugwasp']) expect(n(md, id), id).toBe(n(km, id));
 });
