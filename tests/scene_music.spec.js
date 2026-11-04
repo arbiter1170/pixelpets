@@ -21,6 +21,7 @@ const KIT_SRC = "const KIT = {\n    k: ['lowpass', 260, 90, 0.30],\n    s: ['hig
 
 function save(opts = {}) {
   const s = starterSave();
+  // Modern controls (Vincent's standing rule: QA plays on Modern; helpers.js still seeds arcade, so set it here)
   Object.assign(s.settings, { follower: false, controls: 'modern', textSpeed: 'fast', tips: false, music: opts.music !== false, musicVol: 0.5 });
   s.steps = 40;
   Object.assign(s.flags, { 'story.early_done': true, 'story.phone_got': true, 'story.reached_glen': true, 'story.hw_reached': true,
@@ -145,9 +146,9 @@ test.describe('SCENE_MUSIC slice 1: the weir hut', () => {
 
   test('T4: nothing plays before the first tap; the first tap starts weir', async ({ page }) => {
     await boot(page, { s: save({ world: { map: ROOM, x: 4, y: 10, facing: 'up' } }), mute: '0' });
-    expect(await page.evaluate(() => [PixelPets.state.world.map, PPSound.muted, PPSound.musicOn])).toEqual([ROOM, false, true]);
+    expect(await page.evaluate(() => [PixelPets.state.world.map, PixelPets.state.settings.controls, PPSound.muted, PPSound.musicOn])).toEqual([ROOM, 'modern', false, true]);
     expect(await page.evaluate(() => [PPSound.musicWant, PPSound.musicTrack, PPSound.state, window.__spy.made])).toEqual(['weir', null, 'none', 0]);
-    // the first tap: a finger on the room's back wall (a wall tile, so the holder does not move), the way the unlock gesture lands
+    // the first tap: a Modern tap (a finger on the map) on the room's back wall, a wall tile, so the holder does not move
     const box = await page.evaluate(() => { const mc = document.querySelector('#mapCanvas'), r = mc.getBoundingClientRect(), cam = PixelPets.walk.cam, k = r.width / mc.width;
       return { x: r.left + ((1 + 0.5) * 16 - cam.x) * k, y: r.top + ((0 + 0.5) * 16 - cam.y) * k }; });
     await page.touchscreen.tap(box.x, box.y);
