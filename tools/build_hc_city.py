@@ -678,7 +678,7 @@ for bid, (x, y) in zip(bed_ids, beds):
 objs += [P(f'hc2_quiet_{x}_{y}', x, y, 'bench_long', name='a quiet bench') for y in (5, 7, 9, 11, 13, 15) for x in (11, 13)]
 room_keep['hc_lantern_in:hc_lantern_light'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 9}
 objs.append(P('hc2_lh_wireset', 7, 13, 'tv_set', name='the wire set'))
-objs += [P(f'hc2_lh_counter_{x}', x, 17, 'stall_counter', name="Host Ines's counter") for x in (6, 8)]
+objs += [P(f'hc2_lh_counter_{x}', x, 17, 'stall_counter', name="Host Maudie's counter") for x in (6, 8)]
 room_keep['hc_lantern_in:hc_lantern_host'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 16, 'facing': 'down'}
 room_keep['hc_lantern_in:hc_lantern_note'] = {'map': 'hc_lantern_in', 'x': 7, 'y': 17}   # the 5-Acorn note on the counter
 room_keep['hc_lantern_in:hc_clinic_shelf'] = {'map': 'hc_lantern_in', 'x': 14, 'y': 20}

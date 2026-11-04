@@ -418,7 +418,7 @@ rooms['hc_hall_in'] = room('hc_hall_in', 'Event Hall', 11, 11, 'arcade', 'hc_hal
     {'kind': 'prop', 'id': 'hc_booth_d', 'x': 8, 'y': 5, 'sprite': 'hall_booth',
      'lines': {'else': 'PLAZA DASH · Mind the puddles. The plaza is for everyone.'}},
     {'kind': 'sign', 'id': 'hc_hall_note', 'x': 2, 'y': 8,
-     'text': 'EVENT HALL · Solo booths up top. Games for two with Brin.'},
+     'text': 'EVENT HALL · Solo booths up top. Games for two with Tove.'},
 ])
 
 rooms['hc_arena_in'] = room('hc_arena_in', 'Charity Arena', 11, 9, 'charity', 'hc_arena', [
@@ -623,11 +623,15 @@ speakers = {
     'Porter Bram': 'bram',
 }
 
-# Hearthmoor coach: one path tile south of the east-west road, beside the Lodge.
+# Hearthmoor coach: one path tile south of the east-west road, in the grass nook above the Lantern House roof.
+# It was at column 12, but data/civic.json puts the Keeper House roof on row 9 columns 10-13, so the coach tile, Porter Bram
+# and the coach sign sat on roof tiles and the coach could not be boarded. Column 16 is open grass with the roof below it,
+# so only the road (16,8) steps onto it. hc_south still lands on the road at (12,8) (D122).
+COACH_X = 16
 ms = json.loads((root / 'data' / 'maps_slice.json').read_text())
 old = ms['maps']['hearthmoor']['grid'][9]
-assert len(old) == 24 and old[12] == 'g', old
-coach_row = old[:12] + 'p' + old[13:]
+assert len(old) == 24 and old[COACH_X - 1:COACH_X + 2] == 'ggg', old
+coach_row = old[:COACH_X] + 'p' + old[COACH_X + 1:]
 
 TOKEN = {'pet': 10, 'name': 10, 'player': 10, 'species': 9, 'type': 5, 'suggest': 9, 'rival': 9, 'rivalType': 5}
 
@@ -699,16 +703,16 @@ doc = {
             'hearthmoor': {
                 'gridRows': {'9': coach_row},
                 'addObjs': [
-                    {'kind': 'warp', 'id': 'hm_to_hc', 'x': 12, 'y': 9, 'to': 'highcharity', 'tx': 32, 'ty': 37,
+                    {'kind': 'warp', 'id': 'hm_to_hc', 'x': COACH_X, 'y': 9, 'to': 'highcharity', 'tx': 32, 'ty': 37,
                      'facing': 'up', 'when': ['story.side_pick_done'], 'need': 'story.side_pick_done',
                      'setFlag': 'story.hc_arrived'},
-                    {'kind': 'npc', 'id': 'hm_bram', 'name': 'Porter Bram', 'look': 'bram', 'x': 11, 'y': 9, 'facing': 'right',
+                    {'kind': 'npc', 'id': 'hm_bram', 'name': 'Porter Bram', 'look': 'bram', 'x': COACH_X - 1, 'y': 9, 'facing': 'right',
                      'when': ['story.side_pick_done'],
                      'lines': {
                          '!story.hc_invite': "Ilse has a letter inside. The city is open, but the hall booths are not.",
                          'else': "Step on the lantern mark. I'll have you at the south gate.",
                      }},
-                    {'kind': 'sign', 'id': 'hm_sign_coach', 'x': 13, 'y': 9, 'when': ['story.side_pick_done'],
+                    {'kind': 'sign', 'id': 'hm_sign_coach', 'x': COACH_X + 1, 'y': 9, 'when': ['story.side_pick_done'],
                      'text': 'LANTERN COACH · High Charity. Step on the mark.'},
                 ],
             },
