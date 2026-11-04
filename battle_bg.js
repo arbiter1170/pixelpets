@@ -480,6 +480,33 @@ const HC_OUT = {
     S.deco(() => { S.art('lm_big_tree', S.W - 10, S.H - 2, 0.6); }); },
 };
 const HC_ROOMS = { hc_news_1: {}, hc_news_2: {}, hc_gov_1: {}, hc_gov_3: {} };
+// KILNMOUTH v0.1.1 §11.1 (BATTLE_BACKDROPS_ACT2 rows): Claybank Road, the town and Hall 5 from their own tiles and props; the
+// other five rooms take the indoor recipe. The road's B10 look (the creek full, puddles) reads the map's soaked cells.
+const KM_OUT = {
+  km_road(S){                                         // the clay valley: clay hills, the track, a thin low creek with wide sand
+    const row = (S.env.cells || [])[25] || [], soaked = row[5] === 'm';
+    sky(S); FAR.ridge(S, 'B', 'F'); S.ground('g'); S.band('p', 18, 4);
+    if (soaked) { S.band('w', 24, 6); [[6, 12], [S.W - 14, 16], [S.W >> 1, 30]].forEach(([x, y]) => S.P('c', x, S.hz + y, 5, 1)); S.P('h', 0, 2, S.W, 1); }
+    else { S.band('s', 24, 3); S.band('w', 27, 3); }
+    S.fill('j', S.W - 18, S.hz + 2, 16, 8, 0.5, 2, 20);
+    S.deco(() => { S.art('km_hammer', 12, S.hz + 14, 0.75) || S.art('milestone', 12, S.hz + 14); });
+  },
+  kilnmouth(S){                                       // the flat cloud, two bottle kilns (one smoking east), the yard's clay, the gauge
+    const { W, hz, P } = S;
+    sky(S); P('h', 0, 0, W, 6); P('m', 0, 6, W, 1);
+    [[4, false], [W - 18, true]].forEach(([x, warm]) => {
+      P('B', x + 3, hz - 14, 8, 14); P('B', x + 5, hz - 19, 4, 5); P('F', x + 9, hz - 14, 2, 14); P('F', x + 5, hz - 20, 4, 1);
+      if (warm) { P('m', x + 9, hz - 24, 3, 2); P('h', x + 12, hz - 27, 3, 2); P('w', x + 15, hz - 29, 2, 1); }
+    });
+    S.ground('p'); S.band('e', 20, 6, 0.5);
+    S.deco(() => { S.art('km_gauge', 10, S.hz + 16, 0.75) || S.art('lamp_post', 10, S.hz + 16); });
+  },
+};
+const KM_ROOMS = { km_hall_in: { hall: true, banner: ['r', 'o'], ring: 'y', back: ['km_vent_lit'], front: ['km_vent'] },
+  km_lantern_in: {}, km_store_in: {}, km_bath_in: {}, km_council_in: {}, km_stone_in: {} };
+Object.assign(OUT, KM_OUT); Object.assign(ROOMS, KM_ROOMS);
+Object.keys(KM_OUT).forEach(id => { scenes[id] = { room: false }; });
+Object.keys(KM_ROOMS).forEach(id => { scenes[id] = { room: true, group: false, hall: !!KM_ROOMS[id].hall }; });
 function enableCity(){
   Object.assign(OUT, HC_OUT); Object.assign(ROOMS, HC_ROOMS);
   Object.keys(HC_OUT).forEach(id => { scenes[id] = { room: false }; });
