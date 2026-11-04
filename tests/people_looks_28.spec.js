@@ -45,6 +45,7 @@ const BRIMHAT_TOP = {
   right: ['................', '.....rrrrrr.....', '....tttttttt....', '.rrrrrrrrrrrrrr.', '...rrrrrrrrrr...'],
   up: ['................', '.....rrrrrr.....', '....tttttttt....', '..rrrrrrrrrrrr..', '...rrrrrrrrrr...'],
 };
+const SAME_PERSON = ['glen_scout'];   // a second placement of one of the 28 people (see the look test)
 const HAIRS = ['short', 'long', 'spiky', 'bun', 'bob', 'pony', 'curls', 'buzz'];
 const FACINGS = ['down', 'right', 'up', 'left'];
 
@@ -121,7 +122,9 @@ test('each of the 28 people resolves to its own new look, with the looks.json fi
     const fields = Object.assign({}, defs[key]);
     delete fields.extra;
     expect(fields, key + ' definition').toEqual(want.look);
-    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id));   // LANTERN_HOUSE_FERNBROOK: the curfew-night twins (lh_odile) are the same person indoors
+    // Same person, second placement: LANTERN_HOUSE_FERNBROOK's curfew-night twins (lh_odile) indoors, and ACT1_KEEPER_JOIN's
+    // glen_scout, the built Keeper Scout earlier in time at Wickerglen (D1552, detail_zz_keeper_join.json).
+    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id) && SAME_PERSON.indexOf(r.id) < 0);
     expect(hits.map(r => r.map + ':' + r.id), key + ' is worn by its NPC only').toEqual([want.map + ':' + want.id]);
     expect(hits[0].same, key + ' drawn by npcLook').toBe(true);
   }
