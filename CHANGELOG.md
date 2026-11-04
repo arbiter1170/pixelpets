@@ -2,6 +2,21 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-04 13:20 ET: Build: the bank's first slice: the Acorns chip opens your book (BANK_AND_HOMES v0.1; D2220-D2223, D2227 lines only, D2231, D2233, D2234, D2246)
+- What changed and why:
+  - Vincent approved BANK_AND_HOMES v0.1 and STOCK_MARKET v0.1 on Wed Nov 4, 2026 (every default; D2227 = B, which the statements use in phase 6). This is the packet's phase 1.
+  - **The chip is a button (D2220).** The modern Acorns chip `#fcAcorns` is now a `<button>` with the same plate, classes, gain flash and spend tick. It has an `h` caret, a pressed drop, a `y` pip while today's dividend waits, and a focus ring. Its label reads "N Acorns. Open your book." It is disabled in a battle, in a scene and under the tour. The arcade header stays a display.
+  - **The account sheet `#ovBank` (D2221).** It follows `#ovShop`'s pattern in slate and brass with a cream page. The tabs are BOOK and LEDGER; JARS appears with the open book as a coming-soon page (phase 2), and EXCHANGE waits on the stock app's own gate (`PPMarket.ready`). Bag mode ("YOUR ACORNS") comes before the book. Under the modern dock the sheet sits above it, so the chip stays in view: a tap there, X or Escape closes it.
+  - **The ledger (D2234).** A new pure module, `bank.js` (`PPBank`), keeps it. `moneyDelta(src, n, ref)` in game.js now makes every change to the bag: 14 game sites (the packet's 13 plus walk beside's 10) and 3 debug ones. It clamps at 0, writes one memo and runs the built HUD sync, and every spend behaves as before. Same-day lines with the same source merge. The ledger keeps 60 lines and 12 month folds, and its first line is "Brought forward".
+  - **The dawn dividend and the Yesterday card (D2231).** With the book open, the first open of each real day pays `min(12, 5 + floor(inJars/200))` into the bag and stamps `daily.bank_dawn`. The card shows a KEPT stamp, Came in and Went out for the last day played, the dividend and one remark. After a gap it says WELCOME BACK. There is no catch-up, streak or days-away count.
+  - **The two beats (D2222, D2233).** `data/detail_zzz_bank.json` adds Mom's passbook as an optional talk after Supper, after her snack and before her repeat. Teller Bodin opens the book only after the posting. Five bank lines are re-voiced; the built glimmer line and the door sign are unchanged.
+  - **Save (D2246).** `normalizeV2` fills and cleans `S.bank` (`led`, `fold`, `jars`, `shares`), `S.home` and `S.garden` as §12 lists. `S.money` stays the bag. The save stays `pixelpets.save.v2`, v 2.
+- Files touched: bank.js (new), data/detail_zzz_bank.json (new), game.js, save.js, minigames.js, quests.js, index.html, style.css, sw.js, data/mapdata.js, tools/GAMEJS_MAP.txt, tests/bank_slice_1.spec.js (new), tests/act2_cover_story.spec.js, tests/mahopac_dreams.spec.js, tests/battle_acorns.spec.js, tests/shop_p0.spec.js, tests/ux_review.spec.js, tests/README.md, OPEN_DECISIONS.md, CHANGELOG.md.
+- Commit(s) + build id: claude/bank-slice-1, build 20261104-1319.
+- Tests run and result (widths, checks): see the PR (tests/bank_slice_1.spec.js at 320, 375 and 390, plus the shop, money, phone, tap_interact and data_integrity specs).
+- Decisions made (colour + reasoning): green engineer calls in OPEN_DECISIONS D2221-build, D2231-build and D2234-build. All copy is PLACEHOLDER (D2222-copy).
+- Anything left unfinished: jars, the acorn drop and the Cadets' Tin (phase 2); homes; passes; the company account and the statements (D2227 B); the Exchange. Each has a clean hook (`bankTabs`, `bankWallet`, `S.bank.jars`).
+
 ## 2026-11-04 09:10 ET: Build: Brightgate, slices 3-5: the city dressed and peopled, Hall 4, v0.2.1's gaps, perf (BRIGHTGATE_LAYOUT v0.2 and v0.2.1; D1484-D1489, D1492, D1494, D1498, D2005, D2092-D2106)
 - What changed and why:
   - **Slice 3, dressing and people:**
