@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 19:59 ET: Old-name fold runs once per save, so an unfavourite or a trust drop sticks
+- What changed and why:
+  - QA (Nov 3, 2026): `normalizeV2` copied each old name in `FOLD_KEYS` (Ash, Fen, Hale, Tobin, Hollis, Quinn, Imogen, Marisol) to its ranked key in `phoneBook.met`, `phoneBook.fav` and `rep` on every load while the new key was absent. Play deletes the new key (unfavourite; trust back at base is stored sparse), and the old key stays on disk, so the next load put the removed mark back (an old `rep.Fen = 60` dropped to 50 came back as 60; an unfavourited Cadet Sefton came back on).
+  - `save.js` now writes an additive `flags['fold.<old name>'] = true` the first time it folds a name that has an old key, and skips that name after. Old keys are never deleted; a save holding both keys keeps the new key; a fresh save gets no marks; `normalizeV2` stays idempotent. A save that folded before this fix has no mark yet, so it folds once more on its next load and then never again. Save stays `pixelpets.save.v2`, `v` 2.
+  - `FOLD_KEYS` stays a hand-kept copy of `rep.js` `REP_CANON` (no load-order change); a new test checks the two match.
+- Files touched: `save.js`, `tests/name_fold.spec.js` (new), `tests/README.md`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`, build stamp (`index.html`, `version.json`).
+- Commit(s) + build id: claude/fix-name-fold-refill, build 20261103-1959, restamped 20261103-2158 after merging main with #305.
+- Tests run and result (widths, checks): `tests/name_fold.spec.js` at 320, 375 and 390: 9 passed; its unfavourite and trust-drop tests fail on main without the `save.js` change (fav back to true; trust 60, expected 50). With `npc_ranks`, `side_badge`, `day1_save_kinds`, `reputation`, `save_copy` and `loop_save_sw`: 153 passed, 0 failed, zero console errors (run with `npx playwright test --workers=1`; `npm run test:agent` could not run in the cloud sandbox, no npm network).
+- Decisions made (colour + reasoning): green (engineer): the fold mark lives in `flags` (already free-form and additive) instead of a new top-level field; it is set only when an old key exists so new saves stay clean.
 ## 2026-11-03 19:56 ET: Debug previews never reach the cloud save; ?hall2=1 needs debug to stick
 - What changed and why:
   - QA pass (Nov 3): the High Charity city preview and the Glimmerwell preview lot already held the local save, but the cloud hook in `game.js` (`getState`) ignored both, so a signed-in `?debug=1` tester could upload preview state (for example the Act 5 checkpoint) and a second device would adopt it. New `previewActive()` (the city preview, the open lot, or `world.map` `gw_preview`) is now used by `save()`, by the cloud `getState` hook (null while a preview is open) and by the cloud `busy` hook (no compare, so no adopt reload, under a preview). `cloud.js` already treats a null state as "nothing to upload"; it is unchanged.
