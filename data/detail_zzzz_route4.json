@@ -6,7 +6,8 @@
   "paths": [
    "maps",
    "scenes",
-   "trainers"
+   "trainers",
+   "objPatch"
   ]
  },
  "_kilnmouth": "KILNMOUTH lands later: its build adds the fork's east warps r4_east_n/c/s (23, 1-3) -> km_road (1, 24-26), when story.km_assigned; until a build has km_road the bars stand (map:km_road) and the Kilnmouth lines stay quiet.",
@@ -144,7 +145,7 @@
      "kind": "sign",
      "id": "r4_sign_adder",
      "x": 8,
-     "y": 25,
+     "y": 24,
      "text": "Adders bask on these walls. Their backs are marked like lightning."
     },
     {
@@ -1374,5 +1375,19 @@
   "story.r4_fork": "CHAIN: r4_fork (first time at the fork; shows the Kilnmouth tab)",
   "story.reached_withy": "NOT_STEPS: the withy beds warp",
   "story.r4_walked": "CHAIN: the Charter Hill gate warps (arrived in the capital on foot)"
+ },
+ "objPatch": {
+  "_note": "The coach turns away the first Act 2 trip after the posting (D1854, D1881); from the meeting on it runs as built.",
+  "hm_to_hc": {
+   "whenAdd": [
+    "!story.gov_posted | story.r4_walked | story.hc_gov_met"
+   ]
+  },
+  "hm_bram": {
+   "linesFirst": {
+    "story.gov_posted & !story.r4_walked & !story.hc_gov_met": "Not this trip, Cadet. Governor's orders: you walk the coach road north.",
+    "story.km_assigned & !story.km_council & map:km_road": "No coach to Kilnmouth yet, Cadet. The coach road north, then east at the fork."
+   }
+  }
  }
 }

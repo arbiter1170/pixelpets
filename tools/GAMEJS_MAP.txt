@@ -2189,18 +2189,18 @@
 125-155  function room
 156-161  function ring
 162-167  function banners
-168-271  const OUT
-272-297  const ROOMS
-298-304  function autoProps
-305-305  const LIGHTER
-306-313  function dreamWash
-314-319  const scenes
-320-329  function render
-330-333  function frame
-334-341  const HC_OUT
-342-342  const HC_ROOMS
-343-347  function enableCity
-348-349  object window.BattleBG
+168-287  const OUT
+288-313  const ROOMS
+314-320  function autoProps
+321-321  const LIGHTER
+322-329  function dreamWash
+330-335  const scenes
+336-345  function render
+346-349  function frame
+350-357  const HC_OUT
+358-358  const HC_ROOMS
+359-363  function enableCity
+364-365  object window.BattleBG
 
 # clock.js
 4-185  const PPClock
