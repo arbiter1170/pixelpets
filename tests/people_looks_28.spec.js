@@ -24,7 +24,7 @@ const LOOKS = {
   climber_fenna: { id: 'hw_climber', map: 'hw_rim', look: { skin: '2', hair: 'pony', hairCol: 'n', outfit: 'tunic', outfitCol: 'r', accent: 'w', accessory: 'satchel' } },
   angler_nils: { id: 'hw_angler', map: 'hw_cut', look: { skin: '4', hair: 'short', hairCol: 'o', outfit: 'vest', outfitCol: 'b', accent: 'y', accessory: 'brimhat' } },
   owlwatch_ottilie: { id: 'hw_owlwatch', map: 'hw_falls', look: { skin: '5', hair: 'long', hairCol: 'd', outfit: 'coat', outfitCol: 'm', accent: 'y', accessory: 'glasses' } },
-  keeper_scout: { id: 'hw_scout', map: 'hw_cut', also: ['route2_glen:glen_scout'], look: { skin: '1', hair: 'pony', hairCol: 'd', outfit: 'coat', outfitCol: 'g', accent: 'y', accessory: 'brimhat' } },
+  keeper_scout: { id: 'hw_scout', map: 'hw_cut', look: { skin: '1', hair: 'pony', hairCol: 'd', outfit: 'coat', outfitCol: 'g', accent: 'y', accessory: 'brimhat' } },
   lantern_della: { id: 'hm_lantern_host', map: 'hm_lantern_in', look: { skin: '3', hair: 'bun', hairCol: 'n', outfit: 'vest', outfitCol: 'r', accent: 'y' } },
   lantern_garnet: { id: 'cc_lantern_host', map: 'cc_lantern_in', look: { skin: '6', hair: 'curls', hairCol: 'h', outfit: 'vest', outfitCol: 'r', accent: 'y' } },
   lantern_ines: { id: 'hc_lantern_host', map: 'hc_lantern_in', look: { skin: '1', hair: 'long', hairCol: 'o', outfit: 'vest', outfitCol: 'r', accent: 'y', accessory: 'glasses' } },
@@ -46,6 +46,7 @@ const BRIMHAT_TOP = {
   right: ['................', '.....rrrrrr.....', '....tttttttt....', '.rrrrrrrrrrrrrr.', '...rrrrrrrrrr...'],
   up: ['................', '.....rrrrrr.....', '....tttttttt....', '..rrrrrrrrrrrr..', '...rrrrrrrrrr...'],
 };
+const SAME_PERSON = ['glen_scout'];   // a second placement of one of the 28 people (see the look test)
 const HAIRS = ['short', 'long', 'spiky', 'bun', 'bob', 'pony', 'curls', 'buzz'];
 const FACINGS = ['down', 'right', 'up', 'left'];
 
@@ -61,13 +62,14 @@ function save() {
 
 // game.js is one closure. A served copy (the file on disk is unchanged) adds an eval hook before boot(),
 // as tests/intro_cutscene.spec.js does, so the spec can read HOLDER_LOOK, NPC_LOOKS, LOOK_OF_NAME and npcLook.
-const BOOT_HOOK = 'try {\n  boot();\n';
+// CRLF-tolerant: a Windows checkout with core.autocrlf=true serves game.js with \r\n (.gitattributes now pins LF).
+const BOOT_HOOK = /try \{\r?\n  boot\(\);\r?\n/g;
 async function exposeInternals(page) {
   await page.route('**/game.js*', async (route) => {
     const res = await route.fetch();
     let body = await res.text();
-    const at = body.indexOf(BOOT_HOOK);
-    if (at >= 0 && body.indexOf(BOOT_HOOK, at + 1) < 0) body = body.slice(0, at) + 'window.__pl28 = { ev: s => eval(s) };\n' + body.slice(at);
+    const hits = [...body.matchAll(BOOT_HOOK)];
+    if (hits.length === 1) { const at = hits[0].index; body = body.slice(0, at) + 'window.__pl28 = { ev: s => eval(s) };\n' + body.slice(at); }
     await route.fulfill({ status: 200, body, headers: { 'content-type': 'application/javascript', 'cache-control': 'no-store' } });
   });
 }
@@ -118,9 +120,10 @@ test('each of the 28 people resolves to its own new look, with the looks.json fi
     const fields = Object.assign({}, defs[key]);
     delete fields.extra;
     expect(fields, key + ' definition').toEqual(want.look);
-    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id));   // LANTERN_HOUSE_FERNBROOK: the curfew-night twins (lh_odile) are the same person indoors
-    // ACT1_KEEPER_JOIN K5 places the same Keeper Scout (same name and friend slot) in the glen, so `also` lists that placement.
-    expect(hits.map(r => r.map + ':' + r.id).sort(), key + ' is worn by its NPC only').toEqual([want.map + ':' + want.id, ...(want.also || [])].sort());
+    // Same person, second placement: LANTERN_HOUSE_FERNBROOK's curfew-night twins (lh_odile) indoors, and ACT1_KEEPER_JOIN's
+    // glen_scout, the built Keeper Scout earlier in time at Wickerglen (D1552, detail_zz_keeper_join.json).
+    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id) && SAME_PERSON.indexOf(r.id) < 0);
+    expect(hits.map(r => r.map + ':' + r.id), key + ' is worn by its NPC only').toEqual([want.map + ':' + want.id]);
     expect(hits[0].same, key + ' drawn by npcLook').toBe(true);
   }
   const after = await saveShape(page);

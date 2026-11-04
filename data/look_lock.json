@@ -757,8 +757,8 @@
   {
    "check": "lookalike",
    "clash": "dad|lookalike|bg_hallcrew",
-   "todo": "LOOK_LOCK follow-up D2340 (red, open, Vincent; OPEN_DECISIONS.md): new since #328 (Brightgate, #316), not in D2273-D2278, so no look changes until Vincent says yes",
-   "fix": "Brightgate's Hall 4 crew (`bg_hallcrew`: Rod Tender, Line Runner, Sky Watcher; built by tools/build_brightgate.py) have Dad's short dark hair on a navy top. Recolour the lookalike, never Dad: e.g. the crew vest to teal `t` (Hall 4's storm tower) or another hair colour."
+   "todo": "LOOK_LOCK follow-up D2350 (red, open, Vincent; OPEN_DECISIONS.md): new since #328 (Brightgate, #316), not in D2273-D2278, so no look changes until Vincent says yes",
+   "fix": "Hall 4's crew look `bg_hallcrew` (Rod Tender, Line Runner, Sky Watcher; built by tools/build_brightgate.py) shares Dad's short dark hair and navy top. Recolour the lookalike, never Dad: give the crew another hair or top colour (e.g. the vest to teal `t`)."
   }
  ]
 }

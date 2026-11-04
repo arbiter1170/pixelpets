@@ -166,7 +166,7 @@ test('Hall leaders, Rook, the halls, the lab, and the dream rooms take the new l
 test('the debug Music row lists the eight new loops, and only in a debug session', async ({ page }) => {
   await boot(page, '');
   expect(await page.evaluate(() => !!document.querySelector('#dbgMusic'))).toBe(false);
-  await page.goto('/?debug=1');
+  await page.goto('./?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
   expect(await page.evaluate(() => !!document.querySelector('#dbgMusic'))).toBe(false);
   await page.locator('#dbgTag').click();
