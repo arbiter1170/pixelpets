@@ -147,8 +147,11 @@ const PPClock = (() => {
   function match(term){
     if (typeof term !== 'string') return null;
     const t = term.trim();
-    const r = now();
     if (t.indexOf('wx:') === 0) return false;
+    // KILNMOUTH perf (K-T11): cond() asks this of every term; read the clock only for a clock term (same answers, no clock read
+    // for story flags; a town with many state objects was spending seconds per path search here).
+    if (!/^(day|win|phase|time):/.test(t)) return null;
+    const r = now();
     if (t.indexOf('day:') === 0) return dayOk(t.slice(4), DAYS.indexOf(r.day));
     if (t.indexOf('win:') === 0) return r.windows.indexOf(t.slice(4)) >= 0;
     if (t.indexOf('phase:') === 0) return r.phase === t.slice(6);

@@ -10,6 +10,27 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): green; Vincent's ruling applied to tests and the QA docs. Arcade stays covered by its own opt-in specs (`controls`, `arcade_grips` and the rows named in the PR).
 - Anything left unfinished: Modern shows no DBG tag in a debug session (the tag lives in the Arcade header), so `debug_mode.spec.js` opts into Arcade; a Modern way to see that debug is on is a call for the Supervisor. The `walklings-team` local skill copies are not in this repo and were not synced.
 
+## 2026-11-04 03:40 ET: Build: Kilnmouth and Claybank Road, Act 2 builds 2 and 3 (KILNMOUTH v0.1.1, D1820-D1849)
+- What changed and why:
+  - Vincent settled KILNMOUTH v0.1.1 (Wed Nov 4, 2026). `data/detail_zzzzz_kilnmouth.json` adds Claybank Road (`km_road`, 40x32: the ford, the plank bridge, the clay pits, the stopped water-hammer; three holders Lv 29-31; the `km_road` table Lv 29-32 with S1 `dipper` and S4 `jugwasp` placed once), the town (`kilnmouth`, 56x40 on the bath axis: gate, runnels, gauge, springs, the Calm Tower and the cairn on one line) and six rooms. Route 4's east warps open on `story.km_assigned`.
+  - Rule 10: the Lantern House (kettle house, eight beds, the Host's guide) and Kiln Row Provisions face each other across Runnel Street, `heal_lantern` / `acorn_board` on their facades, a porch and an awning; both doors and markers are on the gate's first frame at every width.
+  - B2-B4 on their tiles: K1 (Reeve Agna), the three asks and the one-name line (K2), the two pitches (K3), the flattened storm with a dusk scene sky, the Tower Crew, the permit and its choice (K4), K5's basket and door, the hill path's walk-beside stop (D1990). The quest chain's holding row gives way to four Kilnmouth rows, then holds again before Brightgate.
+  - States on the hold engine: the flat cloud from `story.km_storm`; the curfew (BY ORDER notices, a held night, Keepers on Gate Street); the morning; the three holds; B10's soaked road (mud, a full creek, the ford awash, `km_road_b10` Lv 34-37 and two fresh holders). The coach stop is shut until `story.km_council`. Hall 5 (a climbing kiln, vents lit by `story.km_hall_lit`) and its Hall Stone room behind the Seal 5 gate.
+  - Engine (green): per-map skins keep the packet's chars local; `skyWhen` and a `sky` scene step (E2), `tilePatch` (E3), map `overlays` (E4), `spawnsWhen` (E5), a visit counter (E6), `factionOfMap` reads the town's hold (E8). Perf: `PPClock.match` reads the clock only for clock terms, `objAt` tests the tile first and `findPath` files objects by tile (a path across town 3.5 s -> 4 ms).
+  - Merge fix (Wed Nov 4, 2026, build 20261104-1338): four props had lines but no free tile to tap them from. The store's
+    second seconds bin (`km_seconds_b`, no lines) moves one tile east to (3,7), so `km_seconds_a` answers from (2,7). The
+    bath mural spans the back wall (x 1-14); its tap cell is now its east end (14,1) (`ox` -104, the art does not move) and
+    Orla's gauge notches step one tile west onto the basin's end (13,2), so (14,2) reads both. The firebox and the lit
+    firebox take the cell beside the Master, (7,1) (`ox` -8, the art does not move). `tap_interact` recounted and pinned on
+    the tree merged with main (KILNMOUTH adds door 9, warp 22, sign 11, talk 76, trigger 4, holder taps 7, pickup 1, wild 2,
+    shop 1); `tests/kilnmouth.spec.js` taps all five. Shots: `handoff/shots/kilnmouth/*tapside*`.
+    K-T10 now builds the toy-brand check from `tools/scans/wording` char codes, so the name is not written in the spec (rule 1).
+- Files touched: `data/detail_zzzzz_kilnmouth.json` (new), `data/reputation.json`, `data/mapdata.js`, `game.js`, `sprites.js`, `battle_bg.js`, `clock.js`, `quests.js`, `tests/kilnmouth.spec.js` (new), `tests/interior_walls.spec.js`, `tests/battle_backdrops.spec.js`, `tests/route_to_governor.spec.js`, `tests/governor_meeting.spec.js`, `tests/new_species_act2.spec.js`, `tests/standing.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `handoff/shots/kilnmouth/`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`.
+- Commit(s) + build id: claude/kilnmouth, five slice commits and a tests-and-docs commit; build 20261104-0340.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1820-D1849 as settled. Engine notes above (green). Packet gaps are listed in the PR (built to the grid where the text and the grid differ).
+- Anything left unfinished: the B10 curfew scene, K7 and R4 (round 2); Hall 5's crew and Master battles (the Hall 5 build); Act 3 hooks (Rook's offer, PT2's swap, the north road, steam per visit); schedules; sprites by Pia; music cues.
+
 ## 2026-11-04 09:10 ET: Build: Brightgate, slices 3-5: the city dressed and peopled, Hall 4, v0.2.1's gaps, perf (BRIGHTGATE_LAYOUT v0.2 and v0.2.1; D1484-D1489, D1492, D1494, D1498, D2005, D2092-D2106)
 - What changed and why:
   - **Slice 3, dressing and people:**
@@ -157,6 +178,41 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): brightgate 42/42 (320, 375, 390) with the six gate holds; interior_walls, battle_backdrops, data_integrity pass.
 - Decisions made (colour + reasoning): as settled.
 - Anything left unfinished: ACT3_SWITCH's lobby and floor 2 scenes, the Outcomes Board's cards, G1, the Tuning wing and the Act 5 shells.
+
+## 2026-11-04 02:27 ET: Build: High Charity v0.4, the capital (HIGH_CHARITY_LAYOUT v0.4.2; city preview only, HC_CITY_V2 stays false)
+- What changed and why:
+  - The city tool builds from the v0.4.2 layout. Nothing may stand on a road any more (layout §4.1): five props had been nudged
+    onto carriageways (a Square bench, a Charter Hill tree, an Exchange cafe table, the Counting Garden statue, the Block News
+    poster) and now stand on sidewalk or grass.
+  - The parade's stands (HC_PARADE §2-§3, the beat sheet on #296) are kept clear of city dressing: no parked car in the cordon
+    bays on Muster Road, no lamp, and the Court's sign steps one tile east, off the close guards' step tiles.
+  - Rule 9: the rooms with no approved preview (the Cabinet Room `hc_gov_2`, the gallery, the College Great Hall, the Muster
+    Hall and its Hall Stone room, the Library, the Dojo expansion) are held, listed in the data, never built.
+  - `tests/high_charity_v04.spec.js` ports the layout checker onto the merged game WORLD (§13.1) and adds the rule 10 arrival
+    frame, the coach, Charter Hill's gates, the Governor's office, old saves, the save, reduced motion and frame time.
+  - §8.2 scheduled townsfolk (phase 2): nine bodies on schedule rows (Child and Parent, the old holder, two students, the
+    Exchange clerk, the pier dockhand, the shopper, the office worker), home off the map outside their rows. Shown labels drop
+    the letters (NAMES_PASS D1744's rule); lines the layout does not give are PLACEHOLDER.
+  - HB14, the capital road (D1279, behind `HC_SPIRE_ROAD_HOOK` in the tool): a sealed sea gate at Lantern Quay 21,38, tap
+    only ("Sealed. The tide decides.", PLACEHOLDER); the built weir sluice stands in for art A52. P1 reuse props: cafe tables
+    and a Block News bill on the Square, bikes by the College steps.
+  - Battle backdrops (BATTLE_BACKDROPS_ACT2 §4): Charter Hill and the Exchange stop drawing the Square's scene; each has its
+    own in its district's colours, with its landmark on the far layer (the Keeper High Court; Block News House and its mast).
+    With the city on, the Square's scene adds the Muster Hall, the one dark roof. Normal play's scenes are unchanged.
+  - Merge fix (Wed Nov 4, 2026, build 20261104-1325): Brightgate (#316) also schedules a "Child" and a "Parent", and the clock
+    kept one schedule per display name, so with the city on one town's pair walked the other's rows. `wireSchedules` (game.js)
+    now gives each scheduled body its own bag (`name#id`) when two share a name; schedHere, schedPos and tileOk read the body's
+    bag, and `npcSpot(name, npcIds)` uses the schedule of the body its ids name (no quest step names a scheduled body today,
+    so no cue changes). §8.2 looks people up by NPC id and checks Brightgate's pair keeps its own rows. Labels unchanged.
+- Files touched: `game.js` (schedules by body), `tools/GAMEJS_MAP.txt`, `tools/build_hc_city.py`, `data/hc_city_v2.json`, `data/hc_city_v2.js`, `tests/high_charity_v04.spec.js` (new),
+  `tests/hc_court_move.spec.js`, build stamp files.
+- Commit(s) + build id: claude/high-charity-v04, one commit per slice; build 20261104-0227 (slice 1), 20261104-0306 (slice 2), 20261104-0318 (merge of main with #313), 20261104-0336 (slice 3), 20261104-0341 (slice 4).
+- Tests run and result (widths, checks): in the PR.
+- Decisions made (colour + reasoning): no new ids. The road rule is the layout's own (§4.1, D1271); the stands follow D1354 and
+  HC_PARADE's settled rows; the holds follow AGENTS rule 9.
+- Anything left unfinished: the held rooms wait on Vincent's previews (the Cabinet Room also needs a grid); the Muster Hall's
+  inside also waits on the Hall 8 build; the two phase 2 tank posts have no bays in the layout (and Charter Hill is at its cap of
+  three); patrol carts wait on art A28. Shots: `handoff/shots/high_charity/` (slice 5, docs only).
 
 ## 2026-11-04 02:25 ET: Build: Brightgate, slice 1: the city's five districts, the Lantern House and Bright Mart (BRIGHTGATE_LAYOUT v0.2; D1478-D1499, D2000-D2009)
 - What changed and why:
