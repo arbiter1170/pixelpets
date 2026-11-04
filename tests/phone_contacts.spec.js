@@ -66,7 +66,7 @@ test('the phone home is icons, contacts are people you have met, and the bag ope
   const names = people.map((p) => p.name);
   // PARTNER_DAY (#258): Mom's wake-up scene (mom_luck) sets story.intro_seen, so by Route 1 the holder has met her
   // downstairs and she is a contact (her tips scene is still to come, so she counts as a quest contact too).
-  expect(names).toEqual(['Mom', 'Officer Ness', 'Rook', 'Sergeant Bram', 'Warden Ilse']);
+  expect(names).toEqual(['Mom', 'Officer Ness', 'Rook', 'Sergeant Bram', 'Warden Ilse']);   // raw keys; Sergeant Bram shows as Sergeant Drummond (D1766)
   expect(people.every((p) => p.quest)).toBe(true);
   expect(names).not.toContain('Hattie');
   await expect(page.locator('.contact-row')).toHaveCount(5);

@@ -3779,9 +3779,10 @@ function battleBgOn(){ return battleBgForce != null ? battleBgForce : BATTLE_BG_
 function battleSceneId(id = S && S.world.map){ return battleBgOn() && window.BattleBG && WORLD[id] && BattleBG.scenes[id] ? id : null; }
 function battleEnv(m, mode, wf = 0){
   const sk = m.skin && SKINS[m.skin];
-  return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream,
+  return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream, roofs: m.roofs || null,
     walk: ch => sk && sk.walk && sk.walk[ch] != null ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk,
-    tile: (ch, x, y) => cellImg(m, ch, x, y, wf), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; } };   // animated props: their first frame
+    tile: (ch, x, y) => cellImg(m, ch, x, y, wf), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; },   // animated props: their first frame
+    named: n => { const t = n && TILES[n]; return Array.isArray(t) ? t[0] : t || null; } };   // a roof-kit tile by its TILES name (roofs: roof, wall)
 }
 // Same cache as makeBackdrop (BD_CAP). Rooms ignore the sky, so one canvas serves every sky mode.
 function makeBattleBackdrop(id, H, mode, W = 56){
@@ -4053,7 +4054,8 @@ if (HALL2_ON) {
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 // Glimmerwell is the company faction. A Keeper hears them as the dark side: first meeting and their battles use the sinister loops.
-const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers', bw_dorian: 'glimmer', hall3_marisol: 'keepers' };
+// Hall Masters (Fen, Hale, Marisol) are neutral, faction `none`, as in data/reputation.json (D1437); their battles keep the trial loop.
+const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'none', hall2_hale: 'none', bw_dorian: 'glimmer', hall3_marisol: 'none' };
 for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
@@ -6432,7 +6434,7 @@ const ITEMS = {
   atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
   route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
   keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
-  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Keeper Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Wynne sells them.' },   // D1154, FPT Part A
+  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Host Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Brisa sells them.' },   // D1154, FPT Part A
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
@@ -20462,6 +20464,7 @@ function boot(){
   };
   api.musicIds = () => PPSound.musicIds();
   api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
+  api.trainerFaction = id => trainerFaction(id);   // debug/tests: the battle faction table's side for a holder (D1437: Hall Masters are 'none')
   api.wildTracks = () => WILD_TRACKS.slice();
   api.npcLine = id => id === 'amos' ? lanternGreet('Keeper Amos') : (objById(id) ? linesFor(objById(id)) : null);
   api.loyaltyLine = id => loyaltyBagLine(id);
