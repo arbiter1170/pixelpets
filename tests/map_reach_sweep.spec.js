@@ -124,7 +124,7 @@ const LINES_B7 = [
 ];
 const LINES_B8 = [
   ['fb_lantern_in', 3, 4, 'up', 'A wooden counter. A bowl of water sits on it.'],
-  ['fb_lantern_in', 10, 4, 'up', 'A small lamp. The shade is warm.'],
+  ['fb_lantern_in', 10, 10, 'up', 'A small lamp. The shade is warm.'],   // LANTERN_HOUSE_FERNBROOK: fb_lamp moved 10,3 -> 10,9
   ['fb_lantern_in', 8, 4, 'right', 'Herbs hang here to dry.'],
   ['fb_lantern_in', 9, 8, 'up', 'A crate of orchard apples.'],
   ['fb_lantern_in', 7, 10, 'right', 'A low table. The top is clear.'],
@@ -351,7 +351,7 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
     dream_2004: { npc: 2, trainer: 0, sign: 1, prop: 10, warp: 0 },
     dream_party: { npc: 0, trainer: 0, sign: 1, prop: 4, warp: 0 },
     dream_drive: { npc: 1, trainer: 0, sign: 0, prop: 3, warp: 0 },
-    fb_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 12, warp: 1 },
+    fb_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 22, warp: 1 },   // LANTERN_HOUSE_FERNBROOK: + wire set, lamps, switchboard, desk, four benches, call box
     fb_hall_in: { npc: 1, trainer: 3, sign: 1, prop: 24, warp: 1 },   // DAY1_TRIAL1_FLOW: the three holders before Fen
     hm_hq_f1: { npc: 5, trainer: 0, sign: 1, prop: 41, warp: 2 },
     hm_hq_f2: { npc: 4, trainer: 0, sign: 1, prop: 28, warp: 1 },

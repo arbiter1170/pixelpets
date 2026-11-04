@@ -923,6 +923,29 @@
       "given": "Imogen"
     },
     {
+      "name": "Commander",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Officer",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Resident",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Keeper Constable",
+      "faction": "keepers",
+      "base": 50,
+      "rank": "Constable",
+      "given": "Dunn",
+      "note": "Shown name: NAMES_PASS (D1741), the Wickerglen slip Constable. Display only (D1768): the key, S.rep and the phone book keep the raw name."
+    },
+    {
       "name": "Vincent Chi",
       "label": "Jacob Chi",
       "faction": "none",
@@ -1158,8 +1181,21 @@
     "display": "game.js shownName(): rank + ' ' + given when the entry has a rank (and rankWhen holds), else label, else the raw name. Keys (S.rep, S.phoneBook, contactKey) stay the raw speaker name",
     "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays",
     "masters": "D1437: Hall Masters (Fen, Hale, Marisol) are neutral: faction none, off the Keeper ladder. Master is their Hall title, still shown first (Master Fen).",
-    "pending": {},
-    "pendingNote": "pending: empty. NAMES_PASS (D1738) named the six FERNBROOK_PLAZA rank-only placeholders (D1245); every sworn Keeper on the ladder (KEEPER_RANKS D893) has a rank (D1159); hosts and shopkeepers are civilians (below). rankCheck counts a name listed here as pending, not missing",
+    "pending": {
+      "Commander": {
+        "propose": "Commander",
+        "given": null,
+        "decision": "D1198",
+        "note": "POST_TRIAL_CRACKDOWN: the Commander stays unnamed (D1198, settled Nov 3: names stay placeholders); rank-only label until Story names him"
+      },
+      "Officer": {
+        "propose": "Officer",
+        "given": null,
+        "decision": "D1198",
+        "note": "POST_TRIAL_CRACKDOWN: the escort officers and the curfew posts; rank-only label, like the plaza's (D1245)"
+      }
+    },
+    "pendingNote": "pending: only POST_TRIAL_CRACKDOWN's unnamed Commander and Officer (D1198) are left: rank-only labels until their names are built (NAMES_PASS D1740, D1744). NAMES_PASS (D1738) named the six FERNBROOK_PLAZA rank-only placeholders (D1245); every sworn Keeper on the ladder (KEEPER_RANKS D893) has a rank (D1159); hosts and shopkeepers are civilians (below). rankCheck counts a name listed here as pending, not missing",
     "civilians": "civilian: \"host\" (Lantern House hosts) or \"shop\" (anyone who runs a shop counter). Civilians are aligned to a faction (their faction field is unchanged) but are not sworn, so they get no rank and show their name as before (cleared task, Nov 3, 2026; settles the hosts part of D1160)"
   }
 }

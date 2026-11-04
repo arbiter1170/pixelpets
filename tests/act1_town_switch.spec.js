@@ -146,6 +146,7 @@ for (const [kind, want] of Object.entries(TODAY)) {
 }
 
 test('K1 inert: a stray story.sway_fernbrook without story.keeper_cadet changes nothing (the built D1171 flip reads)', async ({ page }) => {
+  test.setTimeout(60000);   // three town reads and two walks out and back; ~28 s on main in a slow sandbox, over 30 s once #288 adds the curfew objects
   await boot(page, save(Object.assign({}, TODAY.keepers_pick.flags, { 'story.sway_fernbrook': -3 })));
   expectTown(await readTown(page), TODAY.keepers_pick, 'keepers pick, sway -3');
   await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.setFlag('story.sway_fernbrook', 3); });

@@ -88,7 +88,8 @@ test('thresholds and tier-up toasts come from the config, once per tier @w1', as
   expect(flags.g3).toBe('no');
 });
 
-test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', async ({ page }) => {
+// ACT1_KEEPER_JOIN: the pick's sp_pick grant moved to the face (Juniper's lanyard step under D1562).
+test('the face grants sp_pick once; a replay does not grant again @w1', async ({ page }) => {
   const save = starterSave(); Object.assign(save.flags, { 'story.reached_fernbrook': true, 'story.met_glimmerwell': true });
   save.world = { map: 'fernbrook', x: 9, y: 9, facing: 'down', respawn: 'fernbrook' };
   await installSave(page.context(), save, { quietDay: true });
@@ -96,18 +97,19 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', a
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   const before = await page.evaluate(() => PixelPets.standing.keepers.points);
   expect(before).toBe(0);
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
+  await page.evaluate(() => { PixelPets.setFlag('story.keeper_cadet', true); PixelPets.setFlag('story.cover', 'glimmer'); PixelPets.setFlag('story.orchard_cleared', true); });
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
   const after = await page.evaluate(() => ({ st: PixelPets.standing, got: PixelPets.state.flags['standing.got.sp_pick'], side: PixelPets.side, picked: PixelPets.state.flags['story.side_pick_done'] }));
-  expect(after.st.keepers.points).toBe(cfg.grants.sp_pick + 2);
-  expect(after.st.glimmer.points).toBe(0);
+  expect(after.st.glimmer.points).toBe(cfg.grants.sp_pick + 2);   // sp_pick plus know_us@glimmer's offer
+  expect(after.st.keepers.points).toBe(0);
   expect(after.got).toBe(true);
-  expect(after.side).toBe('keepers');
+  expect(after.side).toBe('glimmer');
   expect(after.picked).toBe(true);
   // replay (debug): the same choice path, no second grant
-  expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
-  expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
+  expect(await page.evaluate(() => PixelPets.standing.glimmer.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
 test('no switch before Act 3 (D1536); the switch engine still halves the side you leave, once per Seal @w1', async ({ page }) => {
@@ -341,12 +343,24 @@ const COPY = {
   home_trip: ['Head home to Hearthmoor. Mom has plans for you and your Walkling.', 'Hearthmoor, home'],   // no live `mom` step here (no starter), so its own copy
   mom_class: ['Mom wants a word before you head out again.', 'Hearthmoor, home'],
   lizzy_class: ["Lizzy's class is on at the Hearthmoor Schoolhouse. Sit in and listen.", 'Hearthmoor Schoolhouse'],
-  orchard: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
+  // ACT1_KEEPER_JOIN §6: `orchard` is the Pack lean's row; an old-order save keeps the built copy on `orchard_old`.
+  orchard: ['Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
+  orchard_old: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
   hall1_holders: ['Three holders stand between you and Master Fen. Win all three matches in the Trial Hall.', 'Fernbrook Trial Hall'],
   hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", 'Fernbrook Trial Hall'],
-  post_trial: ['Master Fen has one more thing for you in the Trial Hall.', 'Fernbrook Trial Hall'],
-  pick: ['Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', 'Orchard gate'],
+  // POST_TRIAL_CRACKDOWN and D1395 (Warden Ilse's summons before the pick).
+  crackdown_street: ["Something's happening outside the Trial Hall.", 'Fernbrook Trial Hall'],
+  post_trial: ['Get to the Lantern House.', 'Fernbrook Lantern House'],
+  ilse_call: ['Morning in Fernbrook. Step outside the Lantern House.', 'Fernbrook Lantern House'],
+  warden_summons: ["Warden Ilse wants you home. Go to the Warden's Lodge.", 'Hearthmoor, the Lodge'],
+  // ACT1_KEEPER_JOIN (PLACEHOLDER): the Wickerglen investigation, the orchard lean, the enrolment.
+  chi_meet: ["Find Jacob Chi, past the fallen trunk at Wickerglen's east edge.", 'Wickerglen, east edge'],
+  chi_shifts: ["Work a day with Imogen's lamp crew and a dusk watch with the Keeper Scout.", 'Wickerglen'],
+  chi_report: ['Tell Jacob Chi what you saw.', 'The weir hut'],
+  pick: ['Fen, Tobin and Juniper are still at the orchard gate. The crates are waiting.', 'Orchard gate'],
   tobin_crates: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate'],
+  enrol: ['Warden Ilse wants you at the Lodge tonight.', 'Hearthmoor, the Lodge'],
+  enrol_lanyard: ["Juniper's trial lanyard offer still stands. Find her on the east road.", 'Fernbrook, east road'],
   teaser: ['Rook has news, waiting outside the Trial Hall.', 'Trial Hall doorstep', 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', 'Trial Hall doorstep'],
   route2: ['The rubble east of Fernbrook is cleared. Route 2 is waiting.', 'Fernbrook, east edge'],
   census: ['Follow Route 2 east. Glimmerwell has set something up halfway along.', 'Route 2, halfway', 'The Glow Census tent is halfway along Route 2. They need volunteers.', 'Route 2, halfway'],
@@ -372,6 +386,9 @@ const COPY = {
   brine_dorian: ['Dorian Pell is waiting on the quay outside the depot.', 'Brinewick quay', 'Dorian Pell wants your quarterly review, out on the quay.', 'Brinewick quay'],
   hall3: ["Master Marisol's Trial Hall is open on the west pier. Challenge her for the Brinewick Seal.", 'Brinewick Trial Hall', "Quinn is closing the quarter in Marisol's Hall. The captain's match is optional.", 'Brinewick Trial Hall'],
   ep1_end: ['Rook is waiting outside the Trial Hall.', 'Brinewick, west pier'],
+  recall: ['Warden Ilse wants you home at the Lodge. Take the lanyard off first.', 'Hearthmoor, the Lodge'],
+  cadet_report: ['Warden Ilse wants the last of it in person. Go to the Lodge.', 'Hearthmoor, the Lodge'],
+  rpt_lodge: ['Warden Ilse wants to see you at the Lodge.', 'Hearthmoor, the Lodge'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -392,19 +409,31 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
       // BRINEWICK: story.route3_open is only ever set after the chapter end (D848), so the Keepers council is done by then.
       if (flags['story.route3_open']) flags['story.hc_council_done'] = true;
       // DAY1_TRIAL1_FLOW: Tobin's post-pick row comes after the Heights pointer, so the Heights are done by then.
-      if (e.id === 'tobin_crates' || e.id === 'orchard') flags['story.heights_done'] = true;   // both come after the Heights pointer
+      if (e.id === 'tobin_crates' || e.id === 'orchard' || e.id === 'orchard_old') flags['story.heights_done'] = true;   // all come after the Heights pointer
+      if (i > Q.CHAIN.findIndex(x => x.id === 'teaser')) flags['story.slice_end'] = true;   // ACT1_KEEPER_JOIN: the teaser is noImply now
       if (e.id === 'mom_class') flags['story.dream_woke'] = true;   // home_trip's done is an OR string, not one flag
       const st = (side) => ({ flags: Object.assign({ 'story.side': side }, flags), seals: {}, pets: 1 });
       const k = Q.current(st('keepers')), g = Q.current(st('glimmer'));
       out.rows[e.id] = { kid: k && k.id, ktext: k && k.text, kplace: k && k.place, gid: g && g.id, gtext: g && g.text, gplace: g && g.place };
+      const rk = Q.resolve(e, st('keepers')), rg = Q.resolve(e, st('glimmer'));
+      out.rows[e.id].copy = { ktext: rk.text, kplace: rk.place, gtext: rg.text, gplace: rg.place };
     });
     return out;
   });
   expect(seen.check).toEqual([]);
   expect(seen.ids).toEqual(Object.keys(COPY));
   let overrides = 0;
+  // ACT1_KEEPER_JOIN rows key on story states this one-flag walk cannot build (a lean value, a face, an old-save move);
+  // their copy is checked as written, and tests/act1_keeper_join.spec.js checks where each one shows.
+  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge']);
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
+    if (COPY_ONLY.has(id)) {
+      expect([r.copy.ktext, r.copy.kplace], id).toEqual([row[0], row[1]]);
+      expect([r.copy.gtext, r.copy.gplace], id + '@glimmer').toEqual([row[2] || row[0], row[3] || row[1]]);
+      if (row[2]) overrides++;
+      continue;
+    }
     if (id === 'hc_council') {
       expect(r.kid, id).toBe(id);
       expect(r.ktext, id).toBe(row[0]);

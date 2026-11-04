@@ -34,6 +34,9 @@
   const NOT_STEPS = ['story.starter_line', 'story.lizzy_wake', 'story.home_walk',   // PARTNER_DAY: house-morning beats (story.home_dressed is the dress step)
     'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.crate_a', 'story.crate_b', 'story.crate_c', 'story.lean_keep', 'story.lean_fix', 'story.tl_cot', 'story.tl_juniper', 'story.wick_done',   // DAY1_TRIAL1_FLOW Part A beats inside the crates and tl_light steps
+    'story.hall1_shut', 'story.fen_lean', 'story.warden_called', 'story.pitch_k', 'story.pitch_g',   // POST_TRIAL_CRACKDOWN / D1395: the shut Hall, Fen's hidden lean, the dawn wire
+    'story.chi_jars', 'story.shift_lamp_w', 'story.shift_lamp_n', 'story.shift_lamp_e', 'story.shift_ledger', 'story.chi_told_ledger', 'story.chi_told_lamps', 'story.chi_told_list',   // ACT1_KEEPER_JOIN: Vincent Chi's jars (WEIR_HUT §3.3) and his report hub, not steps
+    'story.sway_fernbrook', 'story.cover', 'story.ilse_call2', 'story.ilse_call3', 'story.rpt_1', 'story.rpt_2', 'story.warden_cut', 'story.ilse_call_old',   // ACT1_KEEPER_JOIN: sway, face, calls, reports, the old-save move
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -141,7 +144,13 @@
     { id: 'lizzy_class', when: ['!story.side_pick_done', '!story.orchard_cleared', 'story.class_sent'], done: ['story.lizzy_class'],
       text: "Lizzy's class is on at the Hearthmoor Schoolhouse. Sit in and listen.", place: 'Hearthmoor Schoolhouse',
       npc: 'Lizzy', target: { map: 'hm_school_in', x: 10, y: 3 } },
-    { id: 'orchard', when: ['story.side_pick_done'], done: ['story.orchard_cleared'],
+    // ACT1_KEEPER_JOIN §6: `orchard` is re-keyed to the Pack lean (its result runs inside the lean, so this row only shows if a
+    // lean scene was cut short). An old-order save that picked before Hall 1 and never cleared the orchard keeps its pointer
+    // on `orchard_old` (Tobin's built battle, or the packing on a Glimmer save that has not been moved).
+    { id: 'orchard', when: ['story.orchard_lean=pack', '!story.orchard_cleared', '!story.ilse_call_old'], done: ['story.orchard_cleared'], noImply: true,
+      text: 'Tobin needs a hand packing crates at the orchard gate.', place: 'Orchard gate',
+      target: { map: 'fernbrook', x: 9, y: 14 } },
+    { id: 'orchard_old', when: ['story.side_pick_done', '!story.crates_seen'], done: ['story.orchard_cleared'],
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
       glimmer: { text: 'Tobin needs a hand packing crates at the orchard gate.', place: 'Orchard gate' },
       target: { map: 'fernbrook', x: 9, y: 14 } },
@@ -153,24 +162,61 @@
       text: 'The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', place: 'Fernbrook Trial Hall',
       glimmer: { text: "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", place: 'Fernbrook Trial Hall' },
       target: { map: 'fernbrook', x: 22, y: 6 } },
-    // D1175 (Vincent, Nov 2, 2026): a quest slot after Seal 1 and before the pick. Content is not written yet; for now Fen's
-    // PLACEHOLDER line at the end of the Seal scene sets the flag. The pick trigger waits on it (fb_side_pick).
+    // POST_TRIAL_CRACKDOWN (fills D1175): the Keeper tanks roll in on the first step out of the Hall (cd_start), then the
+    // night in the Lantern House. A save with #261's old placeholder (post_trial_done, no crackdown) has this row implied done.
+    { id: 'crackdown_street', when: ['story.seal1', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.crackdown'],
+      text: "Something's happening outside the Trial Hall.", place: 'Fernbrook Trial Hall',
+      target: { map: 'fernbrook', x: 22, y: 7 } },
     { id: 'post_trial', when: ['story.seal1', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done'],
-      text: 'Master Fen has one more thing for you in the Trial Hall.', place: 'Fernbrook Trial Hall',
-      npc: 'Master Fen', npcIds: ['fen_hall'], target: { map: 'fb_hall_in', x: 7, y: 4 } },
+      text: 'Get to the Lantern House.', place: 'Fernbrook Lantern House',
+      npc: 'Keeper Amos', npcIds: ['amos'], target: { map: 'fb_lantern_in', x: 5, y: 13 } },
+    // D1395 (Vincent, Nov 3, 2026): no pick at dawn. RENDEZVOUS_VINCENT beats 1-2: Warden Ilse phones on the first step out of the
+    // Lantern House (D1404), then the Lodge debrief. The pick waits on story.warden_met until the rendezvous build moves it to rdv_done.
+    { id: 'ilse_call', when: ['story.post_trial_done', 'story.crackdown', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_called'],
+      text: 'Morning in Fernbrook. Step outside the Lantern House.', place: 'Fernbrook Lantern House',
+      target: { map: 'fernbrook', x: 5, y: 7 } },
+    { id: 'warden_summons', when: ['story.warden_called', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.warden_met'],
+      text: "Warden Ilse wants you home. Go to the Warden's Lodge.", place: 'Hearthmoor, the Lodge',
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'], target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    // ACT1_KEEPER_JOIN §6 (D1551): the Wickerglen investigation. Every row is noImply: the investigation walks Route 2 and
+    // meets Imogen early (story.reached_route2, story.met_census, story.met_lead), and those later rows would otherwise imply these.
+    { id: 'chi_meet', when: ['story.warden_met', '!story.side_pick_done'], done: ['story.chi_met'], noImply: true,
+      text: "Find Jacob Chi, past the fallen trunk at Wickerglen's east edge.", place: "Wickerglen, east edge",
+      target: { map: 'route2_glen', x: 22, y: 4 } },
+    { id: 'chi_shifts', when: ['story.chi_met', '!story.side_pick_done'], done: ['story.shift_g', 'story.shift_k'], noImply: true,
+      text: 'Work a day with Imogen\'s lamp crew and a dusk watch with the Keeper Scout.', place: 'Wickerglen',
+      target: { map: 'route2_glen', x: 12, y: 5 } },
+    // The hut is WEIR_HUT's room (hw_weir_hut_in, through Wickerglen's east edge and Hushwater).
+    { id: 'chi_report', when: ['story.shift_g', 'story.shift_k', '!story.side_pick_done'], done: ['story.chi_done'], noImply: true,
+      npc: 'Vincent Chi', npcIds: ['chi_hut'],
+      text: 'Tell Jacob Chi what you saw.', place: 'The weir hut',
+      target: { map: 'hw_weir_hut_in', x: 3, y: 3 } },
     // done also needs story.post_trial_done (new flow only), or an old save that picked before Trial 1 (kind a1) would count
     // this row done, imply every row before it, and lose its orchard pointer at a shut Hall door.
-    { id: 'pick', when: ['story.post_trial_done', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.side_pick_done'],
-      text: 'Master Fen, Tobin and Juniper wait at the orchard gate. Fernbrook wants your answer.', place: 'Orchard gate',
-      target: { map: 'fernbrook', x: 9, y: 10 } },
+    // ACT1_KEEPER_JOIN §6: the gate is now the orchard lean (D1510), after Vincent Chi's report on a crackdown save.
+    { id: 'pick', when: ['story.post_trial_done', 'story.chi_done | !story.crackdown', '!story.orchard_lean', '!story.side_pick_done', '!story.orchard_cleared'], done: ['story.post_trial_done', 'story.orchard_lean'], noImply: true,
+      text: 'Fen, Tobin and Juniper are still at the orchard gate. The crates are waiting.', place: 'Orchard gate',
+      npc: 'Master Fen', npcIds: ['fen_dawn'], target: { map: 'fernbrook', x: 9, y: 10 } },
     // D1187: after a Keepers pick on the new flow, Tobin's built battle still clears the orchard (FPT Part D is not built).
     // Its own row here, so Seal 1 never implies it; `story.crates_seen` keeps every old save off it.
     // Its done also needs story.crates_seen: a later row's done implies every earlier row, so an old save that cleared the
     // orchard before Hall 1 (kind b') must not count this row done and skip the Hall.
-    { id: 'tobin_crates', when: ['story.crates_seen', 'story.side_pick_done', '!story.side=glimmer'], done: ['story.crates_seen', 'story.orchard_cleared'],
+    { id: 'tobin_crates', when: ['story.crates_seen', 'story.orchard_lean=open | story.side_pick_done & !story.side=glimmer'], done: ['story.crates_seen', 'story.orchard_cleared'], noImply: true,
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
       target: { map: 'fernbrook', x: 9, y: 14 } },
-    { id: 'teaser', done: ['story.slice_end'],
+    // ACT1_KEEPER_JOIN §4.7 (D1511, D1553): Ilse's second call, the enrolment at the Lodge, then (lanyard face) Juniper's step.
+    // A later row's done implies the rows before it, so these dones never hold on an old save the move made a Cadet.
+    { id: 'enrol', when: ['story.orchard_cleared', 'story.orchard_lean', '!story.keeper_cadet'], done: ['story.keeper_cadet', '!story.ilse_call_old'], noImply: true,
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: 'Warden Ilse wants you at the Lodge tonight.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    { id: 'enrol_lanyard', when: ['story.cover=glimmer', '!story.side_pick_done'], done: ['story.side_pick_done', 'story.cover=glimmer'], noImply: true,
+      npc: 'Associate Juniper', npcIds: ['juniper_east', 'juniper'],
+      text: "Juniper's trial lanyard offer still stands. Find her on the east road.", place: 'Fernbrook, east road',
+      target: { map: 'fernbrook', x: 30, y: 7 } },
+    // noImply: the investigation reaches Route 2 before Rook's teaser; skipIf keeps a save past it (Imogen's battle comes
+    // only after the enrolment) from waiting on it.
+    { id: 'teaser', done: ['story.slice_end'], skipIf: ['story.glen_cleared | story.reached_cobblecrest | story.cobble_end'], noImply: true,
       text: 'Rook has news, waiting outside the Trial Hall.', place: 'Trial Hall doorstep',
       glimmer: { text: 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', place: 'Trial Hall doorstep' },
       target: { map: 'fernbrook', x: 22, y: 8 } },
@@ -216,7 +262,9 @@
       text: 'Rook is outside the Hall with news from the quarry.', place: "Outside Hale's Hall",
       glimmer: { text: 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', place: "Outside Hale's Hall" },
       target: { map: 'cobblecrest', x: 25, y: 7 } },
-    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'], noImply: true,
+    // ACT1_KEEPER_JOIN §9.3 (D1548): a moved old save that finished the Signal Review skips the Lantern Council. D1562: a new
+    // save plays the Signal Review undercover, then the Council after Ilse's recall (side keepers again), so it sees both.
+    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'], skipIf: ['story.gb_done & story.ilse_call_old'], noImply: true,
       text: 'High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', place: 'High Charity, sky-dock',
       target: { map: 'hc_command_in', x: 2, y: 3 } },
     { id: 'gb_invite', when: ['story.side=glimmer'], done: ['story.gb_invited'],
@@ -254,6 +302,20 @@
     { id: 'ep1_end', when: ['story.route3_open'], done: ['story.ep1_end'],
       text: 'Rook is waiting outside the Trial Hall.', place: 'Brinewick, west pier',
       target: { map: 'brinewick', x: 6, y: 13 } },
+    // ACT1_KEEPER_JOIN §4.9 (D1518): the recall brings an undercover Cadet home; a plain Cadet reports at the Lodge (R3).
+    { id: 'recall', when: ['story.ep1_end', 'story.cover=glimmer', '!story.cover_done'], done: ['story.cover_done', 'story.cover=glimmer'], noImply: true,
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: "Warden Ilse wants you home at the Lodge. Take the lanyard off first.", place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    { id: 'cadet_report', when: ['story.ep1_end', 'story.keeper_cadet', '!story.cover=glimmer', '!story.ilse_call_old | story.rpt_old_seen', '!story.switched_a3', '!story.warden_cut'], done: ['story.rpt_3'], noImply: true,
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: 'Warden Ilse wants the last of it in person. Go to the Lodge.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    // §9.4 (D1549): an old save's one Lodge talk with Ilse, after the move. It waits behind the save's own next steps.
+    { id: 'rpt_lodge', when: ['story.ilse_call_old', 'story.keeper_cadet', '!story.rpt_old_seen'], done: ['story.rpt_old_seen', 'story.ep1_end'], noImply: true,
+      npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
+      text: 'Warden Ilse wants to see you at the Lodge.', place: 'Hearthmoor, the Lodge',
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];

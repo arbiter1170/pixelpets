@@ -96,9 +96,9 @@ test('rankCheck: only the D1245 plaza placeholders pending, civilians unranked, 
   expect(c.missing).toEqual([]);
   expect(c.bad).toEqual([]);
   expect(c.battle).toEqual([]);
-  // Every sworn Keeper has a ladder rank now (D1159). Only FERNBROOK_PLAZA's six rank-only placeholders stay pending,
-  // waiting for Design's names (D1245; Vincent, Nov 3: option A).
-  expect(c.placeholders).toEqual([]);   // NAMES_PASS D1738 named the six FERNBROOK_PLAZA placeholders (D1245)
+  // Every sworn Keeper has a ladder rank now (D1159). NAMES_PASS D1738 named FERNBROOK_PLAZA's six rank-only placeholders
+  // (D1245), so only POST_TRIAL_CRACKDOWN's unnamed Commander and Officer stay pending (D1198; D1740 is not built on main yet).
+  expect(c.placeholders.sort()).toEqual(['Commander (D1198)', 'Officer (D1198)']);
   // Hosts and shopkeepers on a side are civilians: listed, never ranked.
   expect(c.civilians.sort()).toEqual(['Keeper Amos', 'Keeper Halvard', 'Keeper Marigold', 'Keeper Quill', 'Keeper Teague', 'Watch Saffie']);
   const civRanked = await page.evaluate(() => MAPDATA.reputation.cast.filter((e) => e.civilian && e.rank).map((e) => e.name));

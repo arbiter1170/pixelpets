@@ -2022,6 +2022,9 @@ function buildTiles(){
     rug_coach: ["BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBGBBGBBBBBB","BBBBBGBBBBGBBBBB","BBBBGBBBBBBGBBBB","BBBBGBBBBBBGBBBB","BBBBBGBBBBGBBBBB","BBBBBBGBBGBBBBBB","BBBBBBBGGBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB","BBBBBBBBBBBBBBBB"],
   };
   for (const [k, rows] of Object.entries(ART_PASS_TILES)) T[k] = mkTile(g => paintGrid(g, rows));
+  // LANTERN_HOUSE_FERNBROOK draft tiles (oak parquet, wire plinth, cable run) live with the other room tiles, so the skin
+  // check (maps_b8) finds them here; addCrackdownArt only fills a name that is still missing.
+  for (const [k, rows] of Object.entries(CRACKDOWN_ART.tiles)) if (!T[k]) T[k] = mkTile(g => paintGrid(g, rows));
   // TRIAL_HALL_FERNBROOK_MAP §8.1 (D1189, D1195): the contested Hall's Glimmerwell floor and the worn Keeper flagstone. DRAFT art
   // (engineer stand-in, drawn from the spec's v2 previews) until Pia redraws it. PAL keys only, no new key. Only the flagged Hall
   // (HALL2_ON in game.js) paints these; today's fb_hall_in grid never uses P Z U M I C.
@@ -2102,12 +2105,15 @@ const HOUSE_SKINS = {
   dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {}, wall: wallRow('oyryocddrcwr') },
   dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c'), wall: wallRow('mhdndmddmywd') },
   // B8. Fernbrook's two new rooms. Calm cream planks and a moss hall. Neither reuses a lantern, Calloway, Lodge, observatory or Keeper floor.
+  // LANTERN_HOUSE_FERNBROOK §5.2, §8 (LH-1): the Lantern House as Fernbrook's wire station. Oak parquet (draft tiles in
+  // CRACKDOWN_ART), the Keeper runner `,` and rug `=`, the Keeper mat, `K` the wire set's plinth (solid), `~` a brass cable
+  // channel (walkable decal), and a green-and-gold wall row unique among the skins. `q`/`j` keep the orchard decals.
   fb_lantern: {
-    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_orchard', '=':'rug_orchard', m:'mat_orchard', ',':'runner_orchard', h:'hearth_orchard' },
-    decal: { v:'wall_shadow_orchard', u:'window_light_orchard', q:'leaf_orchard', j:'apple_speck' },
-    walk: { v:1, u:1, q:1, j:1, ',':1, h:1 },
-    variants: Object.assign({}, houseVar('floor_orchard', 'floor_orchard_b', 'floor_orchard_c'), houseVar('wall_orchard', 'wall_orchard_b', 'wall_orchard_c')),
-    wall: wallRow('GyFAFEgFFcwB'),
+    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_parquet_oak', '=':'rug_keeper', m:'mat_keep', ',':'rug_keep', h:'hearth_orchard', K:'wire_plinth' },
+    decal: { v:'wall_shadow_orchard', u:'window_light_orchard', q:'leaf_orchard', j:'apple_speck', '~':'cable_run' },
+    walk: { v:1, u:1, q:1, j:1, ',':1, h:1, '=':1, '~':1, K:0 },
+    variants: { floor_parquet_oak: [['floor_parquet_oak_b', 0.18], ['floor_parquet_oak_c', 0.14]] },
+    wall: wallRow('FyGJFyGFGcwF'),
   },
   fb_hall: {
     remap: { "#":"wall_bloom", "W":"wall_bloom_face", "W2":"wall_bloom_win", "f":"floor_bloom", "T":"hedge_bloom", "=":"rug_bloom", "m":"mat_bloom", ":":"hall_moss", ".":"hall_moss", ",":"hall_path", ";":"hall_flag", "b":"hall_stepstone", "z":"hall_board", "a":"hall_step", "d":"hall_dais", "e":"hall_dais_lip", "N":"hall_ledge_seed", "O":"hall_ledge_rose", "Q":"hall_ledge_herb", "L":"hall_ledge_lily", "G":"hall_ledge_tall", "J":"hall_ledge_lantern", "k":"hall_earth", "V":"hall_hop",
@@ -3174,6 +3180,243 @@ const MAZE_ART = {
   maze_blink: ["................", "................", "......k.....k...", ".....kok...kdk..", ".....koowwwddk..", ".....koowwwwdk..", ".....kwkwwwwwk..", ".....kwwwrwwwk..", "......kwwwwwk...", ".....kwwwwwwok..", "....kddwwwwoook.", "....kddwwwwwook.", "....kwwwwwwwwwk.", "....kwwkwwwkwwk.", "..kkkwwkwwwkwwk.", ".koooookkkkkkk.."],
   maze_sleep: ["................", "................", "................", "................", "................", "......k.....k...", ".....kok...kdk..", ".....koowwwddk..", ".....kwddwddwk..", ".....kwwwrwwwk..", "....kkwwwwwwwkk.", "...kddwwwwwwoook", "...kddwwwwwwwook", "...kwwwwwwwwwwwk", "..kkwwwwwwwwwwwk", ".koookkkkkkkkkk."]
 };
+// DRAFT ART for Pia to redraw (POST_TRIAL_CRACKDOWN §10, §10a; LANTERN_HOUSE_FERNBROOK §8). Sliced 1:1 from the spec sheets
+// (tank_sheet.png, both draft_art_sheet.png), PAL keys only, '.' clear; no V, N or Q pixel. A sprite is a base grid plus
+// per-frame patches [x, y, rows] in which '_' keeps the base pixel. `mirror` names the right-facing copy (the grid reversed).
+// Tanks are 64x40 and beams 96x40, bottom-centred on their cell (drawArt); the engine draws the ground shadow.
+const CRACKDOWN_ART = {
+  tiles: {
+    floor_parquet_oak: ["GAAAAAAGGGGBGGGB","GGGGGGGGAGGBAGGB","GGGGGGGGAGGBAGGB","BBBBBBBBAGGBAGGB","GAAAAAAGAGGBAGGB","GGGGGGGGAGGBAGGB","GGGGGGGGAGGBAGGB","BBBBBBBBGGGBGGGB","GGGBGGGBGAAAAAAG","AGGBAGGBGGGGGGGG","AGGBAGGBGGGGGGGG","AGGBAGGBBBBBBBBB","AGGBAGGBGAAAAAAG","AGGBAGGBGGGGGGGG","AGGBAGGBGGGGGGGG","GGGBGGGBBBBBBBBB"],
+    floor_parquet_oak_b: ["GAAAAAAGGGGBGGGB","GGGGGGGGAGGBAGGB","GGGGGGGGAGGBAGGB","BBBBBBBBAGGCCGGB","GAAAAAAGAGGBAGGB","GGGGGGGGAGGBAGGB","GGGGGGGGAGGBAGGB","BBBBBBBBGGGBGGGB","GGGBGGGBGAAAAAAG","AGGBAGGBGGGGGGGG","AGGBFGGBGGGGGGGG","AGGBAGGBBBBBBBBB","AGGBAGGBGAAAAAAG","AGGBAGGBGGGGGGGG","AGGBAGGBGGGGGGGG","GGGBGGGBBBBBBBBB"],
+    floor_parquet_oak_c: ["GAAAAAAGGGGBGGGB","GGGGGGGGAGGBAGGB","GGGGGGGGAGGBAGGB","BBBBBBBBAGGBAGGB","GAAAAAAGAGGBAGGB","GGGGGGGGAGGBAFGB","GGGGGGGGAGGBAGGB","BBBBBBBBGGGBGGGB","GGGBGGGBGAAAAAAG","AGGBAGGBGCCCGGGG","AGGBAGGBAAAAGGGG","AGGBAGGBBBBBBBBB","AGGBAGGBGAAAAAAG","AGGBAGGBGGGGGGGG","AGGBAGGBGGGGGGGG","GGGBGGGBBBBBBBBB"],
+    wire_plinth: ["AAAAAAAAAAAAAAAA","GGGGGGGGGGGGGGGG","GGGGGGGGGGGGGGGG","GGGGGGGGGGGGGGGG","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","yyyyyyyyyyyyyyyy","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","BBBBBBBBBBBBBBBB","kkkkkkkkkkkkkkkk","kkkkkkkkkkkkkkkk"],
+    cable_run: ["................","................","................","................","................","................","................","................","................","................","................","GGGGGGGGGGGGGGGG","FyFFFFyFFFFyFFFF","FFFFFFFFFFFFFFFF","kkkkkkkkkkkkkkkk","................"],
+  },
+  bases: {
+    tank_cmd: [
+      "...................................y............Fyyyyyy.........",
+      "...................................y............FJJJJJJyy.......",
+      "...................JEEEEJJJJ.......y............FJJJJJJ.........",
+      "....................yy...yy........y.FGGGGF.....FJJJJ..yy.......",
+      "...................y.FCCCF.y.......y.FFFFFFy....F...............",
+      "..................y..FCyCF..y..ddDDyEEJJJJJJ....F...............",
+      "..................y.CFyyyFC.yEEEEJJJJJJJJJJJJJJ.F...............",
+      ".................y.CCFwwyFCC.yJJJJJJJJJJJJJJJJk.................",
+      ".................y.CyFwwyFyC.yJJJJJJJJJJJJJJJJJJJJ..y...........",
+      ".................y.CCFyyyFCC.yJJJJJJJJJJJJJJJJJJkk...dd.........",
+      "..................y.CFyyyFC.ydJJJJJJJJJJJJJJJJJJkk...md.........",
+      "..................y..FCyCF..ydJJJJJJJJJJJJJJJJJJkk...md.........",
+      "...................y.FCCCF.ydddddddddddddddddddddd...md.........",
+      "....................yy...yydyddyddyddyddyddyddyddyd..md.........",
+      "......................yyydddddddddddddddddddddddddd..md.........",
+      "............mDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEJk.........",
+      "...........mEEEEEEJJJJmdJEEEEyyyyyyyyJJJJmdJEE.EEEJJJ.Jk........",
+      "...........mddJJJJJJJJmyJJJJ.yCCJJCCy.JJJmyJJF.FFFFFF.Fk........",
+      "..........mdkykkJJJJJJmdJJJJ.yCCyyCCy.JJJmdJJJ.JJ...J.Jk........",
+      "..........mydJJJJJJJJJmdJJJJ.yCCyyCCy.JJJmdJJG.GG.F.G.GJk.......",
+      "...........dJJJJJJJJJJmyJJJJ.yCCJJCCy.JJJmyJJJ.JJ...J.JJk.......",
+      ".........wy.JJJJJJJJJJmdJJJJJyCCCCCCyJJJJmdJJF.FFFFFF.FJk.......",
+      "...........yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyk......",
+      "........m..JJJJJJJJJJJmyJJJJJJJJJJJJJJJJJmyJJJJJJJJJJJJJJk......",
+      ".......mddJJdddddddddJmdJdddddddddddddddJmdJdddddddddddJJk......",
+      ".......mkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk......",
+      "....FG..............GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFF....",
+      "......kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk......",
+      "......mkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmk.....",
+      ".....kkkdddkdddddddkdddddddkdddddddkdddddddkdddddddkdddmmmkk....",
+      "....kkdddddddddkdddddddkdddddddkdddddddkdddddddkddddddmmmmmkk...",
+      "....kddhmddddkkmkkdddkkmkkdddkkmkkdddkkmkkdddkkmkkdddmmdddmmk...",
+      "...kkdmmmmdddkmmmkdddkmmmkdddkmmmkdddkmmmkdddkmmmkddkmmd.dmmk...",
+      "....kddmmdddkmmdymkdkmmdymkdkmmdymkdkmmdymkdkmmdymkddmmdddmmk...",
+      "....kkdddddddkmmmkdddkmmmkdddkmmmkdddkmmmkdddkmmmkddddmmmmmkk...",
+      ".....kkkkkkkkkkmkkkkkkkmkkkkkkkmkkkkkkkmkkkkkkkmkkkkkkkmmmkk....",
+      "......mkkmkkmkkkkkmkkmkkmkkmkkmkkmkkmkkkkkmkkmkkmkkmkkmkkmk.....",
+      "................................................................",
+      "................................................................",
+      "................................................................",
+    ],
+    tank_esc: [
+      "...................................h............................",
+      "..................................mh............................",
+      "...................JEEEEJJJJ......mh............................",
+      ".................................mmh.FGGGGF.....FJJJJ...........",
+      ".....................FCCCF......mmmh.FFFFFFy....FJJJJy..........",
+      ".....................FCyCF.....ddDDhEEJJJJJJ....FJJJJ...........",
+      "....................CFyyyFC.EEEEEJJJJJJJJJJJJJJ.F...............",
+      "...................CCFwwyFCC.dJJJJJJJJJJJJJJJJk.................",
+      "...................CyFwwyFyC.dJJJJJJJJJJJJJJJJJJJJ..y...........",
+      "...................CCFyyyFCC.dJJJJJJJJJJJJJJJJJJkk...dd.........",
+      "....................CFyyyFC.ddJJJJJJJJJJJJJJJJJJkk...md.........",
+      ".....................FCyCF..ddJJJJJJJJJJJJJJJJJJkk...md.........",
+      ".....................FCCCF.ddddddddddddddddddddddd...md.........",
+      ".........................yddyddyddyddyddyddyddyddyd..md.........",
+      "........................ddddddddddddddddddddddddddd..md.........",
+      "............mDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEJk.........",
+      "...........mEEEEEEJJJJmdJEEEEEEJJJJJJJJJJmdJEE.EEEJJJ.Jk........",
+      "...........mddJJJJJJJJmyJJJJJJJJJJJJJJJJJmyJJF.FFFFFF.Fk........",
+      "..........mdkykkJJJJJJmdJJJJJJCCCCCJJJJJJmdJJJ.JJ...J.Jk........",
+      "..........mydJJJJJJJJJmdJJJJJJCdCdCJJJJJJmdJJG.GG.F.G.GJk.......",
+      "...........dJJJJJJJJJJmyJJJJJJCCdCCJJJJJJmyJJJ.JJ...J.JJk.......",
+      ".........wy.JJFJJJJJJFmdJJJJFJJJJJJFJJJJJmFJJF.FFFFFF.FJk.......",
+      "..........FmmmmmmFmmmmmmFmmmmmmFmmmmmmFmmmmmmFmmmmmmFmmmmk......",
+      "........m..JJFJJJJJJFJmyJJJFJJJJJJFJJJJJJFyJJJJJFJJJJJJFJk......",
+      ".......mdFJJddddFddddJmFJdddddFddddddFddJmdJFddddddFdddJJk......",
+      ".......mkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk......",
+      "....FG..............GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFF....",
+      "......kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk......",
+      "......mkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmkkmk.....",
+      ".....kkkdddkdddddddkdddddddkdddddddkdddddddkdddddddkdddmmmkk....",
+      "....kkdddddddddkdddddddkdddddddkdddddddkdddddddkddddddmmmmmkk...",
+      "....kddhmddddkkmkkdddkkmkkdddkkmkkdddkkmkkdddkkmkkdddmmdddmmk...",
+      "...kkdmmmmdddkmmmkdddkmmmkdddkmmmkdddkmmmkdddkmmmkddkmmd.dmmk...",
+      "....kddmmdddkmmdymkdkmmdymkdkmmdymkdkmmdymkdkmmdymkddmmdddmmk...",
+      "....kkdddddddkmmmkdddkmmmkdddkmmmkdddkmmmkdddkmmmkddddmmmmmkk...",
+      ".....kkkkkkkkkkmkkkkkkkmkkkkkkkmkkkkkkkmkkkkkkkmkkkkkkkmmmkk....",
+      "......mkkmkkmkkkkkmkkmkkmkkmkkmkkmkkmkkkkkmkkmkkmkkmkkmkkmk.....",
+      "................................................................",
+      "................................................................",
+      "................................................................",
+    ],
+    wire_wall: [
+      "................................................",
+      ".................yyyyyyyyyyyyyy.................",
+      ".................yJJJJJJJJJJJJy.................",
+      ".................yJEEEyyyyEEEJy.................",
+      ".................yJJJyyyyyyJJJy.................",
+      ".................yJJJJCCCCJJJJy.................",
+      "................AyJJJJCwyCJJJJyA................",
+      "................AyJJJJCyyCJJJJyA................",
+      "................AyJJJJCCCCJJJJyA................",
+      "..ww.............yJJJyyyyyyJJJy.............ww..",
+      "..ww.............yJJJJGGGGJJJJy.............ww..",
+      ".FhhFFFFFFFFFFFFFyJJJJJJJJJJJJyFFFFFFFFFFFFFhhF.",
+      "ddGGdddddddddddddyGGGGGGGGGGGGGdddddddddddddGGdd",
+      "..AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..",
+      "..GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG..",
+      "..GyyGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGyyG..",
+      "..FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF..",
+      "..AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF..",
+      "..AGGyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyFGGF..",
+      "..AGGyyGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGyFGGF..",
+      "..ABGyGdddddddddddddddddddddddddddddddddkGFGGF..",
+      "..AGGyGdnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnkGFGBF..",
+      "..AGGyGdddddddddddddddddddddddddddddddddkGFGGF..",
+      "..ABGyGdddddddddmdddddddddddddddddddddddkGFGGF..",
+      "..AGGyGddddddddmddddddddddddddddddddddddkGFGBF..",
+      "..AGGyGdddddddmdddddddddddddddddddddddddkGFGGF..",
+      "..ABGyGddddddmddddddddddddddddddddddddddkGFGGF..",
+      "..AGGyGdddddmddddmddddddddddddddddddddddkGFGBF..",
+      "..AGGyGddddmddddmdddddddddddddddddddddddkGFGGF..",
+      "..ABGyGddddddddmddddddddddddddddddddddddkGFGGF..",
+      "..AGGyGdddddddddddddddddddddddddddddddddkGFGBF..",
+      "..AGGyGdddddddddddddddddddddddddddddddddkGFGGF..",
+      "..ABGyGdddddddddddddddddddddddddddddddddkGFGGF..",
+      "..AGGyGdddddddddddddddddddddddddddddddddkGFGBF..",
+      "..AGGyGdddddddddddddddddddddddddddddddddkGFGGF..",
+      "..ABGyGkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkGFGGF..",
+      "..AGGyyGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGyFGBF..",
+      "..AGGFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFGGF..",
+      "..ABGGGyyyyyyyyyyyyyyyyyyyFGGwyFGGwyFGGFFFGGGF..",
+      "..AGGGGGFGFGFGFGFGFGFGFGFGFGGyyFGGyyFGGFBFGGBF..",
+      "..AGGBBGFGFGFGFGFGFGFGFGFGFGGFFFGGFFFGGFFFGGGFF.",
+      "..ABGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGyF.",
+      "..FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBFF.",
+      "....GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.FF.",
+      "....FFyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyFF.FF.",
+      "....FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FF.",
+      "...kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk...",
+      "..dddddddddddddddddddddddddddddddddddddddddddd..",
+    ],
+  },
+  art: {
+    keeper_tank_cmd_l: {"base":"tank_cmd","f":[[[16,2,["__JE___J___.__","___y_.__y_.___","__y.FC__F.y.__","_y._FCyCF._y._","_y.CFy__FC.yE_","y.C_Fw_yFC_.yd","y.CyFw_yFyC.yd","y.C_Fy__FC_.yd","_y.CFy__FC.yd_","_y._FCyCF._yd_","__y.FC__F.yd__","___y_.__y_d___","_____y__d_____"]]],[[16,1,["_______________________________________..","__JE___J___.___________________________yy","___y_.__y_.____________________________..","__y.FC__F.y._____________________________","_y._FCyCF._y.____________________________","_y.CFy__FC.yE____________________________","y.C_Fw_yFC_.yd___________________________","y.CyFw_yFyC.yd___________________________","y.C_Fy__FC_.yd___________________________","_y.CFy__FC.yd____________________________","_y._FCyCF._yd____________________________","__y.FC__F.yd_____________________________","___y_.__y_d______________________________","_____y__d________________________________"]]],[],[[55,1,["..","yy",".."]]],[[17,2,["__.J___E___J__","___._y__._y___","__.y.F__CF.y__","_.y_.FCyCF_.y_","_.y.CF__yFC.y_",".y._CF_wyF_C.y",".y.CyF_wyFyC.y",".y._CF__yF_C.y","_.y.CF__yFC.y_","_.y_.FCyCF_.y_","__.y.F__CF.y__","___._y__._y___","_____.__y_____"]]],[[17,1,["______________________________________..","__.J___E___J__________________________yy","___._y__._y___________________________..","__.y.F__CF.y_________________________h__","_.y_.FCyCF_.y_______________________hwh_","_.y.CF__yFC.y________________________h__",".y._CF_wyF_C.y__________________________",".y.CyF_wyFyC.y__________________________",".y._CF__yF_C.y__________________________","_.y.CF__yFC.y___________________________","_.y_.FCyCF_.y___________________________","__.y.F__CF.y____________________________","___._y__._y_____________________________","_____.__y_______________________________"]]]],"ms":350,"mirror":"keeper_tank_cmd_r"},
+    keeper_tank_cmd_l_move: {"base":"tank_cmd","f":[[[54,5,["_h_","hwh","_h_"]]],[[55,1,[".._","yy_","hhh","hwh","hhh"]],[6,28,["k_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk","_______________________________________________k____"]],[6,32,["______________________________________________d_____","__________m_______m_______m_______m_______m_________","_________y_______y_______y_______y_______y__________","____________________________________________________","k_mk_mk_m__mk_mk__k_mk_mk_mk_mk_m__mk_mk__k_mk_mk_mk"]]],[[4,0,["_______________________________.____________......._____","_____________________________________________yyyyyy..hh_","_______________.........___________________________yhhhh","_______________JEEEEJJJJ_________......__________JJhhwhh","_______________.yy...yy.__________GGGG_._____JJJJ__yhhh_","______________.y___C___y.__...._.FFFFFFy_____________h__","________________._C_C_.__..ddDDyEE______..._____________","_____________.y.__yy___.yEEEE_____________J_F___________","________________C_____C___________________k...__._______","________________y_ww__y_____________________JJ__y.._____","_____________y.C_______C.y_______________________d______","________________C_y_y_C_________________________________","______________y.___y___.y_JJJJJJJJJJJJJJJJJJkk__________","_______________y.FCCCF.yd__d__d__d__d__d__d__d._________","________________yy...yy_y__y__y__y__y__y__y__y__________","________..........yyydddddddddddddddddddddddddd..md_____","_______.mDDDDDDDDDEEE____EEEEEEEEEEEEEEE__E___EEEJk.____","________EEEEEE_____d_EEEE_yyyyyy_J____d_EE_EEEJJJ_J_____","______.mddJJ_______y________JJ________y__F_FFFFFF_F_____","_______dkykk_____________________________J_JJ_._J_Jk.___","______myd__________d________yy________d__G_GG_F_G_G_____","_____..d___________y____.___JJ___.____y__J_JJ...J_J_____","_____wy.JJJJJJJJJJmdJJJJJ_CCCCCC_JJJJmdJJF.FFFFFF.FJk.__","____.__yyyyyyyyyyyy_yyyyyyyyyyyyyyyyyy_yyyyyyyyyyyyyy___","___.m.._JJJJJJJJJ__y_JJJJJJJJJJJJJJJ__y_JJJJJJJJJJJ_____","____ddJJdddddddddJmdJdddddddddddddddJmdJdddddddddddJJ___",".._mkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk..","FG..............GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFF","__k__k__k__k__k__k__k__k__k__k__k__k__k__k__k__k__k__km_"]],[14,33,["y_m_____y_m_____y_m_____y_m_____y_m"]],[6,36,["km_km_km__m_km_km_km_km_k__km_km__m_km_km_km_km_km_km"]]],[[17,0,["__________________.____________.......__","________________________________yyyyyy..","__........._____________________________","__JEEEEJJJJ_________......__________JJ__","__.yy...yy.__________GGGG_._____JJJJ____","_.y___C___y.__...._.FFFFFFy___________h_","___._C_C_.__..ddDDyEE______..._______hwh",".y.__yy___.yEEEE_____________J_F______h_","___C_____C___________________k..._______","___y_ww__y_____________________JJ_______","y.C_______C.y___________________________","___C_y_y_C______________________________","_y.___y___.y_JJJJJJJJJJJJJJJJJJkk_______","__y.FCCCF.yd__d__d__d__d__d__d__d.______","___yy...yy_y__y__y__y__y__y__y__y_______","_____yyydddddddddddddddddddddddddd______"]],[53,29,["k"]],[15,32,["y_______y_______y_______y_______y____d","_m_______m_______m_______m_______m____"]]]],"ms":150,"mirror":"keeper_tank_cmd_r_move"},
+    keeper_tank_cmd_l_hatch1: {"base":"tank_cmd","f":[[[37,0,["______FF","______yJ","______FJ","......FF","kkkkkkFF"]]]],"mirror":"keeper_tank_cmd_r_hatch1"},
+    keeper_tank_cmd_l_hatch2: {"base":"tank_cmd","f":[[[37,0,["______FF","_JyJJ_yJ","_JJJJ_FJ",".2k2k.FF","kkkkkkFF"]]]],"mirror":"keeper_tank_cmd_r_hatch2"},
+    keeper_tank_cmd_l_hatch3: {"base":"tank_cmd","f":[[[37,0,["_JJJJ_FF","_JyJJ_yJ","_JJJJ_FJ",".2k2k.FF","yJJJJyFF","J_____2_"]]]],"mirror":"keeper_tank_cmd_r_hatch3"},
+    keeper_tank_cmd_off_l: {"base":"tank_cmd","f":[[[20,5,["___G___","__GGG__","__CCG__","G_CCG_G","__GGG__","__GGG__","___G___"]]]],"mirror":"keeper_tank_cmd_off_r"},
+    keeper_tank_l: {"base":"tank_esc","f":[[[18,2,["JE___J___.","__________","__FC__F.__","__FCyCF.__","_CFy__FC._","C_Fw_yFC_.","CyFw_yFyC.","C_Fy__FC_.","_CFy__FC._","__FCyCF.__","__FC__F.d."]]],[[18,2,["JE___J___.__________________________","___________________________________y","__FC__F.___________________________.","__FCyCF.__________________________._","_CFy__FC.___________________________","C_Fw_yFC_.__________________________","CyFw_yFyC.__________________________","C_Fy__FC_.__________________________","_CFy__FC.___________________________","__FCyCF.____________________________","__FC__F.d.__________________________"]]],[],[[52,3,["_y","_.","._"]]],[[19,2,[".J___E___J","__________","__.F__CF__","__.FCyCF__","_.CF__yFC_","._CF_wyF_C",".CyF_wyFyC","._CF__yF_C","_.CF__yFC_","__.FCyCF__","__.F__CF._"]]],[[19,2,[".J___E___J_____________________________","__________________________________y_hhh","__.F__CF__________________________._hwh","__.FCyCF_________________________.__hhh","_.CF__yFC______________________________","._CF_wyF_C_____________________________",".CyF_wyFyC_____________________________","._CF__yF_C_____________________________","_.CF__yFC______________________________","__.FCyCF_______________________________","__.F__CF.______________________________"]]]],"ms":350,"mirror":"keeper_tank_r"},
+    keeper_tank_l_move: {"base":"tank_esc","f":[[[54,5,["_h_","hwh","_h_"]]],[[55,2,["yy_","hhh","hwh","hhh"]],[6,28,["k_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk_mk","_______________________________________________k____"]],[6,32,["______________________________________________d_____","__________m_______m_______m_______m_______m_________","_________y_______y_______y_______y_______y__________","____________________________________________________","k_mk_mk_m__mk_mk__k_mk_mk_mk_mk_m__mk_mk__k_mk_mk_mk"]]],[[4,0,["_______________________________.________________________","______________________________.______________________hh_","_______________.........____________________________hhhh","_______________JEEEEJJJJ_____.___......_____.....__hhwhh","_________________.....______._____GGGG_._________.__hhh_","___________________C_______.mmm_.FFFFFFy_________y___h__","________________._C_C_._...ddDDhEE______...__JJJJ_______","_______________.__yy___.EEEEE_____________J_F___________","________________C_____C___________________k...__._______","________________y_ww__y_____________________JJ__y.._____","_______________C_______C.________________________d______","________________C_y_y_C_________________________________","___________________y___.__JJJJJJJJJJJJJJJJJJkk__________","_________________FCCCF._d__d__d__d__d__d__d__d._________","____________________.y__y__y__y__y__y__y__y__y__________","________............ddddddddddddddddddddddddddd..md_____","_______.mDDDDDDDDDEEE______EEEEEEEEEEEEE__E___EEEJk.____","________EEEEEE_____d_EEEEEE___________d_EE_EEEJJJ_J_____","______.mddJJ_______y______JJJJJ_______y__F_FFFFFF_F_____","_______dkykk_______________C_C___________J_JJ_._J_Jk.___","______myd__________d_______dCd________d__G_GG_F_G_G_____","_____..d__J______J_y____J_CCdCCJ______y__J_JJ...J_J_____","_____wy.JJFJJJJJJF_dJJJJFJJJJJJFJJJJJ_FJJ_.FFFFF_.FJk.__","____._FmmmmmmFmmmm_mFmmmmmmFmmmmmmFmmmmmmFmmmmmmFmmmm___","___.m.._JFJJJJJJF__y_JJFJJJJJJFJJJJJ_Fy_JJJJFJJJJJJF____","____dFJJddddFddddJmFJdddddFddddddFddJmdJFddddddFdddJJ___",".._mkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk..","FG..............GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGFF","__k__k__k__k__k__k__k__k__k__k__k__k__k__k__k__k__k__km_"]],[14,33,["y_m_____y_m_____y_m_____y_m_____y_m"]],[6,36,["km_km_km__m_km_km_km_km_k__km_km__m_km_km_km_km_km_km"]]],[[19,0,["________________._____________________","_______________.______________________","........._____________________________","JEEEEJJJJ_____.___......_____.....__yy","__.....______._____GGGG_._________.___","____C_______.mmm_.FFFFFFy_________y_h_","_._C_C_._...ddDDhEE______...__JJJJ_hwh",".__yy___.EEEEE_____________J_F______h_","_C_____C___________________k..._______","_y_ww__y_____________________JJ_______","C_______C.____________________________","_C_y_y_C______________________________","____y___.__JJJJJJJJJJJJJJJJJJkk_______","__FCCCF._d__d__d__d__d__d__d__d.______","_____.y__y__y__y__y__y__y__y__y_______","___yyydddddddddddddddddddddddddd______"]],[53,29,["k"]],[15,32,["y_______y_______y_______y_______y____d","_m_______m_______m_______m_______m____"]]]],"ms":150,"mirror":"keeper_tank_r_move"},
+    keeper_tank_off_l: {"base":"tank_esc","f":[[[20,5,["___G_____","__GGG____","__CCG____","G_CCG_G__","__GGG____","__GGG____","___G_____","_________","________."]]]],"mirror":"keeper_tank_off_r"},
+    wire_wall: {"base":"wire_wall"},
+    wire_wall_news: {"base":"wire_wall","f":[[[7,20,["cccccccccccccccccccccccccccccccccn","cttttttttttttttttttttttttttttttttn","cssssssssssssssssssssssssssssssssn","cttyyyyyyyyttwwwwwwwwwwwwwwwwwtttn","cttyJJJJJJyttwwwwwwwwwwwwwwwwwtttn","cttyJJyyJJyttttttttttttttttttttttn","cttyJJCCJJyttttttttttttttttttttttn","cttyJJCCJJyttssssssssssssssttttttn","cttyJyyyyJyttttttttttttttttttttttn","cttyJJJJJJyttssssssssssssssssttttn","cttGGGGGGGGttttttttttttttttttttttn","cttttttttttttttttttttttttttttttttn","nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn","yyynnnyyynnnyyynnnyyynnnyyynnnyyyn","nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"]],[39,39,["gl"]]],[[7,20,["cccccccccccccccccccccccccccccccccn__","cttttttttttttttttttttttttttttttttn__","cttttttttttttttttttttttttttttttttn__","cttyyyyyyyyttwwwwwwwwwwwwwwwwwtttn__","cttyJJJJJJyttwwwwwwwwwwwwwwwwwtttn__","cssssssssssssssssssssssssssssssssn__","cttyJJCCJJyttttttttttttttttttttttn__","cttyJJCCJJyttssssssssssssssttttttn__","cttyJyyyyJyttttttttttttttttttttttn__","cttyJJJJJJyttssssssssssssssssttttn__","cttGGGGGGGGttttttttttttttttttttttn__","cttttttttttttttttttttttttttttttttn__","nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn__","nnnyyynnnyyynnnyyynnnyyynnnyyynnnyyy","nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn__","nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn__"]],[39,39,["gl"]]]],"ms":500},
+    wire_wall_pres: {"base":"wire_wall","f":[[[7,20,["nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn","nttttttttttttttttttttttttttttttttn","nnnnnnnnnnnnnhwwwhhhhnnnnnnnnnnnnn","ctttttttttttthhhhhhhhttttttttttttn","ctyyJJttttttth223333htttttttJJyytn","ctyyJJttttttth2233334tttttttJJyytn","ctyyJJttttttth3k33k34tttttttJJyytn","ctyyJJttttttt33333334tttttttJJyytn","ctyyJJttttttt333FF334tttttttJJyytn","ctyyJJttttttt34444443tttttttJJyytn","ctyytttttttttttt44ttttttttttttyytn","ctGGttttEEEEEEyEwwEyEEEEEkttttGGtn","ctttttttJJJyyJyJwwJyJJyyJktttttttn","ctttttttJJJJJJyJwwJyJyJJJktttttttn","nwwwwwwwnnnnnnnnnnnnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"]],[39,39,["gl"]]],[[7,20,["nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn","nttttttttttttttttttttttttttttttttn","nnnnnnnnnnnnnhwwwhhhhnnnnnnnnnnnnn","ctttttttttttthhhhhhhhttttttttttttn","ctyyJJttttttth223333htttttttJJyytn","ctyyJJttttttth2233334tttttttJJyytn","ctyyJJttttttth3k33k34tttttttJJyytn","ctyyJJttttttt33333334tttttttJJyytn","ctyyJJttttttt333kk334tttttttJJyytn","ctyyJJttttttt344kk443tttttttJJyytn","ctyytttttttttttt44ttttttttttttyytn","ctGGttttEEEEEEyEwwEyEEEEEkttttGGtn","ctttttttJJJyyJyJwwJyJJyyJktttttttn","ctttttttJJJJJJyJwwJyJyJJJktttttttn","nwwwwwwwwwnnnnnnnnnnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"]],[39,39,["gl"]]]],"ms":260},
+    relay_rack: {"base":[".......Fd.......",".......Fd.......",".......Fd.......","..yyyyyyyyyyyy..","..AGGGGGGGGGGF..","..AGGGGGGGGGGF..","..AGdddddddkGF..","..AGdddddddkGF..","..AGdyydlldssF..","..AGdddddddkGF..","..AGdddddddkGF..","..AGdssdyydBBF..","..AGdddddddkGF..","..AGdddddddkGF..","..AGdlldBBdyyF..","..AGdddddddkGF..","..AGdddddddkGF..","..AGdBBdssdllF..","..AGdddddddkGF..","..AGdddddddkGF..","..AGkkkkkkkkGF..","..AGGGGGGGGGGF..","..AGGGGGGGGGGF..","..AGyGyGyGyGGF..","..AGyGyGyGyGGF..","..AGGGGGGGGGGF..","..AGGGGGGGGGGF..","..FFFFFFFFFFFF..","...FFFFFFFFFF...","...FF......FF...","..kkkkkkkkkkkk..","................"],"f":[[],[[8,8,["BB"]],[5,11,["BB____ll"]],[5,14,["ss_ll_BB"]],[5,17,["ll____yy"]]]],"ms":700},
+    switchboard: {"base":["................",".......ss.......",".......ss.......","......yyyy......",".AAAAAAAAAAAAAF.",".AGGGGGGGGGGGGF.",".AGBBBBBBBBBBGF.",".AGByByBByByBGF.",".AGBktkBBkBkBGF.",".AGBBtBBBBBBBGF.",".AGBytyBByByBGF.",".AGBktkBBkgkBGF.",".AGBBtBBBBgBBGF.",".AGBytyBBygyBGF.",".AGBkBtttkgkBGF.",".AGBBBBBBBgBBGF.",".AGByByBBygyBGF.",".AGBkBkByyykBGF.",".AGFFFFFFFFFFGF.",".AGGGGGGGGGGGGF.",".AGGGGGGGGGGGGF.",".FFFFFFFFFFFFFF.","AAAyyAAAyAAyAAAA","GGGGGGGGGGGGGGGG","GGGGGGGGGGGGGGGG","FFFFFFFFFFFFFFFF","..FF........FF..","..FF........FF..","..FF........FF..","..FF........FF..",".kkkkkkkkkkkkkk.","................"]},
+    wire_desk: {"base":["................","..........yyy...",".........yyF....","...........F....","...........F....","..JCddCJ...F....","..JCCCCJ..yyy...","..JJJJJJ........",".AAAAAAAAAAAAAF.",".AGGGGGyyGGGGGF.",".AGGGGGGGGGGGGF.",".FFFFFFFFFFFFFF.","..FF........FF..","..FF........FF..","..FF........FF..",".kkkkkkkkkkkkkk."]},
+    wire_callbox: {"base":[".......yy.......",".......yy.......","......GGGG......","..AAAAAAAAAAAA..",".GGGGGGGGGGGGGG.",".GGGGGGGGGGGGGG.",".FFFFFFFFFFFFFF.","..EEEEEEEEEEEF..","..EJJJJJJJJJJF..","..EJcccccccnJF..","..EJtttttttnJF..","..EJttyytttnJF..","..EJttyFtttnJF..","..EJttyFtttnJF..","..EJttyytttnJF..","..EJtttttttnJF..","..EJJJJJJJJJJF..","..EJJJJJJJJJJF..","..EJJyyyyyyJJF..","..EJJGGGGGGJJF..","..EJJJJJJJJJJF..","..EJJJJJJJJJJF..","..EJGGGGGGGGJF..","..EJJJJJJJJJJF..","..EJJJJJJJJJJF..","..EJJJJJJJJJJF..","..EJJJJJJJJJJF..","..FFFFFFFFFFFF..","..FFFFFFFFFFFF..","..FFFFFFFFFFFF..",".kkkkkkkkkkkkkk.","................"]},
+    curfew_notice: {"base":["................","..yyyyyyyyyyyy..","..yJJJJJJJJJJy..","..yJCCCCCCCCJy..","..yJJJJJJJJJJy..","..yJCCCCCCJJJy..","..yJJJJJJJJJJy..","..yJCCCCCCCJJy..","..yJJJJJJJJJJy..","..yyyyyyyyyyyy..",".......FF.......",".......FF.......",".......FF.......",".......FF.......",".......FF.......","......kkkk......"]},
+    lantern_cordon: {"base":["................",".......FF.......",".......yy.......",".......yy.......","....FF.yy.FF....","....FF....FF....","....FF....FF....","....FF....FF....","....yyyyyyyy....","....JJJJJJJJ....","....FF....FF....","....FF....FF....","....FF....FF....","....FF....FF....","....FF....FF....","...kkkkkkkkkk..."]},
+  },
+};
+// Paints CRACKDOWN_ART into TILES / WART (called from addExteriorArt) and code-draws the three pieces that are not grids:
+// the translucent searchlight beams, the dust puffs and the emptied Glimmerwell stand. Existing names are never replaced.
+function addCrackdownArt(T, A, paint){
+  const C = CRACKDOWN_ART;
+  for (const [k, rows] of Object.entries(C.tiles)) if (!T[k]) T[k] = paint(rows);
+  const build = (base, patches) => {
+    const g = base.map(r => r.split(''));
+    for (const [x0, y0, rows] of patches || []) rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) if (r[x] !== '_') g[y0 + y][x0 + x] = r[x]; });
+    return g.map(r => r.join(''));
+  };
+  const flip = rows => rows.map(r => [...r].reverse().join(''));
+  const make = (grids, ms) => { if (grids.length === 1 && !ms) return paint(grids[0]); const a = grids.map(paint); a.ms = ms; return a; };
+  // Built on first draw, not at boot: each new cell size (64x40, 96x40, 48x48, 16x32, 32x16) opens a whole shared sheet
+  // (sheetTake), about 6.5 MB of canvas for art only the crackdown and the Fernbrook Lantern House show (memory_walk budget).
+  const lazy = (key, fn) => {
+    if (key in A) return;
+    const set = v => { Object.defineProperty(A, key, { value: v, writable: true, configurable: true, enumerable: true }); return v; };
+    Object.defineProperty(A, key, { configurable: true, enumerable: true, get(){ return set(fn()); }, set });
+  };
+  for (const [k, s] of Object.entries(C.art)) {
+    const grids = () => { const base = typeof s.base === 'string' ? C.bases[s.base] : s.base; return (s.f || [[]]).map(p => build(base, p)); };
+    lazy(k, () => make(grids(), s.ms));
+    if (s.mirror) lazy(s.mirror, () => make(grids().map(flip), s.ms));
+  }
+  // DRAFT (POST_TRIAL_CRACKDOWN §10a.2): the searchlight, 96x40. A cream cone from the lens (about 45,8) widening forward and
+  // down to a warm pool on the ground (centre 80,31). The only translucent art. tank_beam_l is the same cone mirrored.
+  const rgba = (key, a) => { const h = PAL[key]; return 'rgba(' + parseInt(h.slice(1, 3), 16) + ',' + parseInt(h.slice(3, 5), 16) + ',' + parseInt(h.slice(5, 7), 16) + ',' + a + ')'; };
+  const beam = mirror => sheetPaint(96, 40, g => {
+    const dot = (x, y, col) => { g.fillStyle = col; g.fillRect(mirror ? 95 - x : x, y, 1, 1); };
+    for (let x = 45; x < 96; x++) {
+      const top = Math.round(8 + (x - 45) * 0.3), bot = Math.round(9 + (x - 45) * 0.62), fade = x > 90 ? (96 - x) / 6 : 1;
+      for (let y = top; y <= bot && y < 40; y++) {
+        const mid = (y - top) / Math.max(1, bot - top), core = mid > 0.3 && mid < 0.7;
+        dot(x, y, rgba(core ? 'w' : 'C', ((core ? 0.36 : 0.24) * fade).toFixed(2)));
+      }
+    }
+    for (let y = 25; y < 38; y++) for (let x = 62; x < 96; x++) {
+      const d = ((x - 80) / 15) ** 2 + ((y - 31) / 5.5) ** 2;
+      if (d <= 1) dot(x, y, rgba(d < 0.4 ? 'w' : 'y', d < 0.4 ? 0.34 : 0.3));
+    }
+  });
+  lazy('tank_beam_r', () => beam(false));
+  lazy('tank_beam_l', () => beam(true));
+  // DRAFT (§10a.2): dust behind the treads, 32x16, 3 frames at 160 ms. Dithered sand puffs at 55%, growing and lifting.
+  lazy('tank_dust', () => {
+    const dust = [0, 1, 2].map(f => sheetPaint(32, 16, g => {
+      g.globalAlpha = 0.55;
+      [[7, 12], [15, 11], [24, 12]].forEach(([cx, cy], i) => {
+        const r = 2 + f + (i === 1 ? 1 : 0), yy = cy - f;
+        for (let y = -r; y <= r; y++) for (let x = -r - 1; x <= r + 1; x++) {
+          if ((x / (r + 1)) ** 2 + (y / r) ** 2 > 1 || (x + y + f) % 2) continue;
+          px(g, PAL[y < 0 ? 'A' : 'G'], cx + x, yy + y);
+        }
+      });
+      g.globalAlpha = 1;
+    }));
+    dust.ms = 160;
+    return dust;
+  });
+  // DRAFT (POST_TRIAL_CRACKDOWN §10): the Glimmerwell stand left behind. A.glimmer_stand with the bottles gone and its wine
+  // trim stripped to bare board; a torn price card hangs off the edge. No V, N or Q.
+  if (!A.glimmer_stand_empty) A.glimmer_stand_empty = mkTile(g => {
+    px(g, PAL.w, 1, 7, 14, 3); px(g, PAL.h, 1, 10, 14, 1); px(g, PAL.d, 2, 11, 1, 5); px(g, PAL.d, 13, 11, 1, 5);
+    px(g, PAL.h, 1, 7, 14, 1); px(g, PAL.m, 3, 7, 3, 1); px(g, PAL.m, 9, 7, 2, 1);
+    [[4, 6], [8, 6], [12, 6]].forEach(([x, y]) => px(g, PAL.h, x, y, 2, 1));
+    px(g, PAL.F, 11, 10, 1, 2); px(g, PAL.C, 10, 12, 3, 3); px(g, PAL.h, 11, 13, 1, 1);
+  });
+}
 // HIGH_CHARITY_LAYOUT §10 (A-rows): PLACEHOLDER art for the High Charity city preview. Draft quality, PAL keys only, no outside
 // assets; Pia redraws before ship. Every grid carries a 2x2 y/d checker tag bottom-right (map tiles C Z U M: one `y` pixel).
 // Keeper art uses `J`. Glimmerwell keys appear only on the teacup rim (`V`) and the card spark (`Q`). The tanks carry no gun.
@@ -3359,6 +3602,7 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   // Blink is the sit grid with the two dark eye pixels closed. Design did not ship a blink grid.
   if (LIZZY_ART.art.buddy_sit) A.buddy_blink = paint(LIZZY_ART.art.buddy_sit.map(r => r.replace(/k/g, 'y')));
   for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
+  addCrackdownArt(T, A, paint);   // POST_TRIAL_CRACKDOWN + LANTERN_HOUSE_FERNBROOK draft art
 }
 // E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).
 // Lab maps keep LAB_SKIN.variants; hand-placed chars (`f`, `t`, …) never vary.

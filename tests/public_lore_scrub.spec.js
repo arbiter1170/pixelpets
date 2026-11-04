@@ -1,5 +1,5 @@
 /* PUBLIC_LORE_SCRUB (Vincent, Tue Nov 3, 2026): three live text fixes that ship with the public-repo lore scrub.
-   1. Master Fen's Glimmer-pick line drops "After last night," (the crackdown night is not on main yet; PR #288 brings it back).
+   1. Master Fen's Glimmer-pick line dropped "After last night," while the crackdown night was not on main; PR #288 builds that night and brings it back.
    2. The Glimmerwell Associate in the Fernbrook plaza walks a Loamlet (mole/0, the Fernbrook Lantern House's Burrsnout line),
       not a Bitlet: Bitlet stays in the RegenX lab.
    3. The Brinewick lanyard story no longer says Master Marisol keeps her own Seal (Glimmer holders who beat her earn it).
@@ -9,7 +9,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-const FEN_LINE = "Go on, then. You won my Seal fairly. I can't say you're wrong.";
+const FEN_LINE = "Go on, then. You won my Seal fairly. After last night, I can't say you're wrong.";
 const MARISOL_LINE = "Master Marisol's Seal went to the holder, lanyard clipped to it. Output was ours. Have a bright day!";
 
 function save() {
@@ -39,14 +39,14 @@ const saved = (page) => page.evaluate(() => {
   return { v: r.v, keys: Object.keys(r).sort(), flags: Object.keys(r.flags).sort() };
 });
 
-test("Fen's Glimmer-pick line has no crackdown reference yet", async ({ page }) => {
+test("Fen's Glimmer-pick line names the crackdown night again (PR #288)", async ({ page }) => {
   await boot(page);
   const r = await page.evaluate(() => {
     const swaps = MAPDATA.detail_zz_day1.lineSwaps.filter((s) => s.scene === 'orchard@glimmer' && s.when === 'story.seal1');
     return { to: swaps.map((s) => s.to), raw: JSON.stringify(MAPDATA.detail_zz_day1) };
   });
   expect(r.to).toContainEqual([['say', 'Master Fen', FEN_LINE]]);
-  expect(r.raw).not.toContain('After last night');
+  expect(r.raw.split('After last night').length - 1).toBe(1);   // only in this line
   expect(FEN_LINE.length).toBeLessThanOrEqual(110);
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
