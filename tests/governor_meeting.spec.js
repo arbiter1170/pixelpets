@@ -133,7 +133,7 @@ const POSTING = [
   'Sit, Cadet. Brinewick reached me before you did. Good work, and quiet work. I like both.',
   "The Governor's office asked for a Cadet. One who can listen. I gave them you.",
   'A civil posting. You answer to his office, and to me. Nobody else signs for you.',
-  "Take the coach to High Charity. The Governor's House, on Charter Hill. They'll let you in now.",
+  "Walk the coach road north to High Charity. The Governor's House, Charter Hill. They'll let you in.",   // ROUTE_TO_GOVERNOR §6 re-voice (D1854)
   'And Tester? Come home after. Tell me what he asks. In person, not on the wire.',
 ];
 const MEETING_HEAD = [
@@ -218,6 +218,9 @@ test.describe('GOVERNOR_MEETING Part 1: Ilse sends the Cadet (D1469)', () => {
     expect(f['story.a2_called']).toBeUndefined();
     expect(await page.evaluate(() => PixelPets.talkTo('ilse_lodge_after'))).toBe(true);
     expect(says(await drive(page))).toEqual(["The Governor's House, on Charter Hill. Go on, Cadet."]);
+    // ROUTE_TO_GOVERNOR §6 (D1854, D1881): the first trip is on foot; the walk rows come first, then gov_meet as built.
+    expect((await quest(page)).id).toBe('gov_walk');
+    await page.evaluate(() => { PixelPets.setFlag('story.r4_fork', true); PixelPets.setFlag('story.r4_walked', true); });
     const q = await quest(page);
     expect(q.id).toBe('gov_meet');
     expect(q.text).toBe("Report to Governor Merriden at the Governor's House on Charter Hill, High Charity.");
@@ -343,6 +346,8 @@ test.describe('GOVERNOR_MEETING Part 3, one scene for every holder, old saves (D
     // The quest chain still sends the holder to the Lantern Council first (it sits earlier in the chain), then the Governor.
     expect((await quest(page)).id).toBe('hc_council');
     await page.evaluate(() => PixelPets.setFlag('story.hc_council_done', true));
+    expect((await quest(page)).id).toBe('gov_walk');   // ROUTE_TO_GOVERNOR §6: on foot first (D1854)
+    await page.evaluate(() => PixelPets.setFlag('story.r4_walked', true));
     expect((await quest(page)).id).toBe('gov_meet');
     expect((await stored(page)).v).toBe(2);
   });

@@ -402,6 +402,30 @@ const SPECIES = [
       '.......a','......aa','.....aaa','...d.aaa','..daaaaa','..aaaaaa','.daaaaaa','.aaaaiea',
       '.aaaaeea','.aaaccbb','..aaccbb','..daaaaa','...aaaaa','...daaa.','..c..c.c','....c..c']}
   ]},
+  // ROUTE_TO_GOVERNOR v0.1.1 §7 (D1855, D1857, D1862) and KILNMOUTH v0.1.1 §4.4 (indices 25-28, appended in landing order).
+  // Names are PLACEHOLDER. tableOnly: wild only on an authored spawn table (never the any-species roll or a habitat pick).
+  // spawnNear: a tile char the line prefers to spawn beside (the adder basks by drystone walls, D1871); idleMul stretches
+  // the wild's idle between steps (the heron stands still, D1871). The heron's stages are full 16-column profiles.
+  { id:'adder', habitat:{meadow:4, hot:4, storm:3, mountain:3}, tiles:'grass', tableOnly:true, spawnNear:'h', type:'VOLT', blurb:"A wall adder. Its zigzag back looks like a lightning mark.", stages:[
+    { name:"Adderlet", col:{a:PAL.h,b:PAL.y,c:PAL.m,d:PAL.r,x:PAL.d}, half:['........','........','........','........','........','......aa','.....aaa','....aiea','....aeea','.....aad','......ab','....abab','..aababa','.abaabab','.caaaaaa','..cccccc']},
+    { name:"Walladder", col:{a:PAL.m,b:PAL.y,c:PAL.d,d:PAL.r,x:PAL.k}, half:['........','........','......aa','.....aaa','....aaaa','....aiea','....aeea','.....aad','......ab','......ba','......ab','...aabaa','..abaaba','.abaabab','caaaaaaa','.ccccccc']},
+    { name:"Zigzag", col:{a:PAL.m,b:PAL.y,c:PAL.d,d:PAL.r,x:PAL.w}, half:['....x..x','....b.bb','....aaaa','...aaaaa','...aaiea','...aaeea','...baaaa','....aaad','.....aab','.....aba','..aabaab','.aabaaba','abaabaab','baabaaba','caaaaaaa','cccccccc']}
+  ]},
+  { id:'heron', habitat:{water:6, rain:3, fog:3, night:3}, tiles:'shore', tableOnly:true, idleMul:3, type:'TIDE', blurb:"A striped reed-heron. It stands so still it becomes a reed.", stages:[
+    { name:"Reedling", grid:['................','................','................','.......F........','.......G........','......GGG.......','......GkG.......','......GGGt......','.......GGtt.....','......GwGttt....','.....GwwGttt....','.....GwwGGtt....','......GwGGt.....','.......GGG......','.......F.F......','.......F.F......']},
+    { name:"Stalker", grid:['.......F........','.......G........','.......G........','......GGG.......','......GkGt......','......GGGt......','.......GF.......','.......FG.......','.......GF.......','.......FGt......','......GwGtt.....','.....GwwGttt....','.....GwwGGttt...','......GwGGtt....','.......GGG......','.......F.F......']},
+    { name:"Boomer", grid:['.......F........','.......G........','.......G.tt.....','......GGGtt.....','......GkGGt.....','......GGGG......','......GwFG......','.....GwwGF......','.....GwFGG......','.....GGFGGt.....','......GGGGtt....','.....tGGGGttt...','....ttGGGGGttt..','.....ttGGGGtt...','.......G..G.....','.......F..F.....']}
+  ]},
+  { id:'dipper', habitat:{water:6, cold:4, rain:2}, tiles:'shore', tableOnly:true, type:'TIDE', blurb:"Walks the stream bed. Hunches when the water runs cold.", stages:[
+    { name:"Chick", col:{a:PAL.m,b:PAL.w,c:PAL.d,d:PAL.y,x:PAL.k}, half:['........','........','........','........','.....aaa','....aaaa','...aaaaa','...aeiaa','...aaaaa','.ccaaabb','c.caabbb','..caabbb','...caabb','....aaaa','......d.','.....dd.']},
+    { name:"Walker", col:{a:PAL.m,b:PAL.w,c:PAL.d,d:PAL.y,x:PAL.k}, half:['........','........','.....aaa','....aaaa','...aaaaa','...aeiaa','...aaaax','..aaaaab','.caaaabb','ccaaabbb','ccaaabbb','.caaaabb','..caaaaa','...aaaaa','.....d..','....dd..']},
+    { name:"Diver", col:{a:PAL.m,b:PAL.w,c:PAL.n,d:PAL.y,x:PAL.k}, half:['......c.','.....cc.','....aaaa','...aaaaa','..aaaaaa','..aaeiaa','..aaaaax','.aaaaaab','ccaaaabb','cccaabbb','cccaabbb','.ccaaabb','..caaaaa','...aaaaa','....d...','...dd...']}
+  ]},
+  { id:'jugwasp', habitat:{mountain:4, hot:3, meadow:2}, tiles:'grass', tableOnly:true, type:'STONE', blurb:"Shapes tiny clay jugs on warm banks. Carries one always.", stages:[
+    { name:"Bearer", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['........','........','...x....','....x...','.....aaa','....aeia','.bb..aaa','bbbb..xa','.bb..aaa','....aaxa','....aaaa','.....aax','......cc','.....ccc','.....ccc','......dd']},
+    { name:"Potter", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['........','..x.....','...x....','....xaaa','....aaaa','...aaeia','bbb..aaa','bbbb..xa','.bbb.aaa','.b..aaxa','...aaaaa','....aaax','.....ccc','....cccc','....cccc','.....ddd']},
+    { name:"Cluster", col:{a:PAL.y,b:PAL.h,c:PAL.o,d:PAL.r,x:PAL.k}, half:['.x......','..x.....','...xaaaa','...aaaaa','...aaeia','bb..aaaa','bbbb..xa','bbbb.aaa','.bb.aaxa','...aaaaa','....aaax','.cc..ccc','cccccccc','cccccccc','.dd.dddd','........']}
+  ]},
 ];
 
 // HUSHWATER B0: one fallback stage for a species id this client does not know.
@@ -3567,6 +3591,27 @@ const WEIR_HUT_ART = {
     weir_oil_lamp: [["................", "................", "......dddd......", ".......dd.......", "......dmmd......", ".....dwyywd.....", ".....dyooyyd....", ".....dyoyyd.....", ".....dwyywd.....", "......dmmd......", ".....dddddd.....", "................", "...hhhhhhhhhh...", "..hmmmmmmmmmmh..", "..mmmmmmmmmmmm..", "................"]],
   },
 };
+// ROUTE_TO_GOVERNOR E6/E7 (D1869, yellow, settled): Route 4's three new tiles (y reeds, h drystone wall, l mown lawn) and its
+// roadside props, PAL keys only, drawn from the packet's descriptions. water_trough and notice_board reuse built art.
+const ROUTE4_ART = {
+  tiles: {
+    y: ["gggtggglggggtggg", "gglgggtyggglgtgg", "ggyggggyggtyggyg", "gtygglgyggtyglyg", "gtyggyglgttygyyg", "gtlggygygltyggyl", "ttlgtygygltylgyl", "ttytlyglgyttytyl", "gtytyyglgytltlyg", "gtltylgytyltylyg", "ttylyytlyyltyyyt", "tlyttyyttyltlyyt", "ttlttlyttlttltyt", "ttttttttttttttlt", "gtttgtttttgtttgt", "gggggggggggggggg"],
+    h: ["dhhhdmmmhdhhhmmd", "hhwhdmhmhdhwhhmd", "hhhmdmmmmdhhhmmd", "dddddddddddddddd", "mmdhhhhmdmmmhhhd", "mhdhwhhmdmlmhwhd", "mmdhhhmmdmmmhhmd", "dddddddddddddddd", "hhhmdmmmhhdhhhmd", "hwhmdmlmhwdhhmmd", "hhmmdmmmmhdhmmmd", "dddddddddddddddd", "mmhhhdmmmhhhdmmm", "mlhwhdmhmwhhdmhm", "mmhhmdmmmhhmdmmm", "kkkkkkkkkkkkkkkk"],
+    l: ["gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt", "tgtgtgtgtgtgtgtg", "gtgtgtgtgtgtgtgt"],
+  },
+  art: {
+    milestone: ["................", "................", "................", "....dddddddd....", "....hwwhhhhm....", "....hwhhhhhm....", "....hmmmmhhm....", "....hhhhhhhm....", "....hmmmhhhm....", "....hhhhhhhm....", "....hmmmmhhm....", "....hhhhhhhm....", "....hhhhhhhm....", "...dhhhhhhhmd...", "...gddddddddg...", "................"],
+    finger_post: ["................", "................", ".......ddd......", ".......dod......", "..dddddddoddd...", ".dyyyyyyyyyyyd..", "dyoooooooooood..", ".dyyyyyyyyyyyd..", "..dddddddoddd...", ".......dod......", "...ddddddodddd..", "..dyyyyyyyyyyyd.", "..dooooooooooood", "..dyyyyyyyyyyyd.", "...ddddddodddd..", ".......dod......", ".......dod......", ".......dod......", "......ddoddd....", "......dyyyyd....", "......doooodd...", "......dyyyyd....", "......ddoddd....", ".......dod......", ".......dod......", ".......dod......", ".......dod......", ".......dod......", ".......dod......", "......ddoddd....", ".....gddddddg...", "................"],
+    road_bar: ["................", "................", "................", "................", ".kk..........kk.", ".dk..........dk.", "kkkkkkkkkkkkkkkk", "krrrrwwwwrrrrwwk", "krrrrwwwwrrrrwwk", "kkkkkkkkkkkkkkkk", ".dk..........dk.", ".dk..........dk.", ".dk..........dk.", ".dk..........dk.", "kdkk........kdkk", "................"],
+    gate_arch_post: ["................", "....kkkkkkkk....", "...khhhhhhhhk...", "...kmmmmmmmmk...", "....kyyyyyyk....", "....kyooooyk....", "....kyooooyk....", "....kkyyyykk....", "....khhhhhhk....", "....khwhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khwhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khhhhhmk....", "....khwhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....khhhhhmk....", "....khhhhhmk....", "....khhhhhmk....", "...khhhhhhhmk...", "...kmmmmmmmmk...", "..khhhhhhhhhmk..", "..kmmmmmmmmmmk..", "..kkkkkkkkkkkk..", "................"],
+    capital_roofs: ["....................y...........", "...................yoy..........", "....y.............kkkkk.........", "...yoy...........krrrrrk........", "..kkkkk.........krrprrrrk.......", ".krrrrrk.......krrrrrrprrk......", "krrprrrrk.....krprrrrrrrrrk.....", "krrrrrprk....krrrrrprrrrrrrk....", "kprrrrrrrk..krrrrrrrrrrprrrrk...", "kCCCCCCCCk..kCCCCCCCCCCCCCCCk...", "kCyCCCyCCk..kCCyCCCCCyCCCCyCk...", "kCyCCCyCCk..kCCyCCCCCyCCCCyCk...", "kCCCCCCCCk..kCCCCCCCCCCCCCCCk...", "kkkkkkkkkk..kkkkkkkkkkkkkkkkk...", "................................", "................................"],
+    capital_spire: [".......k........", ".......krr......", ".......krrr.....", ".......krr......", ".......k........", "......kmk.......", "......kmk.......", ".....kmhmk......", ".....kmhmk......", "....kmhhhmk.....", "....kmhhhmk.....", "...kmhhhhhmk....", "...kCCCCCCCk....", "...kCyCCCyCk....", "...kCCCCCCCk....", "...kkkkkkkkk...."],
+    reed_clump: ["................", "......y.....y...", "......y..y..y...", "...y..l..y..l...", "...y..l..l..l...", "...l..l..l.yl...", "...l.ll..l.ll...", "...llgl.ll.lg...", "...lglg.lg.lg...", "..lglgglgglgg...", "..gtgtggtgtgtl..", "..tgtgttgtgtgt..", "..ttgttttgttt...", "...tttttttttt...", "....dddddddd....", "................"],
+    clipped_tree: ["................", "................", "......kkkk......", "....kkggggkk....", "...kggllggggk...", "..kgglgggggtgk..", "..kglggggggtgk..", ".kgggggggggtttk.", ".kgggggggggtttk.", ".kggggggggttttk.", "..kgggggggtttk..", "..ktggggtttttk..", "...kttttttttk...", "....kkttttkk....", "......kkkk......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", ".......dp.......", "......kdpk......", ".....kmmmmk.....", "....khhhhhhk....", "....khwhhhmk....", "....khhhhhmk....", "....kmmmmmmk....", "....kkkkkkkk....", "................", "................", "................", "................"],
+    bin_tipped: ["................", "................", "................", "................", "................", "..kkkkkkkk......", ".kmmmmmmmhk.....", ".kmhhhhhhhkk....", ".kmhhhhhhhkdk...", ".kmmmmmmmhkdk...", "..kkkkkkkkkk....", "................", "..y.y.y..o.o.ww.", "..yyyyy..ooo.ww.", ".kkkkkkkkkkkkkk.", "................"],
+    withy_bundle: ["................", "................", "................", ".....o.y.o......", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "....oyoyoyo.....", "....ddddddd.....", "....oyoyoyo.....", "....oyoyoyo.....", "...gooyoyoog....", "................"],
+  },
+};
 function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only while the city is on (each new art size opens its own pool sheet)
   const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
@@ -3602,6 +3647,10 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
   // Blink is the sit grid with the two dark eye pixels closed. Design did not ship a blink grid.
   if (LIZZY_ART.art.buddy_sit) A.buddy_blink = paint(LIZZY_ART.art.buddy_sit.map(r => r.replace(/k/g, 'y')));
   for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
+  // ROUTE_TO_GOVERNOR: the new tiles by map char, the props, and the built trough tile as a prop (the fold's rest).
+  for (const [k, rows] of Object.entries(ROUTE4_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  for (const [k, rows] of Object.entries(ROUTE4_ART.art)) if (!A[k]) A[k] = paint(rows);
+  if (!A.water_trough && T.water_trough) A.water_trough = T.water_trough;
   addCrackdownArt(T, A, paint);   // POST_TRIAL_CRACKDOWN + LANTERN_HOUSE_FERNBROOK draft art
   if (city) addHcParadeArt(T, A);   // HC_PARADE PLACEHOLDER art, city only, built on first draw
 }

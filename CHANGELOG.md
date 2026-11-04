@@ -35,6 +35,21 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): green, mine: the coach tile moves four columns east because the spec only fixes it "one tile south of the east-west path", and the nook at (16,9) is the nearest open spot that is not a through lane. D1437 built as settled. No new decision id. No new flag or save field.
 - Anything left unfinished: none.
 
+## 2026-11-04 00:12 ET: Build: Route 4, the walk to the Governor, and four new Walklings (ROUTE_TO_GOVERNOR v0.1.1, D1850-D1876; ACT2_PACING D1880, D1881; KILNMOUTH §4.4)
+- What changed and why:
+  - Vincent settled ROUTE_TO_GOVERNOR and the Act 2 pacing calls (Wed Nov 4, 2026): the first trip to the Governor is on foot (D1881). `data/detail_zzzz_route4.json` adds Route 4 (`route4`, the walled downs to the fork), the river road (`route4_reeds`, downstream to the Charter Hill gate) and the pocket `route4_withy`; the fold at the fork is a free rest; three holders Lv 27-29; wild tables Lv 27-30 (pocket 28-31); first sightings for the adder and the heron. Hearthmoor's north-east coach-road gap opens on `story.gov_posted | story.hc_gov_met`.
+  - The coach turns away the one trip after the posting (Porter Bram's line); the posting's step 4 and Mom's m1 are re-voiced; `gov_walk` and `gov_walk2` sit between `gov_post` and `gov_meet`. A save that met the Governor never walks.
+  - Charter Hill gains a north mouth `m_c1_n` (`tools/build_hc_city.py`), always open outward; inbound walkers are turned back from the meeting to the parade, so B6 stays a coach arrival. With the city preview off the gate lands on Lantern Square's coach gate.
+  - Four new lines appended to `SPECIES` (`adder`, `heron`, `dipper`, `jugwasp`, names PLACEHOLDER) with stats, learnsets, four signature moves and their fx rows; wild only on their own tables. S11 and S12 stay parked.
+  - The region map gets its second sheet, THE AMBERWILD · NORTH, with two 44 px sheet buttons; the south sheet gains ROUTE 4, the river stroke and the seam at col 9. Level caps 41 after Seal 4 and 44 after Seal 5 (D1880). Battle scenes for the three new maps.
+  - Kilnmouth is not built: the fork's east road stays barred with its line until a build has `km_road`.
+- Files touched: `data/detail_zzzz_route4.json` (new), `data/detail_zzz_act2_opener.json`, `data/detail_zzz_act2_cover.json`, `data/reputation.json`, `data/hc_city_v2.json`, `data/mapdata.js`, `data/hc_city_v2.js`, `tools/build_hc_city.py`, `sprites.js`, `stats.js`, `moves.js`, `mv_fx.js`, `save.js`, `standing.js`, `quests.js`, `game.js`, `battle_bg.js`, `index.html`, `style.css`, `tools/GAMEJS_MAP.txt`, `tests/route_to_governor.spec.js` (new), `tests/new_species_act2.spec.js` (new), count updates in eleven specs, `tests/README.md`, `OPEN_DECISIONS.md`.
+- Commit(s) + build id: claude/route4, six slice commits; build in the PR.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1850-D1876 and D1880-D1881 as settled. Engine notes (green): `tableOnly`, `spawnNear`, `idleMul` species fields; a `map:<id>` condition; a warp's `city` target; `chapterOf` counts `story.seal4` and `story.seal5`.
+- Shown species names are the PLACEHOLDER stage names only (Adderlet, Walladder, Zigzag; Reedling, Stalker, Boomer; Chick, Walker, Diver; Bearer, Potter, Cluster); the packets' seed codes (S8, S10, S1, S4) stay in comments and ids (coordinator, Nov 4).
+- Anything left unfinished: KILNMOUTH's east warps and Bram's Kilnmouth line wait on `km_road`; the `route4` music cue and the heron's night boom are asks of SCENE_MUSIC; prop and tile art are drafts from the packet's descriptions.
+
 ## 2026-11-03 23:23 ET: Build: the endings readers and the report skip (REPORTS_AND_ENDINGS v0.1.1 core E1; REPORT_FLAGS; D1620-D1629, D1720, D1725, D1726 B)
 - What changed and why:
   - `standing.js`: the pure readers `pathOf`, `trustOf`, `presOptions`, `ilseCanTurn`, `endingOf` (§3.3), the fixed report list `RPT` (`story.rpt_1`-`_6`, told / kept; D1720: never a prefix scan, so `story.rpt_gov` and `story.rpt_old_seen` stay guards) and the eight ending ids `ENDINGS`. Nothing is stored; no ending scene is built. R6 is now a letter after the third sitting (D1726 B); the readers only count the flag, so the timing changes nothing here.

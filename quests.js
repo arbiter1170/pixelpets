@@ -43,6 +43,7 @@
     'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
     'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
+    'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
@@ -325,9 +326,15 @@
       npc: 'Warden Ilse', npcIds: ['ilse_lodge_after'],
       text: 'Warden Ilse wants you home at the Lodge in Hearthmoor. You have a posting.', place: 'Hearthmoor, the Lodge',
       target: { map: 'hm_lodge_in', x: 5, y: 3 } },
-    // ROUTE HOOK: today the Cadet rides the Lantern Coach to High Charity (GOVERNOR_MEETING §0, settled). A walkable route to
-    // the Governor (ROUTE_TO_GOVERNOR, being designed) would add its own rows here, between gov_post and gov_meet, ending at
-    // the Governor's House door; gov_meet's target stays the office.
+    // ROUTE_TO_GOVERNOR §6 (D1854, carrying PACING's D1881): the first trip after the posting is on foot. Route 4 to the fork, then
+    // the river road to the Charter Hill gate; gov_meet's target stays the office. A save that already met the Governor never
+    // walks (skipIf); gov_meet's done (story.km_assigned) implies both. Text PLACEHOLDER.
+    { id: 'gov_walk', when: ['story.gov_posted'], done: ['story.r4_fork'], skipIf: ['story.hc_gov_met'],
+      text: 'Walk the coach road north from Hearthmoor. The fork is past the downs.', place: 'Route 4',
+      target: { map: 'route4', x: 10, y: 5 } },
+    { id: 'gov_walk2', when: ['story.r4_fork'], done: ['story.r4_walked'], skipIf: ['story.hc_gov_met'],
+      text: 'Take the west fork and the river road to the Charter Hill gate.', place: 'Route 4, river road',
+      target: { map: 'route4_reeds', x: 1, y: 10 } },
     { id: 'gov_meet', when: ['story.gov_posted'], done: ['story.km_assigned'],
       npc: 'Governor Merriden', npcIds: ['hc_governor'],
       text: "Report to Governor Merriden at the Governor's House on Charter Hill, High Charity.", place: "Governor's House",

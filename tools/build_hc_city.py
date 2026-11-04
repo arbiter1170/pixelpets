@@ -229,6 +229,14 @@ def roof_entry(box, style):
 
 # ---------- the five chunks ----------
 CHUNKS = {cid: Chunk(c) for cid, c in CH.items()}
+# ROUTE_TO_GOVERNOR §5.9 (D1853): Charter Hill gains a north mouth, m_c1_n, five cells at x 46-50 on the top row (trees in the
+# layout, so T becomes P). It opens into the lane between the Governor's House and the east block; it pairs with the river road
+# (route4_reeds, outside the city), so it is built here rather than in the layout's chunk-to-chunk mouths.
+R4_MOUTH = {'id': 'm_c1_n', 'cells': [(x, 0) for x in range(46, 51)], 'to': 'route4_reeds', 'tx': 1, 'ty0': 8, 'facing': 'right'}
+_c1 = CHUNKS['hc_civic']
+for (x, y) in R4_MOUTH['cells']:
+    if _c1.grid[y][x] != 'T' or _c1.grid[y + 1][x] not in WALK: fail(f'hc_civic: north mouth cell {(x, y)} is not a tree over a walk tile')
+    _c1.grid[y] = _c1.grid[y][:x] + 'P' + _c1.grid[y][x + 1:]
 for c in CHUNKS.values():
     if c.w > 64 or c.h > 48: fail(f'{c.id}: {c.w}x{c.h} over the 64x48 cap')
     if c.ch(*c.arrival) not in WALK: fail(f'{c.id}: arrival not walkable')
@@ -428,6 +436,24 @@ for cid, c in CHUNKS.items():
             c.add({'kind': 'sign', 'id': f"hc2_post_{m['id']}", 'x': spot[0], 'y': spot[1], 'sprite': 'signpost',
                    'text': f"{DISTRICT[cid]} · This way: {to}."})
         else: fail(f"{cid}: no tile for the {m['id']} signpost")
+
+# ROUTE_TO_GOVERNOR §5.9 (D1853, D1867): the north mouth's warps (no `when`: walking out of the capital always works), the
+# gate arch and the signpost one tile inside, two clipped trees down the lane, and the walk-in trigger (Moss's welcome, unchanged).
+for i, (x, y) in enumerate(R4_MOUTH['cells']):
+    _c1.add({'kind': 'warp', 'id': f"{R4_MOUTH['id']}_{i}", 'x': x, 'y': y, 'to': R4_MOUTH['to'], 'tx': R4_MOUTH['tx'], 'ty': R4_MOUTH['ty0'] + i,
+             'facing': R4_MOUTH['facing']}, blocks=False)
+    _c1.reserved.add((x, y))
+    if not _c1.free(x, y + 1): fail(f'hc_civic: north mouth landing {(x, y + 1)} is not free')
+    _c1.reserved.add((x, y + 1))
+_c1.targets['mouth:' + R4_MOUTH['id']] = R4_MOUTH['cells'][2]
+_c1.add({'kind': 'decal', 'id': 'hc2_arch_' + R4_MOUTH['id'], 'x': R4_MOUTH['cells'][0][0], 'y': 1, 'sprite': 'hc_gate_arch'})
+_c1.add({'kind': 'trigger', 'id': 'hc_walk_in', 'x': 48, 'y': 1, 'r': 2, 'when': ['story.r4_walked', '!story.hc_arrived | !story.hc_greeted'],
+         'scene': 'r4_walk_in'}, blocks=False)
+for oid, (x, y), kw in (('hc2_post_' + R4_MOUTH['id'], (47, 2), {'kind': 'sign', 'sprite': 'signpost', 'text': f"{DISTRICT['hc_civic']} · This way: THE RIVER ROAD."}),
+                        ('hc2_lane_tree_w', (47, 5), {'kind': 'prop', 'sprite': 'clipped_tree'}),
+                        ('hc2_lane_tree_e', (49, 8), {'kind': 'prop', 'sprite': 'clipped_tree'})):
+    if not _c1.safe_block(x, y): fail(f'hc_civic: {oid} at {(x, y)} would block the lane')
+    _c1.add(dict(kw, id=oid, x=x, y=y))
 
 # ---------- tank posts (§4.4): one parked tank on each 4x2 bay, drawn across it (ox shifts the 64 px art) ----------
 for cid, c in CHUNKS.items():
