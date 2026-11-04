@@ -491,6 +491,33 @@ test.describe('KILNMOUTH: Hall 5, the coach and the saves (K-T7, K-T9, D1843, D1
     await expect.poll(() => where(page).then(w => w.map), { timeout: 8000 }).toBe('km_stone_in');
   });
 
+  // Tap sides (merge fix, Wed Nov 4, 2026): the seconds bin, the bath mural and the firebox had lines but no free tile to
+  // tap them from. km_seconds_b (no lines) moved one tile east; the mural's tap cell is its east end (14,1) and the gauge
+  // notches moved one tile west onto the basin's end (13,2), so (14,2) reads both; the firebox's cell is (7,1) beside the
+  // Master, its art unmoved (ox). A Modern tap on each walks to the side and plays the line.
+  test('tap sides: the seconds bin, the bath mural and gauge, and the firebox (cold and lit) answer a Modern tap', async ({ page }) => {
+    needs('hall', 'slice 6 (Hall 5)');
+    await boot(page, save(STORMED, { map: 'km_store_in', x: 5, y: 7, facing: 'up' }));
+    const tapReads = async (map, from, tile, side, line) => {
+      await goto(page, map, from[0], from[1], 'up');
+      await tapTile(page, tile[0], tile[1]);
+      await page.waitForFunction(() => !!PixelPets.scene, null, { timeout: 8000 });
+      const got = await drive(page, [], 20000);
+      expect(says(got), map + ' ' + tile).toContain(line);
+      const w = await where(page);
+      expect([w.x, w.y], map + ' ' + tile + ' tap side').toEqual(side);
+    };
+    await tapReads('km_store_in', [5, 7], [1, 7], [2, 7], 'A bin of chipped seconds. Half price, and still good for soup.');
+    await tapReads('km_bath_in', [14, 5], [14, 1], [14, 2], 'Kiln tiles: a fire-bird over the water. The glaze is cracked where the steam used to be.');
+    await tapReads('km_bath_in', [14, 5], [13, 2], [14, 2], 'Notches in red paint, each one dated in a neat hand. The newest is the lowest.');
+    await tapReads('km_hall_in', [7, 5], [7, 1], [7, 2], 'The firebox. Cold.');
+    await page.evaluate(() => PixelPets.setFlag('story.km_hall_lit', true));
+    await tapReads('km_hall_in', [7, 5], [7, 1], [7, 2], 'The firebox, roaring.');
+    const tapGaps = await page.evaluate(() => PixelPets.auditTaps().reachGaps.filter(g => /^km_/.test(g)));
+    expect(tapGaps).toEqual([]);
+    expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
+  });
+
   test('the coach gate (D1845): no coach before the council sits; after it, the stop takes you to Hearthmoor', async ({ page }) => {
     needs('states', 'slice 7 (the coach stop)');
     await boot(page, save(STORMED, { map: 'kilnmouth', x: 51, y: 26, facing: 'right' }));
@@ -531,14 +558,17 @@ test.describe('KILNMOUTH: words and pacing (K-T10, ACT2_PACING §3)', () => {
     walk(KM.scenes, 'scenes'); for (const [id, t] of Object.entries(KM.trainers)) walk(t.lines, id);
     const q = fs.readFileSync(path.join(ROOT, 'quests.js'), 'utf8').match(/id: 'km_[a-z]+'[^}]*\}/g).join('\n');
     expect(lines.length).toBeGreaterThan(60);
-    const banned = /\b(fainted|evolve[sd]?|coins?|appeared|trainers?|\w+dex|mint|chip|implant|relay|alien)\b|Go, [A-Z]|tamagotchi|poke/i;
+    const banned = /\b(fainted|evolve[sd]?|coins?|appeared|trainers?|\w+dex|mint|chip|implant|relay|alien)\b|Go, [A-Z]|poke/i;
+    const brand = String.fromCharCode.apply(null, require('../tools/scans/wording').BRAND_CODES);   // never written out (AGENTS rule 1)
     for (const [where, t] of lines) {
       if (t.startsWith('@') || /^!?(chip|map|story|seal|bag):[\w.]+$/.test(t) || /^!?story\./.test(t)) continue;   // a scene key or a condition, not a line
       expect(Array.from(t).length, where + ': ' + t).toBeLessThanOrEqual(110);
       expect(t, where).not.toMatch(banned);
+      expect(t.toLowerCase(), where).not.toContain(brand);
       expect(t, where).not.toMatch(/  |’|“/);
     }
     expect(q).not.toMatch(banned);
+    expect(q.toLowerCase()).not.toContain(brand);
     expect(q).toMatch(/Kilnmouth/);
   });
 

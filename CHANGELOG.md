@@ -9,6 +9,14 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - B2-B4 on their tiles: K1 (Reeve Agna), the three asks and the one-name line (K2), the two pitches (K3), the flattened storm with a dusk scene sky, the Tower Crew, the permit and its choice (K4), K5's basket and door, the hill path's walk-beside stop (D1990). The quest chain's holding row gives way to four Kilnmouth rows, then holds again before Brightgate.
   - States on the hold engine: the flat cloud from `story.km_storm`; the curfew (BY ORDER notices, a held night, Keepers on Gate Street); the morning; the three holds; B10's soaked road (mud, a full creek, the ford awash, `km_road_b10` Lv 34-37 and two fresh holders). The coach stop is shut until `story.km_council`. Hall 5 (a climbing kiln, vents lit by `story.km_hall_lit`) and its Hall Stone room behind the Seal 5 gate.
   - Engine (green): per-map skins keep the packet's chars local; `skyWhen` and a `sky` scene step (E2), `tilePatch` (E3), map `overlays` (E4), `spawnsWhen` (E5), a visit counter (E6), `factionOfMap` reads the town's hold (E8). Perf: `PPClock.match` reads the clock only for clock terms, `objAt` tests the tile first and `findPath` files objects by tile (a path across town 3.5 s -> 4 ms).
+  - Merge fix (Wed Nov 4, 2026, build 20261104-1338): four props had lines but no free tile to tap them from. The store's
+    second seconds bin (`km_seconds_b`, no lines) moves one tile east to (3,7), so `km_seconds_a` answers from (2,7). The
+    bath mural spans the back wall (x 1-14); its tap cell is now its east end (14,1) (`ox` -104, the art does not move) and
+    Orla's gauge notches step one tile west onto the basin's end (13,2), so (14,2) reads both. The firebox and the lit
+    firebox take the cell beside the Master, (7,1) (`ox` -8, the art does not move). `tap_interact` recounted and pinned on
+    the tree merged with main (KILNMOUTH adds door 9, warp 22, sign 11, talk 76, trigger 4, holder taps 7, pickup 1, wild 2,
+    shop 1); `tests/kilnmouth.spec.js` taps all five. Shots: `handoff/shots/kilnmouth/*tapside*`.
+    K-T10 now builds the toy-brand check from `tools/scans/wording` char codes, so the name is not written in the spec (rule 1).
 - Files touched: `data/detail_zzzzz_kilnmouth.json` (new), `data/reputation.json`, `data/mapdata.js`, `game.js`, `sprites.js`, `battle_bg.js`, `clock.js`, `quests.js`, `tests/kilnmouth.spec.js` (new), `tests/interior_walls.spec.js`, `tests/battle_backdrops.spec.js`, `tests/route_to_governor.spec.js`, `tests/governor_meeting.spec.js`, `tests/new_species_act2.spec.js`, `tests/standing.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `handoff/shots/kilnmouth/`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`.
 - Commit(s) + build id: claude/kilnmouth, five slice commits and a tests-and-docs commit; build 20261104-0340.
 - Tests run and result (widths, checks): results in the PR.

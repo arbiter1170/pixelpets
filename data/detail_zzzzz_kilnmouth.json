@@ -2578,7 +2578,7 @@
     {
      "kind": "prop",
      "id": "km_seconds_b",
-     "x": 2,
+     "x": 3,
      "y": 7,
      "sprite": "km_seconds_bin"
     },
@@ -2647,18 +2647,18 @@
     {
      "kind": "prop",
      "id": "km_mural_wall",
-     "x": 8,
+     "x": 14,
      "y": 1,
      "sprite": "km_mural",
      "lines": {
       "else": "Kiln tiles: a fire-bird over the water. The glaze is cracked where the steam used to be."
      },
-     "ox": -8
+     "ox": -104
     },
     {
      "kind": "prop",
      "id": "km_notches",
-     "x": 14,
+     "x": 13,
      "y": 2,
      "sprite": "km_notches",
      "lines": {
@@ -3080,13 +3080,13 @@
     {
      "kind": "prop",
      "id": "km_firebox",
-     "x": 6,
+     "x": 7,
      "y": 1,
      "sprite": "km_firebox",
      "lines": {
       "else": "The firebox. Cold."
      },
-     "ox": 8,
+     "ox": -8,
      "when": [
       "!story.km_hall_lit"
      ]
@@ -3094,13 +3094,13 @@
     {
      "kind": "prop",
      "id": "km_firebox_lit",
-     "x": 6,
+     "x": 7,
      "y": 1,
      "sprite": "km_firebox_lit",
      "lines": {
       "else": "The firebox, roaring."
      },
-     "ox": 8,
+     "ox": -8,
      "when": [
       "story.km_hall_lit"
      ]
