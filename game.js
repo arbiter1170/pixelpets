@@ -4766,7 +4766,7 @@ let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };   // per map visit, never saved
 let edgeExitCache = null;   // MAP_EDGE_TAPS P1: rebuilt on the next tap after arrive (useMap)
 function useMap(id){
-  CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
+  CUR = WORLD[id] || WORLD.hearthmoor; if (CUR.tilePatch) patchCells(CUR); MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };
   patrolClock = 0;
   edgeExitCache = null;
@@ -4989,7 +4989,9 @@ function objPos(o){
   if (sched) { const P = mapRT.pos[o.id]; return P && P.sk === sched.x + ',' + sched.y ? P : sched; }   // NPC_LIFE: a walk around this row's tile
   return mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
 }
-function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
+// KILNMOUTH perf (K-T11): the tile test runs before present(), so a path search no longer reads every object's `when` for every cell
+// (the same object is found: the three tests are all required, only their order changed).
+function objAt(x, y, pred){ return CUR.objs.find(o => { const q = objPos(o); return q.x === x && q.y === y && present(o) && (!pred || pred(o)); }) || null; }
 const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
 // Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; that skin's walk table wins over TILE_DEF.
@@ -6027,6 +6029,16 @@ function findPath(goals){
   const prev = new Map([[key(sx, sy), null]]), q = [[sx, sy]];
   const isGoal = (x, y) => goals.some(g => g.x === x && g.y === y);
   if (isGoal(sx, sy)) return [];
+  // KILNMOUTH perf (K-T11): file the map's objects by tile once, so each step reads only its own tile's objects (the same tests
+  // as solid(), warpBlocked() and warpAt(): the first present object there, in map order).
+  const byTile = new Map();
+  for (const o of CUR.objs) { const p = objPos(o), k = key(p.x, p.y), l = byTile.get(k); if (l) l.push(o); else byTile.set(k, [o]); }
+  const here = (x, y, pred) => (byTile.get(key(x, y)) || []).find(o => present(o) && pred(o)) || null;
+  const stopAt = (x, y) => {
+    if (solidTile(x, y) || here(x, y, o => BLOCK_KINDS[o.kind])) return true;
+    const wp = here(x, y, o => o.kind === 'warp');
+    return !!wp && ((!!wp.need && !needMet(wp.need)) || !isGoal(x, y));
+  };
   let visits = 0;
   while (q.length && visits < cap) {
     const [x, y] = q.shift();
@@ -6034,7 +6046,7 @@ function findPath(goals){
     for (const [dx, dy] of Object.values(DIRS)) {
       const hop = hopLanding(x + dx, y + dy, dx, dy);   // a hop ledge is one edge, one way (D560)
       const nx = hop ? hop.x : x + dx, ny = hop ? hop.y : y + dy, k = key(nx, ny);
-      if (prev.has(k) || solid(nx, ny) || wildAt(nx, ny) || warpBlocked(nx, ny) || (warpAt(nx, ny) && !isGoal(nx, ny))) continue;
+      if (prev.has(k) || stopAt(nx, ny) || wildAt(nx, ny)) continue;
       prev.set(k, [x, y]);
       if (isGoal(nx, ny)) { const out = []; let c = [nx, ny]; while (c && !(c[0] === sx && c[1] === sy)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); } return out; }
       q.push([nx, ny]);
@@ -7236,7 +7248,7 @@ function settleHop(){
 function warpTo(at, after){
   if (fade.busy) return;
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('warp');
-  fade.busy = true; fade.t0 = now(); settleHop(); clearMoves();
+  fade.busy = true; fade.t0 = now(); settleHop(); clearMoves(); kmPrevMap = CUR ? CUR.id : null;   // KILNMOUTH E6: the map a warp leaves
   setTimeout(() => { arriveAt(at); }, FADE_MS / 2);
   setTimeout(() => { fade.busy = false; if (after) after(); maybeLanternGuide(); }, FADE_MS);
 }
@@ -7257,6 +7269,7 @@ function arriveAt(at){
   try { syncPlaceYield(true); } catch (e) {}
   try { noteMhcRestRoom(); } catch (e) {}
   try { sideBarArrive(); } catch (e) {}   // SIDE_BADGE: who holds the town or route you just walked into
+  try { kmArrive(); } catch (e) {}   // KILNMOUTH E6: the visit counter
 }
 // DAY1_TRIAL1_FLOW: a door's `deny` may be keyed like npc lines ({ cond: line, else: line }); the first true key wins.
 function denyLine(dr){
@@ -7346,6 +7359,7 @@ function factionOfMap(id){
   if (!id) return null;
   if (id === 'gw_preview') return window.PPFleet ? PPFleet.previewFaction() : null;   // the preview lot follows its chosen hold
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
+  if (id === 'kilnmouth' || id.indexOf('km_') === 0) return kmFaction(id);   // KILNMOUTH E8: the town follows its hold (CAB §3.6)
   if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
   if (id === 'bw_depot_in') return 'glimmer';                               // BRINEWICK (B6): a Keepers harbour with a Glimmerwell depot
   if (id === 'brinewick' || id.indexOf('bw_') === 0) return 'keepers';
@@ -7857,7 +7871,7 @@ function drawMap(t){
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
   drawBubbles(g, cx, cy, t);
-  if (!isRoom()) drawWeather(g, VW, VH, t);   // weather tint is skipped indoors (INTERIORS §2.1)
+  if (!isRoom()) { drawMapOverlays(g, cx, cy, VW, VH, t); drawWeather(g, VW, VH, t); }   // weather tint is skipped indoors (INTERIORS §2.1); KILNMOUTH E4 clouds under it
   drawDream(g, VW, VH, t);
   drawObjectiveCue(g, cx, cy, t);
   drawNeedBubble(g, cx, cy, t);
@@ -10027,6 +10041,7 @@ async function execStep(st){
     case 'walkTo': await cutWalkTo(sc, a, b, c, d); return;
     case 'walkAll': { await Promise.all((a || []).map(w => cutWalkTo(sc, w[0], w[1], w[2], w[3]))); return; }   // E5 (D1204): [[id, x, y, opts], ...] walk together
     case 'wait': { if (!cutFast(sc)) await cutWait(a | 0); return; }
+    case 'sky': sc.sky = a || null; return;   // KILNMOUTH E2 (D1831): this scene's sky; the clock comes back when it ends
     case 'curtain': { cutCurtain(a === 'on', cutFast(sc)); return; }
     case 'castAt': { cutCastAt(sc, a, b, c, d); return; }
     case 'prop': { cutProp(sc, cutVar(sc, a), b); return; }
@@ -10924,7 +10939,7 @@ const SPAWNS = {
 };
 // HUSHWATER E1: detail spawn tables join the same loop. Rows whose species is not in SPECIES are skipped until B2.
 for (const src of [MD.act1_route2, MD.cobblecrest, ...DETAIL_KEYS.map(k => MD[k])]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = (src === MD.act1_route2 || src === MD.cobblecrest) ? v : Object.assign({}, v, { table: (v.table || []).filter(row => SP_INDEX[row[0]] != null) });
-const spawnKey = () => (CUR && CUR.spawns) || 'proto';
+const spawnKey = () => (CUR && (spawnsWhen(CUR) || CUR.spawns)) || 'proto';   // KILNMOUTH E5: spawnsWhen first
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
 function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
@@ -11091,8 +11106,9 @@ function drawDream(g, VW, VH, t){
 /* ---------- weather overlay (cheap, stateless pixel particles) ---------- */
 const WX_RND = Array.from({ length: 360 }, (_, i) => { const v = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); });
 function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/flake count (the Pet tab canvas is small)
-  const tags = envTags(), has = k => tags.includes(k);
-  if (window.PPClock) {
+  const tags = envTags(), has = k => tags.includes(k), forced = forcedSky();   // KILNMOUTH E2: a scene or map sky wins over the clock tint
+  if (forced) drawForcedSky(g, VW, VH, forced);
+  else if (window.PPClock) {
     const r = PPClock.now(), mins = r.hh * 60 + r.mm;
     if (r.phase === 'dawn') {
       const k = 1 - (mins - 5 * 60) / 120;
@@ -11104,7 +11120,7 @@ function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/fl
       g.fillRect(0, 0, VW, VH);
     }
   }
-  if (has('night')) { g.fillStyle = 'rgba(16,18,52,.42)'; g.fillRect(0, 0, VW, VH); }
+  if (has('night') && !forced) { g.fillStyle = 'rgba(16,18,52,.42)'; g.fillRect(0, 0, VW, VH); }
   if (has('fog')) { g.fillStyle = 'rgba(244,244,244,.18)'; g.fillRect(0, 0, VW, VH); }
   if (has('rain') || has('storm')) {
     if (!has('night')) { g.fillStyle = 'rgba(41,54,111,.22)'; g.fillRect(0, 0, VW, VH); }   // overcast
@@ -12697,6 +12713,99 @@ function matchHold(id, flags){
 }
 function mapHold(id, flags){ return matchHold(id, flags).id; }
 function holdLine(id, flags){ const rule = matchHold(id, flags); return rule.line || MAP_HOLD_LINE[rule.id] || MAP_HOLD_LINE.wild; }
+/* ---------- KILNMOUTH v0.1.1 (design repo, private; D1820-D1849, settled Wed Nov 4, 2026) ---------- */
+// Claybank Road (km_road) and the town (kilnmouth) live in data/detail_zzzzz_kilnmouth.json. This block registers them with
+// the built tables (the region node and its hold rows, the Lantern House, the rule 10 door marks, the respawn tiers) and holds
+// the packet's small engine asks (§12.2): E2 a scene sky and a map sky, E3 state tile patches, E4 the flat cloud, E5
+// spawnsWhen, E6 the visit counter, E8 the hold. Blurbs are PLACEHOLDER (Story).
+Object.assign(REGION_MAP.nodes.kilnmouth, { blurb: 'Spa town of cold springs and bottle kilns.', sway: true,
+  hold: [{ id: 'keepers', when: ['story.km_settled', 'story.sway_kilnmouth>=2'], line: 'Kilnmouth sits its own seat. The Keepers walk its lanes.' },
+    { id: 'glimmer', when: ['story.km_settled', 'story.sway_kilnmouth<=-2'], line: "Glimmerwell holds the town. The water's warm again." },
+    { id: 'split', when: ['story.km_settled'], line: 'Kilnmouth sits its seat. Both sides wait at the springs.' },
+    { id: 'split' }] });   // CAB §3.6 rule 4: split, before the sitting
+Object.assign(REGION_MAP.nodes.km_road, { blurb: 'Up the clay valley from the fork, beside a low creek.' });
+REGION_MAP.flags.kilnmouth = ['story.reached_kilnmouth']; REGION_MAP.flags.km_road = ['story.reached_kilnmouth'];
+LANTERN_ROOMS.km_lantern_in = 1; LANTERN_GUIDE_IDS.km_lantern_host = 1; LANTERN_TOWNS.kilnmouth = 1;
+TOWN_DOOR_ART.km_lantern = 'heal_lantern'; TOWN_DOOR_ART.km_store = 'acorn_board';
+LANTERN_NEAR.kilnmouth = [['kilnmouth']]; LANTERN_NEAR.km_road = [['kilnmouth']];   // a loss on the road wakes you in town once seen, else at the last one
+(function kmLanternSigns(){
+  const find = (map, id) => WORLD[map] && WORLD[map].objs.find(o => o.id === id), n = LANTERN_REST_COST;
+  const sign = find('kilnmouth', 'km_lantern_sign'); if (sign) sign.lines = { else: 'LANTERN HOUSE · Rest and recover. ' + n + ' Acorns, or what you have.' };
+  const note = find('km_lantern_in', 'km_lantern_note'); if (note) note.text = 'A note by the door: "Rest the whole party. ' + n + ' Acorns, or what you have. Kilnmouth"';
+})();
+// E8: the town wears its hold (first matching row of the node); the road is wild. Split shows no band.
+function kmFaction(id){ if (id === 'km_road') return null; const h = mapHold('kilnmouth'); return h === 'keepers' || h === 'glimmer' ? h : null; }
+// E5: a map's `spawnsWhen` rows ([{ when, spawns }], first match) replace its `spawns` table while they hold.
+function spawnsWhen(m){
+  if (!S || !m || !m.spawnsWhen) return null;
+  for (const r of m.spawnsWhen) if (r && r.spawns && (r.when || []).every(c => cond(c, false))) return r.spawns;
+  return null;
+}
+// E3: a map's `tilePatch` rows ([{ when, rows: { y: row } }]) swap whole grid rows while their `when` holds, read on arrival.
+// The base grid stays as drawn (NPC paths, dev checks and the checker read it); nothing is saved.
+function patchCells(m){
+  if (!S || !m.tilePatch) return;
+  const rows = m.grid.slice();
+  for (const p of m.tilePatch) if (p && p.rows && (p.when || []).every(c => cond(c, false)))
+    for (const [y, row] of Object.entries(p.rows)) if (rows[+y] != null && row.length === rows[+y].length) rows[+y] = row;
+  const sig = rows.join('\n'); if (m._patchSig === sig) return;
+  m._patchSig = sig; m.cells = rows.map(r => r.split(''));
+}
+// E2 (D1831): a scene's ['sky', 'dusk' | 'night' | 'dawn'] tints the map for that scene only; a map's `skyWhen` rows force a
+// look while they hold (the curfew's night). The real-sky clock never moves.
+function forcedSky(){
+  if (scene && scene.sky) return scene.sky;
+  if (!S || !CUR || !CUR.skyWhen) return null;
+  for (const r of CUR.skyWhen) if (r && r.sky && (r.when || []).every(c => cond(c, false))) return r.sky;
+  return null;
+}
+function drawForcedSky(g, VW, VH, sky){
+  g.fillStyle = sky === 'night' ? 'rgba(16,18,52,.42)' : sky === 'dusk' ? 'rgba(214,140,48,.25)' : 'rgba(232,164,132,.2)';
+  g.fillRect(0, 0, VW, VH);
+}
+// E4: `overlays` on a map: the flat cloud (one static band at a tile rect, under the HUD) and B4's rolling storm (its scene only).
+// Reduced motion: the storm's edge holds still.
+function drawMapOverlays(g, cx, cy, VW, VH, t){
+  if (!CUR || !CUR.overlays) return;
+  for (const ov of CUR.overlays) {
+    if (ov.scene ? !(scene && scene.id === ov.scene) : !(S && (ov.when || []).every(c => cond(c, false)))) continue;
+    const [x0, y0, x1, y1] = ov.rect, X = x0 * TS - cx, Y = y0 * TS - cy, Wd = (x1 - x0 + 1) * TS, Ht = (y1 - y0 + 1) * TS;
+    if (X > VW || Y > VH || X + Wd < 0 || Y + Ht < 0) continue;
+    if (ov.kind === 'flat') kmFlatCloud(g, X, Y, Wd, Ht);
+    else if (ov.kind === 'storm') kmStormCloud(g, X, Y, Wd, Ht, prefersReduced() ? 0 : t, cx);
+  }
+}
+function kmFlatCloud(g, X, Y, Wd, Ht){
+  g.save(); g.globalAlpha = 0.86;
+  g.fillStyle = PAL.h; g.fillRect(X, Y, Wd, Ht - 3);
+  g.fillStyle = PAL.w; for (let x = 0; x < Wd; x += 24) g.fillRect(X + x + 4, Y, 14, 3);
+  g.fillStyle = PAL.m; g.fillRect(X, Y + Ht - 3, Wd, 3);   // the ruler-straight bottom edge
+  g.restore();
+}
+function kmStormCloud(g, X, Y, Wd, Ht, t, cx){
+  const flat = (CUR.overlays || []).find(o => o.kind === 'flat'), roll = Math.round(Math.sin(t / 900) * 6);
+  const fx0 = flat ? flat.rect[0] * TS - cx : X + Wd / 3, fx1 = flat ? (flat.rect[2] + 1) * TS - cx : X + Wd * 2 / 3, fh = flat ? (flat.rect[3] - flat.rect[1] + 1) * TS : 5 * TS;
+  g.save(); g.globalAlpha = 0.8; g.fillStyle = PAL.d;
+  for (let x = 0; x < Wd; x += 8) {
+    const sx = X + x; if (sx >= fx0 && sx < fx1) continue;   // over the tower the cloud has gone flat
+    g.fillRect(sx, Y, 8, Math.max(8, Ht - 10 + Math.round(Math.sin((x + roll * 3) / 19) * 8)));
+  }
+  g.fillStyle = PAL.m; g.fillRect(fx0, Y, fx1 - fx0, fh);
+  g.restore();
+}
+// ?debug=1 (and the debug pref) only, like window.WORLD: the pieces tests/kilnmouth.spec.js reads.
+if (DEBUG) window.PPKm = Object.freeze({ spawnKey: () => spawnKey(), tileBox: (x, y) => tileBox(x, y), factionOfMap: id => factionOfMap(id), holdLine: id => holdLine(id),
+  mapVisited: (id, cur) => mapVisited(id, cur), forcedSky: () => forcedSky(), respawnTown: () => respawnTown(), artFrame: (a, t) => artFrame(a, t), cond: c => cond(c, false),
+  get WART(){ return WART; }, get TILE_DEF(){ return TILE_DEF; }, get TOWN_DOOR_ART(){ return TOWN_DOOR_ART; }, get LANTERN_NEAR(){ return LANTERN_NEAR; } });
+// E6 (D1841): one visit a game day, entering the town from the road or the coach (not from its own rooms, never at load).
+let kmPrevMap = null;   // set by warpTo (a load or a debug jump sets nothing, so nothing is counted then)
+function kmArrive(){
+  const prev = kmPrevMap; kmPrevMap = null;
+  if (CUR.id !== 'kilnmouth' || !prev || prev === 'kilnmouth' || (WORLD[prev] && WORLD[prev].outdoor === 'kilnmouth')) return;
+  const day = window.PPClock ? Math.floor(PPClock.now().gameMinute / 1440) : 0;
+  if (S.flags['story.km_visit_day'] === day) return;
+  S.flags['story.km_visit_day'] = day; S.flags['story.km_visits'] = Math.min(9, (+S.flags['story.km_visits'] || 0) + 1); save();
+}
 function nodeSeal(id){
   if (!S) return false;
   const seals = S.seals || {}, f = S.flags || {};

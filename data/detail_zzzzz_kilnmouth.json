@@ -1,0 +1,1647 @@
+{
+ "spec": "KILNMOUTH v0.1.1 (design repo, private; D1820-D1849 settled Wed Nov 4, 2026): Claybank Road and the town of Kilnmouth.",
+ "_about": "Ours, not a design copy. Claybank Road (km_road, the east branch from the fork), the town (kilnmouth) and its six rooms; Route 4's east warps; the holders, scenes and wild tables of Act 2's builds 2 and 3 (the road and the town; Kilnmouth round 1). Map chars are local to the km_town and km_road skins (sprites.js), so the packet blockout is the grid. Named zzzzz so it applies after route4 and Brightgate.",
+ "_placeholders": {
+  "note": "PLACEHOLDER copy (Story to replace; KILNMOUTH §4-§6, CABINET §3.5, WALK_BESIDE §4.2, ACT2_BEAT_SHEET B4). Every line, sign, holder name, role name and map label in this file is a placeholder unless a settled packet wrote it.",
+  "paths": [
+   "maps",
+   "scenes",
+   "trainers",
+   "slicePatch"
+  ]
+ },
+ "maps": {
+  "km_road": {
+   "name": "Claybank Road",
+   "backdrop": "route",
+   "w": 40,
+   "h": 32,
+   "skin": "km_road",
+   "variants": true,
+   "spawns": "km_road",
+   "respawn": null,
+   "safe": {
+    "x": 1,
+    "y": 25
+   },
+   "zones": [
+    {
+     "x": 3,
+     "y": 3,
+     "w": 13,
+     "h": 11
+    },
+    {
+     "x": 3,
+     "y": 27,
+     "w": 13,
+     "h": 4
+    },
+    {
+     "x": 22,
+     "y": 16,
+     "w": 4,
+     "h": 7
+    },
+    {
+     "x": 35,
+     "y": 3,
+     "w": 3,
+     "h": 9
+    }
+   ],
+   "grid": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTppppTTTTTTTTTT",
+    "TTggggggggggggggggggggggggppppsswwsgggTT",
+    "TTCCCCCCCCCCCCCCCgggggggggppppsswwsgggTT",
+    "TTgttttttpttttttggggggggggppppsswwstttTT",
+    "TTgttttttpttttttggggggggggppppsswwstttTT",
+    "TTgttttttpttCCttggggggggggppppsswwstttTT",
+    "TTgtttCCtpttCCttggggggggggppppsswwstttTT",
+    "TTgtttCCtpttCCttggggggggggppppsswwstttTT",
+    "TTgtttCCtpttCCttggggggggggppppsswwstttTT",
+    "TTgtttCCtpttCCttggggggggggppppsswwstttTT",
+    "TTgtttCCtpttttttggggggggggppppsswwstttTT",
+    "TTgttttttpttttttggggggggggppppsswwstttTT",
+    "TTgttttttpttttttggggggggggppppsswwsgggTT",
+    "TTgttttttpttttttgggwwwwwwwBBBBwwwwggggTT",
+    "TTgggggggppggggggggwwwwwwwBBBBwwwwggggTT",
+    "TTgggggggppgggggggswwsssssssssssssggggTT",
+    "TTCCCCCCCppCCCCCCgswwsttttppppggggggggTT",
+    "TTCCCCCCCppCCCCCCgswwsttttppppgTTTTTTTTT",
+    "TTCCCCCCCppCCCCCCgswwsttttppppgTTTTTTTTT",
+    "TTggggggggggggggggswwsttttppppgggggggTTT",
+    "TTgggjjgggggggggggswwsttttppppgggggggTTT",
+    "TTggggggggggggjjggswwsttttppppgggggggTTT",
+    "TTggggggggggggggggswwsttttppppgggggggTTT",
+    "TTggggggggggggggggswwsggggppppgggggggTTT",
+    "ppppppppppppppppppsoosppppppppgggggggTTT",
+    "ppppppppppppppppppsoosppppppppgggggggTTT",
+    "ppppppppppppppppppsoosppppppppgggggggTTT",
+    "TTgtttttttttttttggswwsgggggggggggggggTTT",
+    "TTgtttttttttttttggswwsgjjggggggggggggTTT",
+    "TTgtttttttttttttggswwsgggggggggTTTTTTTTT",
+    "TTgtttttttttttttggswwsgggggggggTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "kr_west_n",
+     "x": 0,
+     "y": 24,
+     "to": "route4",
+     "tx": 22,
+     "ty": 1,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "kr_west_c",
+     "x": 0,
+     "y": 25,
+     "to": "route4",
+     "tx": 22,
+     "ty": 2,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "kr_west_s",
+     "x": 0,
+     "y": 26,
+     "to": "route4",
+     "tx": 22,
+     "ty": 3,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "kr_north_a",
+     "x": 26,
+     "y": 0,
+     "to": "kilnmouth",
+     "tx": 26,
+     "ty": 38,
+     "facing": "up",
+     "setFlag": "story.reached_kilnmouth"
+    },
+    {
+     "kind": "warp",
+     "id": "kr_north_b",
+     "x": 27,
+     "y": 0,
+     "to": "kilnmouth",
+     "tx": 27,
+     "ty": 38,
+     "facing": "up",
+     "setFlag": "story.reached_kilnmouth"
+    },
+    {
+     "kind": "warp",
+     "id": "kr_north_c",
+     "x": 28,
+     "y": 0,
+     "to": "kilnmouth",
+     "tx": 28,
+     "ty": 38,
+     "facing": "up",
+     "setFlag": "story.reached_kilnmouth"
+    },
+    {
+     "kind": "warp",
+     "id": "kr_north_d",
+     "x": 29,
+     "y": 0,
+     "to": "kilnmouth",
+     "tx": 29,
+     "ty": 38,
+     "facing": "up",
+     "setFlag": "story.reached_kilnmouth"
+    },
+    {
+     "kind": "sign",
+     "id": "kr_sign_w",
+     "x": 2,
+     "y": 23,
+     "text": "KILNMOUTH, up the clay valley. Springs, kilns and a warm welcome."
+    },
+    {
+     "kind": "sign",
+     "id": "kr_sign_s4",
+     "x": 8,
+     "y": 19,
+     "text": "CLAY PITS. Mind the little jugs."
+    },
+    {
+     "kind": "sign",
+     "id": "kr_sign_s1",
+     "x": 22,
+     "y": 23,
+     "text": "THE FORD. Something bobs in the shallows."
+    },
+    {
+     "kind": "prop",
+     "id": "kr_milestone",
+     "x": 30,
+     "y": 23,
+     "sprite": "milestone",
+     "lines": {
+      "else": "KILNMOUTH 1. Up the valley, over the bridge."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "kr_hammer",
+     "x": 24,
+     "y": 12,
+     "sprite": "km_hammer",
+     "lines": {
+      "else": "A water-hammer, stopped. Hasn't struck since the rain quit the hill."
+     },
+     "ox": 8
+    },
+    {
+     "kind": "wild",
+     "id": "kr_s1_first",
+     "x": 22,
+     "y": 26,
+     "form": "dipper/0",
+     "level": 29,
+     "when": [
+      "!story.kr_s1_met"
+     ],
+     "scene": "kr_s1_first"
+    },
+    {
+     "kind": "wild",
+     "id": "kr_s4_first",
+     "x": 9,
+     "y": 15,
+     "form": "jugwasp/0",
+     "level": 29,
+     "when": [
+      "!story.kr_s4_met"
+     ],
+     "scene": "kr_s4_first"
+    },
+    {
+     "kind": "pickup",
+     "id": "kr_snack",
+     "x": 13,
+     "y": 11,
+     "item": "heal_snack",
+     "n": 1
+    },
+    {
+     "kind": "trainer",
+     "id": "kr_holder_1",
+     "x": 12,
+     "y": 23
+    },
+    {
+     "kind": "trainer",
+     "id": "kr_holder_2",
+     "x": 24,
+     "y": 27
+    },
+    {
+     "kind": "trainer",
+     "id": "kr_holder_3",
+     "x": 30,
+     "y": 8
+    }
+   ]
+  },
+  "kilnmouth": {
+   "name": "Kilnmouth",
+   "backdrop": "town",
+   "w": 56,
+   "h": 40,
+   "skin": "km_town",
+   "variants": true,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "km_lantern_in",
+    "x": 5,
+    "y": 10,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 27,
+    "y": 37
+   },
+   "zones": [],
+   "roofs": {
+    "bath": {
+     "x0": 8,
+     "y0": 21,
+     "x1": 18,
+     "y1": 25,
+     "roof": "roof_km_terra",
+     "wall": "wall_km_cream",
+     "trim": "G",
+     "door": "door_double",
+     "win": "win_box",
+     "shape": "gable"
+    },
+    "hall5": {
+     "x0": 37,
+     "y0": 21,
+     "x1": 47,
+     "y1": 25,
+     "roof": "roof_km_kiln",
+     "wall": "wall_km_cream",
+     "trim": "F",
+     "door": "door_arch",
+     "win": "win_box",
+     "shape": "flat"
+    },
+    "warm": {
+     "x0": 50,
+     "y0": 9,
+     "x1": 53,
+     "y1": 11,
+     "roof": "roof_km_soot",
+     "wall": "wall_km_soot",
+     "trim": "N",
+     "door": "door_iron",
+     "win": "win_box",
+     "shape": "flat"
+    },
+    "council": {
+     "x0": 7,
+     "y0": 10,
+     "x1": 15,
+     "y1": 14,
+     "roof": "roof_km_band",
+     "wall": "wall_km_cream",
+     "trim": "F",
+     "door": "door_double",
+     "win": "win_box",
+     "shape": "gable"
+    },
+    "relocated": {
+     "x0": 16,
+     "y0": 12,
+     "x1": 18,
+     "y1": 14,
+     "roof": "roof_km_terra",
+     "wall": "wall_km_cream",
+     "trim": "G",
+     "door": "door_dutch",
+     "win": "win_box",
+     "shape": "gable"
+    },
+    "post": {
+     "x0": 38,
+     "y0": 14,
+     "x1": 44,
+     "y1": 17,
+     "roof": "roof_km_terra",
+     "wall": "wall_km_cream",
+     "trim": "m",
+     "door": "door_iron",
+     "win": "win_box",
+     "shape": "flat"
+    },
+    "regular": {
+     "x0": 2,
+     "y0": 30,
+     "x1": 5,
+     "y1": 32,
+     "roof": "roof_km_terra",
+     "wall": "wall_km_cream",
+     "trim": "G",
+     "door": "door_dutch",
+     "win": "win_box",
+     "shape": "gable"
+    },
+    "lantern": {
+     "x0": 30,
+     "y0": 30,
+     "x1": 36,
+     "y1": 33,
+     "roof": "roof_km_terra",
+     "wall": "wall_km_cream",
+     "trim": "G",
+     "door": "door_dutch",
+     "win": "win_box",
+     "shape": "gable",
+     "porch": [
+      "km_lantern_sign",
+      "km_porch"
+     ]
+    },
+    "store": {
+     "x0": 19,
+     "y0": 30,
+     "x1": 25,
+     "y1": 33,
+     "roof": "roof_km_terra",
+     "wall": "wall_km_cream",
+     "trim": "G",
+     "door": "door_double",
+     "win": "win_box",
+     "shape": "gable",
+     "porch": [
+      "km_store_board",
+      "km_awning"
+     ]
+    }
+   },
+   "grid": [
+    "TTTpppTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTpppTTTTTTTTTTTTTTTCCCCCCCCCCCCCCTTTTTTTTTTTTTTTTTTTTT",
+    "TggpppgggggggggggggggCCCCCCCCChhhhhhhhggggggTTTTTTTTTTgT",
+    "TggpppggggggggggggggCCCCCCCCCCCCCCCChhggggggTTTTTTTTTTgT",
+    "TggpppggggggggggggggCCCCCCCCCCCCCCCChhggggggTTTTTTTTTTgT",
+    "TggpppggggggggggggggCCCCCCCCCCCCCCCChhggggggTTTTTTTTTTgT",
+    "TggpppggggggggggggggCCCCCCCCCCCCCCCChhggggggTTTTTTTTTTgT",
+    "TggpppgggggggggggggggCCCCCCCCCCCCCCghhgggggggggggggggggT",
+    "TggpppgggggggggggggggggggggggggggggghhggggggggggFFFFFFFT",
+    "TggpppggggggggggggggFFFFFFFFFFFFFFFFhhggggggggggFYRRRRFT",
+    "TggpppgRRRRRRRRRggggFggggggggggggggFhhggggggggggFYRRRRFT",
+    "TggpppgRRRRRRRRRggggFggggggggggggggFhhggggggggggFYRRRRFT",
+    "TggpppgRRRRRRRRRRRRgFggggggggggggggFhhggggggggggFYHHHHFT",
+    "TggpppgRRRRRRRRRRRRgFggggggggggggggFhhggggggggggFYYYYYFT",
+    "TggpppgRRRRRRRRRRRRgFgggggQQQQgggggFhhRRRRRRRgggFYYYYYFT",
+    "TggpppgHHHHHHHHHHHHgFgggggQQQQgggggFhhRRRRRRRgggFYYYYYFT",
+    "TggpppgHHHHHHHHHHHHgFgggggQQQQgggggFhhRRRRRRRgggFYYYYYFT",
+    "TgpppppppppppppppppppgggggQQQQgggggFhhRRRRRRRgggFYYYYYFT",
+    "TgpppppppppppppppppppgggggQQQQgggggFhhHHHHHHHgggFYYYYYFT",
+    "TggggggggggggggggggppggggggggggggggFhhHHHHHHHgggFYYYYYFT",
+    "TTTTTTTggggggggggggppggggggggggggggFppppppppppkpFYYYYYFT",
+    "TTggggTgRRRRRRRRRRRppFFFFFFpFFFFFFFFpRRRRRRRRRRRFYYYYYFT",
+    "TTggggTgRRRRRRRRRRRppeeeeeeeeeeeeeegpRRRRRRRRRRRFYYYYYFT",
+    "TTggggTgRRRRRRRRRRRppevvvvvvvvvvvvegpRRRRRRRRRRRFYYYYYFT",
+    "TTggggTgRRRRRRRRRRRuUevwwwwwwwwwwvegpRRRRRRRRRRRFYYYYYFT",
+    "TTggggTgRRRRRRRRRRRppevwwwwwwwwwwvegpRRRRRRRRRRRFYYYYYFT",
+    "TTggggTgHHHHHHHHHHHppevwwwwwwwwwwvegpHHHHHHHHHHHFYYYYYFT",
+    "TTTTTTTgHHHHHHHHHHHppevvvvvvvvvvvvegpHHHHHHHHHHHFYYYYYFT",
+    "TggggggggggggggggggppeeeeeeuUeeeeeegppqqpppppqqppppppppT",
+    "TgooooooooooooooooooooooooobbooooooooooooooooooooooooogT",
+    "TgRRRRgppppppppppppRRRRRRRouUoRRRRRRRgpppppppppppppppppT",
+    "TgRRRRgpSSppSSppSSpRRRRRRRouUoRRRRRRRgppkkkppkkkppkkkppT",
+    "TgRRRRgppppppppppppRRRRRRRouUoRRRRRRRgppkkkppkkkppkkkppT",
+    "TgHHHHgppppppppppppRRRRRRRouUoRRRRRRRgppkkkppkkkppkkkppT",
+    "TgHHHHgpSSppppppSSpHHHHHHHouUoHHHHHHHgpppppppppppppppppT",
+    "TggggggppppppppppppHHHHHHHouUoHHHHHHHgpppppppppppppppppT",
+    "TgppppppppppppppppppppppppobboppppppppppppppppppppppppgT",
+    "TgppppppppppppppppppppppppouUoppppppppppppppppppppppppgT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTToouUooTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTppppTTTTTTTTTTTTTTTTTTTTTTTTTT"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "km_south_a",
+     "x": 26,
+     "y": 39,
+     "to": "km_road",
+     "tx": 26,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "km_south_b",
+     "x": 27,
+     "y": 39,
+     "to": "km_road",
+     "tx": 27,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "km_south_c",
+     "x": 28,
+     "y": 39,
+     "to": "km_road",
+     "tx": 28,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "km_south_d",
+     "x": 29,
+     "y": 39,
+     "to": "km_road",
+     "tx": 29,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "door",
+     "id": "km_bath",
+     "x": 13,
+     "y": 28,
+     "need": "map:km_bath_in",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "door",
+     "id": "km_hall5",
+     "x": 42,
+     "y": 28,
+     "need": "map:km_hall_in",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "door",
+     "id": "km_warm",
+     "x": 51,
+     "y": 13,
+     "need": "map:km_warm_in",
+     "deny": "Night shift only. The gate shuts at dusk."
+    },
+    {
+     "kind": "door",
+     "id": "km_council",
+     "x": 11,
+     "y": 17,
+     "need": "map:km_council_in",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "door",
+     "id": "km_relocated",
+     "x": 17,
+     "y": 17,
+     "need": "map:km_relocated_in",
+     "deny": "A note on the door: RELOCATED, WITH THANKS. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "km_post",
+     "x": 41,
+     "y": 20,
+     "need": "map:km_post_in",
+     "deny": "Post's manned. Ask the man outside."
+    },
+    {
+     "kind": "door",
+     "id": "km_regular",
+     "x": 3,
+     "y": 35,
+     "need": "map:km_regular_in",
+     "deny": {
+      "story.km_council & story.km_curfew=back": "A card on the door: MOVED AWAY."
+     }
+    },
+    {
+     "kind": "door",
+     "id": "km_store",
+     "x": 24,
+     "y": 36,
+     "to": "km_store_in",
+     "tx": 5,
+     "ty": 7,
+     "facing": "up"
+    },
+    {
+     "kind": "door",
+     "id": "km_lantern",
+     "x": 31,
+     "y": 36,
+     "to": "km_lantern_in",
+     "tx": 5,
+     "ty": 10,
+     "facing": "up"
+    },
+    {
+     "kind": "prop",
+     "id": "km_lantern_sign",
+     "x": 30,
+     "y": 35,
+     "sprite": "heal_lantern"
+    },
+    {
+     "kind": "prop",
+     "id": "km_store_board",
+     "x": 25,
+     "y": 35,
+     "sprite": "acorn_board"
+    },
+    {
+     "kind": "prop",
+     "id": "km_porch",
+     "x": 33,
+     "y": 36,
+     "sprite": "km_porch",
+     "lines": {
+      "else": "A bench under the lantern. The lamp is lit even by day."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_awning",
+     "x": 21,
+     "y": 36,
+     "sprite": "km_awning",
+     "lines": {
+      "else": "Crates of ware under a striped awning: jugs, crocks, a few chipped seconds."
+     }
+    },
+    {
+     "kind": "sign",
+     "id": "km_sign",
+     "x": 25,
+     "y": 38,
+     "text": "KILNMOUTH. Mind the runnels. Mind the kilns."
+    },
+    {
+     "kind": "prop",
+     "id": "km_sluice",
+     "x": 29,
+     "y": 33,
+     "sprite": "km_sluice",
+     "lines": {
+      "else": "A wooden runnel, crusted white. It has not carried warm water in a while."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_gauge",
+     "x": 27,
+     "y": 27,
+     "sprite": "km_gauge",
+     "lines": {
+      "else": "A painted gauge. Each notch is dated in neat brush strokes. The water sits below them all."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_basin_look",
+     "x": 24,
+     "y": 24,
+     "lines": {
+      "else": "A dry ring of stone round the water, white with old salt. It used to be under."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_springs_gate",
+     "x": 25,
+     "y": 28,
+     "sprite": "km_gate_post",
+     "lines": {
+      "else": "The springs gate. It stands open; there is nothing to keep in."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_tower",
+     "x": 28,
+     "y": 18,
+     "sprite": "km_tower",
+     "lines": {
+      "else": "A grey tower on the common. It hums so low you feel it more than hear it."
+     },
+     "ox": -8
+    },
+    {
+     "kind": "sign",
+     "id": "km_fence_sign",
+     "x": 29,
+     "y": 21,
+     "text": "Hard hats only past the fence.",
+     "when": [
+      "!story.slip_kilnmouth | story.permit_kilnmouth"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_cairn",
+     "x": 27,
+     "y": 2,
+     "sprite": "cairn"
+    },
+    {
+     "kind": "prop",
+     "id": "km_hill_post",
+     "x": 38,
+     "y": 9,
+     "sprite": "km_bent_post"
+    },
+    {
+     "kind": "sign",
+     "id": "km_north_sign",
+     "x": 6,
+     "y": 17,
+     "text": "NORTH ROAD. Closed past the hill."
+    },
+    {
+     "kind": "prop",
+     "id": "km_north_bar_a",
+     "x": 3,
+     "y": 0,
+     "sprite": "road_bar",
+     "lines": {
+      "else": "NORTH ROAD. Closed past the hill."
+     },
+     "when": [
+      "!map:km_north"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_north_bar_b",
+     "x": 4,
+     "y": 0,
+     "sprite": "road_bar",
+     "lines": {
+      "else": "NORTH ROAD. Closed past the hill."
+     },
+     "when": [
+      "!map:km_north"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_north_bar_c",
+     "x": 5,
+     "y": 0,
+     "sprite": "road_bar",
+     "lines": {
+      "else": "NORTH ROAD. Closed past the hill."
+     },
+     "when": [
+      "!map:km_north"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_kiln_a",
+     "x": 41,
+     "y": 33,
+     "sprite": "km_kiln"
+    },
+    {
+     "kind": "prop",
+     "id": "km_kiln_b",
+     "x": 46,
+     "y": 33,
+     "sprite": "km_kiln",
+     "lines": {
+      "else": "One kiln of three is warm. The other two have soot on cold brick."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_kiln_c",
+     "x": 51,
+     "y": 33,
+     "sprite": "km_kiln_smoke"
+    },
+    {
+     "kind": "prop",
+     "id": "km_mural",
+     "x": 39,
+     "y": 30,
+     "sprite": "km_mural_board",
+     "lines": {
+      "else": "A fire-bird in kiln tiles, mid-flight. Nobody agrees how it ends."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_woodstack",
+     "x": 53,
+     "y": 34,
+     "sprite": "km_woodstack"
+    },
+    {
+     "kind": "prop",
+     "id": "km_stall_a",
+     "x": 8,
+     "y": 31,
+     "sprite": "km_stall_ware",
+     "lines": {
+      "else": "Ware seconds: a jug with a nicked lip, a crock with a crooked lid."
+     },
+     "ox": 8
+    },
+    {
+     "kind": "prop",
+     "id": "km_stall_b",
+     "x": 12,
+     "y": 31,
+     "sprite": "km_stall_wool",
+     "lines": {
+      "else": "Woollens. Every hat on the table is a child's size."
+     },
+     "ox": 8
+    },
+    {
+     "kind": "prop",
+     "id": "km_stall_c",
+     "x": 16,
+     "y": 31,
+     "sprite": "km_stall_coal",
+     "lines": {
+      "else": "Coal and kindling. Coal's dear. Everyone's heating water by hand."
+     },
+     "ox": 8
+    },
+    {
+     "kind": "prop",
+     "id": "km_stall_d",
+     "x": 8,
+     "y": 34,
+     "sprite": "km_stall",
+     "lines": {
+      "else": "An empty stall."
+     },
+     "ox": 8
+    },
+    {
+     "kind": "prop",
+     "id": "km_stall_e",
+     "x": 16,
+     "y": 34,
+     "sprite": "km_stall",
+     "lines": {
+      "else": "An empty stall."
+     },
+     "ox": 8
+    },
+    {
+     "kind": "prop",
+     "id": "km_grate_look",
+     "x": 38,
+     "y": 27,
+     "lines": {
+      "else": "An iron grate in the paving. Cold now. The old folk say it used to breathe warm."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_chimney",
+     "x": 46,
+     "y": 20,
+     "sprite": "km_chimney"
+    },
+    {
+     "kind": "sign",
+     "id": "km_works_sign",
+     "x": 48,
+     "y": 27,
+     "text": "WORKS YARD: BY PERMIT. HARD HATS ONLY."
+    },
+    {
+     "kind": "prop",
+     "id": "km_coach_shelter",
+     "x": 53,
+     "y": 25,
+     "sprite": "km_coach_shelter",
+     "lines": {
+      "else": "LANTERN COACH. No coaches till the council sits."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_basket",
+     "x": 18,
+     "y": 17,
+     "sprite": "basket",
+     "lines": {
+      "else": "A basket with a wine ribbon. Nobody has opened it."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_council_board",
+     "x": 9,
+     "y": 17,
+     "sprite": "notice_board",
+     "lines": {
+      "else": "The council board. Old notices, curling at the corners."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_lamp_a",
+     "x": 25,
+     "y": 37,
+     "sprite": "lamp_post"
+    },
+    {
+     "kind": "prop",
+     "id": "km_lamp_b",
+     "x": 30,
+     "y": 37,
+     "sprite": "lamp_post"
+    },
+    {
+     "kind": "npc",
+     "id": "km_kid",
+     "name": "Kilnmouth Kid",
+     "x": 21,
+     "y": 29,
+     "facing": "down",
+     "lines": {
+      "story.km_storm": "No storm again! The tower's the best thing that ever happened here.",
+      "else": "Coats on in a spa town. Gran says that never used to happen."
+     },
+     "look": "km_kid"
+    }
+   ]
+  },
+  "km_lantern_in": {
+   "name": "Kilnmouth Lantern House",
+   "kind": "interior",
+   "outdoor": "kilnmouth",
+   "door": "km_lantern",
+   "backdrop": "town",
+   "w": 12,
+   "h": 12,
+   "spawns": null,
+   "zones": [],
+   "skin": "km_lantern",
+   "variants": true,
+   "wall": {
+    "windows": [
+     3,
+     8
+    ]
+   },
+   "safe": {
+    "x": 5,
+    "y": 10
+   },
+   "respawnSpot": {
+    "x": 5,
+    "y": 10,
+    "facing": "up"
+   },
+   "grid": [
+    "############",
+    "#.WWWWWWWW.#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#####m######"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "km_lantern_mat",
+     "x": 5,
+     "y": 11,
+     "to": "kilnmouth",
+     "tx": 31,
+     "ty": 36,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "km_bed_0",
+     "x": 1,
+     "y": 1,
+     "sprite": "km_bed_jug",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_bed_1",
+     "x": 10,
+     "y": 1,
+     "sprite": "km_bed_jug",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_bed_2",
+     "x": 1,
+     "y": 3,
+     "sprite": "km_bed_jug",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_bed_3",
+     "x": 10,
+     "y": 3,
+     "sprite": "km_bed_jug",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_bed_4",
+     "x": 1,
+     "y": 5,
+     "sprite": "km_bed_jug",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_bed_5",
+     "x": 10,
+     "y": 5,
+     "sprite": "km_bed_jug",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_bed_6",
+     "x": 1,
+     "y": 7,
+     "sprite": "km_bed_jug",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_bed_7",
+     "x": 10,
+     "y": 7,
+     "sprite": "km_bed_jug",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_stove",
+     "x": 5,
+     "y": 5,
+     "sprite": "km_stove",
+     "lines": {
+      "else": "Kettles on the stove, all of them warm. The only steam in town is in here."
+     },
+     "ox": 8
+    },
+    {
+     "kind": "prop",
+     "id": "km_stove_r",
+     "x": 6,
+     "y": 5,
+     "lines": {
+      "else": "Kettles on the stove, all of them warm. The only steam in town is in here."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "km_lantern_host",
+     "name": "Lantern Host",
+     "x": 5,
+     "y": 6,
+     "facing": "down",
+     "look": "km_host"
+    },
+    {
+     "kind": "prop",
+     "id": "km_lantern_lamp",
+     "x": 2,
+     "y": 9,
+     "sprite": "floor_lantern",
+     "lines": {
+      "else": "A lamp by the door, turned low."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_lantern_bench",
+     "x": 9,
+     "y": 9,
+     "sprite": "km_bench"
+    },
+    {
+     "kind": "sign",
+     "id": "km_lantern_note",
+     "x": 10,
+     "y": 9,
+     "text": "A note by the door: \"Rest the whole party. 5 Acorns, or what you have. Kilnmouth\""
+    }
+   ]
+  },
+  "km_store_in": {
+   "name": "Kiln Row Provisions",
+   "kind": "interior",
+   "outdoor": "kilnmouth",
+   "door": "km_store",
+   "backdrop": "town",
+   "w": 11,
+   "h": 9,
+   "spawns": null,
+   "zones": [],
+   "skin": "km_store",
+   "variants": true,
+   "wall": {
+    "windows": []
+   },
+   "safe": {
+    "x": 5,
+    "y": 7
+   },
+   "grid": [
+    "###########",
+    "#WWWWWWWWW#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#####m#####"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "km_store_mat",
+     "x": 5,
+     "y": 8,
+     "to": "kilnmouth",
+     "tx": 24,
+     "ty": 36,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ware_1",
+     "x": 1,
+     "y": 1,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ware_2",
+     "x": 2,
+     "y": 1,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ware_3",
+     "x": 3,
+     "y": 1,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ware_4",
+     "x": 4,
+     "y": 1,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ware_6",
+     "x": 6,
+     "y": 1,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ware_7",
+     "x": 7,
+     "y": 1,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ware_8",
+     "x": 8,
+     "y": 1,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_ware_9",
+     "x": 9,
+     "y": 1,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "npc",
+     "id": "km_clerk",
+     "name": "Shopkeeper",
+     "x": 5,
+     "y": 2,
+     "facing": "down",
+     "lines": {
+      "else": "Ware and the usual. Mind the seconds bin, the edges are sharp."
+     },
+     "look": "km_clerk",
+     "shopTitle": "KILN ROW PROVISIONS",
+     "shop": [
+      "heal_snack",
+      "hearty_snack",
+      "wake_tonic",
+      "befriend_treat",
+      "energy_sip",
+      "joy_crumb"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "km_counter_3",
+     "x": 3,
+     "y": 3,
+     "sprite": "stall_counter"
+    },
+    {
+     "kind": "prop",
+     "id": "km_counter_4",
+     "x": 4,
+     "y": 3,
+     "sprite": "stall_counter"
+    },
+    {
+     "kind": "prop",
+     "id": "km_counter_5",
+     "x": 5,
+     "y": 3,
+     "sprite": "stall_counter"
+    },
+    {
+     "kind": "prop",
+     "id": "km_counter_6",
+     "x": 6,
+     "y": 3,
+     "sprite": "stall_counter"
+    },
+    {
+     "kind": "prop",
+     "id": "km_counter_7",
+     "x": 7,
+     "y": 3,
+     "sprite": "stall_counter"
+    },
+    {
+     "kind": "prop",
+     "id": "km_side_shelf_a",
+     "x": 1,
+     "y": 5,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_side_shelf_b",
+     "x": 1,
+     "y": 6,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_side_shelf_c",
+     "x": 9,
+     "y": 5,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_side_shelf_d",
+     "x": 9,
+     "y": 6,
+     "sprite": "km_ware_shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "km_seconds_a",
+     "x": 1,
+     "y": 7,
+     "sprite": "km_seconds_bin",
+     "lines": {
+      "else": "A bin of chipped seconds. Half price, and still good for soup."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "km_seconds_b",
+     "x": 2,
+     "y": 7,
+     "sprite": "km_seconds_bin"
+    },
+    {
+     "kind": "prop",
+     "id": "km_store_plant",
+     "x": 9,
+     "y": 7,
+     "sprite": "plant_pot"
+    },
+    {
+     "kind": "prop",
+     "id": "km_store_sign",
+     "x": 5,
+     "y": 1,
+     "sprite": "acorn_board"
+    }
+   ]
+  }
+ },
+ "trainers": {
+  "kr_holder_1": {
+   "name": "PLACEHOLDER D",
+   "title": "Clay Digger",
+   "map": "km_road",
+   "x": 12,
+   "y": 23,
+   "facing": "down",
+   "sight": 2,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "stone/1",
+     "level": 29
+    },
+    {
+     "form": "snail/1",
+     "level": 30
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Mind the pits. The clay's good this year. The water to wash it isn't.",
+    "win": "Good hands, {player}. You could dig, you know.",
+    "lose": "Back to the pits. Mind your step."
+   }
+  },
+  "kr_holder_2": {
+   "name": "PLACEHOLDER E",
+   "title": "Ford Walker",
+   "map": "km_road",
+   "x": 24,
+   "y": 27,
+   "facing": "up",
+   "sight": 2,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "crab/1",
+     "level": 30
+    },
+    {
+     "form": "otter/1",
+     "level": 30
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "You can walk the ford dry-shod. My gran never could.",
+    "win": "Fair crossing, {player}.",
+    "lose": "The ford can wait. Catch your breath."
+   }
+  },
+  "kr_holder_3": {
+   "name": "PLACEHOLDER F",
+   "title": "Hill Carter",
+   "map": "km_road",
+   "x": 30,
+   "y": 8,
+   "facing": "left",
+   "sight": 3,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "gust/1",
+     "level": 30
+    },
+    {
+     "form": "skink/1",
+     "level": 31
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Up to Kilnmouth? Bring a coat. Odd thing to say in a spa town.",
+    "win": "Well driven, {player}. The gate is just up the hill.",
+    "lose": "Rest at the Lantern House up top."
+   }
+  }
+ },
+ "scenes": {
+  "kr_s1_first": [
+   [
+    "say",
+    "",
+    "A round slate bird bobs at the edge of the ford. It hunches small, as if the water were cold."
+   ],
+   [
+    "encounter",
+    "kr_s1_first"
+   ],
+   [
+    "setFlag",
+    "story.kr_s1_met",
+    true
+   ]
+  ],
+  "kr_s4_first": [
+   [
+    "say",
+    "",
+    "A wasp-waisted bug sits on the clay bank with a tiny jug in its arms."
+   ],
+   [
+    "encounter",
+    "kr_s4_first"
+   ],
+   [
+    "setFlag",
+    "story.kr_s4_met",
+    true
+   ]
+  ]
+ },
+ "spawnTables": {
+  "_note": "KILNMOUTH §4.3 (D1837): rows [speciesId, baseWeight, minLv, maxLv]; five known lines each so the two new ones stand out.",
+  "km_road": {
+   "stage2": 0.15,
+   "table": [
+    [
+     "dipper",
+     18,
+     29,
+     32
+    ],
+    [
+     "jugwasp",
+     18,
+     29,
+     32
+    ],
+    [
+     "stone",
+     14,
+     29,
+     32
+    ],
+    [
+     "snail",
+     12,
+     29,
+     32
+    ],
+    [
+     "skink",
+     10,
+     29,
+     32
+    ],
+    [
+     "crab",
+     8,
+     29,
+     32
+    ],
+    [
+     "gust",
+     8,
+     29,
+     32
+    ]
+   ]
+  }
+ },
+ "looks": {
+  "_note": "KILNMOUTH §8 people. Company people wear wine V with soot N (palette lock, rule 11); Keepers keep their own looks.",
+  "km_foreman": {
+   "skin": "3",
+   "hair": "short",
+   "hairCol": "d",
+   "outfit": "vest",
+   "outfitCol": "V",
+   "accent": "N",
+   "accessory": "cap"
+  },
+  "km_crew": {
+   "skin": "5",
+   "hair": "buzz",
+   "hairCol": "k",
+   "outfit": "vest",
+   "outfitCol": "V",
+   "accent": "N",
+   "accessory": "cap"
+  },
+  "km_nominee": {
+   "skin": "2",
+   "hair": "short",
+   "hairCol": "h",
+   "outfit": "coat",
+   "outfitCol": "m",
+   "accent": "w"
+  },
+  "km_reeve": {
+   "skin": "4",
+   "hair": "bun",
+   "hairCol": "h",
+   "outfit": "cardigan",
+   "outfitCol": "n",
+   "accent": "y",
+   "accessory": "glasses"
+  },
+  "km_orla": {
+   "skin": "2",
+   "hair": "bun",
+   "hairCol": "w",
+   "outfit": "apron",
+   "outfitCol": "c",
+   "accent": "w"
+  },
+  "km_regular": {
+   "skin": "6",
+   "hair": "curls",
+   "hairCol": "d",
+   "outfit": "raincoat",
+   "outfitCol": "r",
+   "accent": "y",
+   "accessory": "scarf"
+  },
+  "km_kilnhand": {
+   "skin": "3",
+   "hair": "short",
+   "hairCol": "o",
+   "outfit": "overalls",
+   "outfitCol": "m",
+   "accent": "o"
+  },
+  "km_seller": {
+   "skin": "1",
+   "hair": "pony",
+   "hairCol": "p",
+   "outfit": "sweater",
+   "outfitCol": "y",
+   "accent": "r",
+   "accessory": "beanie"
+  },
+  "km_kid": {
+   "skin": "4",
+   "hair": "short",
+   "hairCol": "n",
+   "outfit": "coat",
+   "outfitCol": "b",
+   "accent": "y",
+   "accessory": "scarf"
+  },
+  "km_host": {
+   "skin": "5",
+   "hair": "long",
+   "hairCol": "k",
+   "outfit": "apron",
+   "outfitCol": "r",
+   "accent": "y"
+  },
+  "km_clerk": {
+   "skin": "3",
+   "hair": "bob",
+   "hairCol": "o",
+   "outfit": "apron",
+   "outfitCol": "g",
+   "accent": "w"
+  },
+  "km_crew_hall": {
+   "skin": "4",
+   "hair": "buzz",
+   "hairCol": "d",
+   "outfit": "tunic",
+   "outfitCol": "r",
+   "accent": "o"
+  },
+  "km_tobias": {
+   "skin": "5",
+   "hair": "short",
+   "hairCol": "h",
+   "outfit": "coat",
+   "outfitCol": "r",
+   "accent": "y"
+  }
+ },
+ "speakers": {
+  "Reeve Agna": "km_reeve",
+  "Bathkeeper Orla": "km_orla",
+  "Edwin Garth": "km_nominee",
+  "Foreman Dray": "km_foreman",
+  "Bryony": "km_regular",
+  "Kiln Hand": "km_kilnhand",
+  "Market Seller": "km_seller",
+  "Kilnmouth Kid": "km_kid",
+  "Tower Crew": "km_crew"
+ },
+ "slicePatch": {
+  "maps": {
+   "route4": {
+    "addObjs": [
+     {
+      "kind": "warp",
+      "id": "r4_east_n",
+      "x": 23,
+      "y": 1,
+      "to": "km_road",
+      "tx": 1,
+      "ty": 24,
+      "facing": "right",
+      "need": "story.km_assigned"
+     },
+     {
+      "kind": "warp",
+      "id": "r4_east_c",
+      "x": 23,
+      "y": 2,
+      "to": "km_road",
+      "tx": 1,
+      "ty": 25,
+      "facing": "right",
+      "need": "story.km_assigned"
+     },
+     {
+      "kind": "warp",
+      "id": "r4_east_s",
+      "x": 23,
+      "y": 3,
+      "to": "km_road",
+      "tx": 1,
+      "ty": 26,
+      "facing": "right",
+      "need": "story.km_assigned"
+     }
+    ]
+   }
+  }
+ },
+ "flags": {
+  "story.reached_kilnmouth": "CHAIN: km_walk (the first step into kilnmouth, the road warps)",
+  "story.km_arrived": "CHAIN: km_reeve (K1, Reeve Agna)",
+  "story.km_ask_yard": "NOT_STEPS: K2",
+  "story.km_ask_market": "NOT_STEPS: K2",
+  "story.km_ask_springs": "NOT_STEPS: K2",
+  "story.km_names": "NOT_STEPS: K2 counter (inc)",
+  "story.km_pitch_f": "NOT_STEPS: K3",
+  "story.km_pitch_c": "NOT_STEPS: K3",
+  "story.km_storm": "CHAIN: km_listen (B4 storm scene)",
+  "story.km_crew": "NOT_STEPS: B4 crew win",
+  "story.km_permit_seen": "CHAIN: km_permit (K4)",
+  "story.km_permit_to": "NOT_STEPS: K4 choice",
+  "story.slip_kilnmouth": "NOT_STEPS: K4 warden",
+  "story.pres_hint_default": "NOT_STEPS: K4",
+  "story.km_twin_lead": "NOT_STEPS: B4 permit, last step",
+  "story.wb_springs": "NOT_STEPS: the hill path (D1990, WALK_BESIDE ws1-ws2)",
+  "story.kr_s1_met": "NOT_STEPS: placed S1",
+  "story.kr_s4_met": "NOT_STEPS: placed S4",
+  "story.km_visits": "NOT_STEPS: E6 counter (game.js)",
+  "story.km_visit_day": "NOT_STEPS: E6 once-per-day key (game.js)"
+ }
+}
