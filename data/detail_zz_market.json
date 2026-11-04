@@ -1,8 +1,8 @@
 {
  "spec": "WORLD_CLOCK_TOWN P2 Market Row. Overlay sorts after detail_wayup so the north lane stays. Rows 0-22 are not in this patch.",
  "friendSlots": {
-  "STORE_CLERK": "Keeper Teague / Keeper Quill",
-  "TAILOR": "Keeper Marigold",
+  "STORE_CLERK": "Grocer Teague / Grocer Quill",
+  "TAILOR": "Tailor Marigold",
   "DINER_COOK": "Cook Hesper",
   "DINER_REGULAR": "Diner Regular",
   "COURT_REGULAR": "Court Regular",
@@ -117,7 +117,7 @@
     {"kind": "prop", "id": "ward_rack_b", "x": 1, "y": 7, "sprite": "mr_rack", "lines": {"else": "Scarves and crowns, sized for Walklings."}},
     {"kind": "prop", "id": "ward_rack_b2", "x": 2, "y": 7, "sprite": "mr_rack"},
     {"kind": "prop", "id": "ward_rack_b3", "x": 3, "y": 7, "sprite": "mr_rack"},
-    {"kind": "prop", "id": "ward_mirror", "x": 6, "y": 2, "sprite": "mirror", "lines": {"else": "A tall mirror. Keeper Marigold does the fittings."}},
+    {"kind": "prop", "id": "ward_mirror", "x": 6, "y": 2, "sprite": "mirror", "lines": {"else": "A tall mirror. Tailor Marigold does the fittings."}},
     {"kind": "prop", "id": "ward_curtain", "x": 10, "y": 6, "sprite": "mr_curtain", "lines": {"else": "A fitting curtain, both halves hung now."}},
     {"kind": "prop", "id": "ward_curtain_b", "x": 9, "y": 6, "sprite": "mr_curtain"},
     {"kind": "prop", "id": "ward_sash", "x": 5, "y": 5, "sprite": "table_small", "lines": {"else": "Sash thread in Keeper green and gold."}},

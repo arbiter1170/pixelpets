@@ -486,7 +486,7 @@
      "y": 10,
      "facing": "left",
      "lines": {
-      "else": "Ms. Lizzy says glow grows when you share it. I'm sharing my lunch with Moss."
+      "else": "Ms. Lizzy says glow grows when you share it. I'm sharing my lunch with Tuft."
      },
      "look": "wren",
      "schedule": [
@@ -1407,7 +1407,7 @@
    [
     "say",
     "Clerk Wynn",
-    "Stamped. Constable Rue serves notices. Tell her I sent you."
+    "Stamped. Constable Thale serves notices. Tell her I sent you."
    ]
   ],
   "leak_serve": [
@@ -1424,7 +1424,7 @@
    [
     "say",
     "",
-    "Rue tucks the claim in her coat. Check the bathroom in 5B."
+    "Thale tucks the claim in her coat. Check the bathroom in 5B."
    ]
   ],
   "leak_force": [

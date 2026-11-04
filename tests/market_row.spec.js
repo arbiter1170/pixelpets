@@ -99,7 +99,7 @@ test('the store sells the usual snacks, and the night clerk takes the counter @w
   expect(day.ids).not.toContain('hm_quill');
   expect(day.name).toBe('Keeper Teague');
   expect(day.look).toBe('hm_teague');
-  expect(day.slot).toBe('Keeper Teague / Keeper Quill');
+  expect(day.slot).toBe('Grocer Teague / Grocer Quill');   // NAMES_PASS D1734; the raw name above stays
   await page.keyboard.press('Space');
   await expect(page.locator('#ovShop')).toBeVisible();
   expect(await page.locator('#shopTitle').textContent()).toBe('Lamplight Provisions');

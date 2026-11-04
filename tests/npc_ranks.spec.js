@@ -43,10 +43,10 @@ test('the dialog speaker tab shows rank, then name, and never a placeholder (Vin
     'Officer Ness': 'Officer Ness', 'Warden Ilse': 'Warden Ilse', 'Captain Lumen': 'Captain Lumen', 'Cadet Arlo': 'Cadet Arlo',
     // The D1159 ladder ranks (KEEPER_RANKS D893): a duty (Watch, Clerk, Archivist, Operator) moves to the contact card.
     'Watch Ivo': 'Constable Ivo', 'Clerk Wynn': 'Officer Wynn', 'Archivist Mo': 'Officer Mo', 'Operator Rue': 'Officer Rue',
-    'Keeper Rowan': 'Sergeant Rowan', 'Keeper Pryce': 'Cadet Pryce', Sefton: 'Cadet Sefton', Ash: 'Cadet Sefton',
+    'Keeper Rowan': 'Sergeant Hume', 'Keeper Pryce': 'Cadet Pryce', Sefton: 'Cadet Sefton', Ash: 'Cadet Sefton',
     // Hosts and shopkeepers are civilians: aligned to a side, never ranked, shown as before.
-    'Keeper Amos': 'Keeper Amos', 'Keeper Quill': 'Keeper Quill', 'Watch Saffie': 'Watch Saffie', 'Host Della': 'Host Della',
-    Mom: 'Mom', Morolow: 'Caleb', 'Clerk Nia': 'Clerk Nia',
+    'Keeper Amos': 'Host Amos', 'Keeper Quill': 'Grocer Quill', 'Watch Saffie': 'Trader Saffie', 'Host Della': 'Host Della',
+    Mom: 'Mom', Morolow: 'Caleb', 'Clerk Nia': 'Clerk Elda',
   };
   for (const [raw, shown] of Object.entries(want)) {
     const got = await speaker(page, raw);
@@ -96,9 +96,9 @@ test('rankCheck: only the D1245 plaza placeholders pending, civilians unranked, 
   expect(c.missing).toEqual([]);
   expect(c.bad).toEqual([]);
   expect(c.battle).toEqual([]);
-  // Every sworn Keeper has a ladder rank now (D1159). Only FERNBROOK_PLAZA's six rank-only placeholders stay pending,
-  // waiting for Design's names (D1245; Vincent, Nov 3: option A).
-  expect(c.placeholders.sort()).toEqual(['Associate', 'Bright Lead', 'Cadet', 'Constable', 'Junior Bright', 'Sergeant'].map((p) => p + ' (D1245)'));
+  // Every sworn Keeper has a ladder rank now (D1159). NAMES_PASS D1738 named FERNBROOK_PLAZA's six rank-only placeholders
+  // (D1245), so only POST_TRIAL_CRACKDOWN's unnamed Commander and Officer stay pending (D1198; D1740 is not built on main yet).
+  expect(c.placeholders.sort()).toEqual(['Commander (D1198)', 'Officer (D1198)']);
   // Hosts and shopkeepers on a side are civilians: listed, never ranked.
   expect(c.civilians.sort()).toEqual(['Keeper Amos', 'Keeper Halvard', 'Keeper Marigold', 'Keeper Quill', 'Keeper Teague', 'Watch Saffie']);
   const civRanked = await page.evaluate(() => MAPDATA.reputation.cast.filter((e) => e.civilian && e.rank).map((e) => e.name));
@@ -109,7 +109,8 @@ test('rankCheck: only the D1245 plaza placeholders pending, civilians unranked, 
   expect(offLadder).toEqual([]);
   // A duty is only held by a Cadet, Constable or Officer (KEEPER_RANKS).
   const badDuty = await page.evaluate(() => MAPDATA.reputation.cast.filter((e) => e.duty && !['Cadet', 'Constable', 'Officer'].includes(e.rank)).map((e) => e.name));
-  expect(badDuty).toEqual([]);
+  // NAMES_PASS D1731 (Vincent, Nov 4, 2026): Sergeant Teodor runs the Fallstair post, duty Quartermaster on the card.
+  expect(badDuty).toEqual(['Warden Teodor']);
   const labels = await page.evaluate(() => MAPDATA.reputation.cast.map((e) => PixelPets.shownName(e.name)));
   for (const l of labels) expect(l).not.toMatch(/\[|\]/);
   expect(c.flagged.map((f) => f.replace(/ \(D1160\)$/, '')).sort()).toEqual(
@@ -181,10 +182,10 @@ test('a civilian host keeps the plain name and no duty line on the contact card'
   await page.locator('#phoneBtn').click();
   await expect(page.locator('#ovPhone')).toBeVisible();
   await page.locator('.phone-app[data-app="contacts"]').click();
-  const amos = page.locator('.contact-name', { hasText: 'Keeper Amos' });
+  const amos = page.locator('.contact-name', { hasText: 'Host Amos' });
   await expect(amos).toBeVisible();
   await amos.click();
-  await expect(page.locator('.contact-card-name')).toHaveText('Keeper Amos');
+  await expect(page.locator('.contact-card-name')).toHaveText('Host Amos');
   await expect(page.locator('.contact-duty')).toHaveCount(0);
   expect(await page.locator('#ovPhone').innerText()).not.toMatch(/\[Rank\]|Officer Amos|Constable Amos/);
   const fits = await page.locator('.contact-card-name').evaluate((el) => el.getBoundingClientRect().right <= window.innerWidth);
@@ -212,6 +213,6 @@ test('the Trial Hall cadet is Cadet Sefton; an old save that met Ash keeps the t
   expect(got.metNew).toBe(true);
   expect(got.label).toBe('Cadet Sefton');
   expect(got.intro).toBe('Cadet Sefton wants a friendly match with Tester!');
-  expect(got.grete).toBe('Grete Ash');   // the Plaza sweeper is a different person and keeps her name
+  expect(got.grete).toBe('Grete Lindqvist');   // the Plaza sweeper is a different person (NAMES_PASS D1767: shown as Grete Lindqvist)
   for (const k of beforeKeys) expect(got.keys).toContain(k);
 });

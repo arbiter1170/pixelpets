@@ -180,20 +180,34 @@ test('Trial 1: three holders before Fen, the Seal, the post-Trial slot, the pick
     expect((await flags(page))['trainer.' + id]).toBe(true);
   }
   expect((await quest(page)).id).toBe('hall1');
-  // Now Fen takes the match. The win gives the Seal; her Seal scene ends with D1175's PLACEHOLDER line (the post-Trial flag).
+  // Now Fen takes the match. The win gives the Seal; the post-Trial slot is the crackdown now (POST_TRIAL_CRACKDOWN, D1395),
+  // so the Seal scene no longer sets story.post_trial_done and the next card is the street outside the Hall.
   await page.evaluate(() => PixelPets.goto('fb_hall_in', 7, 5, 'up'));
   await fight(page, 'fen_hall', ['Begin trial']);
   let f = await flags(page);
   expect(f['story.seal1']).toBe(true);
-  expect(f['story.post_trial_done']).toBe(true);
+  expect(f['story.post_trial_done']).toBeFalsy();
+  expect((await quest(page)).id).toBe('crackdown_street');
+  expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_side_pick').whenOk)).toBe(false);
+  // The crackdown night and Warden Ilse's summons are played in tests/post_trial_crackdown.spec.js; here their flags stand in.
+  await page.evaluate(() => { for (const k of ['story.crackdown', 'story.hall1_shut', 'story.post_trial_done', 'story.warden_called', 'story.warden_met']) PixelPets.setFlag(k, true); });
   expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('split');
-  expect((await quest(page)).id).toBe('pick');
-  // The pick at the orchard gate (built scene, moved trigger). A Glimmer pick also gets the Tier 1 lanyard (D1150).
+  expect((await quest(page)).id).toBe('chi_meet');   // ACT1_KEEPER_JOIN: the Wickerglen investigation comes before the gate
+  expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_side_pick').whenOk)).toBe(false);
+  // The investigation is played in tests/act1_keeper_join.spec.js; here its done flag stands in.
+  await page.evaluate(() => { for (const k of ['story.chi_met', 'story.shift_g', 'story.shift_k', 'story.chi_done']) PixelPets.setFlag(k, true); });
+  // The orchard lean at the gate (ACT1_KEEPER_JOIN 4.6), then the enrolment and the lanyard face (4.7). The Glimmer face also
+  // gets the Tier 1 lanyard (D1150), at Juniper's step.
   expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_side_pick').whenOk)).toBe(true);
   await page.evaluate(() => PixelPets.goto('fernbrook', 9, 9, 'down'));
   await page.evaluate(() => PixelPets.walkStep('down'));
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'side_pick');
-  await playScene(page, ['Pack crates with Tobin', 'Yes, Glimmerwell', 'Pat the crate', 'I\'m sorry, Fen']);
+  await playScene(page, ['Help Tobin pack', 'Pat the crate', 'I\'m sorry, Fen']);
+  await page.evaluate(() => PixelPets.setFlag('story.ilse_call2', true));
+  expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);
+  await playScene(page, ['Wear their lanyard for Ilse']);
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
   f = await flags(page);
   expect(f['story.side']).toBe('glimmer');
   expect(f['story.side_pick_done']).toBe(true);
@@ -217,20 +231,31 @@ test('A Keepers pick: Tobin\'s battle after the pick clears the orchard, and Fer
   await boot(page, fernSave(Object.assign({}, AFTER_CLASS, { 'trainer.h1_cadet': true, 'trainer.h1_challenger': true, 'trainer.h1_local': true, 'trainer.hall1_fen': true, 'story.seal1': true, 'story.post_trial_done': true }), { map: 'fernbrook', x: 9, y: 9, facing: 'down', respawn: 'fernbrook' }));
   await page.evaluate(() => { PixelPets.state.seals.seal_fernbrook = Date.now(); });
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
+  await playScene(page, ['Open the crates with Fen']);   // ACT1_KEEPER_JOIN 4.6: the lean, no side
   let f = await flags(page);
-  expect(f['story.side_pick_done']).toBe(true);
+  expect(f['story.orchard_lean']).toBe('open');
+  expect(f['story.side_pick_done']).toBeFalsy();
   expect(f['story.orchard_cleared']).toBeFalsy();
   expect(await page.evaluate(() => Object.keys(PixelPets.state.seals))).toEqual(['seal_fernbrook']);
-  expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('keepers');
   expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fern_associate').whenOk)).toBe(true);
   expect(await page.evaluate(() => PixelPets.gateRead('fernbrook', 'fb_tobin').whenOk)).toBe(false);
-  // After the Heights the chain points at Tobin's battle (its own row after the pick, D1187).
-  await page.evaluate(() => PixelPets.setFlag('story.heights_done', true));
+  // The chain points at Tobin's battle (its own row after the lean, D1187).
   expect((await quest(page)).id).toBe('tobin_crates');
   expect(await page.evaluate(() => PixelPets.runScene('orchard'))).toBe(true);
   await playScene(page, []);
   expect((await flags(page))['story.orchard_cleared']).toBe(true);
+  expect((await quest(page)).id).toBe('enrol');
+  // The face settles the town (ACT1_KEEPER_JOIN 4.7). D1562: every holder takes the lanyard; D1674: the lean alone moves the sway.
+  await page.evaluate(() => PixelPets.setFlag('story.ilse_call2', true));
+  expect(await page.evaluate(() => PixelPets.runScene('enrol'))).toBe(true);
+  await playScene(page, []);
+  expect(await page.evaluate(() => PixelPets.runScene('enrol_lanyard'))).toBe(true);
+  await playScene(page, []);
+  f = await flags(page);
+  expect(f['story.side_pick_done']).toBe(true);
+  expect(f['story.keeper_cadet']).toBe(true);
+  expect(await page.evaluate(() => PixelPets.mapHold('fernbrook'))).toBe('keepers');
+  await page.evaluate(() => PixelPets.setFlag('story.heights_done', true));
   expect((await quest(page)).id).toBe('teaser');
 });
 
