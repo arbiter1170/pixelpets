@@ -18227,7 +18227,7 @@ const DEBUG_EXTRAS = {
   const DONE = J1.concat(['story.shift_g', 'story.shift_k', 'story.met_lead', 'story.chi_done', 'story.chi_jars=6']);
   const LAN = DONE.concat(['story.orchard_lean=pack', 'story.orchard_cleared', 'story.sway_fernbrook=-2', 'story.ilse_call2', 'story.keeper_cadet', 'story.cover=glimmer', 'story.side=glimmer', 'story.side_pick_done']);
   Object.assign(DEBUG_EXTRAS, {
-    kj_hut: { place: 'Weir Hut (Act 1)', text: 'Vincent Chi, the first step in.', map: 'hw_weir_hut_in', x: 4, y: 10, facing: 'up', flags: J0 },
+    kj_hut: { place: 'Weir Hut (Act 1)', text: 'Jacob Chi, the first step in.', map: 'hw_weir_hut_in', x: 4, y: 10, facing: 'up', flags: J0 },
     kj_day: { place: 'Wickerglen day shift', text: "Imogen's lamp crew.", map: 'route2_glen', x: 12, y: 6, facing: 'up', flags: J1 },
     kj_night: { place: 'Wickerglen dusk watch', text: 'The Keeper Scout.', map: 'route2_glen', x: 12, y: 15, facing: 'right', flags: J1 },
     kj_lean: { place: 'Orchard gate (the lean)', text: 'Open the crates, or pack them.', map: 'fernbrook', x: 9, y: 9, facing: 'down', flags: DONE },

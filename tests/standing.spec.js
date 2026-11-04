@@ -354,9 +354,9 @@ const COPY = {
   ilse_call: ['Morning in Fernbrook. Step outside the Lantern House.', 'Fernbrook Lantern House'],
   warden_summons: ["Warden Ilse wants you home. Go to the Warden's Lodge.", 'Hearthmoor, the Lodge'],
   // ACT1_KEEPER_JOIN (PLACEHOLDER): the Wickerglen investigation, the orchard lean, the enrolment.
-  chi_meet: ["Find Vincent Chi, past the fallen trunk at Wickerglen's east edge.", 'Wickerglen, east edge'],
+  chi_meet: ["Find Jacob Chi, past the fallen trunk at Wickerglen's east edge.", 'Wickerglen, east edge'],
   chi_shifts: ["Work a day with Imogen's lamp crew and a dusk watch with the Keeper Scout.", 'Wickerglen'],
-  chi_report: ['Tell Vincent Chi what you saw.', 'The weir hut'],
+  chi_report: ['Tell Jacob Chi what you saw.', 'The weir hut'],
   pick: ['Fen, Tobin and Juniper are still at the orchard gate. The crates are waiting.', 'Orchard gate'],
   tobin_crates: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate'],
   enrol: ['Warden Ilse wants you at the Lodge tonight.', 'Hearthmoor, the Lodge'],

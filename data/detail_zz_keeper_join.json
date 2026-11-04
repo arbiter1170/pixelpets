@@ -77,7 +77,7 @@
       "lines": {
        "else": "Orders came down. A review. Don't ask me how long."
       },
-      "_note": "ACT1_KEEPER_JOIN §7 (D1555): Wickerglen's slip is data only. PLACEHOLDER name; the built officer look."
+      "_note": "ACT1_KEEPER_JOIN §7 (D1555): Wickerglen's slip is data only. Shown as Constable Dunn (NAMES_PASS D1741, cast rank + given; the key stays); the built officer look."
      },
      {
       "kind": "npc",
@@ -191,7 +191,7 @@
     "story.cover=glimmer & !story.side_pick_done": "Juniper's offer still stands. Take it. Smile. Remember your home.",
     "story.orchard_lean & !story.keeper_cadet & !story.ilse_call2": "Fen's crates first. I'll call when it's time.",
     "story.chi_done & !story.side_pick_done": "Go home by the orchard first. Then come to me.",
-    "story.chi_met & !story.side_pick_done": "Vincent Chi will want both shifts. Go and look."
+    "story.chi_met & !story.side_pick_done": "Jacob Chi will want both shifts. Go and look."
    }
   },
   "juniper_east": {
