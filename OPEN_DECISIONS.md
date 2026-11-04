@@ -98,6 +98,11 @@ D1520-D1544 reserved: Design, Vincent's 25 answers on the new Act 1 (design spec
 
 D1545-D1589 reserved: Design, ACT1_KEEPER_JOIN v0.1 (design specs/ACT1_KEEPER_JOIN.md); D1545-D1562 used and settled by Vincent (D1546 B, D1561 the Fernbrook post, D1562 always undercover); D1563-D1589 held. D1590-D1599 reserved: WEIR_HUT. D1700-D1702: Ilse's arc (D1700 built here). The design repo owns D1600 and above.
 
+D1458-D1477 reserved: Design, GOVERNOR_MEETING v0.2.1 (design repo specs/GOVERNOR_MEETING.md); D1469-D1475 SETTLED by Vincent, Tue Nov 3, 2026 (defaults) and built in claude/act2-opener; v0.1's D1461 withdrawn, D1462/D1465 moved to a later cabinet packet; D1476-D1477 held. Every Act 2 opener line is PLACEHOLDER for Story (the scenes `a2_ilse_call`, `a2_posting`, `a2_report_gov`, `hc_gov_meet`).
+D1680-D1699 reserved: Design, ACT2_COVER_STORY (design repo specs/ACT2_COVER_STORY.md); all SETTLED by Vincent, Tue Nov 3, 2026 (defaults); Mom's Supper and Juniper's point built in claude/act2-opener, the rest wait for their beats. D1921 C (Vincent, Nov 4: Dad stays unsaid) applied to Mom's lines. Every line is PLACEHOLDER for Story.
+D1620-D1629 reserved: Design, REPORTS_AND_ENDINGS v0.1 (design repo specs/REPORTS_AND_ENDINGS.md); all SETTLED by Vincent, Tue Nov 3, 2026 (defaults); the readers (E1) built in claude/act2-opener. D1720-D1729 reserved: Design, REPORT_FLAGS v0.1; SETTLED Wed Nov 4, 2026 (D1726 B: R6 after the third sitting).
+D1850-D1879 reserved: Design, ROUTE_TO_GOVERNOR (design repo specs/ROUTE_TO_GOVERNOR.md v0.1.1; D1850-D1876 used, D1877-D1879 held). D1850-D1876 SETTLED by Vincent, Wed Nov 4, 2026 (defaults), with ACT2_PACING D1880-D1884; built on branch claude/route4. Every line, sign, holder name, map label and species name stays PLACEHOLDER (D1857) until Story signs it and Vincent names it.
+
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
