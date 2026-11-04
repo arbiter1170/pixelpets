@@ -136,7 +136,7 @@ test('E1 in modern controls: whole width visible, centred when the bay fits the 
 });
 
 test('E2: a map resized by a data/detail_*.json overlay keeps a saved spot past its old size @w1', async ({ page }) => {
-  const old = await (await page.request.get('/data/heights.json')).json();
+  const old = await (await page.request.get('./data/heights.json')).json();
   const f2 = old.maps.rx_f2, last = f2.grid.length - 1, floor = '#' + '.'.repeat(f2.w - 2) + '#';
   const grid = f2.grid.slice(0, last).concat(Array(8).fill(floor), [f2.grid[last]]);
   await withOverlay(page, { slicePatch: { maps: { rx_f2: { set: { w: f2.w, h: grid.length, grid } } } } });

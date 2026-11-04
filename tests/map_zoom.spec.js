@@ -123,7 +123,7 @@ test('Map zoom slider: 44 px targets, 2x default, live apply, stored as a number
 
   // Reload keeps the step (re-install what was written, since the boot init script runs on every load).
   await installSave(page.context(), raw, { quietDay: true });
-  await page.goto('/?debug=1', { waitUntil: 'commit' });
+  await page.goto('./?debug=1', { waitUntil: 'commit' });
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);

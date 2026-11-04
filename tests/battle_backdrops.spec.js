@@ -141,6 +141,9 @@ test('every map has a scene: PAL only, each one different, landmarks clear of th
 });
 
 test('water moves in FULL motion and holds still with reduced motion', async ({ page }) => {
+  // Midday, fixed: the dawn and dusk washes (drawWeather) step with the wall-clock minute, so near 5-7 am or 6-8 pm a
+  // minute ticking between two samples shifted every pixel by 1 (seen Nov 4, 2026). Timers and frames still run.
+  await page.clock.setFixedTime(new Date('2026-11-04T12:00:00'));
   await boot(page);
   await page.evaluate(() => PixelPets.setBattleBg(true));
   const size = async () => page.evaluate(() => { const c = document.getElementById('battleCanvas'); return { W: c.width, H: c.height }; });
