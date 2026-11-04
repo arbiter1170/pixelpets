@@ -9844,9 +9844,10 @@ async function execStep(st){
       return;
     }
     case 'setFlag': {
-      const v = b === '$line' ? sc.vars.line : b;
+      let v = b === '$line' ? sc.vars.line : b;
       // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
       const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
+      if (a === 'story.cv_mom_day' && v) v = dayKey(Date.now());   // ACT2_COVER_STORY D1696: the day Mom last packed the snack
       sc.view.flags[a] = v; pend(() => {
         const was = S.flags[a];
         const prevSeals = sealCount();
@@ -11216,6 +11217,7 @@ function fadeTick(sample){
     if (!S.flags['daily.buddy_pat']) S.flags['daily.buddy_pat'] = d;
     else if (S.flags['daily.buddy_pat'] !== d) { delete S.flags['story.buddy_pat_today']; delete S.flags['daily.buddy_pat']; }
   } else if (S.flags && S.flags['daily.buddy_pat'] && S.flags['daily.buddy_pat'] !== d) delete S.flags['daily.buddy_pat'];
+  if (S.flags && S.flags['story.cv_mom_day'] && S.flags['story.cv_mom_day'] !== d) delete S.flags['story.cv_mom_day'];   // D1696: one snack a day
   bossRestTick(d); openRoad3();
   for (const p of allPets()) {
     if (!isFaded(p)) continue;

@@ -72,6 +72,24 @@ async function goto(page, map, x, y, facing) {
   await page.evaluate(([m, x, y, f]) => PixelPets.goto(m, x, y, f), [map, x, y, facing || 'down']);
   await page.waitForFunction(m => PixelPets.mapInfo.id === m && !PixelPets.fading, map);
 }
+// Modern controls (Vincent, Nov 4): a tap on a tile walks there, a tap on a person or prop walks over and talks.
+async function tapTile(page, x, y) {
+  await expect.poll(() => page.evaluate(async () => {
+    const a = Object.assign({}, PixelPets.walk.cam);
+    await new Promise(r => setTimeout(r, 120));
+    const b = PixelPets.walk.cam;
+    return a.x === b.x && a.y === b.y;
+  }), { timeout: 5000 }).toBe(true);
+  const r = await page.evaluate(({ x, y }) => {
+    const mc = document.querySelector('#mapCanvas'), b = mc.getBoundingClientRect(), cam = PixelPets.walk.cam;
+    const cx = b.left + ((x * 16 + 8 - cam.x) / mc.width) * b.width, cy = b.top + ((y * 16 + 8 - cam.y) / mc.height) * b.height;
+    const opt = { bubbles: true, cancelable: true, clientX: cx, clientY: cy, pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0 };
+    mc.dispatchEvent(new PointerEvent('pointerdown', opt));
+    mc.dispatchEvent(new PointerEvent('pointerup', opt));
+    return cx >= b.left && cx <= b.right && cy >= b.top && cy <= b.bottom;
+  }, { x, y });
+  expect(r, 'tile ' + x + ',' + y + ' on screen').toBe(true);
+}
 async function step(page, dir) { await page.evaluate(d => PixelPets.walkStep(d), dir); await page.waitForTimeout(380); }
 // Plays the open scene to its end; choices take the first label in `picks` that is offered (else the first); returns
 // every line as [speaker, text] and every choice as ['>', label, [labels offered]]. `onLine` may read the stage per line.
@@ -82,7 +100,7 @@ async function drive(page, picks = [], onLine = null, ms = 90000) {
     const sc = await page.evaluate(() => PixelPets.scene && { mode: PixelPets.scene.mode, full: PixelPets.scene.full, waiting: PixelPets.scene.waiting, text: PixelPets.scene.text, who: PixelPets.scene.who });
     if (!sc) { await page.waitForTimeout(150); if (!(await page.evaluate(() => !!PixelPets.scene))) return lines; continue; }
     if (sc.mode === 'choice') {
-      if (!sc.full) { await page.keyboard.press('Space'); continue; }
+      if (!sc.full) { await page.waitForTimeout(40); continue; }   // let the line finish: a press racing the typing would skip it
       if (!(await page.locator('#sbChoices button:visible').count())) { await page.waitForTimeout(40); continue; }
       await page.waitForFunction(() => PixelPets.optionsReady === true);
       const labels = (await page.locator('#sbChoices button').allTextContents()).map(t => t.trim());
@@ -93,7 +111,7 @@ async function drive(page, picks = [], onLine = null, ms = 90000) {
       await page.waitForTimeout(40); continue;
     }
     if (sc.mode === 'say' && sc.waiting) {
-      if (!sc.full) { await page.keyboard.press('Space'); await page.waitForTimeout(30); continue; }
+      if (!sc.full) { await page.waitForTimeout(40); continue; }
       const key = sc.who + '|' + sc.text;
       if (key !== last) { lines.push([sc.who || '', sc.text]); last = key; if (onLine) await onLine(sc.text, sc.who || ''); }
       await page.keyboard.press('Space'); await page.waitForTimeout(30); continue;
@@ -188,8 +206,10 @@ test.describe('GOVERNOR_MEETING Part 1: Ilse sends the Cadet (D1469)', () => {
     await goto(page, 'hearthmoor', 11, 7, 'down'); await step(page, 'down');
     expect(await sceneId(page)).toBeNull();   // no Keeper1, no call: the quest row points home
     expect((await quest(page)).id).toBe('gov_post');
-    await talkIlse(page);
-    expect(await sceneId(page)).toBe('a2_posting');
+    await goto(page, 'hm_lodge_in', 5, 7, 'up');
+    expect(await page.evaluate(() => PixelPets.state.settings.controls)).toBe('modern');
+    await tapTile(page, 5, 3);   // Modern: tap Warden Ilse
+    await expect.poll(() => sceneId(page), { timeout: 15000 }).toBe('a2_posting');
     const lines = await drive(page);
     len110(lines);
     expect(says(lines)).toEqual(POSTING);

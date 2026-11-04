@@ -2,6 +2,19 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 22:42 ET: Build: Act 2 cover story, the opening slices: Mom's Supper and Juniper's point (ACT2_COVER_STORY v0.1.1; D1680-D1699, D1921)
+- What changed and why:
+  - Mom's "Supper" (C-M, D1682): on the first step out of the Lodge after the posting, Mom waits at the gate (a temporary body), says m1 and walks home ahead; in your room the drawer (the chest) plays the rest: the lanyards, Hattie's post, and "Tell the truth" / "Cover story" / "Say nothing" (D1681) writing `story.cv_mom` told / cover / quiet. Talking to Mom at your door plays the same scene. Fallback: the first step inside home for a save that never passed the gate. An interrupted scene writes nothing and replays.
+  - Mom's repeats per answer, before her plain line (her Act 1 keys still win); told: one built `heal_snack` a day at home ("Maze packed this for {pet}."), guard `story.cv_mom_day` (the day key, cleared on the day roll; D1696).
+  - Old saves (D1695): the system keys on a lanyard past, `story.cover=glimmer | seal:seal_glim_1`. A moved Keepers-pick save hears the pin line, no choice, `story.cv_mom` quiet.
+  - D1921 C (Vincent, Nov 4: what happened to Dad stays unsaid): Mom's lines are ACT2_COVER_STORY v0.1.3's, which claim nothing about him: the pin line "A Keeper pin. Look at you. Sit down before supper goes cold." and the cover answer's "Hm. A better offer. They always sound good at the door." (v0.1.3's third rewrite, Mom after a switch, is Act 3 and not built).
+  - Juniper's optional point (D1688) on her Fernbrook body in Act 2, for a lanyard past: the same three choices; truth: `story.sway_fernbrook` +1 (clamped) and she and her stand leave the plaza; `story.cv_juniper`.
+- Files touched: `data/detail_zzz_act2_cover.json` (new), `data/mapdata.js`, `game.js` (the snack's day guard), `tools/GAMEJS_MAP.txt`, `quests.js` (NOT_STEPS), `tests/act2_cover_story.spec.js` (new), `tests/governor_meeting.spec.js` (Modern taps, steadier line reader), `handoff/shots/act2_opener/`.
+- Commit(s) + build id: claude/act2-opener, build 20261103-2242.
+- Tests run and result (widths, checks): results in the PR.
+- Decisions made (colour + reasoning): D1680-D1699 settled by Vincent, built where their beat exists; D1921 C applied. Green (engineer): `story.cv_mom_walk` (Mom walked home ahead) so Supper survives the walk; the drawer is the room's chest (no new art); the snack guard holds the day key, as Buddy's pat does; Juniper leaves with her stand on truth.
+- Anything left unfinished: waits for its beat: Lizzy's scene and her copy (C-L, after B9's `story.ilse_paper_ask`; the copy is inside R4, B11), Rook's point (B5, Brightgate), Lumen's (B7, the first sitting), Fen's (B8, her turn), Ilse's B9 reaction line, the barks, Block News, Ribbit and the town board items (slice 4), Mom's slip chain (needs Rook at B5), the Act 3 echoes. Every new line is PLACEHOLDER. The packet's told repeat for Mom is 41 characters against its own 40 limit (kept verbatim).
+
 ## 2026-11-03 22:18 ET: Build: Act 2 opens: Ilse's call, the posting, the Governor meeting and the report hook (GOVERNOR_MEETING v0.2.1; D1469-D1475)
 - What changed and why:
   - Ilse's Act 2 Keeper1 call (`a2_ilse_call`, a story call) on the first free outdoor step after the Episode 1 card, for a Cadet who is not a cover holder. A cover holder (every new save, D1562) gets the join packet's recall call instead, which now also writes `story.a2_called`: one call (§4.1).
