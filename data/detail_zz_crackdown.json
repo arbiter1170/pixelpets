@@ -132,6 +132,13 @@
     "A white beam slides up the road. Then the ground starts to hum."
    ],
    [
+    "music",
+    "curfew",
+    {
+     "keep": true
+    }
+   ],
+   [
     "walkTo",
     "cd_beam",
     20,
@@ -534,6 +541,10 @@
   ],
   "crackdown_lantern": [
    [
+    "music",
+    "curfew"
+   ],
+   [
     "walkTo",
     "player",
     5,
@@ -668,6 +679,10 @@
     500
    ],
    [
+    "music",
+    "president"
+   ],
+   [
     "say",
     "Block News",
     "Block News, evening edition. We go now to the capital."
@@ -739,6 +754,10 @@
     "say",
     "The President",
     "The Keepers keep you, and I keep the Keepers. Good night. Be kind in the streets."
+   ],
+   [
+    "music",
+    "curfew"
    ],
    [
     "say",
@@ -841,6 +860,15 @@
     "on"
    ],
    [
+    "music",
+    "dawn",
+    {
+     "fadeOut": 900,
+     "minDelay": 1600,
+     "fadeIn": 2400
+    }
+   ],
+   [
     "say",
     "",
     "At dawn the curfew lifts. Fen and {name} are let go."
@@ -883,6 +911,10 @@
    ]
   ],
   "warden_meet": [
+   [
+    "music",
+    "ledger"
+   ],
    [
     "say",
     "Warden Ilse",

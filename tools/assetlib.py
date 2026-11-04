@@ -19,6 +19,8 @@ PAL = {
     'A': '#c9925e', 'B': '#a8674a', 'C': '#e3d3ac', 'D': '#9fae86',
     'E': '#5f6e4f', 'F': '#5c4033', 'G': '#b5845a', 'H': '#b9877a',
     'I': '#9c9382', 'J': '#2f5a3e', 'P': '#9686a8', 'K': '#7a8aa0',
+    # GLIMMERWELL_PALETTE v0.3.1 keys, appended in sprites.js order (PROP_LIBRARY: Glimmerwell props round-trip).
+    'V': '#960e16', 'N': '#18140f', 'Q': '#c81818',
 }
 PAL_INDEX = {key: i for i, key in enumerate(PAL)}
 ROLE_LETTERS = ('a', 'b', 'c', 'd', 'x')

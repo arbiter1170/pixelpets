@@ -23,6 +23,8 @@
       keepers: {
         name: 'The Keepers', short: 'Keepers',
         earn: 'care and kindness: bond, care streaks, Journal pages, freeing crated Walklings',
+        // WALK_BESIDE E8 (D1931, D1972): the whole word, shown on the STANDING card after story.wb_charter. `asks` stays as built (D1937).
+        asksLong: 'Walk beside them, not ahead. Where they stop, stop. Where they turn, look.',
         asks: 'The Keepers ask you to walk beside wild Walklings, not ahead of them. Feed, rest, listen, and leave glow where it grows. In return the Lantern Houses and Halls treat you as family: warmer words, a Keepers shelf of care goods, and a Warden who will vouch for you.',
         tiers: [
           { name: 'Stranger',      blurb: 'New in town. Folk are polite.',  toast: 'Welcome, traveller!' },
@@ -35,10 +37,10 @@
       glimmer: {
         name: 'Glimmerwell Co.', short: 'Glimmerwell',
         earn: 'output and quotas: befriends, battles won, Census logs, crates packed',
-        asks: 'Glimmerwell asks for output: log the Census, pack the crates, hit quarterly targets, smile on stage. In return you get the mint lanyard, Acorn bonuses, early looks at new gear, and a company that is always delighted to see you. Brighter by nature, as long as the numbers are.',
+        asks: 'Glimmerwell asks for output: log the Census, pack the crates, hit quarterly targets, smile on stage. In return you get the lanyard, Acorn bonuses, early looks at new gear, and a company that is always delighted to see you. Brighter by nature, as long as the numbers are.',
         tiers: [
           { name: 'Guest',          blurb: 'Free lantern, free smile.',      toast: 'Welcome! Have a bright day!' },
-          { name: 'Associate',      blurb: 'Mint vest, first targets.',      toast: "Associate! Vest's in the mail." },
+          { name: 'Associate',      blurb: 'Wine vest, first targets.',      toast: "Associate! Vest's in the mail." },
           { name: 'Junior Bright',  blurb: "Lanyard holder. Rook's level.",  toast: 'Junior Bright! Clip it on!' },
           { name: 'Bright Lead',    blurb: 'You set the targets now.',       toast: 'Bright Lead! Targets up 10%!' },
           { name: "Founder's Pick", blurb: 'Marlowe knows your name.',       toast: "Founder's Pick! So bright!" },
@@ -69,7 +71,7 @@
         },
         review: {
           keepers: 'Word travels along the lanterns. Nobody says anything unkind, but the waves are slower now.',
-          glimmer: 'A mint envelope arrives. Your file is closed. Thank you for exploring other opportunities!',
+          glimmer: 'A wine envelope arrives. Your file is closed. Thank you for exploring other opportunities!',
         },
         welcome: {
           keepers: "Welcome to the slow side, {name}. It's nicer here. Promise.",
@@ -133,6 +135,18 @@
   // Nothing writes story.act; a stored one is ignored here (game.js honours it only under ?debug=1). Save stays v2.
   const ACT_FLAGS = Object.freeze(['story.ep1_end', 'story.seal5', 'story.seal7', 'story.skyloom_done', 'story.climb_open', 'story.summit_open']);
   const ACT_SEALS = Object.freeze({ 'story.seal5': 5, 'story.seal7': 7 });
+  // MAHOPAC_DREAMS E1 (D1941): which moment the lens shows in Act 5, first match. Pure; reads flags only, writes nothing.
+  // The loyalist's door (also a loyalist who later switched), the switcher's lanyard, the newest kept report (rpt_6 down to
+  // rpt_1), the first letter told, the enrolment, and the starter morning for any save at all.
+  function lensMoment(flags){
+    const F = flags || {};
+    if (F['story.warden_cut']) return 'cut';
+    if (F['story.switched_a3']) return 'switch';
+    for (let i = 6; i >= 1; i--) if (F['story.rpt_' + i] === 'kept') return 'kept';
+    if (F['story.rpt_1'] === 'told') return 'told';
+    if (F['story.keeper_cadet']) return 'cadet';
+    return 'starter';
+  }
   function actOf(flags, sealsHeld){
     const F = flags || {}, n = Number(sealsHeld) || 0;
     return ACT_FLAGS.filter(k => !!F[k] || (ACT_SEALS[k] != null && n >= ACT_SEALS[k])).length + 1;
@@ -267,7 +281,7 @@
   }
 
   const api = { CFG: STANDING_CFG, SIDES, isSide, clampPts, tierOf, tierInfo, switchCost, chapterOf, canSwitch, fill, devCheck,
-    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf, reportsOpen, loyalistOpen,
+    SEAL_TAGS, isTag, hasSealIn, sealsHeldIn, ACT_FLAGS, actOf, lensMoment, reportsOpen, loyalistOpen,
     RPT, ENDINGS, pathOf, trustOf, presOptions, ilseCanTurn, endingOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.STANDING_CFG = STANDING_CFG;

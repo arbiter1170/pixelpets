@@ -506,7 +506,7 @@
       "!story.hw_stair_open"
      ],
      "lines": {
-      "story.side=glimmer": "A rope across the Fallstair. A mint tag: SURVEY AREA. A Keeper tag under it.",
+      "story.side=glimmer": "A rope across the Fallstair. A wine tag: SURVEY AREA. A Keeper tag under it.",
       "else": "A rope across the Fallstair. A Keeper tag: CLOSED FOR SURVEY."
      }
     },

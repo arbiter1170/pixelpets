@@ -24,7 +24,15 @@ const PPClock = (() => {
   let virtual = null;
   let onChange = null;
 
+  // Perf (BRIGHTGATE_LAYOUT §6.4, measured): phase conditions call now() several times per object per frame, and each call
+  // parsed the URL and read sessionStorage. The answer changes only when debug is toggled, so it is held for 500 ms.
+  let debugMemo = null, debugMemoAt = 0;
   function debugOn(){
+    const t = Date.now();
+    if (debugMemo !== null && t - debugMemoAt < 500) return debugMemo;
+    debugMemoAt = t; return (debugMemo = debugOnRead());
+  }
+  function debugOnRead(){
     try {
       if (typeof location !== 'undefined') {
         const d = new URLSearchParams(location.search).get('debug');

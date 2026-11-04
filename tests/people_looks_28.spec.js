@@ -45,6 +45,7 @@ const BRIMHAT_TOP = {
   right: ['................', '.....rrrrrr.....', '....tttttttt....', '.rrrrrrrrrrrrrr.', '...rrrrrrrrrr...'],
   up: ['................', '.....rrrrrr.....', '....tttttttt....', '..rrrrrrrrrrrr..', '...rrrrrrrrrr...'],
 };
+const SAME_PERSON = ['glen_scout'];   // a second placement of one of the 28 people (see the look test)
 const HAIRS = ['short', 'long', 'spiky', 'bun', 'bob', 'pony', 'curls', 'buzz'];
 const FACINGS = ['down', 'right', 'up', 'left'];
 
@@ -52,6 +53,7 @@ function save() {
   const s = starterSave();
   s.settings.follower = false;
   s.settings.textSpeed = 'fast';
+  s.settings.tips = false;   // the phone tip (story.phone_got) can open mid-test and write story.unlock_phone, which the save compare would catch
   s.flags['story.early_done'] = true;
   s.flags['story.phone_got'] = true;
   return s;
@@ -59,13 +61,14 @@ function save() {
 
 // game.js is one closure. A served copy (the file on disk is unchanged) adds an eval hook before boot(),
 // as tests/intro_cutscene.spec.js does, so the spec can read HOLDER_LOOK, NPC_LOOKS, LOOK_OF_NAME and npcLook.
-const BOOT_HOOK = 'try {\n  boot();\n';
+// CRLF-tolerant: a Windows checkout with core.autocrlf=true serves game.js with \r\n (.gitattributes now pins LF).
+const BOOT_HOOK = /try \{\r?\n  boot\(\);\r?\n/g;
 async function exposeInternals(page) {
   await page.route('**/game.js*', async (route) => {
     const res = await route.fetch();
     let body = await res.text();
-    const at = body.indexOf(BOOT_HOOK);
-    if (at >= 0 && body.indexOf(BOOT_HOOK, at + 1) < 0) body = body.slice(0, at) + 'window.__pl28 = { ev: s => eval(s) };\n' + body.slice(at);
+    const hits = [...body.matchAll(BOOT_HOOK)];
+    if (hits.length === 1) { const at = hits[0].index; body = body.slice(0, at) + 'window.__pl28 = { ev: s => eval(s) };\n' + body.slice(at); }
     await route.fulfill({ status: 200, body, headers: { 'content-type': 'application/javascript', 'cache-control': 'no-store' } });
   });
 }
@@ -116,7 +119,9 @@ test('each of the 28 people resolves to its own new look, with the looks.json fi
     const fields = Object.assign({}, defs[key]);
     delete fields.extra;
     expect(fields, key + ' definition').toEqual(want.look);
-    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id));   // LANTERN_HOUSE_FERNBROOK: the curfew-night twins (lh_odile) are the same person indoors
+    // Same person, second placement: LANTERN_HOUSE_FERNBROOK's curfew-night twins (lh_odile) indoors, and ACT1_KEEPER_JOIN's
+    // glen_scout, the built Keeper Scout earlier in time at Wickerglen (D1552, detail_zz_keeper_join.json).
+    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id) && SAME_PERSON.indexOf(r.id) < 0);
     expect(hits.map(r => r.map + ':' + r.id), key + ' is worn by its NPC only').toEqual([want.map + ':' + want.id]);
     expect(hits[0].same, key + ' drawn by npcLook').toBe(true);
   }

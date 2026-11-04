@@ -4,7 +4,9 @@
    Outdoor: sky, a far layer and one landmark taken from the map, then the map's ground tiles from the horizon down.
    Indoor: the room's own back wall and floor rows (its grid, without objects), then a few of its props. Dreams get a
    dithered white wash. Layout follows drawBattle: the foe stands top right (x W-26, y H*0.18), the partner bottom left
-   (x 6, y H-28). Landmarks and props (the "deco" layer) keep out of both boxes; boxes() names them for the tests. */
+   (x 6, y H-28). Landmarks and props (the "deco" layer) keep out of both boxes; boxes() names them for the tests.
+   A building landmark comes from the map's own `roofs` entry (house(): its roof and wall tiles, door and window art, trim,
+   gable), drawn flat (Nov 4: the Weir Hut on the Cut; Fernbrook's pond is the plaza's fountain). */
 (function(){
 'use strict';
 
@@ -39,20 +41,24 @@ function solid(img){
 
 /* ---------- the drawing kit ---------- */
 function kit(g, W, H, id, env, layer){
-  const L = lay(W, H), S = { g, W, H, id, env, layer, fy: L.fy, my: L.my, hz: L.hz, r: rng(seedOf(id)), wet: [], on: layer !== 'deco',
-    boxes: boxes(W, H, !!(ROOMS[id] && ROOMS[id].group)),
+  const L = lay(W, H), S = { g, W, H, id, env, layer, fy: L.fy, my: L.my, hz: L.hz, r: rng(seedOf(id)), wet: [], drew: [], on: layer !== 'deco',
+    boxes: boxes(W, H, !!(ROOMS[id] && ROOMS[id].group)), low: L.my - 3,   // low: the partner box's top row (fixed deco ends above it)
     night: /^night/.test(env.mode || ''), dull: /dull$/.test(env.mode || '') };
   S.P = (col, x, y, w = 1, h = 1) => { if (!S.on) return; g.fillStyle = PAL[col]; g.fillRect(x | 0, y | 0, w | 0, h | 0); };
   // Fill a rect with one map tile at scale s (1 or 0.5), clipped. cx/cy seed the map's tile variants; water is noted for frame().
   S.fill = (ch, x, y, w, h, s = 1, cx = 0, cy = 0) => {
     if (!S.on || w <= 0 || h <= 0) return;
+    S.tiles((i, j) => env.tile(ch, cx + i, cy + j), x, y, w, h, s);
+    if (ch === 'w') S.wet.push([x, y, w, h, s]);
+  };
+  // The tiling under fill(): img(i, j) gives the 16x16 tile for column i, row j; scale s; clipped to the rect.
+  S.tiles = (img, x, y, w, h, s = 1) => {
     const step = 16 * s;
     g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
     for (let j = 0; j * step < h; j++) for (let i = 0; i * step < w; i++) {
-      const img = env.tile(ch, cx + i, cy + j); if (img) g.drawImage(img, 0, 0, 16, 16, x + i * step, y + j * step, step, step);
+      const t = img(i, j); if (t) g.drawImage(t, 0, 0, 16, 16, x + i * step, y + j * step, step, step);
     }
     g.restore();
-    if (ch === 'w') S.wet.push([x, y, w, h, s]);
   };
   // A map cell as it is in the room (wall kit, skin, decal) at full scale. under: the floor char drawn first, for tiles
   // with open corners (pillars, stairs), as the walk map does.
@@ -69,16 +75,52 @@ function kit(g, W, H, id, env, layer){
   S.art = (name, cx, by, s = 1) => {
     if (!S.on) return false;
     const img = solid(env.art(name)); if (!img) return false;
-    const hits = (x, y, w, h) => S.boxes.some(([bx, bY, bw, bh]) => x < bx + bw && x + w > bx && y < bY + bh && y + h > bY);
+    return S.place(img.width, img.height, cx, by, s, 0, (x, y, w, h) => g.drawImage(img, 0, 0, img.width, img.height, x, y, w, h), 'art:' + name);
+  };
+  // Find a spot for a w x h thing (at scale s) standing bottom-centred on (cx, by) that touches no Walkling's box: slide left,
+  // then right, then up, then shrink. off > 0 (a building in the front-right corner): slide right first, and it may stand up
+  // to off px out of frame on the right before it shrinks.
+  const hits = (x, y, w, h) => S.boxes.some(([bx, bY, bw, bh]) => x < bx + bw && x + w > bx && y < bY + bh && y + h > bY);
+  S.place = (iw, ih, cx, by, s, off, draw, tag) => {
     for (const k of [s, s * 0.75, s * 0.5]) {
-      const w = Math.round(img.width * k), h = Math.round(img.height * k), x0 = Math.round(cx - w / 2), y0 = by - h, tries = [[x0, y0]];
-      for (let x = x0 - 1; x >= 0; x--) tries.push([x, y0]);
-      for (let x = x0 + 1; x + w <= W; x++) tries.push([x, y0]);
+      const w = Math.round(iw * k), h = Math.round(ih * k), x0 = Math.round(cx - w / 2), y0 = by - h, tries = [[x0, y0]], side = [[], []];
+      for (let x = x0 - 1; x >= 0; x--) side[0].push([x, y0]);
+      for (let x = x0 + 1; x + w <= W + off; x++) side[1].push([x, y0]);
+      tries.push(...(off ? side[1].concat(side[0]) : side[0].concat(side[1])));
       for (let y = y0 - 1; y >= 0; y--) tries.push([x0, y]);
       const at = tries.find(([x, y]) => !hits(x, y, w, h));
-      if (at) { g.drawImage(img, 0, 0, img.width, img.height, at[0], at[1], w, h); return true; }
+      if (at) { draw(at[0], at[1], w, h, k); S.drew.push(tag); return true; }
     }
     return false;
+  };
+  // A building from the map's own `roofs` entry (the roof kit: roof and wall tiles, door and window art, trim, a gable cut),
+  // drawn at scale s, standing on (cx, by). Flat PAL only: no alpha, no glow. Slides like a prop; may lose a quarter off the right.
+  S.house = (name, cx, by, s = 0.5, under) => {
+    const r = env.roofs && env.roofs[name];
+    if (!S.on || !r) return false;
+    const n = r.x1 - r.x0 + 1, rows = r.y1 - r.y0 + 1, roof = env.named(r.roof) || env.tile('R', r.x0, r.y0), wall = env.named(r.wall) || env.tile('H', r.x0, r.y1 + 1);
+    const door = solid(env.art(r.door)), win = solid(env.art([].concat(r.win || [])[0]));
+    const d = (env.objs || []).find(o => o.kind === 'door' && o.x >= r.x0 && o.x <= r.x1 && o.y > r.y1 && o.y <= r.y1 + 2), dx = d ? d.x - r.x0 : -1;
+    return S.place(n * 16, (rows + 1) * 16, cx, by, s, n * 4, (x, y, w, h, k) => {
+      if (under) under(x, y, w, h);
+      const t = 16 * k, rh = Math.round(rows * t), keep = document.createElement('canvas');
+      keep.width = w; keep.height = rh; keep.getContext('2d').drawImage(g.canvas, x, y, w, rh, 0, 0, w, rh);   // what the gable's cut shows
+      S.tiles(() => roof, x, y, w, rh, k);
+      S.tiles(() => wall, x, y + rh, w, Math.round(t), k);
+      if (r.shape === 'gable') for (let j = 0; j < rh; j++) {
+        const cut = Math.round(Math.min(w / 2 - 2, rh - 1 - j)); if (cut <= 0) continue;   // the map's gable: 45 degrees
+        g.clearRect(x, y + j, cut, 1); g.clearRect(x + w - cut, y + j, cut, 1);
+        g.drawImage(keep, 0, j, cut, 1, x, y + j, cut, 1); g.drawImage(keep, w - cut, j, cut, 1, x + w - cut, y + j, cut, 1);
+      }
+      // the map's roof shading, in flat PAL: a dark edge on the gable and the eave, so a turf roof still reads on grass
+      for (let j = 0; j < rh; j++) { const c = r.shape === 'gable' ? Math.max(0, Math.round(Math.min(w / 2 - 2, rh - 1 - j))) : 0; S.P('k', x + c, y + j); S.P('k', x + w - 1 - c, y + j); if (!j) S.P('k', x + c, y, w - 2 * c, 1); }
+      S.P('d', x, y + rh - 1, w, 1);
+      if (r.trim && PAL[r.trim]) { S.P(r.trim, x, y + rh, w, 1); S.P(r.trim, x, y + rh, 1, t); S.P(r.trim, x + w - 1, y + rh, 1, t); }
+      for (let i = 0; i < n; i++) {
+        const art = i === dx ? door : (dx >= 0 && Math.abs(i - dx) % 2 === 0) ? win : null;
+        if (art) g.drawImage(art, 0, 0, art.width, art.height, Math.round(x + i * t), Math.round(y + rh), Math.round(t), Math.round(t));
+      }
+    }, 'house:' + name);
   };
   S.deco = fn => { const was = S.on; S.on = layer !== 'base'; fn(); S.on = was; };
   S.ground = (ch, cy = 0) => { S.fill(ch, 0, S.hz, W, 16, 0.5, 0, cy); S.fill(ch, 0, S.hz + 16, W, H - S.hz - 16, 1, 3, cy + 1); };
@@ -119,6 +161,23 @@ const FAR = {
   // Small houses from the map's own roof and wall tiles at half scale, standing on the horizon. xs: left edges, n: tiles wide.
   roofs(S, list){ list.forEach(([x, n, tall]) => { const t = tall || 1; S.fill('R', x, S.hz - 8 - 8 * t, 8 * n, 8, 0.5, x, 0); S.fill('H', x, S.hz - 8 * t, 8 * n, 8 * t, 0.5, x, 1); }); },
 };
+
+// BATTLE_BACKDROPS_ACT2 v0.1.1 (design specs/battle_backdrops_act2/recipes.js; BRIGHTGATE_LAYOUT v0.2): Brightgate's helpers.
+// A far row of company blocks in flat PAL: wall, a seam every 4 px, a cap and a band (the white panel city).
+FAR.blocks = (S, list, wall = 'w', seam = 'h', cap = 'N', band = 'V') => {
+  const { hz, P } = S;
+  list.forEach(([x, w, h]) => {
+    P(wall, x, hz - h, w, h); for (let k = x + 3; k < x + w; k += 4) P(seam, k, hz - h + 3, 1, h - 3);
+    P(cap, x, hz - h - 2, w, 2); P(band, x, hz - h, w, 1); P('d', x, hz - 1, w, 1);
+  });
+};
+// A tall thin mast in flat PAL (the City Relay, a Calm Tower): no glow, one cap; `tip` is the lamp colour.
+FAR.mast = (S, x, top, col = 'm', tip = 'h') => { const { hz, P } = S; P(col, x, top, 2, hz - top); P('d', x + 2, top + 2, 1, hz - top - 2); P(tip, x - 1, top - 2, 4, 2); };
+// Brightgate's haze: the day sky's ice band reads close to mint between white blocks, so company scenes repaint it grey (D2000).
+const haze = S => { if (!S.night && !S.dull) S.P('h', 0, S.hz - 3, S.W, 3); };
+// Panel paving in flat PAL: white panels, soft grey seams (not navy), from the horizon down (B05).
+const panels = (S, y0 = S.hz) => { const { W, H, P } = S; P('w', 0, y0, W, H - y0);
+  for (let y = y0 + 6; y < H; y += 8) P('h', 0, y, W, 1); for (let x = 5; x < W; x += 8) for (let y = y0; y < H; y += 16) P('h', x, y, 1, 8); };
 
 /* ---------- indoor: the room's own wall and floor ---------- */
 const NOT_FLOOR = { '^': 1, m: 1 };
@@ -161,7 +220,8 @@ function ring(S, col){
 // Two hall banners on the back wall, left of the foe.
 function banners(S, [a, b]){
   const { hz, P } = S;
-  [3, 17].forEach(x => { P('k', x, hz - 15, 8, 1); P(a, x + 1, hz - 14, 6, 9); P(b, x + 1, hz - 11, 6, 2); P(a, x + 1, hz - 5, 2, 2); P(a, x + 5, hz - 5, 2, 2); });
+  const t = hz - 15 - Math.max(0, hz - 3 - S.low);   // on a short screen (61x45) the tails would touch the partner's box: lift them
+  [3, 17].forEach(x => { P('k', x, t, 8, 1); P(a, x + 1, t + 1, 6, 9); P(b, x + 1, t + 4, 6, 2); P(a, x + 1, t + 10, 2, 2); P(a, x + 5, t + 10, 2, 2); });
 }
 
 /* ---------- the scenes ---------- */
@@ -177,19 +237,21 @@ const OUT = {
     sky(S); FAR.hills(S, 'l', 1.4);
     S.ground('g'); S.band('p', 22, 8); S.band('f', 12, 8, 0.5, S.W - 22, 16);
     S.deco(() => {
-      const x = 2, y = S.hz - 22;
+      const x = 2, y = Math.min(S.hz - 22, S.low - 24);   // short screens: the lodge rises so its door stays above the partner
       S.fill('R', x, y, 24, 16, 0.5, 8, 2); S.fill('H', x, y + 16, 24, 8, 0.5, 8, 4);
       S.P('d', x + 9, y + 18, 6, 6); S.P('o', x + 10, y + 19, 4, 5); S.P('y', x + 3, y + 18, 3, 3); S.P('y', x + 18, y + 18, 3, 3);
       S.art('lamp_post', 28, S.hz + 2, 0.5);
       S.art('planter_geranium', S.W - 10, S.H - 2);
     });
   },
-  fernbrook(S){                                       // Fernbrook: the fenced orchard, the well, the pond
+  fernbrook(S){                                       // Fernbrook: the fenced orchard and the well; the plaza and its fountain
     sky(S);
     for (let x = -2; x < S.W; x += 9) S.fill('T', x, S.hz - 9, 8, 8, 0.5, x, 11);
     S.ground('g'); S.fill('F', 0, S.hz, S.W, 8, 0.5, 2, 10);
-    S.fill('s', S.W - 34, S.hz + 24, 30, 12, 1, 20, 12); S.fill('w', S.W - 32, S.hz + 26, 26, 8, 1, 21, 13);
-    S.deco(() => { S.art('lm_well', 13, S.hz + 14) || S.art('apple_crate', 13, S.hz + 14); S.art('apple_crate', S.W - 10, S.H - 2); });
+    // FERNBROOK_PLAZA: the old pond is the plaza's fountain now, a cobble rim in the square's paving
+    S.fill('P', S.W - 36, S.hz + 20, 36, S.H - S.hz - 20, 0.5, 18, 10);
+    S.fill('c', S.W - 33, S.hz + 23, 30, 14, 0.5, 19, 11); S.fill('w', S.W - 30, S.hz + 26, 24, 8, 1, 20, 12);
+    S.deco(() => { S.art('lm_well', 13, S.hz + 14) || S.art('apple_crate', 13, S.hz + 14); S.art('stone_urn', S.W - 8, S.H - 2) || S.art('apple_crate', S.W - 10, S.H - 2); });
   },
   proto(S){                                           // Old Meadow: the big tree, the pond, wild flowers
     sky(S); FAR.hills(S, 'l', 0.7); [8, 20].forEach(x => S.fill('T', x, S.hz - 9, 8, 8, 0.5, x, 3));
@@ -216,7 +278,8 @@ const OUT = {
     sky(S); FAR.cliff(S, S.hz - 20);
     S.ground('c'); S.band('t', S.H - S.hz - 14, 14, 0.5, 0, S.W);
     S.deco(() => {
-      const x = 7, y = S.hz - 14; S.P('k', x + 1, y, 8, 14); S.P('k', x, y + 2, 10, 12); S.P('d', x + 2, y + 1, 1, 13); S.P('m', x, y + 13, 10, 1);
+      const x = 7, y = S.hz - 14, h = Math.min(14, S.low - y);   // short screens: a shorter mouth, clear of the partner
+      S.P('k', x + 1, y, 8, h); S.P('k', x, y + 2, 10, h - 2); S.P('d', x + 2, y + 1, 1, h - 1); S.P('m', x, y + h - 1, 10, 1);
       S.art('barrel', 23, S.hz + 12); S.art('ore_cart', S.W - 11, S.H - 2) || S.art('rc_crate', S.W - 11, S.H - 2);
     });
   },
@@ -226,20 +289,29 @@ const OUT = {
     S.fill('s', 30, S.hz + 20, S.W - 34, 12, 1, 14, 8); S.fill('w', 32, S.hz + 22, S.W - 38, 8, 1, 14, 8);
     S.deco(() => { S.art('seam_stone', 12, S.hz + 12) || S.art('rock_big', 12, S.hz + 12); S.art('rock_small', S.W - 8, S.H - 3); });
   },
-  hw_cut(S){                                          // Hushwater Cut: the gorge wall, the river, the Old Weir
+  hw_cut(S){                                          // Hushwater Cut: the gorge wall, the river, the Old Weir, the Weir Hut
     sky(S); FAR.cliff(S, S.hz - 24);
     S.ground('g', 2); S.band('s', 16, 2); S.band('w', 18, 12); S.band('s', 30, 2);
     S.fill('B', 28, S.hz + 16, 14, 16, 1, 20, 8);
-    S.deco(() => { S.art('stone_marker', 12, S.hz + 13); S.art('comfort_lamp', S.W - 9, S.H - 2); });
+    S.deco(() => {
+      S.art('stone_marker', 12, S.hz + 13);
+      // WEIR_HUT: the hut on the near bank, from the map's own roofs entry (turf roof, rock wall, barn door, slit window)
+      // On a short screen the near bank is off the bottom, so the hut stands on a plank deck at the weir (the map's B tiles).
+      const deck = (x, y, w, h) => { if (y + h < S.hz + 34) S.fill('B', x - 2, y + h - 4, w + 4, 6, 0.5, 20, 8); };
+      if (!S.house('weir_hut', S.W - 17, S.H - 2, 0.5, deck)) S.art('comfort_lamp', S.W - 9, S.H - 2);
+      S.art('weir_net_crate', 26, S.hz + 14, 0.75);
+    });
   },
   hw_falls(S){                                        // Hushwater Falls: the falls out of the rock, the pool, spray
     sky(S); FAR.cliff(S, 6);
     S.ground('g', 4); S.band('t', S.H - S.hz - 12, 12, 0.5, S.W - 26, 26);
+    // the pool and its spray are ground (base layer), so on a short screen the partner may stand in front of them
+    const pw = Math.min(28, S.W - 34);   // the pool stays left of the foe's box
+    S.fill('s', 4, S.hz + 2, pw, 14, 0.5, 14, 11); S.fill('w', 6, S.hz + 4, pw - 4, 9, 1, 14, 12);
+    const r = rng(seedOf('hw_falls_spray')); for (let i = 0; i < 14; i++) S.P(r() < .5 ? 'w' : 's', 8 + (r() * (pw - 6) | 0), S.hz + (r() * 5 | 0));
     S.deco(() => {
-      S.fill('w', 12, 6, 12, S.hz - 4, 1, 15, 1); S.P('k', 11, 6, 1, S.hz - 6); S.P('k', 24, 6, 1, S.hz - 6);
-      const pw = Math.min(28, S.W - 34);   // the pool stays left of the foe's box
-      S.fill('s', 4, S.hz + 2, pw, 14, 0.5, 14, 11); S.fill('w', 6, S.hz + 4, pw - 4, 9, 1, 14, 12);
-      const r = rng(seedOf('hw_falls_spray')); for (let i = 0; i < 14; i++) S.P(r() < .5 ? 'w' : 's', 8 + (r() * (pw - 6) | 0), S.hz + (r() * 5 | 0));
+      const fh = Math.min(S.hz - 4, S.low - 6);   // the falls end above the partner's box
+      S.fill('w', 12, 6, 12, fh, 1, 15, 1); S.P('k', 11, 6, 1, Math.min(S.hz - 6, fh)); S.P('k', 24, 6, 1, Math.min(S.hz - 6, fh));
       S.art('rope_coil', S.W - 10, S.H - 2);
     });
   },
@@ -282,6 +354,26 @@ const OUT = {
     S.fill('s', 4, S.hz + 18, 30, 12, 0.5, 14, 9); S.fill('w', 6, S.hz + 20, 26, 8, 1, 14, 10); S.band('y', 10, 4);
     S.deco(() => { S.art('withy_bundle', S.W - 9, S.H - 2) || S.art('crate', S.W - 9, S.H - 2); });
   },
+  // BRIGHTGATE_LAYOUT v0.2 (BATTLE_BACKDROPS_ACT2 v0.1.1 recipes; the stand-in chars swapped for the city's tiles: L the glide
+  // lane, I panel paving, d setts, o cobbles). Haze grey, no mint (D2000).
+  brightgate(S){ sky(S); haze(S); FAR.blocks(S, [[0, 12, 10], [14, 9, 14], [41, 10, 12], [54, 12, 9]]); FAR.blocks(S, [[26, 12, 8]], 'C', 'C', 'B', 'F');
+    panels(S); S.band('L', 14, 8, 0.5); S.P('w', 0, S.hz + 17, S.W, 1);
+    S.fill('I', 2, S.hz + 26, 28, 12, 0.5, 31, 19); S.fill('w', 5, S.hz + 28, 22, 8, 1, 32, 20);
+    S.deco(() => { S.art('bg_comfort_lamp', 10, S.hz + 13) || S.art('lamp_post', 10, S.hz + 13); S.art('bg_hedge_planter', S.W - 9, S.H - 2); }); },
+  bg_campus(S){ sky(S); haze(S); FAR.blocks(S, [[2, 30, 18]], 's', 'w', 'N', 'V'); S.P('V', 8, S.hz - 22, 18, 1); FAR.blocks(S, [[36, 10, 8], [50, 12, 10]]);
+    S.ground('l', 5); S.band('I', 10, 8, 0.5); S.fill('w', S.W - 30, S.hz + 24, 26, 8, 1, 30, 30);
+    S.deco(() => { S.art('banner_glim_stand', 10, S.hz + 14) || S.art('flag_pole', 10, S.hz + 14); S.art('bg_hedge_planter', S.W - 9, S.H - 2); }); },
+  bg_works(S){ sky(S); haze(S); S.fill('K', 0, S.hz - 12, 30, 12, 0.5, 3, 3); S.P('N', 0, S.hz - 14, 30, 2); FAR.mast(S, 44, 2, 'm', 'h'); FAR.blocks(S, [[50, 13, 9]], 'm', 'd', 'N', 'y');
+    S.ground('d', 4); S.fill('F', 0, S.hz, S.W, 8, 0.5, 46, 34);
+    for (let x = 1; x < S.W; x += 4) S.P('F', x, S.hz + 14, 2, 5); S.P('h', 0, S.hz + 15, S.W, 1); S.P('h', 0, S.hz + 18, S.W, 1);
+    S.band('D', 22, 8, 0.5); S.band('w', 30, 10);
+    S.deco(() => { S.art('water_tank', 14, S.hz - 8, 0.75) || S.art('crate_stack', 14, S.hz + 12); S.art('tile_crate', S.W - 9, S.H - 2) || S.art('crate_stack', S.W - 9, S.H - 2); }); },
+  bg_oldtown(S){ sky(S); FAR.hills(S, 'g', 0.8); FAR.roofs(S, [[0, 2], [16, 1], [24, 2, 2], [40, 1], [48, 2]]);
+    S.ground('o', 6); S.band('o', 6, 8, 0.5); S.fill('s', S.W - 32, S.hz + 22, 30, 14, 1, 20, 30); S.fill('w', S.W - 30, S.hz + 24, 26, 10, 1, 21, 31);
+    S.deco(() => { S.art('lamp_post', 12, S.hz + 14); S.art('bench_long', S.W - 12, S.H - 2); }); },
+  bg_partner(S){ sky(S); FAR.blocks(S, [[0, 10, 8], [12, 10, 8], [24, 10, 8], [36, 10, 8], [48, 10, 8], [60, 10, 8]], 'h', 'm', 'N', 'V');
+    S.ground('l', 2); S.band('I', 8, 8, 0.5); S.band('I', 26, 8, 0.5);
+    S.deco(() => { S.art('bg_comfort_lamp', 12, S.hz + 14) || S.art('lamp_post', 12, S.hz + 14); S.art('bg_comfort_lamp', S.W - 8, S.H - 2) || S.art('bg_hedge_planter', S.W - 9, S.H - 2); }); },
 };
 // Every room (the whole interior list). back: props at the foot of the back wall, left of the foe; front: props in the
 // front-right corner. Trial Halls add banners and a floor ring. group: a group battle happens here (boxes()).
@@ -309,6 +401,9 @@ const ROOMS = {
   sm_tunnel: {}, bw_lantern_in: {}, bw_store_in: {}, fb_lantern_in: {},
   fbh_press_in: {}, fbh_picker_in: {}, fbh_stitch_in: {},   // FERNBROOK_HOMES (on main without a scene; added with WEIR_HUT)
   hw_weir_hut_in: {},   // WEIR_HUT: no wilds or holders inside; listed so every room has a scene (its first two props)
+  // Hall 4, VOLT (BATTLE_BACKDROPS_ACT2 v0.1.1): the storm tower.
+  bg_hall_in: { hall: true, banner: ['n', 'y'], ring: 'c', back: ['bg_rod'], front: ['bg_coil'] },   // the recipe's mast and vane carry mint pixels; the hall's own rod and coil instead (D2000)
+  bg_lantern_in: {}, bg_store_in: {}, bg_hq_lobby: {}, bg_review_in: {}, bg_gala_in: {},   // BRIGHTGATE_LAYOUT (BATTLE_BACKDROPS_ACT2): no battle designed; every room has a scene
 };
 // A room with no named props takes its own first two prop sprites (back, then front), so every room still shows its things.
 function autoProps(env, o){
@@ -338,6 +433,7 @@ function render(g, W, H, id, env, layer){
   const S = kit(g, W, H, id, env, layer);
   if (OUT[id]) OUT[id](S);
   else if (ROOMS[id]) { room(S, autoProps(env, ROOMS[id])); if (env.dream && !layer) dreamWash(S); }
+  api.last = { id, drew: S.drew.slice() };   // what the last render placed ('art:<name>', 'house:<roofs name>'), for the tests
   return S.wet;
 }
 // The moving part: a scene with water (render() returned wet rects) carries a second canvas, btAlt, drawn whole on the
@@ -388,5 +484,6 @@ function enableCity(){
   Object.keys(HC_OUT).forEach(id => { scenes[id] = { room: false }; });
   Object.keys(HC_ROOMS).forEach(id => { scenes[id] = { room: true, group: false, hall: false }; });
 }
-window.BattleBG = { scenes, render, frame, boxes, lay, enableCity };
+const api = { scenes, render, frame, boxes, lay, enableCity, last: null };
+window.BattleBG = api;
 })();
