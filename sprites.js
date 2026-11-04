@@ -1546,6 +1546,7 @@ function buildTiles(){
   T.floor_keep = lozengeFloor([]);
   T.floor_keep_b = lozengeFloor([[12, 4, 'h']]);
   T.floor_keep_c = lozengeFloor([[5, 12, 'm'], [13, 3, 'h']]);
+  T.floor_keep_d = lozengeFloor([[3, 4, 'm'], [4, 4, 'm'], [11, 12, 'h']]);   // CABINET 1b: the Cabinet Room's third variant (Vincent, Nov 4)
   T.rug_keep = mkTile(g => { px(g, PAL.g, 0, 0, 16, 16); px(g, PAL.y, 0, 0, 1, 16); px(g, PAL.y, 15, 0, 1, 16); px(g, PAL.J, 1, 0, 1, 16); px(g, PAL.J, 14, 0, 1, 16); px(g, PAL.y, 7, 7, 2, 2); });
   T.mat_keep = doormat('J', 'y');
   T.floor_keep_tile = mkTile(g => { px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 0, 16, 1); px(g, PAL.m, 0, 8, 16, 1); px(g, PAL.m, 0, 0, 1, 16); px(g, PAL.m, 8, 0, 1, 16); px(g, PAL.w, 2, 2, 2, 1); });
@@ -2318,6 +2319,11 @@ const HC_CITY_SKINS = {
   hc_news_1: hcSkin('floor_warden', 'wall_stone', 'mat_hall', { wall: wallRow('mwdhmmddmcwd') }),
   hc_news_2: hcSkin('floor_keep', 'wall_stone', 'mat_hall', { wall: wallRow('dhdhmdddmcsd') }),
   hc_gov_1: hcSkin('floor_wardstone', 'wall_sage', 'mat_warden', { wall: wallRow('JyEDEJJFJcwJ') }),
+  // CABINET_AND_COUNCILS 1b: the Cabinet Room shares floor 1's wall row (one house, one wall), on the Keeper House's slate floor with
+  // a third variant (Vincent, Nov 4) and the navy civic runner (= - + *).
+  hc_gov_2: (sk => { sk.variants.floor_keep.push(['floor_keep_d', 0.14]); return sk; })(hcSkin('floor_keep', 'wall_sage', 'mat_keep', {
+    remap: { '=': 'rug_civic_v', '-': 'rug_civic_h', '+': 'rug_civic_turn', '*': 'rug_civic_end' }, walk: { '=': 1, '-': 1, '+': 1, '*': 1 },
+    wall: wallRow('JyEDEJJFJcwJ') })),
   hc_gov_3: hcSkin('floor_clinic_warm', 'wall_cream', 'mat_lantern_warm', { remap: { '=': 'rug_coach' }, wall: wallRow('BrFCArGFGcwr') }),
 };
 const SKINS = Object.assign({ lab: LAB_SKIN, tunnel: TUNNEL_SKIN }, HOUSE_SKINS);
@@ -3850,6 +3856,52 @@ const BRIGHTGATE_ART = {
       bg_outcomes_board: ["................", "NNNNNNNNNNNNNNNN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NwVhhwVhhwVhhwwN", "NwhhhwhhhwhhhwwN", "NwwwwwwwwwwwwwwN", "NyyyyyyyyyyyyyyN", "NNNNNNNNNNNNNNNN", "................", "................"],
     },
 };
+// CABINET_AND_COUNCILS v0.2.2 phase 1b: the Cabinet Room hc_gov_2 (14x12), as Vincent approved the rule-9 previews (Wed Nov 4,
+// 2026: 14x12, the seat tells as drawn, a third floor tile). Drawn in the scratch layout draft from PAL keys only, no outside
+// assets, no Glimmerwell key (the wine-red pins and the Treasury's ribbon are `r`). Tiles go to TILES; props are 16x16, or 16x32
+// drawn up from their cell (the head chair, the charter case). The table is 3x5 and the towns map 3x1, sliced left to right, top
+// to bottom. The room's library pieces (pa_*, pc_*, pv_*, pn_*) are PROP_LIBRARY_ART's (#319).
+const CABINET_ROOM_ART = {
+  tiles: {
+    rug_civic_v: ["KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnbnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnbnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK","KynnnnnnnnnnnnyK"],
+    rug_civic_h: ["KKKKKKKKKKKKKKKK","yyyyyyyyyyyyyyyy","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnbnnnnnnnnnnn","nnnnnnnnnnnnbnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","yyyyyyyyyyyyyyyy","KKKKKKKKKKKKKKKK"],
+    rug_civic_turn: ["KynnnnnnnnnnnnyK","Kynnnnnnnnnnnnyy","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kynnnnnnnnnnnnnn","Kyyyyyyyyyyyyyyy","KKKKKKKKKKKKKKKK"],
+    rug_civic_end: ["KKKKKKKKKKKKKKKK","yyyyyyyyyyyyyyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","nnnnnnnnnnnnnyKK","yyyyyyyyyyyyyyKK","KKKKKKKKKKKKKKKK"],
+  },
+  props: {
+    cab_chair_r: ["...ddd..........","..dyFyd.........","..dFbFd.........","..dFnFd.........","..dFnFd.........","..dynFdddddd....","..dynFFFFmFFd...","..dFnFdddddFd...","..dFnbbbbbbbbd..","..dFmbnnnnnnnd..","..dFFbnnnnnnnd..","..dFFFFFFFFFFd..","..dFdFddddddFd..","..dFdFd....dFd..","..dFdFd....dFd..","...d.d......d..."],
+    cab_chair_l: ["..........ddd...",".........dyFyd..",".........dFbFd..",".........dFnFd..",".........dFnFd..","....ddddddFnyd..","...dFFmFFFFnyd..","...dFdddddFnFd..","..dbbbbbbbbnFd..","..dnnnnnnnbmFd..","..dnnnnnnnbFFd..","..dFFFFFFFFFFd..","..dFddddddFdFd..","..dFd....dFdFd..","..dFd....dFdFd..","...d......d.d..."],
+    cab_chair_r_new: ["...ddd..........","..dyFyd.........","..dFbFd.........","..dFbFd.........","..dFbFd.........","..dynFdddddd....","..dynFGGGGGFd...","..dFnFdddddFd...","..dFnbbbbbbbbd..","..dFnbnnnnnnnd..","..dFFbnnnnnnnd..","..dFFFyFyFyFyd..","..dFdFddddddFd..","..dFdFd....dFd..","..dFdFd....dFd..","...d.d......d..."],
+    cab_chair_up: ["................","....dddddddd....","...dbbbbbbbbd...","...dbnnnnnnnd...","...dbnnnnnnnd...","...dbnnnnnnnd...","..dyFFFFFFFFyd..","..dFbbbbbbbbFd..","..dFbnnnnnnnFd..","..dFbnwyyynnFd..","..dFbnyyyynnFd..","..dFbnnnnnnnFd..","..dFbnnnnnnnFd..","..dFFFFFFFFFFd..","..dFddddddddFd..","...d........d..."],
+    cab_chair_head: ["................","................","................","................","................","................","................","................","................","................","......dddd......","...dddyyyyddd...","..dyFFFFFFFFyd..","..dFbbbbbbbbFd..","..dFbnnnnnnnFd..","..dFbnnnnnnnFd..","..dFbnnnnnnnFd..","..dFbnnnnnnnFd..","..dFbnnnnnnnFd..","..dFbnnnnnnnFd..",".dAFbnnnnnnnFAd.",".dGFbnnnnnnnFGd.",".dFFFFFFFFFFFFd.",".dFbbbbbbbbbbFd.",".dFbnnnnnnnnnFd.",".dFbnnnnnnnnnFd.",".dFbnnnnnnnnnFd.","..dFFFFFFFFFFd..","..dFddddddddFd..","..dFd......dFd..","..dFd......dFd..","...d........d..."],
+    cab_gallery_chair: ["..........ddd...",".........dFFFd..",".........dFCFd..",".........dFAFd..",".........dFAFd..","....ddddddFAFd..","...dFFFFFFFAFd..","...dFdddddFAFd..","..dCCCCCCCCAFd..","..dAAAAAAACAFd..","..dAAAAAAACFFd..","..dFFFFFFFFFFd..","..dFddddddFdFd..","..dFd....dFdFd..","..dFd....dFdFd..","...d......d.d..."],
+    cab_seat_board: ["................","..FFFFFFFFFFFF..","..FddddddddddF..","..FdCCCCCCCCdF..","..FddddddddddF..","..FddddddddddF..","..FdydydydydyF..","..FddddddddddF..","..FddddddddddF..","..FdddyddmdddF..","..FddddddddddF..","..FFFFFFFFFFFF..","................","................","................","................"],
+    cab_seat_board_full: ["................","..FFFFFFFFFFFF..","..FddddddddddF..","..FdCCCCCCCCdF..","..FddddddddddF..","..FddddddddddF..","..FdydydydydyF..","..FddddddddddF..","..FddddddddddF..","..FdddyddydddF..","..FddddddddddF..","..FFFFFFFFFFFF..","................","................","................","................"],
+    cab_chute_pipe: ["......yGGF......","......yGGF......","......yGGF......",".....yyyyyy.....",".....FFFFFF.....","......yGGF......","......yGGF......","......yGGF......","......yGGF......","......yGGF......",".....yyyyyy.....",".....FFFFFF.....","......yGGF......","................","................","................"],
+    cab_out_slot: ["................","................","....dddddddd....","...dyyyyyyyGd...","...dyyyyyyyGd...","...dyyyyyyyGd...","...dyddddddGd...","...dyyyyyyyGd...","...dyyyyyyyGd...","...dGGGGGGGGd...","....dGGGGGGd....","....dFFFFFFd....",".....dddddd.....","................","................","................"],
+    cab_charter_case: ["................","................","................","................","................","................","................","..dddddddddddd..",".dGGGGGGGGGGGGd.",".dyyyyyyyyyyyyd.",".dywwhhhhhhhhyd.",".dywCCCCCCCChyd.",".dywCCCCCCCChyd.",".dywCmmmmmmChyd.",".dyhCCCCCCCChyd.",".dyhCmmmmmmohyd.",".dyhCCCCCCrChyd.",".dyhCmmmCrrChyd.",".dyhCCCCrrrrhyd.",".dyhCCCCCrrChyd.",".dyhhhhhhhhhhyd.",".dyyyyyyyyyyyyd.",".dAAAAAAAAAAAAd.",".dAGGGGGGGGGGGd.",".dAGGGGGGGGGGGd.",".dAGGGGGGGGGGGd.","..dFFddddddFFd..","..dFFd....dFFd..","..dFFddddddFFd..","..dGGGGGGGGGGd..","..dFFddddddFFd..","..dFFd....dFFd.."],
+    cab_table_0: [".ddddddddddddddd","dGGGGGGGGGGGGGGG","dGFFFFFFFFFFFFFF","dGFFFFFFFFFFFFFF","dGFFbbbbbbbbbbbb","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnCCCCCCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnChhhwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCCCCCCCnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn"],
+    cab_table_1: ["dddddddddddddddd","GGGGGGGGGGGGGGGG","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","bbbbbbbbbbbbbbbb","nnnnnnnnnnnnnnnn","nCwwwwwwwwCCCCCn","nCwwwwwwwwwwCdCn","nCwhhhhwwwwwCCdn","nCwwwhhhhhhwCCCy","nCwwwwwwwwwwCCCn","nCwwwhhhhhwwwwCn","nCwwwwwwwwwwwhCn","nCCCwwwwwwwwCCCn","nCCCCCCCCCCCCCCn","nnnnnnnnnnnnnnnn"],
+    cab_table_2: ["ddddddddddddddd.","GGGGGGGGGGGGGGGd","FFFFFFFFFFFFFFFd","FFFFFFFFFFFFFFFd","bbbbbbbbbbbbFFFd","nnnnnnnnnnnnFFFd","nnnnAAArAAAnFFFd","nnnCGGGrGGGnFFFd","nnnCGGGrGGGnFFFd","nnnCrrrrrrrnFFFd","nnnCGGGrGGGnFFFd","nnnCGGGrGGGnFFFd","nnnCwwwwCCnnFFFd","nnnCCCCCCCnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd"],
+    cab_table_3: ["dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnCCCCCCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnChhhwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCCCCCCCnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn"],
+    cab_table_4: ["nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnwwhnnnnnn","nnnnnnnwwhwnnnnn","nnnnnnnwwhnnnnnn","nnnnnnnwwhnnnnnn","nnnnnnnwwhnnnnnn","nnnnnnnnnnnnnnnn"],
+    cab_table_5: ["nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnCCCCCCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnChhhwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCCCCCCCnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd"],
+    cab_table_6: ["dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnCCCCCCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnChhhwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCCCCCCCnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn"],
+    cab_table_7: ["nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnwnnnnnnn","nnnnnnnynnnnnnnn","nnnnnnddddnnnnnn","nnnnnnddddnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn"],
+    cab_table_8: ["nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnCCCCCCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnChhhwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCCCCCCCnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd"],
+    cab_table_9: ["dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnCCCCCCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnChhhwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCCCCCCCnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn"],
+    cab_table_10: ["nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnoynnnnnnn","nnnnnnnyynnnnnnn","nnnnnnnyynnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn","nnnnnnnnnnnnnnnn"],
+    cab_table_11: ["nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnCCCCCCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnChhhwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCCCCCCCnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd"],
+    cab_table_12: ["dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnnnnnnnnnnn","dGFFbnCCCCCCCnnn","dGFFbnCwwwwCCnnn","dGFFbnCwwwwCCnnn","dGFFFFChhhwCCFFF","dGFFFFCwwwwCCFFF","dGFFFFCwwwwCCFFF","dFFFFFFFFFFFFFFF",".ddddddddddddddd",".ddddddddddddddd",".dFFd...........",".dFFd...........","..dd............"],
+    cab_table_13: ["nnnnCCCCCCCCnnnn","nnnnCwwwwwCCnnnn","nnnnCwwwwwCCnnnn","nnnnCwwwwwCCnnnn","nnnnCwwwwwCCnnnn","nnnnCCCCCCCynnnn","nnnnnnnnnnnnnnnn","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","dddddddddddddddd","dddddddddddddddd","......dFFd......","......dFFd......",".......dd......."],
+    cab_table_14: ["nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnnnnnnnnnnFFFd","nnnCCCCCCCnnFFFd","nnnCwwwwCCnnFFFd","nnnCwwwwCCnnFFFd","FFFChhhwCCFFFFFd","FFFCwwwwCCFFFFFd","FFFCwwwwCCFFFFFd","FFFFFFFFFFFFFFFd","ddddddddddddddd.","ddddddddddddddd.","...........dFFd.","...........dFFd.","............dd.."],
+    cab_towns_map_0: ["................",".GGGGGGGGGGGGGGG",".FFFFFFFFFFFFFFF",".FFCCCCCCCCCCCCC",".FFCCCCCCCCCDCCC",".FFCCCCDDDDDDyDD",".FFCCDDyDDDDDFDD",".FFCDDDFDDDDDDDD",".FFCnDDDDDnnnnnD",".FFCCnnnnnDDDDDn",".FFCCCCCCCCCDCCC",".FFFFFFFFFFFFFFF",".FFFFFFFFFFFFFFF","................","................","................"],
+    cab_towns_map_1: ["................","GGGGGGGGGGGGGGGG","FFFFFFFFFFFFFFFF","CCCCCCCCCCCCCCDC","CCCCCCCDDDDDDDDD","DDCCCDrDDDyDDDDD","DDDDDDFDDDFDDDDD","DDyDDDDDDDDDDDDD","DDFDnnnnnDDDDDnn","nnnnCCCCCnnnnnDC","CCCCCCCCCCCCCCCC","FFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFF","................","................","................"],
+    cab_towns_map_2: ["................","GGGGGGGGGGGGGGG.","FFFFFFFFFFFFFFF.","CCCCCCCCCCCCCFF.","DDDDDDCCCCCCCFF.","DDDDDDDDCCyCCFF.","DyDDDDDDDCFCCFF.","DFDDDDyDDDDDCFF.","nnnDDDFDnnnnDFF.","CCCrnnnnDDDDCFF.","CCCFCCCCDCCCCFF.","FFFFFFFFFFFFFFF.","FFFFFFFFFFFFFFF.","................","................","................"],
+    cab_sideboard_0: [".....dddd.......","....dwwwhd......","....dwwwhwd...dd","....dwwwhd...dwh",".ddddwwwhdddddhh","dAAAAAAAAAAAAyyy","dAGGGGGGGGGGGGGG","dAGGGGGGGGGGGGGG","dFFFFFFFFFdFFFFF","dFFFFFFFFFdFFFFF","dFFFFFFFyFdFyFFF","dFFFFFFFFFdFFFFF","dFFFFFFFFFdFFFFF",".dFFdddddd.ddddd",".dFFd...........","..dd............"],
+    cab_sideboard_1: ["................","................",".dd.dd..........","dwhdwhd.........","dhhdhhddddddddd.","yyyyyyyAAAAAAAAd","GGGGGGGGGGGGGGGd","GGGGGGGGGGGGGGGd","FFFFFdFFFFFFFFFd","FFFFFdFFFFFFFFFd","FFFyFdFyFFFFFFFd","FFFFFdFFFFFFFFFd","FFFFFdFFFFFFFFFd","ddddd.ddddddFFd.","...........dFFd.","............dd.."],
+  },
+};
 // PROP_LIBRARY v0.2 (design specs/prop_library_2.json, verbatim). Art only: no map places these yet.
 // Same entry shape as PROP_LIBRARY_ART, plus: theme; frames (extra frames after rows, slow loop, ms; reduced motion holds rows);
 // phases (time-of-day faces registered as <id>_<phase>; picked, never animated).
@@ -4012,6 +4064,11 @@ function addExteriorArt(T, A, city){   // city: HIGH_CHARITY_LAYOUT art only whi
     }
   }
   if (city) addHcParadeArt(T, A);   // HC_PARADE PLACEHOLDER art, city only, built on first draw
+  // CABINET_AND_COUNCILS 1b: the Cabinet Room, city only like the rest of the Governor's House. Existing names are never replaced.
+  if (city) {
+    for (const [k, rows] of Object.entries(CABINET_ROOM_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+    for (const [k, rows] of Object.entries(CABINET_ROOM_ART.props)) if (!A[k]) A[k] = paint(rows);
+  }
 }
 // HC_PARADE §8 (D1355, D1356; design specs/HC_PARADE.md): PLACEHOLDER draft art for the parade, PAL keys only, from the sub-agent
 // inspiration briefs in handoff/maps/HC_PARADE.md (rule 9). Pia redraws before HC_CITY_V2 ships. Installed only while the city is
