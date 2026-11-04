@@ -121,15 +121,15 @@ test('the game can be installed and opened offline @w1', async ({ page }) => {
     };
   });
   expect(linked).toEqual({ man: 'manifest.json', apple: 'icons/apple-touch-icon.png', icon: 'icons/icon-192.png' });
-  const manifest = await (await page.request.get('/manifest.json')).json();
+  const manifest = await (await page.request.get('./manifest.json')).json();
   expect(manifest.name).toBe('Walklings');
   expect(manifest.display).toBe('standalone');
   expect(manifest.start_url).toBe('./index.html');
   expect(manifest.icons.map(i => i.sizes)).toEqual(['192x192', '512x512']);
-  const sw = await (await page.request.get('/sw.js')).text();
+  const sw = await (await page.request.get('./sw.js')).text();
   expect(sw).toMatch(/version\.json/);
   expect(sw).not.toMatch(/open-meteo|overpass/i);
-  const env = await (await page.request.get('/env.js')).text();
+  const env = await (await page.request.get('./env.js')).text();
   expect(env).toMatch(/open-meteo/);
   expect(env).toMatch(/meadow/);
   for (const iconPath of ['/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png']) {

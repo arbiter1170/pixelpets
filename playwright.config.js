@@ -4,7 +4,8 @@
 const { defineConfig } = require('@playwright/test');
 
 const port = process.env.PP_PORT || '8080';
-const external = process.env.PP_URL;
+// A trailing slash keeps the base path: specs navigate with './' (not '/'), so PP_URL=https://host/pixelpets/ stays under /pixelpets/.
+const external = process.env.PP_URL ? process.env.PP_URL.replace(/\/?$/, '/') : '';
 // The suite must never reach the live Firebase project. cloud.js also ignores the real config when
 // navigator.webdriver is set. These hosts fail closed if a test opts in with ?cloud=block and forgets to stub.
 const CLOUD_BLOCK = [

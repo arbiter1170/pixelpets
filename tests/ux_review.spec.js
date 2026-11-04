@@ -78,7 +78,7 @@ test('the debug panel is not in the player DOM; it appears only in a debug sessi
   const plain = await page.evaluate(() => ({ ov: !!document.querySelector('#ovDebug'), agent: document.body.innerHTML.includes('Agent tools'), ids: document.querySelectorAll('[id^="dbg"]').length, tag: document.querySelector('#dbgTag').hidden }));
   expect(plain.ov).toBe(false); expect(plain.agent).toBe(false); expect(plain.tag).toBe(true);
   expect(plain.ids).toBeLessThanOrEqual(5);   // only the Settings gate (gate, password, unlock, message) and the hidden DBG tag
-  const html = await (await page.request.get('/index.html')).text();
+  const html = await (await page.request.get('./index.html')).text();
   expect(html).not.toContain('Agent tools'); expect(html).not.toContain('id="ovDebug"');
   // a debug session builds it on demand
   await boot(page, starterSave(), '?debug=1');
