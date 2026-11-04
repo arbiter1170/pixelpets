@@ -109,11 +109,11 @@ LOOKS = {
     'hc_resident':  {'skin': '1', 'hair': 'curls', 'hairCol': 'p', 'outfit': 'sweater', 'outfitCol': 'r', 'accent': 'y'},
     'hc_visitor':   {'skin': '6', 'hair': 'short', 'hairCol': 'd', 'outfit': 'raincoat', 'outfitCol': 'y', 'accent': 'w'},
     'hc_governor':  {'skin': '4', 'hair': 'short', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y'},
-    'hc_president': {'skin': '3', 'hair': 'short', 'hairCol': 'w', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y', 'accessory': 'sash'},   # PLACEHOLDER (LH-2 bust is open)
+    'hc_president': {'skin': '3', 'hair': 'short', 'hairCol': 'w', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y', 'accessory': 'sash'},   # RETIRED (LOOK_LOCK D2275): nobody wears it; the President is `president`. Kept, never removed
     'hc_aide':      {'skin': '2', 'hair': 'bun', 'hairCol': 'd', 'outfit': 'jacket', 'outfitCol': 'g', 'accent': 'w'},
 }
 SPEAKERS = {'Child': 'hc_child', 'Parent': 'hc_parent', 'Old holder': 'hc_oldholder', 'Dockhand': 'hc_dockhand',
-            'Editor': 'hc_editor', 'Keeper reader': 'clerk', 'The President': 'hc_president', 'Aide': 'hc_aide',
+            'Editor': 'hc_editor', 'Keeper reader': 'clerk', 'The President': 'president', 'Aide': 'hc_aide',
             'Commander': 'captain', 'Duty Keeper': 'officer', 'Governor Merriden': 'hc_governor', 'Visitor': 'hc_visitor',
             'Resident': 'hc_resident'}
 
@@ -815,7 +815,7 @@ objs.append(P('hc2_card', 4, 9, 'hc_bright_card', name='a small card', lines={'e
 objs.append(P('hc2_pres_wireset', 7, 9, 'tv_set', name='the wire set'))
 objs.append(P('hc2_stamp', 10, 10, 'hc_lampstock_stamp', name='a stamp', lines={'else': TXT['hb13_stamp']}))
 SC['hc2_chambers'] = [['say', 'The President', TXT['hb13_president']], ['setFlag', 'story.hc_chambers', True]]
-objs.append(N('hc_president', 'The President', 'hc_president', 7, 2, 'down', scene='hc2_chambers', lines={'else': TXT['hb13_president']}))
+objs.append(N('hc_president', 'The President', 'president', 7, 2, 'down', scene='hc2_chambers', lines={'else': TXT['hb13_president']}))
 objs.append(N('hc_aide', 'Aide', 'hc_aide', 2, 11, 'down', lines={'else': TXT['hb13_aide']}))
 objs.append(N('hc_clerk3', 'Clerk', 'clerk', 9, 7, 'left'))
 objs.append(N('hc_commander3', 'Commander', 'captain', 1, 11, 'down', lines={'else': TXT['hb13_commander']}))

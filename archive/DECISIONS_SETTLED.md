@@ -2,6 +2,19 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Wed Nov 4, 2026: Vincent settles LOOK_LOCK's fixes (all defaults; recorded by Claude Code with the build, `claude/look-fixes`)
+
+Vincent: "Look lock: all defaults". The rule throughout: recolour the lookalike, never the main character. Design rows in `specs/LOOK_LOCK.md` (design repo); sheets in `handoff/shots/look_fixes/`.
+
+- **D2273 (red, SETTLED):** Associate Juniper wears her own key `juniper`: the Associate coat, soot trim and crimson bag, with long black hair. Tobin, the plain Associate and the others keep `associate`; parade supporter 2 keeps short dark hair.
+- **D2274 (red, SETTLED):** Archivist Mo wears her own key `mo`: the Keeper clerk coat with a white bob and glasses. Clerk Wynn, the Cadet, the Keeper reader and the High Charity clerk keep `clerk`; Keeper Pryce keeps his grey bun.
+- **D2275 (red, SETTLED):** the High Charity preview President wears `president` (the cardigan); `hc_president` is retired, kept defined and unworn.
+- **D2276 (red, SETTLED):** Dorian's two briefing copies wear `dorian`, Imogen's wears `imogen`.
+- **D2277 (red, SETTLED):** the eleven recolours as proposed: Clerk Nia's hair red; parade supporter 5 a buzz cut; Pim's hoodie sky; the Quilt Stitcher's sweater teal; the Commander's hair black; Dr. Ivo in a white lab coat; `regenx` hair grey; Mr. Gristle's coat dark; Brannoch's vest teal; the Diner Regular's hoodie green with a red buzz cut; supporter 4's hair orange.
+- **F6 (WARDROBE_SHOP 4a rows, built):** Captain Lumen in High Charity wears `captain` (`petra` kept, unworn); Keeper Moss and Cadet Arlo in Keeper green; Warden Teodor's trim white; Watch Saffie in the watch navy.
+- **D2278 (yellow, SETTLED):** Ken (`sm_ken`) and Sefton (`h1_cadet`) join the Keeper on-duty list; the Junior Bright wears its own Glimmer-set look `junior_bright`.
+- Also fixed: Route 4's three Keepers named the missing look `keeper_officer` and drew as villagers; they wear `officer` and join the on-duty list.
+
 ## Tue Nov 3, 2026: Vincent approves the Lantern House and the President's look (recorded by Claude Code)
 
 Vincent, in the Claude Code session that built the crackdown: "Approved, president has a preview/look that is seen on the TV during his broadcast moment. Build his character based off that."

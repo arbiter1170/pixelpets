@@ -8,7 +8,8 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-// looks.json `look` per key (main look; alts are not wired).
+// looks.json `look` per key (main look; alts are not wired). Pim's hoodie is sky `c`, not orange: LOOK_LOCK D2277 (Vincent,
+// Wed Nov 4, 2026) recolours him so dark curls on orange no longer read as Lizzy.
 const LOOKS = {
   kitekid_pia: { id: 'route1_pia', map: 'route1', look: { skin: '1', hair: 'pony', hairCol: 'o', outfit: 'hoodie', outfitCol: 'y', accent: 'r', accessory: 'scarf' } },
   beachcomber_tam: { id: 'route1_tam', map: 'route1', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'vest', outfitCol: 'c', accent: 'o', accessory: 'brimhat' } },
@@ -23,7 +24,7 @@ const LOOKS = {
   climber_fenna: { id: 'hw_climber', map: 'hw_rim', look: { skin: '2', hair: 'pony', hairCol: 'n', outfit: 'tunic', outfitCol: 'r', accent: 'w', accessory: 'satchel' } },
   angler_nils: { id: 'hw_angler', map: 'hw_cut', look: { skin: '4', hair: 'short', hairCol: 'o', outfit: 'vest', outfitCol: 'b', accent: 'y', accessory: 'brimhat' } },
   owlwatch_ottilie: { id: 'hw_owlwatch', map: 'hw_falls', look: { skin: '5', hair: 'long', hairCol: 'd', outfit: 'coat', outfitCol: 'm', accent: 'y', accessory: 'glasses' } },
-  keeper_scout: { id: 'hw_scout', map: 'hw_cut', look: { skin: '1', hair: 'pony', hairCol: 'd', outfit: 'coat', outfitCol: 'g', accent: 'y', accessory: 'brimhat' } },
+  keeper_scout: { id: 'hw_scout', map: 'hw_cut', also: ['route2_glen:glen_scout'], look: { skin: '1', hair: 'pony', hairCol: 'd', outfit: 'coat', outfitCol: 'g', accent: 'y', accessory: 'brimhat' } },
   lantern_della: { id: 'hm_lantern_host', map: 'hm_lantern_in', look: { skin: '3', hair: 'bun', hairCol: 'n', outfit: 'vest', outfitCol: 'r', accent: 'y' } },
   lantern_garnet: { id: 'cc_lantern_host', map: 'cc_lantern_in', look: { skin: '6', hair: 'curls', hairCol: 'h', outfit: 'vest', outfitCol: 'r', accent: 'y' } },
   lantern_ines: { id: 'hc_lantern_host', map: 'hc_lantern_in', look: { skin: '1', hair: 'long', hairCol: 'o', outfit: 'vest', outfitCol: 'r', accent: 'y', accessory: 'glasses' } },
@@ -31,7 +32,7 @@ const LOOKS = {
   neighbour_hattie: { id: 'hattie', map: 'hearthmoor', look: { skin: '4', hair: 'bun', hairCol: 'h', outfit: 'sweater', outfitCol: 'r', accent: 'w', accessory: 'scarf' } },
   orchard_odile: { id: 'odile', map: 'fernbrook', look: { skin: '2', hair: 'curls', hairCol: 'd', outfit: 'dress', outfitCol: 'b', accent: 'y', accessory: 'scarf' } },
   old_miner: { id: 'cc_miner', map: 'cobblecrest', look: { skin: '3', hair: 'short', hairCol: 'w', outfit: 'coat', outfitCol: 'd', accent: 'y' } },
-  kid_pim: { id: 'pim', map: 'cobblecrest', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'hoodie', outfitCol: 'o', accent: 'w' } },
+  kid_pim: { id: 'pim', map: 'cobblecrest', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'hoodie', outfitCol: 'c', accent: 'w' } },
   keeper_amos: { id: 'amos', map: 'fb_lantern_in', look: { skin: '6', hair: 'short', hairCol: 'w', outfit: 'coat', outfitCol: 'g', accent: 'y', accessory: 'glasses' } },
   broker_mara: { id: 'sm_mara', map: 'sm_den', look: { skin: '1', hair: 'bob', hairCol: 'k', outfit: 'coat', outfitCol: 'd', accent: 'r', accessory: 'glasses' } },
   crate_jed: { id: 'sm_jed', map: 'sm_tunnel', look: { skin: '4', hair: 'short', hairCol: 'o', outfit: 'sweater', outfitCol: 'b', accent: 'y' } },
@@ -118,7 +119,8 @@ test('each of the 28 people resolves to its own new look, with the looks.json fi
     delete fields.extra;
     expect(fields, key + ' definition').toEqual(want.look);
     const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id));   // LANTERN_HOUSE_FERNBROOK: the curfew-night twins (lh_odile) are the same person indoors
-    expect(hits.map(r => r.map + ':' + r.id), key + ' is worn by its NPC only').toEqual([want.map + ':' + want.id]);
+    // ACT1_KEEPER_JOIN K5 places the same Keeper Scout (same name and friend slot) in the glen, so `also` lists that placement.
+    expect(hits.map(r => r.map + ':' + r.id).sort(), key + ' is worn by its NPC only').toEqual([want.map + ':' + want.id, ...(want.also || [])].sort());
     expect(hits[0].same, key + ' drawn by npcLook').toBe(true);
   }
   const after = await saveShape(page);

@@ -1,0 +1,13 @@
+{
+ "spec": "LOOK_LOCK v0.1 fixes (design specs/LOOK_LOCK.md; D2273, D2274, D2278; Vincent, Wed Nov 4, 2026: \"Look lock: all defaults\")",
+ "_about": "Ours, not a design copy. The three new look keys the look lock needs, so a main character no longer shares a coat-and-hair set with anyone. Associate Juniper keeps the Associate coat (wine, soot trim, crimson bag) with her own long black hair; Tobin and the plain Associate keep `associate`. Archivist Mo keeps the Keeper clerk coat (green, white trim) with her own white bob and glasses; Clerk Wynn, the Cadet, the Keeper reader and the High Charity clerk keep `clerk`. The Junior Bright gets its own Glimmer-set look (wine coat, soot trim, white buttons, the lanyard) in place of the `holder_glimmer_set` reference look. No key is removed or renamed; nothing is written to the save. tests/look_lock.spec.js reads data/look_lock.json for the locked signatures.",
+ "looks": {
+  "juniper": {"skin": "5", "hair": "long", "hairCol": "k", "outfit": "coat", "outfitCol": "V", "accent": "N", "extra": {"o": "Q"}},
+  "mo": {"skin": "4", "hair": "bob", "hairCol": "w", "outfit": "coat", "outfitCol": "g", "accent": "w", "accessory": "glasses"},
+  "junior_bright": {"skin": "2", "hair": "pony", "hairCol": "o", "outfit": "coat", "outfitCol": "V", "accent": "N", "accessory": "lanyard", "extra": {"o": "w"}}
+ },
+ "speakers": {
+  "_note": "cobblecrest.json (verbatim, AGENTS rule 8) still says `associate` for Associate Juniper; this overlay comes later, so her portrait and every unlooked Juniper map object wear `juniper`.",
+  "Associate Juniper": "juniper"
+ }
+}

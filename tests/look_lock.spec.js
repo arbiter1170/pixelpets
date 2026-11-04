@@ -5,6 +5,7 @@
    (b) Lookalike: no other look or NPC shares a locked signature (rule below, settings in the json).
    (c) Palette lock, AGENTS rule 11: the on-duty Keeper and Glimmerwell NPCs stay in their scheme, and nobody outside them
        wears a uniform coat, a faction-only piece or a reference look.
+   (d) Every look an NPC names exists (Route 4's Keepers once drew as villager), and retired looks stay defined and unworn.
    A clash that is already known is an exception in the json, each with its follow-up TODO, so the test is green and the
    list stays visible. An exception that no longer clashes fails too, so the list never goes stale.
    Similarity rule, applied to every look that is not the locked character's own:
@@ -12,6 +13,8 @@
      same outfit: same garment, top colour, trim and accessory, where the accessory or the fixed-colour swap is not empty;
      pixels:      drawn frames (down, up, right) agree on at least rule.pixel_threshold of their opaque pixels;
      mark:        a trait set the json names as the character's own (Rook's spiky orange hair, Lizzy's flower clip).
+   cast[].shares_outfit names looks that wear the character's outfit set by a settled call (D2273: Juniper keeps the
+   Associate coat and bag, Tobin keeps `associate`); only the same-outfit reason is waived for them, the rest still runs.
    A shared short brown cut or a green tunic alone never fails. The game is read only, through an eval hook on a served copy
    of game.js (as tests/people_looks_28.spec.js does); nothing is drawn for the player. Data checks run at 390; a light
    pass at every width checks what npcLook draws for each locked NPC. Save stays pixelpets.save.v2 with v 2, unchanged. */
@@ -137,7 +140,8 @@ function lookalikeClashes(d) {
       const a = d.looks[k]; if (!a) continue;
       for (const [o, b] of Object.entries(d.looks)) {
         if (c.keys.includes(o)) continue;
-        const why = resemble(a, b, { gridA: d.grids[k], gridB: d.grids[o], threshold: LOCK.rule.pixel_threshold, marks: c.marks });
+        const why = resemble(a, b, { gridA: d.grids[k], gridB: d.grids[o], threshold: LOCK.rule.pixel_threshold, marks: c.marks })
+          .filter(r => !((c.shares_outfit || []).includes(o) && r.startsWith('same outfit set')));
         if (why.length) out.push({ id: c.id + '|lookalike|' + o, msg: c.label + ' (' + k + ': ' + traits(a) + ') ~ look ' + o + ' (' + traits(b) + '), worn by ' + who(d.wearers, o) + ': ' + why.join('; ') });
       }
     }
@@ -272,6 +276,20 @@ test('(c) palette lock: faction NPCs stay in their scheme and nobody else copies
   const r = judge(paletteClashes(d), 'palette');
   expect(r.fresh, 'palette lock breaches').toEqual([]);
   expect(r.stale, 'stale palette exceptions').toEqual([]);
+});
+
+// LOOK_LOCK fixes (Nov 4, 2026): Route 4's Keepers named a look that did not exist and drew as `villager`, unseen by (a)-(c).
+// Every look a map NPC, cast or castAt names must be in NPC_LOOKS (no exceptions). A retired key stays defined, since saves
+// and old data may name it, but nobody wears it.
+test('(d) every look an NPC names exists, and retired looks stay defined and unworn', async ({ page }, testInfo) => {
+  const d = await run(page, testInfo);
+  const missing = [...new Set(d.wearers.filter(w => w.src !== 'speaker' && !d.looks[w.key]).map(w => w.key + ' (' + w.src + ' ' + w.id + ' @ ' + w.where + ')'))];
+  expect(missing, 'NPCs naming a look that is not in NPC_LOOKS (they draw as villager)').toEqual([]);
+  for (const [k, why] of Object.entries(LOCK.retired || {})) {
+    if (k[0] === '_') continue;
+    expect(d.looks[k], 'retired look ' + k + ' stays defined (' + why + ')').toBeTruthy();
+    expect(d.wearers.filter(w => w.key === k).map(w => w.src + ' ' + w.id), 'nobody wears retired look ' + k).toEqual([]);
+  }
 });
 
 test('light pass: npcLook draws each locked NPC in its locked look, modern controls, save unchanged', async ({ page }) => {

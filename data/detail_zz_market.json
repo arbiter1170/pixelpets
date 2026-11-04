@@ -13,8 +13,8 @@
   "hm_teague": {"skin": "4", "hair": "short", "hairCol": "o", "outfit": "tunic", "outfitCol": "g", "accent": "l"},
   "hm_marigold": {"skin": "3", "hair": "long", "hairCol": "p", "outfit": "coat", "outfitCol": "r", "accent": "y"},
   "hm_hesper": {"skin": "5", "hair": "bun", "hairCol": "h", "outfit": "coat", "outfitCol": "o", "accent": "n"},
-  "hm_arlo": {"skin": "3", "hair": "spiky", "hairCol": "y", "outfit": "tunic", "outfitCol": "b", "accent": "y"},
-  "hm_diner_regular": {"skin": "4", "hair": "short", "hairCol": "d", "outfit": "hoodie", "outfitCol": "n", "accent": "o"},
+  "hm_arlo": {"skin": "3", "hair": "spiky", "hairCol": "y", "outfit": "tunic", "outfitCol": "g", "accent": "y"},
+  "hm_diner_regular": {"skin": "4", "hair": "buzz", "hairCol": "r", "outfit": "hoodie", "outfitCol": "g", "accent": "o"},
   "hm_court_regular": {"skin": "2", "hair": "short", "hairCol": "m", "outfit": "hoodie", "outfitCol": "g", "accent": "c"}
  },
  "maps": {

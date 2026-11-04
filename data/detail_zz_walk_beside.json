@@ -61,7 +61,7 @@
       "kind": "npc",
       "id": "hm_mo_steps",
       "name": "Archivist Mo",
-      "look": "clerk",
+      "look": "mo",
       "x": 14,
       "y": 7,
       "facing": "right",
