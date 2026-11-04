@@ -124,3 +124,81 @@ test.describe('WALK_BESIDE Act 1 (D1970)', () => {
   });
 });
 
+// ---------------------------------------------------------------------------------------------------------------------------
+// Slice 2: the four hold lines (D1934, D1971) and the STANDING card's long word (D1972)
+const HOLD_NEW = {
+  route1: 'The Keeper watch holds this road. Walk beside, not ahead.',
+  route2: 'Keepers walk beside. Glimmerwell runs the Census.',
+  route2_glen: 'Glimmerwell holds the glen. The lamps walk ahead.',
+  proto: 'Wild country. Nobody walks ahead here.', hw_cut: 'Wild country. Nobody walks ahead here.', mahopac: 'Wild country. Nobody walks ahead here.',
+};
+const HOLD_KEPT = {
+  hearthmoor: 'Home. The Keepers hold this town.', fernbrook: 'Keepers keep the town. Glimmerwell keeps a stand.',
+  cobblecrest: 'The Keepers hold the town.', cobble_quarry: "The quarry is still the town's.", highcharity: 'The Keepers hold the capital.',
+  fb_heights: "Glimmerwell's lab sits on the ridge.", route3: "Keepers walk it. Glimmerwell's crates roll down it.",
+  brinewick: 'Keepers keep the harbour. Glimmerwell leases the east pier.',
+};
+const LONG_WORD = 'Walk beside them, not ahead. Where they stop, stop. Where they turn, look.';
+
+test.describe('WALK_BESIDE hold lines and the STANDING card (D1934, D1971, D1972)', () => {
+  test('WB-T1: the four road and wild lines read the new words; every town line and the arrival words are unchanged', async ({ page }) => {
+    await boot(page, save());
+    const got = await page.evaluate(ids => Object.fromEntries(ids.map(id => [id, PixelPets.holdLine(id, {})])), Object.keys(HOLD_NEW).concat(Object.keys(HOLD_KEPT)));
+    for (const [id, line] of Object.entries(HOLD_NEW)) { expect(got[id], id).toBe(line); expect(Array.from(line).length).toBeLessThanOrEqual(110); }
+    for (const [id, line] of Object.entries(HOLD_KEPT)) expect(got[id], id).toBe(line);
+    // Fernbrook's Cadet split line is a town line and stays.
+    expect(await page.evaluate(() => PixelPets.holdLine('fernbrook', { 'story.keeper_cadet': true, 'story.side_pick_done': true }))).toBe('Keepers walk the lanes. Glimmerwell keeps the gate.');
+    const words = await page.evaluate(() => STANDING_CFG.bar.words);
+    expect(words).toEqual({ keepers: 'KEEPERS', glimmer: 'GLIMMERWELL', split: 'BOTH SIDES', wild: 'UNCLAIMED' });
+    // `asks` stays byte for byte (D1937); the long word is its own string.
+    const cfg = await page.evaluate(() => ({ asks: STANDING_CFG.sides.keepers.asks, long: STANDING_CFG.sides.keepers.asksLong, g: STANDING_CFG.sides.glimmer.asksLong }));
+    expect(cfg.asks.startsWith('The Keepers ask you to walk beside wild Walklings, not ahead of them. Feed, rest, listen, and leave glow where it grows.')).toBe(true);
+    expect(cfg.long).toBe(LONG_WORD);
+    expect(cfg.g).toBeUndefined();
+  });
+
+  for (const reduce of [false, true]) {
+    test('WB-T2: the Keepers row adds the whole word under the tier after story.wb_charter' + (reduce ? ' (reduced motion)' : ''), async ({ page }) => {
+      // The card opens from the TODAY chip's STANDING row; after the pick that row opens the STANDING tab (built), so both
+      // surfaces are read: the card on an unpledged save, the tab on a Cadet.
+      await boot(page, save({}), { reduce });
+      const card = async () => {
+        await page.locator('#thChip').click();
+        await page.locator('#envStanding').click();
+        await expect(page.locator('#ovSide')).toBeVisible();
+        const rows = await page.locator('#sideRows .side-row').evaluateAll(els => els.map(e => ({ side: e.dataset.side, words: [...e.querySelectorAll('.side-word')].map(p => p.textContent) })));
+        const doc = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
+        return { rows, doc };
+      };
+      let c = await card();
+      expect(c.rows.map(r => r.side)).toEqual(['keepers', 'glimmer']);
+      expect(c.rows[0].words).toEqual([]);   // as built, without the charter
+      await page.locator('#sideClose').click();
+      await page.evaluate(() => PixelPets.setFlag('story.wb_charter', 'read'));
+      c = await card();
+      expect(c.rows[0].words).toEqual([LONG_WORD]);
+      expect(c.rows[1].words).toEqual([]);   // the Glimmerwell row is unchanged
+      expect(c.doc.sw).toBeLessThanOrEqual(c.doc.cw);   // no horizontal scroll at 320
+      await expect(page.getByText(LONG_WORD)).toBeVisible();   // readable text
+      const word = page.locator('#sideRows .side-row[data-side="keepers"] .side-word');
+      const box = await word.boundingBox(), line = await page.locator('#sideRows .side-row[data-side="keepers"] .side-line').boundingBox();
+      expect(box.y).toBeGreaterThanOrEqual(line.y + line.height - 1);   // its own line, under the row's line
+      expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize().width);
+      expect(await word.getAttribute('aria-hidden')).toBeNull();
+      const col = await page.evaluate(() => [getComputedStyle(document.querySelector('#sideRows .side-word')).color, getComputedStyle(document.querySelector('#sideRows .side-line')).color]);
+      expect(col[0]).toBe(col[1]);
+      await page.locator('#sideClose').click();
+      // A Cadet: the chip's STANDING row opens the STANDING tab; its Keepers row carries the line under the tier.
+      await page.evaluate(() => { PixelPets.setFlag('story.side_pick_done', true); PixelPets.setFlag('story.keeper_cadet', true); PixelPets.setFlag('story.ilse_call_old', true); });
+      await page.locator('#thChip').click();
+      await page.locator('#envStanding').click();
+      await expect(page.locator('#stRows .st-row[data-side="keepers"] .side-word')).toHaveText(LONG_WORD);
+      expect(await page.locator('#stRows .st-row[data-side="glimmer"] .side-word').count()).toBe(0);
+      const tier = await page.locator('#stRows .st-row[data-side="keepers"] .st-tier').boundingBox(), w2 = await page.locator('#stRows .st-row[data-side="keepers"] .side-word').boundingBox();
+      expect(w2.y).toBeGreaterThan(tier.y);
+      expect(w2.x + w2.width).toBeLessThanOrEqual(page.viewportSize().width);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+      expect((await stored(page)).v).toBe(2);
+    });
+  }
+});

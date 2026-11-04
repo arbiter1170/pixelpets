@@ -12574,7 +12574,7 @@ const MAP_HOLD_LINE = {
   keepers: 'The Keepers hold this place.',
   glimmer: 'Glimmerwell holds this place.',
   split: 'Both sides keep a claim.',
-  wild: 'Wild country. No faction holds it.',
+  wild: 'Wild country. Nobody walks ahead here.',   // WALK_BESIDE D1934, D1971: the fallback for every node with no line
 };
 const REGION_MAP = {
   title: 'THE AMBERWILD', unknownLabel: '???', unknownBlurb: "You haven't been here yet.",
@@ -12582,7 +12582,7 @@ const REGION_MAP = {
     hearthmoor:    { kind: 'town',  col: 2,  row: 6, label: 'HEARTHMOOR',  labelAt: 'below', blurb: 'Hill village of the Keepers. Home.',
       hold: [{ id: 'keepers', line: 'Home. The Keepers hold this town.' }] },
     route1:        { kind: 'route', col: 6,  row: 7, label: 'ROUTE 1',     labelAt: 'below', blurb: 'Hearthmoor to Fernbrook, by the stream.', path: [[2, 6], [4, 7], [8, 7], [10, 6]],
-      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
+      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road. Walk beside, not ahead.' }] },   // WALK_BESIDE D1934
     proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]],
       hold: [{ id: 'wild' }] },
     fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Fernbrook Trial Hall.',
@@ -12598,9 +12598,9 @@ const REGION_MAP = {
         { id: 'keepers', when: ['story.side_pick_done', 'story.seal1', '!story.side=glimmer'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
         { id: 'split', line: 'Keepers keep the town. Glimmerwell keeps a stand.' }] },
     route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]],
-      hold: [{ id: 'split', line: 'Keepers keep the road. Glimmerwell runs the Census.' }] },
+      hold: [{ id: 'split', line: 'Keepers walk beside. Glimmerwell runs the Census.' }] },   // WALK_BESIDE D1934
     route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]],
-      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the glen.' }] },
+      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the glen. The lamps walk ahead.' }] },   // WALK_BESIDE D1934
     hw_cut:        { kind: 'side',  col: 15, row: 3, label: 'HUSHWATER',   labelAt: 'below', blurb: 'A quiet stream, quarry to glen.', path: [[12, 2], [15, 3], [17, 3]],
       hold: [{ id: 'wild' }] },
     cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.',
@@ -15320,7 +15320,9 @@ function renderStanding(){
     const fill = document.createElement('i'); fill.className = 'st-fill-' + k; fill.style.width = Math.round(i.frac * 100) + '%'; bar.append(fill);
     const num = document.createElement('small'); num.textContent = i.next == null ? i.points + ' / ' + SC_STANDING.max : i.points + ' / ' + i.next;
     barRow.append(bar, num);
-    body.append(head, blurb, barRow); row.append(em, body); rows.append(row);
+    body.append(head, blurb, barRow);
+    const word = sideWordLong(k); if (word) body.append(word);   // WALK_BESIDE D1972: the same line on the STANDING tab's Keepers row
+    row.append(em, body); rows.append(row);
   }
 }
 /* ---------- SIDE_BADGE (Vincent, Nov 2, 2026) ---------- */
@@ -15416,10 +15418,19 @@ function openSideCard(){
     const ln = document.createElement('p'); ln.className = 'side-line';
     // Before the pick: the first sentence of what the side asks (no points). After: the tier you hold with them.
     ln.textContent = sd === 'none' ? String(F.asks).split(/(?<=[.!?])\s/)[0] : PPStanding.tierInfo(k, standingOf(k, false)).name;
-    body.append(nm, ln); row.append(em, body); rows.append(row);
+    body.append(nm, ln);
+    const word = sideWordLong(k); if (word) body.append(word);   // WALK_BESIDE E9 (D1972): the whole word, after the charter
+    row.append(em, body); rows.append(row);
   }
   clearMoves(); sfx('tap'); $('#ovSide').hidden = false; lockTabs(true);
   $('#sideClose').textContent = SB_CFG.close; $('#sideClose').focus({ preventScroll: true });
+}
+// WALK_BESIDE E9 (D1972): once story.wb_charter is set, the Keepers row carries the whole word (STANDING_CFG asksLong) on its own
+// line under the tier, in the row's text colour. `asks` stays as built (D1937). Readable text, no button; null otherwise.
+function sideWordLong(k){
+  const F = SC_STANDING.sides[k];
+  if (k !== 'keepers' || !F || !F.asksLong || !(S && S.flags && S.flags['story.wb_charter'])) return null;
+  const p = document.createElement('p'); p.className = 'side-word'; p.textContent = F.asksLong; return p;
 }
 function closeSideCard(){ if ($('#ovSide').hidden) return; $('#ovSide').hidden = true; lockTabs(false); }
 function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
