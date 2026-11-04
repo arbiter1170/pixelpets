@@ -39,9 +39,9 @@ test.describe(() => {
     });
     await page.evaluate(() => PixelPets.setFlag('story.test_save_fail', true));
     await page.evaluate(() => PixelPets.save && PixelPets.save());
+    // Modern (the default) pages its toasts and clears the line once it has shown, so look while it is up.
+    await expect.poll(() => page.evaluate(() => document.body.innerText.includes("Couldn't save.")), { timeout: 5600 }).toBe(true);
     await page.waitForTimeout(5600);   // past one 5 s autosave
-    const seen = await page.evaluate(() => document.body.innerText.includes("Couldn't save."));
-    expect(seen).toBe(true);
     expect(await page.evaluate(() => !!PixelPets.state.flags['story.test_save_fail'])).toBe(true);
   });
 
