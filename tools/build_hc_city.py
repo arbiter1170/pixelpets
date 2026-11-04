@@ -798,11 +798,12 @@ objs += [P(f'hc2_lobbydesk_{x}', x, 9, 'keep_desk', name='the Keeper desk') for 
 objs.append(N('hc_gov_keeper_a', 'Keeper', 'officer', 3, 8, 'down', lines={'story.gov_posted & !story.hc_gov_met': TXT['gov_desk'], 'else': 'Welcome to the Governor\'s House, holder.'}))
 objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={STAIR2: 'Go on up, holder.', 'else': TXT['gov_stair']}))
 # CABINET §4.3 (D1470 = A): Lumen's lead-in, four SIGNED lines, on a Captain Lumen body in the lobby (default staging), keyed after
-# the Kilnmouth report-back. It is the only setter of story.thr_chip_rumour; the body leaves once it is set.
+# the Kilnmouth report-back. It is the only setter of story.thr_chip_rumour; the body leaves once it is set. Keyed on a story flag,
+# not `else`, so the High Charity letter's lines (D174, spliced in front of everyday chatter) stay behind it.
 LUMEN = 'Captain Lumen'
 SC['thr_cabinet_lead'] = [['say', LUMEN, TXT['lead_1']], ['say', LUMEN, TXT['lead_2']], ['say', LUMEN, TXT['lead_3']],
                           ['say', LUMEN, TXT['lead_4']], ['setFlag', 'story.thr_chip_rumour', True]]
-objs.append(N('cab_lumen_lobby', LUMEN, 'captain', 4, 3, 'down', when=LEAD, lines={'else': '@thr_cabinet_lead'}))
+objs.append(N('cab_lumen_lobby', LUMEN, 'captain', 4, 3, 'down', when=LEAD, lines={'story.km_reported': '@thr_cabinet_lead'}))
 objs += [P(f'hc2_govdesk_{x}', x, 4, 'keep_desk', name="the Governor's desk") for x in (11, 12)]
 SC['hc2_chute'] = [['say', '', TXT['hb12_chute']], ['setFlag', 'story.hc_chute', True]]
 objs.append(P('hc_chute_mouth', 13, 4, 'hc_chute_mouth', name='the ORDERS DOWN chute', scene='hc2_chute', lines={'else': TXT['hb12_chute']}))
