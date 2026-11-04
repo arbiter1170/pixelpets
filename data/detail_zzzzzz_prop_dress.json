@@ -1,8 +1,10 @@
 {
- "spec": "design specs/PROP_LIBRARY.md v0.1 \u00a75 A and D (master fc7c131); placements from specs/prop_library_rooms.py HOME_ADD and FERN_ADD, with the seven one-cell nudges in the notes below.",
- "_about": "PROP_DRESS (D2032, D2035; red, Vincent said yes to home_before_after.png and fernbrook_before_after.png on Wed Nov 4, 2026). A detail pass with the prop library art (PROP_LIBRARY_ART in sprites.js): props and walkable decals only, no grid row, no resize (D84), no reshape (D81). interiors.json and fernbrook_rooms.json stay as they are. A prop's (x, y) is its blocking cell: a 1-wide, 2-tall prop (the Keeper lamps) sits on its base cell and draws over the cell above; a wider prop is one slice <id>_n per cell. Nothing here is tappable (no lines). Named detail_zzzzzz_ so it applies after every other overlay, as the previews did. Save stays pixelpets.save.v2, v 2; nothing is written to the save.",
+ "spec": "design specs/PROP_LIBRARY.md v0.1 \u00a75 A, B, C and D (master fc7c131); placements from specs/prop_library_rooms.py HOME_ADD, FERN_ADD, BATH_ADD and LOBBY_AFTER, with the one-cell nudges and the lobby's translation in the notes below.",
+ "_about": "PROP_DRESS (D2032-D2035; red, Vincent said yes to home_before_after.png, bath_before_after.png, lobby_before_after.png and fernbrook_before_after.png on Wed Nov 4, 2026; the bathhouse and the lobby follow on claude/prop-dress-2). A detail pass with the prop library art (PROP_LIBRARY_ART in sprites.js): props and walkable decals only (in the lobby, also its own non-tappable pieces re-drawn in place with replaceObjs), no grid row, no resize (D84), no reshape (D81). interiors.json, fernbrook_rooms.json and the Kilnmouth and Brightgate overlays stay as they are. A prop's (x, y) is its blocking cell: a 1-wide, 2-tall prop (the Keeper lamps) sits on its base cell and draws over the cell above; a wider prop is one slice <id>_n per cell. Nothing here is tappable (no lines). Named detail_zzzzzz_ so it applies after every other overlay, as the previews did. Save stays pixelpets.save.v2, v 2; nothing is written to the save.",
  "_home_note": "One nudge from home_before_after.png: the reading chair stands at (7,4), not (7,3). At (7,3) it takes the only open side of home_bookshelf (7,2), whose lines the player taps (S3: every interactable keeps one free reach cell). One cell down it still sits by the books, beside home_table and home_plant, as a reading group.",
  "_fernbrook_note": "Six one-cell nudges from fernbrook_before_after.png, because the preview's spots shut walkable grass off from the rest of the town, and a save standing there would load with no way out (safeSpot only moves a save off a blocked cell). The orchard stall moves right (28,21 -> 29,21), so the strip behind the stitcher's roof (row 20) opens down x 28; the sacks sit in the corner it frees (30,21 -> 30,20), the crate below the stall (30,22 -> 30,23), the barrels left (28,24 -> 27,24) so x 28 reaches the lane. The flower planter moves left (21,24 -> 20,24) so the grass behind the cart opens at (21,24); the barrow moves left (15,30 -> 14,30) so (15,29) under the wood bench opens. The first Keeper lamp's base is (19,22); its top half draws over fbh_gate_post at (19,21), as in the preview. Decals (tufts, wear, moss) are walkable and may sit on paving (PROP_LIBRARY \u00a72.2 E3); no blocking piece stands on a path tile, door, warp, trigger, sign, NPC or a tap's last open side.",
+ "_bath_note": "D2033, Kilnmouth bathhouse (km_bath_in): BATH_ADD as previewed, with one nudge. The second poolside bucket stands at (12,5), not (13,5): #318 put km_notches on the basin's end (13,2) and the mural's tap on the face (14,1), both tapped from (14,2) only, which is reached by the one-wide walk down x 14 from (14,5). At (13,5) the bucket and the bench at (14,6) sealed (14,5), so the walk, both taps and a save standing there were cut off. At (12,5) it still sits poolside, above the bench at (12,6). The first bench (1,6) keeps two of its three tap sides ((2,6), (1,7)) under the preview's bucket at (1,5).",
+ "_lobby_note": "D2034, Brightgate HQ lobby (bg_hq_lobby): the preview ran on a stand-in grid (face on row 1, white depot floor); this is LOBBY_AFTER on the built room. Face pieces (two banners, the clock) move up to the built face, row 0. The first cooler goes to (1,1), the first floor row under the face, as in the preview. The room's own planters, front desk and sofa cells already stand where the preview put the library planters, reception counter and the two sofa + table + chair groups, so replaceObjs gives those 16 cells the library art in place (same id, cell and name; none of them is tappable). Kept as built, not replaced: the two lanyard racks (1,5)-(1,6) (tappable; the empty hook is the holder's) where the preview hung a library rack and a display case, and the INSIGN plaque (1,8) (tappable) where the preview hung a charter; that case and that charter are left out. The two info pillars stand one row lower than the preview, bases (5,7) and (13,7): (5,6) holds no body or piece (rook_bg dropped, D1491; brightgate BG10) and (13,6) is Juniper's tap side. Kept clear: the clip-on tiles 2,5, 3,5 and 2,6 (ACT3_SWITCH \u00a73.2), 5,9 (the Act 5 tile), the desk's talk sides, the door-to-gate line (columns 7-8) and the lift steps. Flagged for Vincent's re-look (rule 9): on the built soot-gloss floor the room reads clearly unlike the white stand-in preview.",
  "slicePatch": {
   "maps": {
    "hm_home_in": {
@@ -325,6 +327,368 @@
       "x": 29,
       "y": 28,
       "sprite": "pd_tuft_flowers"
+     }
+    ]
+   },
+   "km_bath_in": {
+    "addObjs": [
+     {
+      "kind": "prop",
+      "id": "dress_km_herb_bundles",
+      "x": 2,
+      "y": 1,
+      "sprite": "pa_herb_bundles"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_clock_round",
+      "x": 5,
+      "y": 1,
+      "sprite": "pa_clock_round"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_charter",
+      "x": 10,
+      "y": 1,
+      "sprite": "pa_charter"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_notice_pins",
+      "x": 12,
+      "y": 1,
+      "sprite": "pa_notice_pins"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_bath_bucket",
+      "x": 1,
+      "y": 5,
+      "sprite": "pw_bath_bucket"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_bath_bucket_2",
+      "x": 12,
+      "y": 5,
+      "sprite": "pw_bath_bucket"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_linen_shelf",
+      "x": 1,
+      "y": 8,
+      "sprite": "pn_linen_shelf"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_stove",
+      "x": 3,
+      "y": 9,
+      "sprite": "ph_stove"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_firewood",
+      "x": 4,
+      "y": 9,
+      "sprite": "pw_firewood"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_bath_bench_0",
+      "x": 10,
+      "y": 9,
+      "sprite": "pw_bath_bench_0"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_bath_bench_1",
+      "x": 11,
+      "y": 9,
+      "sprite": "pw_bath_bench_1"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_bath_bucket_3",
+      "x": 12,
+      "y": 10,
+      "sprite": "pw_bath_bucket"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_bath_bench_2_0",
+      "x": 10,
+      "y": 11,
+      "sprite": "pw_bath_bench_0"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_bath_bench_2_1",
+      "x": 11,
+      "y": 11,
+      "sprite": "pw_bath_bench_1"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_km_rest_rug_0",
+      "x": 7,
+      "y": 10,
+      "sprite": "pn_rest_rug_0"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_km_rest_rug_1",
+      "x": 8,
+      "y": 10,
+      "sprite": "pn_rest_rug_1"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_fern",
+      "x": 13,
+      "y": 12,
+      "sprite": "pv_fern"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_km_hot_jug",
+      "x": 12,
+      "y": 12,
+      "sprite": "pn_hot_jug"
+     }
+    ]
+   },
+   "bg_hq_lobby": {
+    "addObjs": [
+     {
+      "kind": "prop",
+      "id": "dress_bg_banner",
+      "x": 5,
+      "y": 0,
+      "sprite": "pg_banner"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_clock_round",
+      "x": 8,
+      "y": 0,
+      "sprite": "pa_clock_round"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_banner_2",
+      "x": 10,
+      "y": 0,
+      "sprite": "pg_banner"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_water_cooler",
+      "x": 1,
+      "y": 1,
+      "sprite": "pg_water_cooler"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_planter",
+      "x": 9,
+      "y": 7,
+      "sprite": "pg_planter"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_kiosk",
+      "x": 5,
+      "y": 7,
+      "sprite": "pg_kiosk"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_kiosk_2",
+      "x": 13,
+      "y": 7,
+      "sprite": "pg_kiosk"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_planter_2",
+      "x": 4,
+      "y": 13,
+      "sprite": "pg_planter"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_display_case",
+      "x": 5,
+      "y": 13,
+      "sprite": "pg_display_case"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_display_case_2",
+      "x": 10,
+      "y": 13,
+      "sprite": "pg_display_case"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_planter_3",
+      "x": 11,
+      "y": 13,
+      "sprite": "pg_planter"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_water_cooler_2",
+      "x": 14,
+      "y": 12,
+      "sprite": "pg_water_cooler"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_planter_4",
+      "x": 1,
+      "y": 14,
+      "sprite": "pg_planter"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_bg_planter_5",
+      "x": 14,
+      "y": 14,
+      "sprite": "pg_planter"
+     }
+    ],
+    "replaceObjs": [
+     {
+      "kind": "prop",
+      "id": "bg_lobby_planter_1_3",
+      "x": 1,
+      "y": 3,
+      "sprite": "pg_planter",
+      "name": "a planter"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_planter_2_3",
+      "x": 2,
+      "y": 3,
+      "sprite": "pg_planter",
+      "name": "a planter"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_planter_13_3",
+      "x": 13,
+      "y": 3,
+      "sprite": "pg_planter",
+      "name": "a planter"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_planter_14_3",
+      "x": 14,
+      "y": 3,
+      "sprite": "pg_planter",
+      "name": "a planter"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_planter_14_8",
+      "x": 14,
+      "y": 8,
+      "sprite": "pg_planter",
+      "name": "a planter"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_D_10_7",
+      "x": 10,
+      "y": 7,
+      "sprite": "pg_reception_0",
+      "name": "the front desk"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_D_11_7",
+      "x": 11,
+      "y": 7,
+      "sprite": "pg_reception_1",
+      "name": "the front desk"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_D_12_7",
+      "x": 12,
+      "y": 7,
+      "sprite": "pg_reception_2",
+      "name": "the front desk"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_s_3_10",
+      "x": 3,
+      "y": 10,
+      "sprite": "pg_sofa_0",
+      "name": "a visitor sofa"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_s_4_10",
+      "x": 4,
+      "y": 10,
+      "sprite": "pg_sofa_1",
+      "name": "a visitor sofa"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_s_3_11",
+      "x": 3,
+      "y": 11,
+      "sprite": "pg_coffee_table",
+      "name": "a visitor sofa"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_s_4_11",
+      "x": 4,
+      "y": 11,
+      "sprite": "pg_chair",
+      "name": "a visitor sofa"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_s_11_10",
+      "x": 11,
+      "y": 10,
+      "sprite": "pg_sofa_0",
+      "name": "a visitor sofa"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_s_12_10",
+      "x": 12,
+      "y": 10,
+      "sprite": "pg_sofa_1",
+      "name": "a visitor sofa"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_s_11_11",
+      "x": 11,
+      "y": 11,
+      "sprite": "pg_chair",
+      "name": "a visitor sofa"
+     },
+     {
+      "kind": "prop",
+      "id": "bg_lobby_s_12_11",
+      "x": 12,
+      "y": 11,
+      "sprite": "pg_coffee_table",
+      "name": "a visitor sofa"
      }
     ]
    }
