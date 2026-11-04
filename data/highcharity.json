@@ -21,13 +21,13 @@
     "maps": {
       "hearthmoor": {
         "gridRows": {
-          "9": "TgggggggggggpgpgggggTTTT"
+          "9": "TgggggggggggggpgpgggTTTT"
         },
         "addObjs": [
           {
             "kind": "warp",
             "id": "hm_to_hc",
-            "x": 12,
+            "x": 16,
             "y": 9,
             "to": "highcharity",
             "tx": 32,
@@ -44,7 +44,7 @@
             "id": "hm_bram",
             "name": "Porter Bram",
             "look": "bram",
-            "x": 11,
+            "x": 15,
             "y": 9,
             "facing": "right",
             "when": [
@@ -58,7 +58,7 @@
           {
             "kind": "sign",
             "id": "hm_sign_coach",
-            "x": 13,
+            "x": 17,
             "y": 9,
             "when": [
               "story.side_pick_done"
