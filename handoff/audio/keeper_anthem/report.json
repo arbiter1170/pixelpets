@@ -1,0 +1,113 @@
+{
+ "anthem_march": {
+  "file": "handoff/audio/keeper_anthem/anthem_march.wav",
+  "near": false,
+  "inGamePeakDbfs": -31.8,
+  "loopSec": 32,
+  "loops": 1,
+  "swell": {
+   "from": 0.2,
+   "sec": 48
+  },
+  "game": {
+   "sec": 32,
+   "samples": 1411200,
+   "peakDbfs": -12.7,
+   "rmsDbfs": -37.7,
+   "quietest1sDbfs": -42.5,
+   "clipped": 0
+  },
+  "notes": {
+   "scheduled": 178,
+   "expected": 178,
+   "same": true
+  },
+  "reference": {
+   "file": "design specs/keeper_anthem_preview/anthem_march.wav",
+   "fileSec": 64,
+   "sec": 32,
+   "samples": 1411200,
+   "peakDbfs": -11.7,
+   "rmsDbfs": -37.7,
+   "quietest1sDbfs": -42.9,
+   "clipped": 0
+  },
+  "delta": {
+   "peakDb": -1,
+   "rmsDb": 0,
+   "lengthSame": true
+  }
+ },
+ "anthem_dark": {
+  "file": "handoff/audio/keeper_anthem/anthem_dark.wav",
+  "near": false,
+  "inGamePeakDbfs": -26.5,
+  "loopSec": 60,
+  "loops": 1,
+  "swell": null,
+  "game": {
+   "sec": 60,
+   "samples": 2646000,
+   "peakDbfs": -7.4,
+   "rmsDbfs": -26.4,
+   "quietest1sDbfs": -31.3,
+   "clipped": 0
+  },
+  "notes": {
+   "scheduled": 89,
+   "expected": 89,
+   "same": true
+  },
+  "reference": {
+   "file": "design specs/keeper_anthem_preview/anthem_dark.wav",
+   "fileSec": 120,
+   "sec": 60,
+   "samples": 2646000,
+   "peakDbfs": -6.5,
+   "rmsDbfs": -26.4,
+   "quietest1sDbfs": -31.3,
+   "clipped": 0
+  },
+  "delta": {
+   "peakDb": -0.9,
+   "rmsDb": 0,
+   "lengthSame": true
+  }
+ },
+ "anthem_hall": {
+  "file": "handoff/audio/keeper_anthem/anthem_hall.wav",
+  "near": false,
+  "inGamePeakDbfs": -29.7,
+  "loopSec": 48,
+  "loops": 1,
+  "swell": null,
+  "game": {
+   "sec": 48,
+   "samples": 2116800,
+   "peakDbfs": -10.6,
+   "rmsDbfs": -32.6,
+   "quietest1sDbfs": -36.1,
+   "clipped": 0
+  },
+  "notes": {
+   "scheduled": 121,
+   "expected": 121,
+   "same": true
+  },
+  "reference": {
+   "file": "design specs/keeper_anthem_preview/anthem_hall.wav",
+   "fileSec": 48,
+   "sec": 48,
+   "samples": 2116800,
+   "peakDbfs": -10.4,
+   "rmsDbfs": -32.6,
+   "quietest1sDbfs": -36.1,
+   "clipped": 0
+  },
+  "delta": {
+   "peakDb": -0.2,
+   "rmsDb": 0,
+   "lengthSame": true
+  }
+ }
+}
