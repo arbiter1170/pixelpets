@@ -101,6 +101,8 @@ const busCalls = (page, from = 0) => page.evaluate((from) => {
 }, from);
 const mark = page => page.evaluate(() => window.__spy.targets.length);
 const want = page => page.evaluate(() => PPSound.musicWant);
+// a line is on screen, fully typed and waiting for the tap (so a Space press answers it, even on a slow machine)
+const lineShows = (page, text) => expect.poll(() => page.evaluate(() => !!PixelPets.scene && PixelPets.scene.mode === 'say' && PixelPets.scene.waiting && PixelPets.scene.full && PixelPets.scene.text)).toBe(text);
 // Plays the open scene to its end: taps through lines, answers choices from `picks` (else the first) and lets auto beats run.
 // Returns every line shown, with the cue wanted while it showed: [[text, musicWant], ...].
 async function drive(page, picks = [], ms = 150000) {
@@ -270,10 +272,10 @@ test.describe('SCENE_MUSIC slices 2-3: the scene loops and the Act 1 cues', () =
       lead: { wave: 'triangle', gain: 0.01, notes: [[0, 8]] }, bass: { wave: 'triangle', gain: 0.01, notes: [[0, 8]] }, drums: ['........'] });
     await expect.poll(() => page.evaluate(() => PPSound.musicTrack)).toBe('town');
     await page.evaluate(() => PixelPets.runSteps([['music', 'ledger'], ['say', 'Warden Ilse', 'One.'], ['music', 'hush'], ['say', 'Warden Ilse', 'Two.'], ['say', 'Warden Ilse', 'Three.']]));
-    await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text)).toBe('One.');
+    await lineShows(page, 'One.');
     await expect.poll(() => page.evaluate(() => PPSound.musicTrack)).toBe('ledger');
     await page.keyboard.press('Space');
-    await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text)).toBe('Two.');
+    await lineShows(page, 'Two.');
     await expect.poll(() => page.evaluate(() => [PPSound.musicWant, PPSound.musicTrack])).toEqual(['hush', 'hush']);
     await page.waitForTimeout(500);   // ledger's 180 ms fade and the notes already scheduled have gone
     const n = await page.evaluate(() => window.__spy.osc);
@@ -311,7 +313,7 @@ test.describe('SCENE_MUSIC slices 2-3: the scene loops and the Act 1 cues', () =
   test('T5: Music OFF stops a scene cue and makes no node; Music ON brings it back; Sound OFF makes no node; Sound ON brings it back', async ({ page }) => {
     await boot(page);   // Sound OFF (the stored mute)
     await page.evaluate(() => PixelPets.runSteps([['music', 'president'], ['say', 'The President', 'Good evening.'], ['say', 'The President', 'Good night.']]));
-    await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text)).toBe('Good evening.');
+    await lineShows(page, 'Good evening.');
     expect(await page.evaluate(() => [PPSound.musicWant, PPSound.musicTrack, PPSound.muted, window.__spy.osc])).toEqual(['president', null, true, 0]);
     await page.evaluate(() => PPSound.setMuted(false));   // the Sound row: a tap
     await expect.poll(() => page.evaluate(() => PPSound.musicTrack)).toBe('president');
@@ -334,7 +336,7 @@ test.describe('SCENE_MUSIC slices 2-3: the scene loops and the Act 1 cues', () =
     await boot(page, { mute: '0' });   // Sound ON, Music ON, no gesture yet
     expect(await page.evaluate(() => [PixelPets.state.settings.controls, PPSound.muted, PPSound.musicOn])).toEqual(['modern', false, true]);
     await page.evaluate(() => PixelPets.runSteps([['music', 'ledger'], ['say', 'Warden Ilse', 'Sit, Cadet.'], ['say', 'Warden Ilse', 'Good work.'], ['say', 'Warden Ilse', 'Quiet work.']]));
-    await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text)).toBe('Sit, Cadet.');
+    await lineShows(page, 'Sit, Cadet.');
     expect(await page.evaluate(() => [PPSound.musicWant, PPSound.musicTrack, PPSound.state, window.__spy.made])).toEqual(['ledger', null, 'none', 0]);
     const box = await page.locator('#sbox').boundingBox();
     await page.touchscreen.tap(box.x + box.width * 0.3, box.y + box.height * 0.6);   // a finger on the line (not the SKIP button)
