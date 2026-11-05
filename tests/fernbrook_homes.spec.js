@@ -118,7 +118,7 @@ test('the lane is reachable on foot from the town, and the holder can walk throu
         seen.add(k); q.push([nx, ny]);
       }
     }
-    const need = [[18, 18], [17, 19], [18, 19], [4, 24], [12, 24], [24, 24], [2, 25], [29, 25], [5, 28], [20, 28]];
+    const need = [[18, 18], [17, 19], [18, 19], [4, 24], [12, 24], [24, 24], [2, 25], [29, 25], [5, 28], [20, 29]];   // PROP_DRESS (D2035): an urn stands on (20,28); (20,29), between the urns, samples the same grass west of the pond
     return { missing: need.filter(([x, y]) => !seen.has(x + ',' + y)).map(p => p.join(',')), south: [...seen].filter(k => +k.split(',')[1] >= 19).length };
   });
   expect(reach.missing).toEqual([]);
