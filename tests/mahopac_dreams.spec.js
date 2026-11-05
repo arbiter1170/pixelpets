@@ -193,7 +193,8 @@ const LOOK = {
 const REPEAT = { told: 'Thank you for the lens, love.', held: 'That lens. I keep thinking about it.' };
 // The built daily snack (ACT2_COVER_STORY D1696) plays before the offer when due; these runs mark today's as given.
 const TODAY = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
-const FED = { 'story.cv_mom_day': TODAY };
+// BANK_AND_HOMES beat 1: Mom's passbook sits before her repeat; these saves already have it (tests/bank_slice_1.spec.js plays it).
+const FED = { 'story.cv_mom_day': TODAY, 'story.bank_book': true };
 const noOverflow = page => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 async function noraBark(page) {
   await goto(page, 'mahopac', 9, 12, 'up');

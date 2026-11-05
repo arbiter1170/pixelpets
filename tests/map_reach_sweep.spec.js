@@ -302,6 +302,8 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
         if (mode === 'b6') doorKinds.push('trigger');
         objs.forEach((o) => {
           if (doorKinds.indexOf(o.kind) < 0) return;
+          // PROP_DRESS: library dressing hung on a wall face (dress_*, no lines, not tappable) has no floor side; prop_dress.spec.js covers it
+          if (/^dress_/.test(o.id) && !PixelPets.tileInfo(o.x, o.y).walk) return;
           const onTile = o.kind === 'warp' || o.kind === 'trigger';
           if (!(onTile ? seen.has(o.x + ',' + o.y) : adj(o.x, o.y))) missed.push(o.id);
         });
@@ -340,7 +342,7 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
   }
   // Literal tallies from a full pass. A skipped map, or a map that dropped a person or prop, fails here.
   const COUNTS = {
-    hm_home_in: { npc: 2, trainer: 0, sign: 1, prop: 6, warp: 2 },   // PARTNER_DAY: Mom and Maze; the bed and mirror moved upstairs, coat pegs came
+    hm_home_in: { npc: 2, trainer: 0, sign: 1, prop: 13, warp: 2 },   // PARTNER_DAY: Mom and Maze; the bed and mirror moved upstairs, coat pegs came. PROP_DRESS (D2032): +7 dressing pieces
     hm_home_up: { npc: 0, trainer: 0, sign: 0, prop: 7, warp: 1 },   // PARTNER_DAY: Mom moved down; Maze's cushion
     hm_lodge_in: { npc: 1, trainer: 0, sign: 0, prop: 7, warp: 1 },
     hm_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 6, warp: 1 },

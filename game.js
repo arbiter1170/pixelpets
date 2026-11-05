@@ -1511,12 +1511,13 @@ function syncHdrAcorns(){
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (hdrAcornsShown != null && n > hdrAcornsShown && !reduce) acornGainUntil = performance.now() + 300;
   if (n !== hdrAcornsShown) {
-    box.setAttribute('aria-label', acorns(n)); const chip = $('#fcAcorns'); if (chip) chip.setAttribute('aria-label', acorns(n));
+    box.setAttribute('aria-label', acorns(n)); const chip = $('#fcAcorns'); if (chip) chip.setAttribute('aria-label', acorns(n) + BANK_COPY.chip);   // D2220
     const shown = hdrAcornsShown == null ? n : acornShownNow();
     if (hdrAcornsShown != null && n < shown && !reduce) startAcornTick(shown, n); else { stopAcornTick(); paintAcornCount(n); }
     hdrAcornsShown = n;
   }
   syncAcornFrame();
+  syncBankChip();
 }
 // The badge band gives the chip its room (the badge text clamps first at 320).
 function fitAcornChip(){
@@ -1584,7 +1585,7 @@ let befLes = { took: false, fromBar: false, bar: false };
 let lessonDraw = { hop: 0, y: 0 };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
 let envPeek = false;   // mapReadySoon: read the state as if TODAY were shut, without touching its hidden attribute
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envPeek && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || ($('#ovSide') && !$('#ovSide').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envPeek && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || ($('#ovBank') && !$('#ovBank').hidden) || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || ($('#ovSide') && !$('#ovSide').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -4978,6 +4979,7 @@ function cond(c, live, o){
   else if (c.startsWith('talked:')) v = mapRT.talked.has(c.slice(7));
   // MAHOPAC_DREAMS E1 (D1941): `lens:<moment>` asks PPStanding.lensMoment, the lens's first match, on the flags as the scene sees them.
   else if (c.startsWith('lens:')) v = PPStanding.lensMoment(live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags) === c.slice(5);
+  else if (c === 'partner:out') v = followerOn();   // WAR_MUSEUM K1: the partner walks out beside the holder
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
   else if (c === 'enrol:ask') v = ENROL_CHOICE === 'ask';   // ACT1_KEEPER_JOIN D1562: the enrolment's pin-or-lanyard question
@@ -5667,6 +5669,18 @@ function openClockCard(){
   openEnvCard();
 }
 function closeClockCard(){ if ($('#ovClock').hidden) return; $('#ovClock').hidden = true; lockTabs(false); }
+// WAR_MUSEUM §2.2: a warm disc over a fed donation lantern, 900 ms; it swells and fades, or holds steady under reduced motion.
+const glowFx = [];
+function drawGlowFx(g, cx, cy){
+  const t = now();
+  for (let i = glowFx.length - 1; i >= 0; i--) {
+    const f = glowFx[i], k = (t - f.t0) / 900;
+    if (k >= 1 || !CUR || CUR.id !== f.map) { glowFx.splice(i, 1); continue; }
+    g.save(); g.globalCompositeOperation = 'lighter';
+    g.fillStyle = 'rgba(255,205,117,' + (f.still ? 0.3 : (0.35 * Math.sin(k * Math.PI)).toFixed(3)) + ')';
+    g.beginPath(); g.arc(f.x * TS + 8 - cx, f.y * TS + 6 - cy, 14, 0, Math.PI * 2); g.fill(); g.restore();
+  }
+}
 const shotFx = [];
 function drawShotFx(g, cx, cy){
   const t = now();
@@ -6220,6 +6234,24 @@ function onLand(){
 /* ---------- items (INVENTORY v1 §3): one catalog for the Bag, the Travel Shelf, battle, scene `give` and map pickups ---------- */
 // use: where it works ('battle' and/or 'field'); target: needs a pet; cap: stack limit (enforced on grant, not on load); price in Acorns.
 const ITEM_ART = {
+  old_oil_lamp: [   // WAR_MUSEUM §2.1 (D2307): the Stamp Trail's keepsake, a dented brass oil lamp, unlit; PAL only
+    '................',
+    '................',
+    '.......dd.......',
+    '......dFFd......',
+    '......dGGd......',
+    '.....ddGGdd.....',
+    '....dGyyyyGd....',
+    '...dGywyyyyGd...',
+    '..dGyyyyyyyyGddd',
+    '.dGGyyyyyyyyGGAd',
+    '.dGGGGGGGGGGGGd.',
+    '..ddFFFFFFFFdd..',
+    '....dFFFFFFd....',
+    '...dGGGGGGGGd...',
+    '....dddddddd....',
+    '................',
+  ],
   lantern_wick: [   // DAY1_TRIAL1_FLOW (D1154): a coiled wick with a small flame, PAL only
     '................',
     '.......y........',
@@ -6508,6 +6540,7 @@ const ITEMS = {
   keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
   lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Host Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Brisa sells them.' },   // D1154, FPT Part A
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
+  old_oil_lamp:   { name: 'Old Oil Lamp',   plural: 'Old Oil Lamps',   cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A keepsake from the Muster Road Museum.', blurb: 'Given for a fully stamped card.' },   // WAR_MUSEUM D2307 (PLACEHOLDER words)
 };
 const ITEM_ORDER = Object.keys(ITEMS);
 function drawItemIcon(canvas, id){
@@ -6543,7 +6576,7 @@ function walkFind(p, cday){
   cday.finds++;
   const r = findRng(); let what = null;
   if (r >= 0.6 && r < 0.85) { const id = FINDS.items[findRng() < 0.5 ? 0 : 1]; if (grantItem(id, 1).added) what = itemLabel(id, 1); }
-  if (!what) { const n = FINDS.acornMin + Math.floor(findRng() * (FINDS.acornMax - FINDS.acornMin + 1)); S.money = (S.money || 0) + n; what = acorns(n); }
+  if (!what) { const n = FINDS.acornMin + Math.floor(findRng() * (FINDS.acornMax - FINDS.acornMin + 1)); moneyDelta('find', n); what = acorns(n); }
   addBond(p, BOND.find); sfx('stinger_item');
   toast(petName(p) + ' dug something up! Found ' + what + '.'); save();
   return true;
@@ -7958,6 +7991,7 @@ function drawMap(t){
   drawHqGlow(g, cx, cy);
   drawLampLights(g, cx, cy, VW, VH);
   drawShotFx(g, cx, cy);
+  drawGlowFx(g, cx, cy);
   wild.poofs = wild.poofs.filter(f => wild.clock - f.t < 500);
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
@@ -9167,7 +9201,7 @@ function wardPress(card){
     const row = wardrobeRow(card.id);
     if (!row || !S) return;
     if ((S.money | 0) < row.price) { sfx('denied'); toast('Not enough Acorns.'); return; }
-    S.money = (S.money | 0) - row.price;
+    moneyDelta('look', -row.price, bankShopRef(card.id, wardOwner));
     S.flags[row.flag] = true;
     save();
     sfx('tap');
@@ -9443,11 +9477,11 @@ function interact(o){
       openShop([], 'Travel Shelf', 'Leave Acorns, take a snack. \u2014 I.');
       return;
     }
-    openShop(o.shop, shopHeading(o), o.shopFlavour || null);
+    openShop(o.shop, shopHeading(o), o.shopFlavour || null, o.id || '');
     return;
   }
   if (o.wardrobe) {
-    mapRT.talked.add(o.id);
+    mapRT.talked.add(o.id); wardOwner = o.id || '';   // BANK_AND_HOMES D2234: the store a look's ledger memo names
     const line = linesFor(o);
     const steps = [];
     if (typeof line === 'string' && line && line.charAt(0) !== '@') steps.push(['say', objName(o), line]);
@@ -10022,7 +10056,7 @@ async function execStep(st){
       // D135: Juniper's bonus line pays 300 Acorns once per scene view. The got-line uses the usual Acorn wording.
       if (a === 'Associate Juniper' && b === 'Bonus Acorns are on the way. Have a bright day!' && !sc.view.flags['rc.acorns']) {
         sc.view.flags['rc.acorns'] = true;
-        pend(() => { S.money = (S.money | 0) + 300; });
+        pend(() => { moneyDelta('scene', 300, 'juniper_bonus'); });
         await sayBox('', playerName() + ' got ' + acorns(300) + '!');
         if (!scene) return;
       }
@@ -10066,7 +10100,7 @@ async function execStep(st){
       const meal = ((sc.npc && sc.npc.meals) || []).find(m => m.id === a);
       if (!meal) return;
       if ((S.money | 0) < meal.price) { sfx('denied'); toast('Not enough Acorns.'); return; }
-      S.money = (S.money | 0) - meal.price;
+      moneyDelta('meal', -meal.price, meal.id);
       syncHdrAcorns();
       p.hunger = clamp(p.hunger + careGain(meal.food, p.hunger, FEED_BANDS), 0, 100);
       p.happy = clamp(p.happy + careJoy(p, meal.joy), 0, 100);
@@ -10210,7 +10244,7 @@ async function execStep(st){
     case 'payRest': {
       if (!lanternRestNeeded()) { sc.view.flags['lantern.rest'] = 'full'; setRestDue(false); sfx('rest'); noteLanternRest(); return; }
       const have = S.money | 0, fee = Math.min(have, LANTERN_REST_COST);
-      if (fee > 0) { S.money = have - fee; sc.view.flags['lantern.rest'] = 'paid'; }
+      if (fee > 0) { moneyDelta('rest', -fee, atTown() || ''); sc.view.flags['lantern.rest'] = 'paid'; }
       else sc.view.flags['lantern.rest'] = 'covered';
       S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); setRestDue(false); sfx('rest'); noteLanternRest(); return;
     }
@@ -10288,11 +10322,23 @@ async function execStep(st){
     // ["acorns", n]: pays n Acorns when the scene's writes land, and says so. A scene that sets its flag pays once.
     case 'acorns': {
       const n = Math.max(0, Number(a) | 0); if (!n) return;
-      pend(() => { S.money = (S.money | 0) + n; });
+      const ref = String(sc.id || '').split('@')[0];
+      pend(() => { moneyDelta('scene', n, ref); });
       if (sc.skip) return;
       await sayBox('', playerName() + ' got ' + acorns(n) + '!');
       return;
     }
+    // WAR_MUSEUM §2.2 (D2308): ["pay", n, okSteps, shortSteps, ref] spends n Acorns from the bag when the scene's writes land, through
+    // the bank's moneyDelta (BANK_AND_HOMES, #334) as one `scene` line whose ref names its memo (museum_gift: "Museum gift"), then runs
+    // okSteps; a bag short of n runs shortSteps and spends nothing.
+    case 'pay': {
+      const n = Math.max(0, Number(a) | 0), spent = sc.vars.paid | 0, ref = typeof d === 'string' ? d : '';
+      if ((S.money | 0) - spent < n) { sfx('denied'); await execSteps(c || []); return; }
+      sc.vars.paid = spent + n; pend(() => { moneyDelta('scene', -n, ref); });
+      await execSteps(b || []); return;
+    }
+    // WAR_MUSEUM §2.2: ["glow", objectId] lights that object for a beat (the donation lantern); reduced motion lights it, no pulse.
+    case 'glow': { const o = CUR && CUR.objs.find(q => q.id === a); if (o) glowFx.push({ map: CUR.id, x: o.x, y: o.y, t0: now(), still: prefersReduced() }); return; }
     case 'sfx': { if (a) sfx(a); return; }
     case 'toast': { if (a) sc.toasts.push(expand(a)); return; }   // ACT1_KEEPER_JOIN 7g: a toast once the scene ends
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
@@ -10414,7 +10460,7 @@ async function grantTourneyPrize(){
   if (S.flags['weekly.hc_tourney'] === key) { await sayBox('Clerk Nia', "You already have this week's ribbon. The match was still lovely."); return; }
   const r = grantItem('hearty_snack', 1);
   if (r.added < 1) { await sayBox('Clerk Nia', "Your bag can't hold the snack. Make room and the prize will wait."); return; }
-  S.money = (S.money || 0) + 40;
+  moneyDelta('tourney', 40);
   S.flags['weekly.hc_tourney'] = key;
   sfx('stinger_item'); save();
   await sayBox('Clerk Nia', "This week's prize is a Hearty Snack and 40 Acorns.");
@@ -11455,7 +11501,7 @@ function wbTurn(w){
 }
 function wbComplete(w){
   const r = grantItem('joy_crumb', 1);
-  if (r.added) wbSay(w, WB_LINES.crumb); else { S.money = (S.money | 0) + 10; wbSay(w, WB_LINES.acorns); }
+  if (r.added) wbSay(w, WB_LINES.crumb); else { moneyDelta('find', 10, 'walk_beside'); wbSay(w, WB_LINES.acorns); }
   if (!S.flags['story.switched_a3']) addStanding('keepers', 1, { muteAlign: true });
   S.flags['daily.walk_beside'] = wbDay();
   const c = wild.clock; wbRelease(w); w.idleUntil = c + 2000;
@@ -13060,6 +13106,7 @@ const REGION_MAP = {
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_civic: 'highcharity', hc_exchange: 'highcharity', hc_waterfront: 'highcharity', hc_college: 'highcharity',   // HIGH_CHARITY_LAYOUT: one node for every chunk (D1275)
     hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_2: 'highcharity', hc_gov_3: 'highcharity',
+    hc_museum_in: 'highcharity',   // WAR_MUSEUM: the Muster Road Museum (city only)
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
@@ -15016,6 +15063,7 @@ function renderRibbit(body){
     day: dayKey(Date.now()),
     night: phoneNight(),
     signal: phoneSignal(),
+    holds: feedHolds(),
   }) : { trending: [], posts: [] };
   renderMyChirps(body);
   const trend = document.createElement('div');
@@ -15094,11 +15142,17 @@ function newsEdition(){
   const st = newsState();
   return st && window.PPNews && PPNews.edition ? PPNews.edition(st) : null;
 }
+// PHONE_FEED (D2172): who holds each region-map node, by the map's own rules, so feed lines can follow a town's hold.
+function feedHolds(){
+  const out = {};
+  for (const id of Object.keys(REGION_MAP.nodes)) out[id] = mapHold(id);
+  return out;
+}
 function newsState(){
   if (!S) return null;
   const ck = window.PPClock ? PPClock.now() : null, p = pet(), sky = chipSky();
   return ({
-    flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(),
+    flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(), holds: feedHolds(),
     hh: ck ? ck.hh : 9, phase: ck ? ck.phase : 'day', sky: sky ? sky.kind : '', town: placeName(),
     me: {
       holder: playerName(), partner: p ? petName(p) : '', partnerSpecies: p ? p.species : '', partnerStage: p ? p.stage : 0,
@@ -15120,7 +15174,7 @@ function newsClip(ed){
     else clips.push({ id: l.id, day: ed.day, back: true });
     have.add(l.id);
   });
-  if (paid) { S.money = (S.money | 0) + paid; toast('Clipped to your scrapbook. +' + paid + ' Acorns'); sfx('pop'); }
+  if (paid) { moneyDelta('clip', paid); toast('Clipped to your scrapbook. +' + paid + ' Acorns'); sfx('pop'); }
   return paid;
 }
 function newsDate(day){
@@ -16194,7 +16248,7 @@ function bagKey(e){
 const SHELF_LINE = 'Travel Shelf \u00b7 Leave Acorns, take a snack. \u2014 I.';
 const SHELF_EMPTY = "Empty for now. Ilse restocks once you've a partner.";
 const SHOP_EMPTY = 'Nothing on the shelf today.';
-let shopIds = [], shopSel = 0, shopMeal = null;
+let shopIds = [], shopSel = 0, shopMeal = null, shopOwner = '', wardOwner = '';
 // The Travel Shelf keeps its fixed title. A stall whose welcome line names the shop (Dottie's "Welcome to Cairnside Supplies!") uses that name.
 function shopHeading(o){
   if (o && o.shopTitle) return o.shopTitle;
@@ -16241,8 +16295,9 @@ function paintMealIcon(cv){
   const g = ctx(cv); g.clearRect(0, 0, 18, 18);
   drawGlyph(g, 'apple', 6, 6);
 }
-function openShop(ids, title, flavour){
+function openShop(ids, title, flavour, owner){
   if (!S || overlayOpen()) return;
+  shopOwner = typeof owner === 'string' ? owner : '';   // BANK_AND_HOMES D2234: the store a ledger memo names
   // SHOP_EXIT: the care walk's C1 card and unlock tips sit above the sheet and covered X. Step aside as a talk does (runSteps).
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('shop');
   if (unlock.on && unlock.id) { unlock.held = unlock.id; unlockClose(); }
@@ -16311,7 +16366,7 @@ function buyItem(id){
   if (itemCount(id) >= it.cap) msg = "Bag can't hold more.";
   else if ((S.money | 0) < it.price) msg = 'Not enough Acorns.';
   if (msg) { sfx('denied'); toast(msg); return { ok: false, msg }; }
-  S.money = (S.money | 0) - it.price; S.bag[id] = itemCount(id) + 1;
+  moneyDelta('shop', -it.price, bankShopRef(id)); S.bag[id] = itemCount(id) + 1;
   sfx('tap'); msg = '+1 ' + it.name; toast(msg); save(); syncHdrAcorns();
   if (!$('#ovShop').hidden && !shopMeal) renderShop();
   return { ok: true, msg };
@@ -16344,7 +16399,7 @@ function buyWardFromShop(id){
   if (ownsLook(id)) msg = 'Already yours.';
   else if ((S.money | 0) < wr.price) msg = 'Not enough Acorns.';
   if (msg) { sfx('denied'); toast(msg); return { ok: false, msg }; }
-  S.money = (S.money | 0) - wr.price; S.flags[wr.flag] = true;
+  moneyDelta('look', -wr.price, bankShopRef(id)); S.flags[wr.flag] = true;
   sfx('tap'); msg = wr.name + ' is yours.'; toast(msg); save(); syncHdrAcorns();
   if (!$('#ovShop').hidden && !shopMeal) renderShop();
   return { ok: true, msg };
@@ -16879,7 +16934,7 @@ async function wildWinRewards(B, result, id){
   if (B.kind !== 'wild' || result !== 'win' || B.coop) return;
   const f = B.foes[B.fi] || B.foes[0]; if (!f) return;
   const c = careDay(), n = wildAcornPay(f.level, c.wildAcorns);
-  c.wildAcorns += n; S.money = (S.money || 0) + n; save();
+  c.wildAcorns += n; moneyDelta('wild', n); save();
   await say(playerName() + ' got ' + acorns(n) + '!', id);   // D813: the holder line, via acorns(n)
 }
 async function results(result, id){
@@ -16897,7 +16952,7 @@ async function results(result, id){
   if (result === 'win' && t) {
     B.cosmeticFirst = S.flags['trainer.' + B.trainerId] !== true;
     const money = t.money != null ? t.money : 10 * Math.max(...trainerTeam(t).map(m => m.level)) * (t.hall ? 3 : 1);
-    if (money > 0) S.money = (S.money || 0) + money;
+    if (money > 0) moneyDelta(t.hall ? 'hall' : 'holder', money, String(B.trainerId || '').split('@')[0]);
     S.flags['trainer.' + B.trainerId] = true;
     delete S.flags['rematch.' + trainerMusicId(B.trainerId)];
     if (t.hall && t.seal) {
@@ -16962,6 +17017,269 @@ function startAcornTick(from, to){
   };
   acornTickJob = job;
   job.raf = requestAnimationFrame(frame);
+}
+/* BANK_AND_HOMES v0.1, first slice (design repo, private; D2220-D2223, D2231, D2233, D2234): the Acorn Account.
+   The bag stays S.money. Every change to it goes through moneyDelta(src, n, ref): it clamps the bag at 0, writes one ledger memo
+   (bank.js) and runs the built HUD sync; nothing else about a spend or a gain changes. A co-op guest writes nothing (D331).
+   The modern Acorns chip (#fcAcorns, now a button) opens #ovBank on BOOK; a second tap (the backdrop), X or Escape closes it.
+   Before Teller Bodin opens the book (story.bank_open) the sheet is in bag mode: "YOUR ACORNS", BOOK and LEDGER, the Yesterday
+   card with no dividend. With the book: CIVIC BANK, the JARS tab (coming soon; phase 2), and the dawn dividend on the first open of
+   each real day (daily.bank_dawn) with the KEPT stamp; the chip's pip shows while it waits. No streak, no catch-up, nothing lost
+   for days away (D867, §7). Later slices plug in here: jars (bankUI tab 'jars'), the EXCHANGE tab (PPMarket, STOCK_MARKET §6.1,
+   through bankWallet()). Every line is PLACEHOLDER until Story signs it (OPEN_DECISIONS D2222-copy). Save stays pixelpets.save.v2,
+   v 2 (§12, save.js normalizeBank). */
+const BANK_COPY = {
+  titleBag: 'YOUR ACORNS', titleBook: 'CIVIC BANK',
+  prompt: { book: 'Counted and kept.', ledger: 'Every Acorn, by day.', jars: 'Jars wait. They never spoil.', exchange: '' },
+  tabs: { book: 'BOOK', ledger: 'LEDGER', jars: 'JARS', exchange: 'EXCHANGE' },
+  foot: 'Kindness has no fee.', treasury: 'Rates by leave of the Treasury.',
+  soon: 'Jars are coming soon. Your bag is yours meanwhile.',
+  bookOf: 'Book of', no: 'No.', acorns: 'Acorns', inBag: 'in bag', inJars: 'in jars',
+  yesterday: 'YESTERDAY', welcome: 'WELCOME BACK', since: 'Since', today: 'TODAY',
+  cameIn: 'Came in', wentOut: 'Went out', dawn: 'Dawn dividend', thanks: 'THANKS', kept: 'KEPT', lately: 'LATELY',
+  empty: 'Nothing yet. Every Acorn in or out lands here.',
+  chip: '. Open your book.',
+};
+const BANK_DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const BANK_DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const BANK_MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+// §3.3: the bank's mark is a brass bell over an open ledger (never an acorn, rule 10). Design's BANK_MARK grid, PAL keys.
+const BANK_MARK = ['.....yy.....', '....yyyy....', '...yyyyyy...', '...yyyyyy...', '..yyyyyyyy..', '.oooooooooo.',
+  '.....oo.....', '............', '.CCCCkCCCCC.', '.CDDCkCDDDC.', '.CCCCkCCCCC.', '.kkkkkkkkkk.'];
+const bankUI = { tab: 'book', card: null, cardDay: '' };
+const bookOpen = () => !!(S && S.flags && S.flags['story.bank_open']);
+const bankNum = n => (n | 0).toLocaleString('en-US');
+const bankSigned = n => (n > 0 ? '+' : n < 0 ? '-' : '') + bankNum(Math.abs(n | 0));
+// The "Brought forward" line: the ledger starts the day this build ships, with the balance then (§3.1). Written once, at the first
+// write or the first open of the book, never at load; a bag of 0 needs no line.
+function bankBroughtForward(was){
+  const b = PPBank.ensure(S);
+  if (b.led.length || b.fold.length || !(was > 0)) return;
+  b.led.push([dayKey(Date.now()), 'open', was | 0]);
+}
+function moneyDelta(src, n, ref){
+  if (!S) return 0;
+  if (battle && battle.on && battle.coop) return 0;   // D331: a co-op guest is paid nothing and writes nothing
+  const was = S.money | 0, next = Math.max(0, was + (Math.trunc(Number(n)) || 0)), d = next - was;
+  if (!d) return 0;
+  bankBroughtForward(was);
+  S.money = next;
+  PPBank.add(S.bank, dayKey(Date.now()), src, d, typeof ref === 'string' ? ref : '');
+  syncHdrAcorns();
+  if (!$('#ovBank').hidden) renderBank();
+  return d;
+}
+// STOCK_MARKET §6.1 (ask B1, default): the EXCHANGE uses the bag. take() refuses rather than go below 0.
+function bankWallet(){
+  return { balance: () => (S ? S.money | 0 : 0), take: (n, ref) => { n = n | 0; if (!S || n < 0 || (S.money | 0) < n) return false; moneyDelta('exch', -n, ref); return true; },
+    give: (n, ref) => { n = n | 0; if (!S || n < 0) return false; moneyDelta('exch', n, ref); return true; } };
+}
+// Ledger refs (24 characters at most): the store's object id and the item, when both fit; else the item alone.
+function bankShopRef(id, owner){
+  const st = owner != null ? owner : ($('#ovShop').hidden ? '' : shopOwner);
+  const both = st && id ? st + '.' + id : '';
+  return both && both.length <= PPBank.REF_MAX ? both : String(id || '').slice(0, PPBank.REF_MAX);
+}
+function bankFindObj(id){
+  if (!id) return null;
+  for (const m of Object.values(WORLD)) for (const o of (m && m.objs) || []) if (o && o.id === id) return { o, m };
+  return null;
+}
+function bankPlaceOf(map){
+  const n = nodeOf(map);
+  if (n && REGION_MAP.nodes[n] && REGION_MAP.nodes[n].label) return String(REGION_MAP.nodes[n].label).toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
+  return WORLD[map] ? String(WORLD[map].name || '').split(',')[0] : '';
+}
+const BANK_RESOLVE = {
+  place: id => { const t = TRAINERS[id]; return t && t.map ? bankPlaceOf(t.map) : ''; },
+  holder: id => { const t = TRAINERS[id]; return t ? holderShown(t) : ''; },
+  item: id => (ITEMS[id] ? ITEMS[id].name : WARDROBE[id] ? WARDROBE[id].name : ''),
+  look: id => (WARDROBE[id] ? WARDROBE[id].name : ''),
+  store: id => { const f = bankFindObj(id); if (!f) return ''; const h = shopHeading(f.o); return h !== 'Travel Shelf' || f.o.id === 'travel_shelf' ? h : String(f.m.name || '').split(',')[0]; },
+  meal: id => { for (const m of Object.values(WORLD)) for (const o of (m && m.objs) || []) { const x = ((o && o.meals) || []).find(q => q && q.id === id); if (x) return x.name || ''; } return ''; },
+};
+function bankDue(){ return bookOpen() && S.flags['daily.bank_dawn'] !== dayKey(Date.now()); }
+function bankBlocked(){ return !S || !!scene || !!(battle && battle.on) || !!tut.on || ($('#ovBank').hidden && overlayOpen()); }
+function bankExchangeReady(){ try { return !!(window.PPMarket && typeof PPMarket.ready === 'function' && PPMarket.ready(S)); } catch (e) { return false; } }
+function bankTabs(){
+  const t = ['book', 'ledger'];
+  if (bookOpen()) t.push('jars');                 // §3.4: JARS appears with the open book (built in phase 2)
+  if (bankExchangeReady()) t.push('exchange');    // §15: the stock app's own gate
+  return t;
+}
+function bankRank(){   // PLACEHOLDER rank words (D2223); holder, never the old word
+  if (S.flags['story.keeper_cadet'] && !S.flags['story.switched_a3']) return 'Keeper Cadet';
+  return side() === 'glimmer' ? 'Junior Bright' : 'Holder';
+}
+function bankBookNo(){ let h = 7; for (const ch of String(S.uid || '')) h = (h * 31 + ch.charCodeAt(0)) % 10000; return String(h).padStart(4, '0'); }
+const bankDate = d => new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
+function bankDayLabel(d, today){
+  const gap = PPBank.dayGap(d, today), dt = bankDate(d);
+  if (gap === 0) return BANK_COPY.today + ' · ' + BANK_DAYS[dt.getDay()];
+  if (gap > 0 && gap < 7) return BANK_DAYS[dt.getDay()];
+  return BANK_MONTHS[dt.getMonth()].slice(0, 3) + ' ' + dt.getDate();
+}
+function openBank(tab){
+  const ov = $('#ovBank'); if (!ov) return;
+  if (!ov.hidden) { closeBank(); return; }        // a second tap on the chip closes it (D2220)
+  if (bankBlocked()) return;
+  bankBroughtForward(S.money | 0);
+  const today = dayKey(Date.now());
+  bankUI.card = null;
+  if (bookOpen()) {
+    if (S.flags['daily.bank_dawn'] !== today) {
+      // §3.7 (D2231): the first open of a real day posts the dividend into the bag; never twice a day, never more for days away.
+      S.flags['daily.bank_dawn'] = today;
+      const amt = PPBank.dividend(PPBank.inJars(S.bank));
+      moneyDelta('dawn', amt);
+      const sum = PPBank.summary(S.bank, today) || { day: dayKey(Date.now() - 86400000), gap: 1, cameIn: 0, wentOut: 0, lines: 0, hall: false, dawn: amt };
+      bankUI.card = Object.assign({ stamp: true }, sum);
+      save();
+    }
+  } else if (bankUI.cardDay !== today) {
+    const sum = PPBank.summary(S.bank, today);
+    if (sum) bankUI.card = Object.assign({ stamp: false }, sum);
+    bankUI.cardDay = today;
+  }
+  bankUI.tab = bankTabs().indexOf(tab) >= 0 ? tab : 'book';
+  if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('shop');
+  clearMoves();
+  ov.hidden = false; lockTabs(true);
+  renderBank(true);
+  if (bankUI.card && bankUI.card.stamp) sfx('notice'); else sfx('tap');
+  syncHdrAcorns();
+}
+function closeBank(){
+  const ov = $('#ovBank'); if (!ov || ov.hidden) return;
+  ov.hidden = true; bankUI.card = null; lockTabs(false); updateHUD(); syncHdrAcorns();
+}
+function bankEl(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function bankAmt(n, cls){ const b = bankEl('b', 'bk-n' + (n > 0 ? ' in' : '') + (cls ? ' ' + cls : ''), bankSigned(n)); return b; }
+function bankRow(row){
+  const r = bankEl('div', 'bk-row'), m = bankEl('div', 'bk-memo');
+  m.append(bankEl('span', 'bk-m', PPBank.memo(row, BANK_RESOLVE)));
+  const sub = PPBank.subline(row, BANK_RESOLVE); if (sub) { m.append(bankEl('span', 'bk-sub', sub)); r.classList.add('two'); }
+  r.append(m, row[1] === 'open' ? bankEl('b', 'bk-n', bankNum(row[2])) : bankAmt(row[2]));   // the balance then, not a gain
+  return r;
+}
+function bankAcornIcon(){
+  const c = document.createElement('canvas'); c.className = 'bk-acorn'; c.setAttribute('aria-hidden', 'true');
+  const A = navArt(), f = A && A.frames && A.frames.acorn;
+  const rows = f ? f.left.slice(4, 16).map(r => r.slice(6, 16)) : null;
+  if (rows) { c.width = rows[0].length; c.height = rows.length; paintGrid(ctx(c), rows, 1, 0, 0); } else { c.width = c.height = 8; paintAcorn(c); }
+  return c;
+}
+function bankCard(){
+  const C = bankUI.card, today = dayKey(Date.now()), card = bankEl('div', 'bk-card'), main = bankEl('div', 'bk-card-main');
+  if (C.gap > 1) {
+    main.append(bankEl('div', 'bk-card-h', BANK_COPY.welcome));
+    const dt = bankDate(C.day), when = C.gap < 7 ? BANK_DAY_NAMES[dt.getDay()] : BANK_MONTHS[dt.getMonth()].charAt(0) + BANK_MONTHS[dt.getMonth()].slice(1, 3).toLowerCase() + ' ' + dt.getDate();
+    main.append(bankEl('div', 'bk-since', BANK_COPY.since + ' ' + when + ':'));
+  } else main.append(bankEl('div', 'bk-card-h', BANK_COPY.yesterday + ' · ' + BANK_DAYS[bankDate(C.day).getDay()]));
+  const kv = (k, n, cls) => { const r = bankEl('div', 'bk-kv' + (cls ? ' ' + cls : '')); r.append(bankEl('span', '', k), bankAmt(n)); return r; };
+  main.append(kv(BANK_COPY.cameIn, C.cameIn), kv(BANK_COPY.wentOut, -C.wentOut));
+  if (C.stamp) {
+    let dawn = 0; for (const row of S.bank.led) if (row[0] === today && row[1] === 'dawn') dawn += row[2];
+    main.append(kv(BANK_COPY.dawn, dawn, 'dawn'));
+  }
+  const say = PPBank.remark(C); if (say) main.append(bankEl('p', 'bk-remark', '"' + say + '"'));
+  card.append(main);
+  const side_ = bankEl('div', 'bk-card-side');
+  if (C.stamp) {
+    const st = bankEl('div', 'bk-stamp', BANK_COPY.kept);
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && !C.stamped) st.classList.add('stamp-in');
+    C.stamped = true;
+    side_.append(st);
+  }
+  const ok = bankEl('button', 'bk-thanks', BANK_COPY.thanks); ok.type = 'button';
+  ok.addEventListener('click', () => { bankUI.card = null; sfx('tap'); renderBank(); });
+  side_.append(ok);
+  card.append(side_);
+  return card;
+}
+function bankBookPage(page){
+  const open = bookOpen();
+  if (open) {
+    const id = bankEl('div', 'bk-id');
+    id.append(bankEl('span', 'bk-who', BANK_COPY.bookOf + ' ' + playerName() + ' · ' + bankRank()), bankEl('span', 'bk-no', BANK_COPY.no + ' ' + bankBookNo()));
+    page.append(id);
+  }
+  const jars = PPBank.inJars(S.bank), bag = S.money | 0;
+  const tot = bankEl('div', 'bk-total');
+  tot.append(bankAcornIcon(), bankEl('b', 'bk-sum', bankNum(bag + jars)), bankEl('span', 'bk-unit', BANK_COPY.acorns));
+  page.append(tot);
+  if (open) page.append(bankEl('div', 'bk-split', BANK_COPY.inBag + ' ' + bankNum(bag) + '  ·  ' + BANK_COPY.inJars + ' ' + bankNum(jars)));
+  if (bankUI.card) page.append(bankCard());
+  page.append(bankEl('div', 'bk-sec', BANK_COPY.lately));
+  const rows = PPBank.lately(S.bank, 4);
+  if (!rows.length) page.append(bankEl('p', 'bk-empty', BANK_COPY.empty));
+  for (const row of rows) page.append(bankRow(row));
+  const foot = bankEl('div', 'bk-foot');
+  foot.append(bankEl('span', 'bk-fee', BANK_COPY.foot));
+  // §10.2 tier 3 (D2227, lines only): a Keeper holder's open book. Writes no flag.
+  if (open && side() !== 'glimmer' && !S.flags['story.switched_a3']) foot.append(bankEl('span', 'bk-treasury', BANK_COPY.treasury));
+  page.append(foot);
+}
+function bankLedgerPage(page){
+  const today = dayKey(Date.now()), days = PPBank.days(S.bank);
+  if (!days.length && !S.bank.fold.length) page.append(bankEl('p', 'bk-empty', BANK_COPY.empty));
+  for (const g of days) {
+    page.append(bankEl('div', 'bk-band', bankDayLabel(g.d, today)));
+    for (const row of g.rows) page.append(bankRow(row));
+  }
+  for (let i = S.bank.fold.length - 1; i >= 0; i--) {
+    const f = S.bank.fold[i], r = bankEl('div', 'bk-fold');
+    r.append(bankEl('span', '', BANK_MONTHS[(+f[0].slice(5, 7) - 1 + 12) % 12] || f[0]), bankEl('b', '', '+' + bankNum(f[1]) + '  ·  -' + bankNum(f[2])));
+    page.append(r);
+  }
+}
+function renderBank(fresh){
+  const ov = $('#ovBank'); if (!ov || ov.hidden || !S) return;
+  PPBank.ensure(S);
+  const open = bookOpen(), tabs = bankTabs();
+  if (tabs.indexOf(bankUI.tab) < 0) bankUI.tab = 'book';
+  $('#bankTitle').textContent = open ? BANK_COPY.titleBook : BANK_COPY.titleBag;
+  $('#bankPrompt').textContent = BANK_COPY.prompt[bankUI.tab] || '';
+  $('#bankMoney').textContent = bankNum(S.money | 0);
+  paintAcorn($('#bankAcorn'));
+  const mk = $('#bankMark'); if (mk && fresh) { const g = ctx(mk); g.clearRect(0, 0, 12, 12); paintGrid(g, BANK_MARK, 1, 0, 0); }
+  const bar = $('#bankTabs'); bar.textContent = '';
+  bar.style.setProperty('--tabs', String(tabs.length));
+  for (const t of tabs) {
+    const b = bankEl('button', 'bk-tab' + (t === bankUI.tab ? ' sel' : ''), BANK_COPY.tabs[t]);
+    b.type = 'button'; b.dataset.tab = t; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', t === bankUI.tab ? 'true' : 'false');
+    b.addEventListener('click', () => { if (bankUI.tab === t) return; bankUI.tab = t; sfx('tap'); renderBank(true); });
+    bar.append(b);
+  }
+  const page = $('#bankPage'), keep = fresh ? 0 : page.scrollTop;
+  page.textContent = ''; page.dataset.tab = bankUI.tab;
+  if (bankUI.tab === 'ledger') bankLedgerPage(page);
+  else if (bankUI.tab === 'jars') page.append(bankEl('p', 'bk-empty bk-soon', BANK_COPY.soon));
+  else if (bankUI.tab === 'exchange') { try { PPMarket.renderExchange(page, S, { wallet: bankWallet(), openNews: () => {}, toast }); } catch (e) { page.append(bankEl('p', 'bk-empty', '')); } }
+  else bankBookPage(page);
+  page.scrollTop = keep;
+}
+function wireBank(){
+  const chip = $('#fcAcorns');
+  if (chip && !chip.dataset.bank) {
+    chip.dataset.bank = '1';
+    chip.addEventListener('click', () => openBank('book'));
+    chip.addEventListener('pointerdown', () => { if (!chip.disabled) chip.classList.add('nav-press'); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => chip.addEventListener(ev, () => chip.classList.remove('nav-press')));
+  }
+  const ov = $('#ovBank'); if (!ov || ov.dataset.wired) return;
+  ov.dataset.wired = '1';
+  $('#bankClose').addEventListener('click', closeBank);
+  ov.addEventListener('click', e => { if (e.target === e.currentTarget) closeBank(); });   // a tap outside the sheet (the chip, too)
+}
+// The chip's states (D2220): the aria-label follows the bag; the pip while today's dividend waits; disabled in a battle, in a scene
+// and under the opening tour (the scene fade already hides it). Called from syncHdrAcorns, so it is cheap and writes only on change.
+function syncBankChip(){
+  const chip = $('#fcAcorns'); if (!chip) return;
+  const due = !!S && bankDue(), off = bankBlocked();
+  if (chip.classList.contains('bank-due') !== due) chip.classList.toggle('bank-due', due);
+  if (chip.disabled !== off) chip.disabled = off;
 }
 // The Seal card (BATTLE §7 Trial Hall): the Seal's sprite plus its name, over the battle stage until the battle closes.
 // Seal 1 art: Design ICONS_SEALS (5d59b34), ICON_ART.seal_fernbrook.grid, copied verbatim (gold rim, leaf on a white glint).
@@ -18968,6 +19286,13 @@ if (HC_V2_ON) {
     hc2_cab_town: { place: 'HC Cabinet seated, town', text: 'Act 2: after S1, the Bathkeeper named.', map: 'hc_gov_2', x: 1, y: 3, facing: 'down',
                     flags: KMREP.concat(['story.thr_chip_rumour', 'story.pres_cabinet_first', 'story.cab_seat', 'story.km_seat_pick=town', 'story.km_seat_filled']) },
   });
+  // WAR_MUSEUM v0.1.1 (D2305): the Muster Road Museum opens from story.hc_arrived, so HC_F reaches it; Act 4 shows the D2318 card.
+  Object.assign(DEBUG_EXTRAS, {
+    hc2_museum_door: { place: 'HC Muster Road Museum door', text: 'Charter Hill, the old corner (D2300).', map: 'hc_civic', x: 8, y: 45, facing: 'up', flags: HC_F },
+    hc2_museum: { place: 'HC Muster Road Museum', text: 'The arrival; the curator is two steps east.', map: 'hc_museum_in', x: 7, y: 14, facing: 'up', flags: HC_F },
+    hc2_museum_a4: { place: 'HC Museum, Act 4', text: 'After the call: the empty case reads the Muster Hall.', map: 'hc_museum_in', x: 7, y: 14, facing: 'up',
+                     flags: HC_F.concat(['story.act=4', 'story.hc_parade_seen', 'story.wb_cut', 'story.hc_trial_called']) },
+  });
 }
 // A checkpoint past a Hall means the match route: the Seal, plus the tag on the Glimmer path (SEALS_BOTH_PATHS §4.7).
 const DEBUG_SEALS = {
@@ -19302,7 +19627,7 @@ function fillKit(){
   debugHeal();
   for (const q of allPets()) { q.hunger = 100; q.happy = 100; q.energy = 100; }
   for (const id of ITEM_ORDER) S.bag[id] = ITEMS[id].cap;
-  S.money = Math.max(S.money | 0, 999);
+  moneyDelta('debug', Math.max(0, 999 - (S.money | 0)));
   updateHUD(); save();
   return { money: S.money | 0, bag: Object.assign({}, S.bag) };
 }
@@ -19557,7 +19882,7 @@ function bindDebugPanel(){
     debugOut((ITEMS[id] ? ITEMS[id].name : id) + ' ×' + c + '.');
   });
   $('#dbgSetAcorns').addEventListener('click', () => {
-    S.money = Math.max(0, $('#dbgAcorns').value | 0); save(); debugOut(acorns(S.money) + '.');
+    moneyDelta('debug', Math.max(0, $('#dbgAcorns').value | 0) - (S.money | 0)); save(); debugOut(acorns(S.money) + '.');
   });
   for (const id of ['dbgSpecies', 'dbgStage', 'dbgLevel', 'dbgHp']) {
     const el = $('#' + id); if (!el) continue;
@@ -19933,6 +20258,7 @@ function bindInput(){
     closeShop();
   });
   $('#ovShop').addEventListener('click', e => { if (e.target === e.currentTarget && !shopMeal) closeShop(); });
+  wireBank();   // BANK_AND_HOMES D2220, D2221: the Acorns chip and the account sheet
   $('#lookShuffle').addEventListener('click', shuffleLook);
   $('#lookDone').addEventListener('click', lookDone);
   $$('#ovWardrobe .ward-tabs button').forEach(b => b.addEventListener('click', () => {
@@ -20122,6 +20448,7 @@ function bindInput(){
       const ae = document.activeElement;
       if (ae && ae.tagName === 'BUTTON') { e.preventDefault(); return; }
     }
+    if (e.key === 'Escape' && !$('#ovBank').hidden) { e.preventDefault(); closeBank(); return; }   // D2220: Back closes the book
     if (e.key === 'Escape' && $('#ovStats') && !$('#ovStats').hidden) { if ($('#scNick') && !$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
     if (e.key === 'Escape' && $('#ovKit') && !$('#ovKit').hidden) { closeKit(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
@@ -20460,7 +20787,7 @@ function hcCityCheck(){
   return bad;
 }
 PPMinigames.bind({
-  careDay, grantItem, addBond, save, pet, sfx, toast, updateHUD, playerName, acorns, itemLabel,
+  careDay, grantItem, addBond, save, pet, sfx, toast, updateHUD, playerName, acorns, itemLabel, moneyDelta,
   BAG_FULL_MSG, fitCanvas, state: () => S,
   party: () => (S && S.party) ? S.party.slice() : [],
   spd: p => { if (!p) return 48; const lv = p.guest ? (p.level || 5) : levelOf(p); const s = statsAt((p.species || 'tide') + '/' + (p.stage || 0), lv); return s ? s.spd : 48; },
@@ -20631,7 +20958,8 @@ function boot(){
     grantItem: (id, n) => { const r = grantItem(id, n); save(); return r; },
     buyItem: id => buyItem(id),
     openShop: () => openShop(),
-    setMoney: n => { S.money = Math.max(0, n | 0); save(); return S.money; },
+    openBank: tab => openBank(tab),   // BANK_AND_HOMES: the account sheet (?debug=1 only, like every hook here)
+    setMoney: n => { moneyDelta('debug', Math.max(0, n | 0) - (S.money | 0)); save(); return S.money; },
     // ?debug=1: switch arcade/modern and the joystick without the Settings rows (those ids hide the functions).
     applyCtl: (mode, joy) => {
       const m = mode === 'arcade' ? 'arcade' : 'modern';
@@ -20875,6 +21203,7 @@ function boot(){
   api.fleetState = () => DEBUG && window.PPFleet ? PPFleet.state() : null;
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.holdLine = (id, flags) => holdLine(id, flags);   // ACT1_KEEPER_JOIN §7: the hold line the chip and map show (read only)
+  api.feedHolds = () => DEBUG ? feedHolds() : undefined;   // PHONE_FEED (D2172): the holds the NEWS and RIBBIT gates read (read only)
   api.sway = node => S ? swayOf(node) : null;           // ACT1_KEEPER_JOIN §5: a contested town's sway, -3..3 (read only)
   api.hall2 = () => HALL2_ON;   // TRIAL_HALL_FERNBROOK_MAP: is the flagged contested Hall laid over fb_hall_in this load? (read only)
   api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame

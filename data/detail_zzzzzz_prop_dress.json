@@ -1,0 +1,333 @@
+{
+ "spec": "design specs/PROP_LIBRARY.md v0.1 \u00a75 A and D (master fc7c131); placements from specs/prop_library_rooms.py HOME_ADD and FERN_ADD, with the seven one-cell nudges in the notes below.",
+ "_about": "PROP_DRESS (D2032, D2035; red, Vincent said yes to home_before_after.png and fernbrook_before_after.png on Wed Nov 4, 2026). A detail pass with the prop library art (PROP_LIBRARY_ART in sprites.js): props and walkable decals only, no grid row, no resize (D84), no reshape (D81). interiors.json and fernbrook_rooms.json stay as they are. A prop's (x, y) is its blocking cell: a 1-wide, 2-tall prop (the Keeper lamps) sits on its base cell and draws over the cell above; a wider prop is one slice <id>_n per cell. Nothing here is tappable (no lines). Named detail_zzzzzz_ so it applies after every other overlay, as the previews did. Save stays pixelpets.save.v2, v 2; nothing is written to the save.",
+ "_home_note": "One nudge from home_before_after.png: the reading chair stands at (7,4), not (7,3). At (7,3) it takes the only open side of home_bookshelf (7,2), whose lines the player taps (S3: every interactable keeps one free reach cell). One cell down it still sits by the books, beside home_table and home_plant, as a reading group.",
+ "_fernbrook_note": "Six one-cell nudges from fernbrook_before_after.png, because the preview's spots shut walkable grass off from the rest of the town, and a save standing there would load with no way out (safeSpot only moves a save off a blocked cell). The orchard stall moves right (28,21 -> 29,21), so the strip behind the stitcher's roof (row 20) opens down x 28; the sacks sit in the corner it frees (30,21 -> 30,20), the crate below the stall (30,22 -> 30,23), the barrels left (28,24 -> 27,24) so x 28 reaches the lane. The flower planter moves left (21,24 -> 20,24) so the grass behind the cart opens at (21,24); the barrow moves left (15,30 -> 14,30) so (15,29) under the wood bench opens. The first Keeper lamp's base is (19,22); its top half draws over fbh_gate_post at (19,21), as in the preview. Decals (tufts, wear, moss) are walkable and may sit on paving (PROP_LIBRARY \u00a72.2 E3); no blocking piece stands on a path tile, door, warp, trigger, sign, NPC or a tap's last open side.",
+ "slicePatch": {
+  "maps": {
+   "hm_home_in": {
+    "addObjs": [
+     {
+      "kind": "prop",
+      "id": "dress_hm_region_map",
+      "x": 3,
+      "y": 1,
+      "sprite": "pa_region_map"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_hm_clock_round",
+      "x": 5,
+      "y": 1,
+      "sprite": "pa_clock_round"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_hm_calendar",
+      "x": 7,
+      "y": 1,
+      "sprite": "pa_calendar"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_hm_dresser",
+      "x": 4,
+      "y": 2,
+      "sprite": "ph_dresser"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_hm_fern",
+      "x": 6,
+      "y": 2,
+      "sprite": "pv_fern"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_hm_pantry_sacks",
+      "x": 1,
+      "y": 3,
+      "sprite": "ph_pantry_sacks"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_hm_armchair",
+      "x": 7,
+      "y": 4,
+      "sprite": "ph_armchair"
+     }
+    ]
+   },
+   "fernbrook": {
+    "addObjs": [
+     {
+      "kind": "prop",
+      "id": "dress_fb_lamp_keeper",
+      "x": 19,
+      "y": 22,
+      "sprite": "pl_lamp_keeper"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_lamp_keeper_2",
+      "x": 16,
+      "y": 26,
+      "sprite": "pl_lamp_keeper"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_lamp_keeper_3",
+      "x": 27,
+      "y": 27,
+      "sprite": "pl_lamp_keeper"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_planter_flowers",
+      "x": 20,
+      "y": 24,
+      "sprite": "pq_planter_flowers"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_stall_orchard_s0",
+      "x": 29,
+      "y": 21,
+      "sprite": "px_stall_orchard_0"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_stall_orchard_s1",
+      "x": 30,
+      "y": 21,
+      "sprite": "px_stall_orchard_1"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_stall_orchard_s2",
+      "x": 29,
+      "y": 22,
+      "sprite": "px_stall_orchard_2"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_stall_orchard_s3",
+      "x": 30,
+      "y": 22,
+      "sprite": "px_stall_orchard_3"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_barrels",
+      "x": 27,
+      "y": 24,
+      "sprite": "pb_barrels"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_crate_stack",
+      "x": 30,
+      "y": 23,
+      "sprite": "pb_crate_stack"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_bench_wood_s0",
+      "x": 14,
+      "y": 28,
+      "sprite": "pq_bench_wood_0"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_bench_wood_s1",
+      "x": 15,
+      "y": 28,
+      "sprite": "pq_bench_wood_1"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_planter_urn",
+      "x": 20,
+      "y": 28,
+      "sprite": "pq_planter_urn"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_planter_urn_2",
+      "x": 20,
+      "y": 30,
+      "sprite": "pq_planter_urn"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_planter_flowers_2",
+      "x": 28,
+      "y": 30,
+      "sprite": "pq_planter_flowers"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_sacks",
+      "x": 30,
+      "y": 20,
+      "sprite": "pb_sacks"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_bench_stone_s0",
+      "x": 27,
+      "y": 29,
+      "sprite": "pq_bench_stone_0"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_bench_stone_s1",
+      "x": 28,
+      "y": 29,
+      "sprite": "pq_bench_stone_1"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_barrow",
+      "x": 14,
+      "y": 30,
+      "sprite": "pb_barrow"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_notice_board_s0",
+      "x": 22,
+      "y": 20,
+      "sprite": "pb_notice_board_0"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_notice_board_s1",
+      "x": 23,
+      "y": 20,
+      "sprite": "pb_notice_board_1"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_chimney_brick",
+      "x": 26,
+      "y": 21,
+      "sprite": "pr_chimney_brick"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_vane",
+      "x": 23,
+      "y": 21,
+      "sprite": "pr_vane"
+     },
+     {
+      "kind": "prop",
+      "id": "dress_fb_window_box",
+      "x": 26,
+      "y": 23,
+      "sprite": "pr_window_box"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_paving",
+      "x": 17,
+      "y": 21,
+      "sprite": "pd_tuft_paving"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_paving_2",
+      "x": 18,
+      "y": 24,
+      "sprite": "pd_tuft_paving"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_paving_3",
+      "x": 22,
+      "y": 25,
+      "sprite": "pd_tuft_paving"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_paving_4",
+      "x": 27,
+      "y": 25,
+      "sprite": "pd_tuft_paving"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_paving_5",
+      "x": 15,
+      "y": 25,
+      "sprite": "pd_tuft_paving"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_wear_patch",
+      "x": 19,
+      "y": 26,
+      "sprite": "pd_wear_patch"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_wear_patch_2",
+      "x": 16,
+      "y": 22,
+      "sprite": "pd_wear_patch"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_flowers",
+      "x": 29,
+      "y": 26,
+      "sprite": "pd_tuft_flowers"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_flowers_2",
+      "x": 14,
+      "y": 27,
+      "sprite": "pd_tuft_flowers"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_paving_6",
+      "x": 18,
+      "y": 14,
+      "sprite": "pd_tuft_paving"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_paving_7",
+      "x": 27,
+      "y": 12,
+      "sprite": "pd_tuft_paving"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_paving_8",
+      "x": 26,
+      "y": 16,
+      "sprite": "pd_tuft_paving"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_kerb_moss",
+      "x": 25,
+      "y": 17,
+      "sprite": "pd_kerb_moss"
+     },
+     {
+      "kind": "decal",
+      "id": "dress_fb_tuft_flowers_3",
+      "x": 29,
+      "y": 28,
+      "sprite": "pd_tuft_flowers"
+     }
+    ]
+   }
+  }
+ }
+}

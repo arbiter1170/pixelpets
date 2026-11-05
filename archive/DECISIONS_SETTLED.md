@@ -14,6 +14,7 @@ Vincent: "Look lock: all defaults". The rule throughout: recolour the lookalike,
 - **F6 (WARDROBE_SHOP 4a rows, built):** Captain Lumen in High Charity wears `captain` (`petra` kept, unworn); Keeper Moss and Cadet Arlo in Keeper green; Warden Teodor's trim white; Watch Saffie in the watch navy.
 - **D2278 (yellow, SETTLED):** Ken (`sm_ken`) and Sefton (`h1_cadet`) join the Keeper on-duty list; the Junior Bright wears its own Glimmer-set look `junior_bright`.
 - Also fixed: Route 4's three Keepers named the missing look `keeper_officer` and drew as villagers; they wear `officer` and join the on-duty list.
+- **D2350 (red, SETTLED by Vincent, Thu Nov 5, 2026):** the Hall 4 crew (`bg_hallcrew`: Rod Tender, Line Runner, Sky Watcher) wear a teal `t` vest instead of navy; Dad unchanged. Vincent: "Yes, to both". Built on `claude/look-fixes` on the default (Wed Nov 4); recorded here when Vincent saw the sheet (`handoff/shots/look_fixes/bg_hallcrew_390.png`, `_320.png`).
 
 ## Wed Nov 4, 2026: Vincent approves animated pixel sprites in battle (SPRITE_ANIM, recorded by Claude Code)
 

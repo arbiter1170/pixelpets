@@ -255,7 +255,7 @@ SIGNS = {
     'hc_marina': 'CANAL MARINA · Tie up gently. The buoys mark the deep water. Wave if you need a hand.',
     'hc_mall': 'TWO-FLOOR MALL · Coats upstairs, crumbs downstairs. Walk your Walkling between the benches.',
     'hc_apt': 'KEEPER APARTMENTS · Rooms for holders new to the city. The landlord keeps the spare keys.',
-    'hc_gym': 'DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome.',
+    'hc_gym': 'DOJO · Practice before the Hall next door. Stones, tides, and blooms are all welcome.',
     'hc_lantern': 'LANTERN HOUSE · Rest and recover. 5 Acorns, or what you have.',
     'hc_hall': 'EVENT HALL · Five booths, one evening. Play kindly. The prizes are small on purpose.',
 }
@@ -374,7 +374,7 @@ rooms['hc_bank_in'] = room('hc_bank_in', 'Civic Bank', 9, 7, 'charity', 'hc_bank
 ])
 rooms['hc_gym_in'] = room('hc_gym_in', 'Dojo', 9, 7, 'charity', 'hc_gym', [
     {'kind': 'npc', 'id': 'hc_sol', 'name': 'Floor Keeper Sol', 'look': 'sol', 'x': 4, 'y': 3, 'facing': 'down',
-     'lines': line_pair('No Seal here. Hall Masters keep those.', 'No trial today. The floor is just clean.')},
+     'lines': line_pair("No Seal here. The Hall next door's been shut since the war.", 'No trial today. The floor is just clean.')},
     {'kind': 'sign', 'id': 'hc_gym_note', 'x': 2, 'y': 4, 'text': 'Practice floor. No Seals. Wipe your boots.'},
 ])
 rooms['hc_lantern_in'] = room('hc_lantern_in', 'Lantern House', 9, 7, 'charity', 'hc_lantern', [
