@@ -2,6 +2,16 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-05 02:30 ET: Docs: PLAYTEST_GATE packet v0.1, the test plan for a real-save gate on every PR
+- What changed and why:
+  - New `tests/playtest_gate/PACKET.md`: a test plan only, for a second agent to build one Playwright suite that says a build is safe for playtesters with real saves. It names the seven Act 1 save kinds (`tests/fixtures/or_gate_kinds.js`) seeded as real old saves, 320 and 390, Modern controls; the load rule (no write before boot except the old-save move, a pinned list of normalizeV2 additions after the settle, zero console and page errors with no allowlist, no Firebase request); the four walk steps (the Keeper join, one town changing hands, the Kilnmouth arrival on a frozen clock, the Cabinet stair in the `hccity=2` preview) with the kinds that skip and why; hardening (two towns flipping at once, sway on old saves, the SEALS kill switch false path by a served-copy splice); manual iPhone steps for frame rate and music; a 240 s runtime budget with a split order; acceptance lines PG-1 to PG-19; eleven open questions.
+  - Every expected value was read on build 20261104-1627 by throwaway probes (deleted, not committed).
+- Files touched: `tests/playtest_gate/PACKET.md` (new), `CHANGELOG.md`.
+- Commit(s) + build id: cursor/playtest-gate-packet-8239; docs only, no build stamp (base build 20261104-1627).
+- Tests run and result (widths, checks): no suite added. The probes ran under Playwright at 390 (and the load rows at 320, once through `node tools/pp_test.js`: PASS, 14 passed, 94 s); zero console errors throughout.
+- Decisions made (colour + reasoning): none taken; Q1-Q11 in the packet carry a default and a colour for the Chief of Staff. No D or Q ids reserved.
+- Anything left unfinished: the suite itself (the builder's PR); manual checks M1-M3 for QA.
+
 ## 2026-11-04 15:18 ET: Build: Kilnmouth's empty seat folded into the cabinet build: K6, K7, R4 and the repeats (CABINET_AND_COUNCILS v0.2.2 phase 1a)
 - What changed and why:
   - #318 built Kilnmouth and K1-K5; the coordinator cleared folding 1a into claude/cabinet-v02 (PR #332) once it merged. Merged `origin/main` (9e65883) first, with a merge commit.
