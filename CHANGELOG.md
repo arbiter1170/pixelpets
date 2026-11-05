@@ -2,6 +2,17 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-05 12:00 ET: Prop dressing 2: the Kilnmouth bathhouse only, the Brightgate HQ lobby held (PROP_LIBRARY §5 B; D2033 settled, D2034 held)
+- What changed and why:
+  - Vincent said yes to the Kilnmouth bathhouse (`bath_before_after.png`, D2033, red) on Wed Nov 4 and on Thu Nov 5 ("337 bath yes / lobby B"): the bathhouse ships alone and the Brightgate HQ lobby (D2034) is HELD for a later re-look on the dark floor. #329 (prop dressing 1) is on `main`, so this extends `data/detail_zzzzzz_prop_dress.json` and `tests/prop_dress.spec.js` as they stand there.
+  - Bathhouse (`km_bath_in`): herb bundles, a round clock, a charter and a notice board round the mural on the face; two poolside buckets; a warm corner (linen shelf, stove, kiln wood) by the lamp; an east rest group (two benches and a bucket); the bath mat rug; a fern and a hot-water jug (11 → 25 pieces). One nudge, approved: the second bucket stands at (12,5), not (13,5), because #318 put `km_notches` (13,2) and the mural's tap (14,1) on a one-wide walk down x 14 that a bucket at (13,5) and the bench at (14,6) would seal.
+  - Lobby: the `bg_hq_lobby` block, its `_lobby_note`, its tests and `handoff/shots/prop_dress/lobby_*.png` were removed in a separate commit. Brightgate's own room is exactly as on `main`. D2034 stays open in `OPEN_DECISIONS.md`; D2033 is recorded as settled.
+- Files touched: `data/detail_zzzzzz_prop_dress.json` (the bathhouse, `_bath_note`), `data/mapdata.js` (generated), `tests/prop_dress.spec.js`, `tests/README.md`, `handoff/shots/prop_dress/` (bath sheets and 390 shots), `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html` and `version.json` (stamp), `tools/GAMEJS_MAP.txt`.
+- Commit(s) + build id: claude/prop-dress-2, see the PR for the build id (restamped after merging origin/main 90a253dd: #335).
+- Tests run and result (widths, checks): see the PR. `prop_dress`, `prop_library` and `kilnmouth` at 320 and 390; `brightgate` and `map_reach_sweep` at 390 (`brightgate` against the unchanged lobby).
+- Decisions made (colour + reasoning): D2033 (red) settled by Vincent, built from the preview with the bucket nudge (green engineer's call on S3, approved). D2034 (red) held by Vincent, not built. No new decision ids.
+- Anything left unfinished: D2034, the Brightgate HQ lobby, waits for a fresh preview on the built soot-gloss floor and Vincent's yes. The bathhouse floor is 66 % one tile (S4 asks 60 %), as the PROP_LIBRARY packet noted; a floor variant is Kilnmouth's, not this pass.
+
 ## 2026-11-04 08:30 ET: Prop dressing 1: Your Home and Fernbrook's south lane and plaza edge (PROP_LIBRARY §5 A and D; D2032, D2035)
 - What changed and why:
   - Vincent said yes to the PROP_LIBRARY "after" previews for Your Home (`home_before_after.png`) and Fernbrook's south lane and plaza edge (`fernbrook_before_after.png`) on Wed Nov 4 (D2032, D2035, red). This builds them with the prop library art from #319 (merged into this branch, because #319 is not on `main` yet).
