@@ -167,17 +167,20 @@ test('a test room with every prop draws in the walk view with no console errors,
 // Rule 9: a room or town places library props only in its own approved build. PROP_DRESS (D2032, D2035) is the first:
 // data/detail_zzzzzz_prop_dress.json. Any other data file that names a library prop fails here until its build lists it.
 const PLACING = ['detail_zzzzzz_prop_dress.json'];
+const CITY_SRC = 'hc_city_v2.json';   // the city preview's source; its adopted pieces are checked against ADOPTED_IN_CITY below
 test('library props are placed only by approved room builds (PROP_DRESS so far), and only as sprites', () => {
   const dataDir = path.join(ROOT, 'data');
   const ids = IDS.concat(SLICES), outside = [];
-  for (const f of fs.readdirSync(dataDir).filter(f => f.endsWith('.json') && PLACING.indexOf(f) < 0)) {
+  for (const f of fs.readdirSync(dataDir).filter(f => f.endsWith('.json') && PLACING.indexOf(f) < 0 && f !== CITY_SRC)) {
     const src = fs.readFileSync(path.join(dataDir, f), 'utf8');
     for (const id of ids) if (src.includes('"' + id + '"')) outside.push(id + ' in data/' + f);
   }
   expect(outside).toEqual([]);
   // In the city preview, only the adopted pieces (the Cabinet Room, #332; the museum, WAR_MUSEUM) appear, and every one of them does.
-  const city = fs.readFileSync(path.join(ROOT, 'data/hc_city_v2.js'), 'utf8');
-  expect(ids.filter(id => city.includes('"' + id + '"')).sort()).toEqual(ADOPTED_IN_CITY.slice().sort());
+  for (const f of ['hc_city_v2.js', CITY_SRC]) {
+    const city = fs.readFileSync(path.join(ROOT, 'data', f), 'utf8');
+    expect(ids.filter(id => city.includes('"' + id + '"')).sort(), f).toEqual(ADOPTED_IN_CITY.slice().sort());
+  }
   for (const f of PLACING) {
     const used = [];
     JSON.stringify(JSON.parse(fs.readFileSync(path.join(dataDir, f), 'utf8')), (k, v) => { if (typeof v === 'string' && ids.indexOf(v) >= 0) used.push([k, v]); return v; });
