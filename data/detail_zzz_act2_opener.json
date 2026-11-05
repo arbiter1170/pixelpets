@@ -2,7 +2,7 @@
  "spec": "GOVERNOR_MEETING v0.2.1 (design repo, private; D1469-D1475): Act 2 opens with Warden Ilse's call, the posting at the Lodge and the optional report after the Governor meeting. The meeting itself is hc_gov_meet in tools/build_hc_city.py.",
  "_about": "Ours, not a design copy. Applied after detail_zz_keeper_join.json (the file name sorts after it), so the Lodge keys below land after the join packet's old-save talk, the recall and the plain Cadet's send-off (linesBefore anchors on the enrolment key). Save stays pixelpets.save.v2, v 2; every flag here is a new additive story.* key. No @glimmer variant of these scenes exists (D1543, D1473).",
  "_placeholders": {
-  "note": "PLACEHOLDER copy (Story/June to replace; GOVERNOR_MEETING §4 and §6.1 lines, OPEN_DECISIONS rows D1469-D1475). Every line in this file is a placeholder.",
+  "note": "PLACEHOLDER copy (Story/June to replace; GOVERNOR_MEETING §4 and §6.1 lines, OPEN_DECISIONS rows D1469-D1475). Every line in this file is a placeholder except Warden Ilse's a2_ilse_call, which Story signed (STORY_LINES D2139).",
   "paths": ["scenes", "objPatch"]
  },
  "_route_hook": "ROUTE_TO_GOVERNOR §6 (D1854, D1881, settled Nov 4, 2026): the first trip after the posting is on foot. The posting's line 4 is re-voiced to the walk; the quest rows gov_walk and gov_walk2 (quests.js) sit between gov_post and gov_meet; the coach hold, Porter Bram and Route 4 live in data/detail_zzzz_route4.json.",

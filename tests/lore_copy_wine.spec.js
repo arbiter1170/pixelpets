@@ -1,14 +1,14 @@
 /* LORE_COPY_WINE (B-7, B-8; Vincent, Nov 3, 2026). Player text only, plus one cast tag.
    D1434: Glimmerwell supporters wear wine vests, so no player line says "mint vest" (or mint coat / collar), and no
-   Glimmerwell banner line names a colour. D1448: "Partner Day" is only the Keepers' starter day (Rook's Glimmerwell line
-   says "Sign-up day", PLACEHOLDER) and the Glimmer tag is a lanyard, never a "cord". D1437: Hall Masters are neutral:
+   Glimmerwell banner line names a colour. D1448: "Partner Day" is only the Keepers' starter day (Rook's Glimmerwell teaser
+   names it as the day he was late to, STORY_LINES D2136; no other Glimmer line says it) and the Glimmer tag is a lanyard, never a "cord". D1437: Hall Masters are neutral:
    no Keepers tag on Fen, Hale or Marisol, and "Master" still shows first. Save stays pixelpets.save.v2, v 2, unchanged. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
 
 trackErrors(test, expect);
 
-const ROOK = 'Yeah, I\'m in too. Since spring. Sign-up day, the jingle, the sticker: all them.';
+const ROOK = 'Yeah, I\'m in too. Since spring. Late on Partner Day, the jingle, the wine sticker: that was all them.';   // D2136
 const LANYARD = 'Quarter closed. Bright Tier 3 Lanyard. Three marks, one lanyard.';
 const CALLOWAY = 'If you see Rook, tell him supper keeps. And that his friend in a wine vest called again.';
 
@@ -105,7 +105,7 @@ test('D1434: no player line in data or on the map says mint vest, mint coat or m
   sameSave(before, await stored(page));
 });
 
-test('D1448: Rook says Sign-up day on the Glimmerwell path; the Tier 3 line says lanyard; no player cord for the tag', async ({ page }) => {
+test('D1448, D2136: Rook was late on Partner Day on the Glimmerwell path too; the Tier 3 line says lanyard; no player cord for the tag', async ({ page }) => {
   await boot(page);
   const before = await stored(page);
   const r = await page.evaluate(() => {
@@ -132,7 +132,7 @@ test('D1448: Rook says Sign-up day on the Glimmerwell path; the Tier 3 line says
     };
   });
   expect(r.teaser).toContain(ROOK);
-  expect(r.partner).toEqual([]);
+  expect(r.partner).toEqual([ROOK]);   // D2136: only Rook's teaser, the Keepers' starter day he was late to
   expect(r.lanyard).toBe(true);
   expect(r.cords).toEqual([]);
   await page.evaluate(() => PixelPets.setSide('glimmer'));

@@ -5,7 +5,7 @@
 const { test, expect } = require('@playwright/test');
 const { webkit } = require('playwright');
 const fs = require('fs');
-const { starterSave, installSave, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, gotoGame, artifactsDir, openSettings } = require('./helpers');
 const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
@@ -71,7 +71,7 @@ async function bootNew(browser, save, w){
   return page;
 }
 async function enterCode(page, code){
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setRoomCode').click();
   await page.locator('#roomCodeInput').fill(code || 'AMB-4RQ');
   await page.locator('#roomJoin').click();
@@ -214,7 +214,7 @@ test.describe('B1', () => {
     await b.locator('#holderCard button', { hasText: 'CLOSE' }).click();
     await friends(aUid, bUid);
     await b.evaluate(() => window.PPNet.debug().advancePolls());
-    await b.locator('#settingsBtn').click();
+    await openSettings(b);
     await b.locator('.net-pill', { hasText: 'SOLO' }).click();
     await closeSettings(b);
     expect(await b.locator('button', { hasText: 'WALK TOGETHER' }).count()).toBe(0);

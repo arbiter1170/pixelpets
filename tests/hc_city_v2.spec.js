@@ -244,11 +244,13 @@ test('§5.3 gates: the Governor\'s House opens on the Keepers path in Act 2, the
       await endScene(page);
       expect((await where(page)).map, tag).toBe('hc_civic');
     }
-    // the stair to floor 3 (a warp with a need: solid until it holds)
+    // the stair up (a warp with a need: solid until it holds). CABINET 1b: it lands on floor 2, the Cabinet Room, which opens on
+    // GOV3 as well as on the seat's key, so these Act 5 saves (no cabinet flags) still reach floor 3 through it (cabinet.spec.js C-T2).
     const up = await page.evaluate(() => { PixelPets.goto('hc_gov_1', 2, 2, 'left'); return PixelPets.walkStep('left'); });
     await settle(page);
+    if (await page.evaluate(() => !!PixelPets.scene)) await endScene(page);   // a shut stair says its deny on the bump
     const at = await where(page);
-    expect(at.map === 'hc_gov_3', tag).toBe(c.top);
+    expect(at.map === 'hc_gov_2', tag).toBe(c.top);
     // Block News House: open on both paths
     await page.evaluate(() => PixelPets.goto('hc_exchange', 52, 13, 'up'));
     await settle(page);
@@ -332,10 +334,12 @@ test('D1426, D1439: Governor Merriden is Act 2 and civil (cast faction none); th
   expect(door.deny).toBe('By appointment.');
   const gov = gov1.find(o => o.id === 'hc_governor');
   expect(gov.when).toEqual(['story.act>=2']);
-  expect(gov.lines.else).toContain('Act 2');
+  expect(gov.lines.else).toBe("Without an appointment? I'm afraid even I need one of those, most days.");   // STORY_LINES D2138
   expect(gov.lines['story.gov_posted & !story.hc_gov_met']).toBe('@hc_gov_meet');   // GOVERNOR_MEETING §5
   expect(gov.lines.else).not.toContain('Act 5');
-  expect(gov1.find(o => o.id === 'hc_gov_up').need).toBe('!story.side=glimmer & story.act>=5 & story.hc_gov_met');
+  // CABINET 1b: floor 1's stair goes to the Cabinet Room on the seat's key or GOV3; GOV3 moves up to floor 2's stair to floor 3
+  expect(gov1.find(o => o.id === 'hc_gov_up').need).toBe('!story.side=glimmer & story.thr_chip_rumour & story.hc_parade_seen | !story.side=glimmer & story.act>=5 & story.hc_gov_met');
+  expect(DATA.rooms.hc_gov_2.objs.find(o => o.id === 'hc_gov2_up').need).toBe('!story.side=glimmer & story.act>=5 & story.hc_gov_met');
   expect(gov1.find(o => o.id === 'hc_chute_mouth')).toBeTruthy();   // HB12 sits on floor 1, behind the Act 2 door
   expect(gov3.find(o => o.id === 'hc_president')).toBeTruthy();
   const cast = Object.fromEntries(DATA.cast.map(e => [e.name, e]));

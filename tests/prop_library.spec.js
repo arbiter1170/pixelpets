@@ -1,5 +1,5 @@
-/* PROP_LIBRARY v0.1: the shared prop art (sprites.js PROP_LIBRARY_ART). Art only: no map places these props yet,
-   so nothing a player sees changes. Widths are the Playwright projects (320, 375, 390); every boot is Modern controls.
+/* PROP_LIBRARY v0.1: the shared prop art (sprites.js PROP_LIBRARY_ART). The library itself is art only; maps place its
+   props only in approved room builds (rule 9), the first being PROP_DRESS (D2032, D2035; tests/prop_dress.spec.js). Widths are the Playwright projects (320, 375, 390); every boot is Modern controls.
    Save stays pixelpets.save.v2 with v 2 and no new field. */
 const fs = require('fs');
 const path = require('path');
@@ -54,14 +54,23 @@ test('the library block is well formed: 60+ props, sizes match cells, PAL keys o
   expect(bad).toEqual([]);
 });
 
+// CABINET_AND_COUNCILS 1b (#332; Vincent approved the Cabinet Room previews, Wed Nov 4, 2026): the Cabinet Room hc_gov_2 is the
+// first room to adopt library pieces. They are placed in the city preview data (data/hc_city_v2.js) only, and only these.
+// WAR_MUSEUM v0.1.1 (D2301; Vincent approved the museum previews, Thu Nov 5, 2026) is the second: the Muster Road Museum hc_museum_in
+// adds seven more (pc_records, pc_flag_stand and pv_fern it shares with the Cabinet Room).
+const ADOPTED_IN_CITY = ['pc_rail', 'pc_rail_gate', 'pc_records', 'pc_flag_stand', 'pc_ballot_box', 'pn_clock_tall', 'pv_fern',
+  'pa_notice_pins', 'pa_clock_round', 'pc_clerk_desk_0', 'pc_clerk_desk_1',
+  'pc_lectern', 'pg_planter', 'pg_display_case', 'pg_kiosk', 'pg_banner', 'pv_potted_tree', 'pq_bench_wood_0', 'pq_bench_wood_1'];
+
 test('no library id or slice id collides with another name in the repo', () => {
   const files = ['game.js', 'keeper.js', 'glimmer_fleet.js', 'battle_bg.js', 'quests.js', 'data/mapdata.js', 'data/hc_city_v2.js', 'data/nav_art.js']
-    .map(f => [f, fs.readFileSync(path.join(ROOT, f), 'utf8')]);
+    // a placement names its art in a "sprite" field (PROP_DRESS); that is a use of the id, not a second name for it
+    .map(f => [f, fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/"sprite":\s*"[^"]*"/g, '"sprite":""')]);
   files.push(['sprites.js (outside the library)', SPRITES.slice(0, START) + SPRITES.slice(END)]);
   const hits = [];
   for (const id of IDS.concat(SLICES)) {
     const re = new RegExp('[\'"`.]' + id + '[\'"`:\\s,)\\]]');
-    for (const [f, src] of files) if (re.test(src)) hits.push(id + ' in ' + f);
+    for (const [f, src] of files) if (re.test(src) && !(f === 'data/hc_city_v2.js' && ADOPTED_IN_CITY.includes(id))) hits.push(id + ' in ' + f);
   }
   expect(hits).toEqual([]);
   expect(new Set(IDS.concat(SLICES)).size).toBe(IDS.length + SLICES.length);
@@ -155,8 +164,27 @@ test('a test room with every prop draws in the walk view with no console errors,
   if (saved) expect(saved.v).toBe(2);
 });
 
-test('main maps place no library prop yet (art only; rooms adopt it in their own builds)', () => {
-  const md = fs.readFileSync(path.join(ROOT, 'data/mapdata.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'data/hc_city_v2.js'), 'utf8');
-  const used = IDS.concat(SLICES).filter(id => md.includes('"' + id + '"'));
-  expect(used).toEqual([]);
+// Rule 9: a room or town places library props only in its own approved build. PROP_DRESS (D2032, D2035) is the first:
+// data/detail_zzzzzz_prop_dress.json. Any other data file that names a library prop fails here until its build lists it.
+const PLACING = ['detail_zzzzzz_prop_dress.json'];
+const CITY_SRC = 'hc_city_v2.json';   // the city preview's source; its adopted pieces are checked against ADOPTED_IN_CITY below
+test('library props are placed only by approved room builds (PROP_DRESS so far), and only as sprites', () => {
+  const dataDir = path.join(ROOT, 'data');
+  const ids = IDS.concat(SLICES), outside = [];
+  for (const f of fs.readdirSync(dataDir).filter(f => f.endsWith('.json') && PLACING.indexOf(f) < 0 && f !== CITY_SRC)) {
+    const src = fs.readFileSync(path.join(dataDir, f), 'utf8');
+    for (const id of ids) if (src.includes('"' + id + '"')) outside.push(id + ' in data/' + f);
+  }
+  expect(outside).toEqual([]);
+  // In the city preview, only the adopted pieces (the Cabinet Room, #332; the museum, WAR_MUSEUM) appear, and every one of them does.
+  for (const f of ['hc_city_v2.js', CITY_SRC]) {
+    const city = fs.readFileSync(path.join(ROOT, 'data', f), 'utf8');
+    expect(ids.filter(id => city.includes('"' + id + '"')).sort(), f).toEqual(ADOPTED_IN_CITY.slice().sort());
+  }
+  for (const f of PLACING) {
+    const used = [];
+    JSON.stringify(JSON.parse(fs.readFileSync(path.join(dataDir, f), 'utf8')), (k, v) => { if (typeof v === 'string' && ids.indexOf(v) >= 0) used.push([k, v]); return v; });
+    expect(used.length, f).toBeGreaterThan(0);
+    expect(used.filter(([k]) => k !== 'sprite'), f + ': a library id only ever appears as a sprite').toEqual([]);
+  }
 });

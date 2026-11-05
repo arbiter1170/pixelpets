@@ -40,7 +40,7 @@ const WANT = {
   class_done: { quest: 'hall1_holders', door: true, pick: false, tally: true, battle: false, fenOrchard: false, fenHall: true, hold: 'split', contest: true },
   seal_new: { quest: 'pick', door: true, pick: true, tally: true, battle: false, fenOrchard: false, fenHall: true, hold: 'split', contest: true },
 };
-const LINES = { shut: "Shut by Keeper order. Master Fen's Hall stays closed for now.", latched: 'The Hall is shut for now. Tobin could use a hand with his crates first.', away: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" };
+const LINES = { shut: "Shut by order of High Charity. Master Fen's Hall stays closed for now.", latched: 'The Hall is shut for now. Tobin could use a hand with his crates first.', away: "The Hall is shut. A note on the door: 'Gone to see the Keepers. Back soon. Mind the roots. — Fen'" };
 
 function kindSave(kind) {
   const fx = KINDS[kind], s = starterSave();

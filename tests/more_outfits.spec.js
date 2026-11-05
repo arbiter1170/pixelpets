@@ -3,7 +3,7 @@
    pixelpets.save.v2 with v 2, and player.look.outfit is an existing field (a new id is just a new value).
    Phone widths come from the Playwright projects (320, 375, 390). */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, newPlayerPicker } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, newPlayerPicker, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -145,7 +145,7 @@ test('every outfit button sits fully above DONE in WHO ARE YOU? and CHANGE LOOK'
   await installSave(ctx, starterSave(), { quietDay: true });
   await gotoGame(p2);
   await p2.evaluate(() => PixelPets.showTab('walk'));
-  await p2.locator('#settingsBtn').click();
+  await openSettings(p2);
   await p2.locator('#setLook').click();
   await expect(p2.locator('#lookTitle')).toHaveText('CHANGE LOOK');
   const change = await outfitsAboveDone(p2);
@@ -160,7 +160,7 @@ test('every outfit button sits fully above DONE in WHO ARE YOU? and CHANGE LOOK'
 test('each new outfit saves through CHANGE LOOK; the save stays v2', async ({ page }) => {
   await boot(page);
   for (const id of NEW) {
-    await page.locator('#settingsBtn').click();
+    await openSettings(page);
     await page.locator('#setLook').click();
     await page.waitForSelector('#ovLook:not([hidden])');
     await page.locator('#lookOutfit button[data-opt="' + id + '"]').click();

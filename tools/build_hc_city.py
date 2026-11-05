@@ -24,7 +24,7 @@ OUT = os.path.join(ROOT, 'data', 'hc_city_v2.json')
 WALK = set('gPCZADsf')
 SOLID = set('TRHUMwF')
 ROAD = set('CZ')            # carriageway and crosswalk: walk tiles nothing may stand on (layout §4.1)
-RWALK = set('.=m')          # room floor, rug, mat
+RWALK = set('.=m-+*,:;~')   # room floor, rug, mat; - + * are the Cabinet Room's runner (CABINET 1b); , : ; ~ the museum's (WAR_MUSEUM)
 fails, notes = [], []
 
 def fail(msg): fails.append(msg)
@@ -75,14 +75,14 @@ TXT = {
     'hb15_door_seven': "Chained. Ask the duty Keeper.",
     'hb15_keeper': "Shut since the war, holder. Come back with seven on the roll.",
     'gov_door': "By appointment.",
-    'gov_line': "[PLACEHOLDER: Governor Merriden's Act 2 lines are Story's.]",
-    # GOVERNOR_MEETING v0.2.1 §5 (D1471, D1472, D1473), all PLACEHOLDER until Story signs them
+    'gov_line': "Without an appointment? I'm afraid even I need one of those, most days.",
+    # GOVERNOR_MEETING v0.2.1 §5 (D1471, D1472, D1473); signed by Story, STORY_LINES D2138 (gov_line and gov_m6 re-voiced)
     'gov_desk': "The Governor will see you, Cadet. Go on through.",
     'gov_m2': "Warden Ilse's new Cadet. Don't sit. You won't be here long enough to need a chair.",
     'gov_m3': "I've work for you. Kilnmouth's springs have gone cold this season. Nobody there can tell me why.",
     'gov_m4': "A Calm Tower went up there the same season. Its permit is in order. I checked it myself.",
     'gov_m5': "And their council has an empty seat. Everyone has a name for it. I'd like the town's.",
-    'gov_m6': "Go and look. Listen more than you talk. Then come back and tell me what you found.",
+    'gov_m6': "Go and look. Listen more than you talk. Then come back and tell me what you found, in plain words.",
     'gov_m7a': "You know where Fernbrook's Seals went.",
     'gov_tell': "Tell him about the ledger",
     'gov_keep': "Keep it to myself",
@@ -100,6 +100,27 @@ TXT = {
     'hb14_gate': "Sealed. The tide decides.",                  # §11 HB14, Design's stub for Story (PLACEHOLDER)
     'news_bill': 'A Block News bill. BLOCK NEWS · Who. Where. What changed.',
     'apt_b': None,                                              # kept text
+    # CABINET_AND_COUNCILS v0.2.2 phase 1b. thr_cabinet_lead is CHIP_HINTS' four SIGNED lines (D1470: unchanged). The rest is the
+    # packet's v0.1 words, which Story's CABINET_LINES keeps as written (D2152; settled by Vincent, Wed Nov 4, 2026, all defaults).
+    'lead_1': "Sit a moment, {name}. A new report on the lamps came in this morning. Half of it was gone by noon.",
+    'lead_2': "People tell us their Walklings come home quiet. A week later, the same people won't say a word.",
+    'lead_3': "The Governor wants you at the cabinet table in High Charity. Take the seat. Keep your ears open.",
+    'lead_4': "Every case on those lamps reaches the Court empty. Ask yourself who empties them.",
+    'cab_deny': "Cabinet in session. Members only.",               # L1
+    'cab_plate': "A brass plate: FOR A HOLDER OF THE ROLL.",        # L2
+    'cab_board_6': "KILNMOUTH: 6 OF 7",                             # B1 (CABINET §4.1 T2)
+    'cab_board_7': "KILNMOUTH: 7 OF 7",                             # B2
+    's1_ask': "First matter. Kilnmouth's empty seat. Our Cadet went and listened. Cadet, whose name?",
+    's1_town': "The Bathkeeper", 's1_cmdr': "The Commander's pick", 's1_co': "The works foreman", 's1_wait': "Not yet",
+    's1_3a': "The town's own name. Well. Order will follow, I'm sure.",
+    's1_3b': "A Keeper's man. Good. Order first.",
+    's1_3c': "A sensible name. Kilnmouth will be warm by spring.",
+    's1_3d': "Then go back and listen. The matter waits for you.",
+    's1_4': "Then it's confirmed. Take the letter to the Reeve, Cadet.",
+    # CABINET §3.5 K6, the report-back (CABINET_LINES K6.1-K6.3, KEEP; settled by Vincent Wed Nov 4 with the rest of that file)
+    'k6_1': "In default of the council? I stamped that. It was in order. It was also a tie.",
+    'k6_2': "Two names were on my desk before you left. One came down from upstairs.",
+    'k6_3': "A seat is confirmed at the cabinet, Cadet, not in an office. Bring the name to the table.",
     # §8.2 scheduled townsfolk: the layout gives roles, not lines; Story writes them (PLACEHOLDER)
     'sch_student': "[PLACEHOLDER: a College student's line; Story writes it.]",
     'sch_clerk': "[PLACEHOLDER: the Exchange clerk's line; Story writes it.]",
@@ -107,6 +128,74 @@ TXT = {
     'sch_shopper': "[PLACEHOLDER: the shopper's line; Story writes it.]",
     'sch_office': "[PLACEHOLDER: the office worker's line; Story writes it.]",
 }
+# WAR_MUSEUM v0.1.1 (design specs/WAR_MUSEUM.md, settled by Vincent Thu Nov 5, 2026, all defaults: D2300-D2318). Every line is the
+# packet's PLACEHOLDER copy for Story, word for word (§2, §3.2, §7); names stay PLACEHOLDER (D2302). Lines marked ENG are the
+# engineer's (the packet wrote none for that spot), listed in OPEN_DECISIONS (D2307-build). All inside §3.3's limits (D2317).
+TXT.update({
+    'wm_sign': "MUSTER ROAD MUSEUM. Open every day. Free.",
+    'wm_runner': "Walk the middle. Both sides are yours.",
+    # the curator (§7.1) and the Stamp Trail (§2.1)
+    'wm_cur_hello': "Welcome, colleague. Both halves are open, both are free. I wrote the cards on this side.",
+    'wm_cur_wing': "The Wing's cards come printed from Brightgate. I'm allowed to dust them.",
+    'wm_cur_stone': "Carried. Moved. Carried. I keep changing that card. The Stone doesn't mind.",
+    'wm_cur_case': "It isn't lost. It's kept. Those are different words, colleague.",
+    'wm_cur_switch': "Wine vest or green pin, the cases don't check. Mind the glass.",
+    'wm_cur_seen': "You've seen the page, then. Don't tell me what's on it. I like my case empty.",
+    'wm_cur_best': "My best curator's back. Touch nothing. Look at everything.",
+    'wm_cur_plates': "Old script. We can't read it, so we frame it.",
+    'wm_hook': "Every visitor gets a card. Five cases, five stamps. Grown-ups are allowed.",
+    'wm_ask': "Stamp the card at the lantern wall, the map case, the Scout's lamp, the drum, and the empty case.",
+    'wm_snag': "That one's a trick. There's no stamp. You fill it yourself. What goes in it?",
+    'wm_pick_lantern': "A lantern", 'wm_pick_name': "A name", 'wm_pick_empty': "Leave it empty",
+    'wm_res_lantern': "Bright answer.", 'wm_res_name': "Whose, I wonder.", 'wm_res_empty': "Ha. You'd make a good curator.",
+    'wm_journal': "Stamped the whole card at the Muster Road Museum.",
+    'wm_stamped': "Card stamped.",                                                  # ENG toast
+    'wm_got_lamp': "{name} got an old oil lamp keepsake.",                         # ENG (the reward's own line)
+    # the donation lantern and the plaque (§2.2)
+    'wm_give': "Gifts keep the lamps lit. Give?", 'wm_give_10': "10 Acorns", 'wm_give_50': "50 Acorns", 'wm_give_no': "Not now",
+    'wm_short': "Not enough Acorns.",                                               # ENG (the game's own short-purse words)
+    'wm_friends_toast': "Your name is on the Friends board.",
+    'wm_plaque_ask': "[PLACEHOLDER] A plaque, then. Which case gets your plate?",   # ENG prompt; the labels are the packet's
+    'wm_plaque_l': "The lanterns", 'wm_plaque_d': "The drum", 'wm_plaque_t': "The letters",
+    'wm_lit_by': "A small plate: Lit by {name}.",
+    # the docent (§7.2) and the bench regular (§7.3)
+    'wm_doc_hello': "Welcome to the Bright Years Wing! Hard years, new partners, brighter by nature!",
+    'wm_doc_any': "The old side has carts. We have lamps. Which would you rather read by?",
+    'wm_doc_switch': "Associate! You'll love the kiosk. Same slides as the lobby. Have a bright day!",
+    'wm_doc_drum': "We restored it! Partnership is looking after old things. Kindly.",
+    'wm_eld_a': "I come for the letters. I don't read them. I just sit with them.",
+    'wm_eld_b': "Lanterns that heavy, you don't pull alone.",
+    'wm_eld_late': "They walked home. Some of us walked with them.",
+    # the exhibits (§3.2): label (the card or plate), then what a tap adds
+    'k1_label': "Lanterns of the war years, lent by the towns.", 'k1_tap': "Dented, every one. One has never been lit.",
+    'k1_pet': "{pet} looks at the dark one.",
+    'k2_label': "A Keeper notice, from the war.", 'k2_tap': "WALK BESIDE THEM, NOT AHEAD. A lot of blank paper under it.",
+    'k2_after': "One line, and room for one more.",
+    'k3_label': "THE LANTERN MUSTER. Chapter four.", 'k3_tap': "Chapter four ends mid-page.",
+    'k4_label': "Rubbings of the Hall plates, lent by holders.", 'k4_tap': "Old script. Nobody here can read it.",
+    'k4_eighth': "The eighth plate is under the Muster Hall, they say.",
+    'k5_label': "THE ROLL. First page.", 'k5_card': "Kept by the Warden of the Roll. Not shown here.",
+    'k5_card_after': "On view in the Muster Hall.", 'k5_tap': "An empty case, dusted every day.",
+    'k6_label': "The Duskwater Stone, carried to safety.", 'k6_tally': "ONE STONE. WHOLE.",
+    'k6_tap': "The road runs to the capital. Some towns on the map are inked over.", 'k6_after': "It went where the roll was kept.",
+    'k7_label': "Walklings served.", 'k7_tap': "A lantern cart. The hook at the front is empty.", 'k7_cut': "Hook, no strap.",
+    'k7_after': "They walked home in these.",
+    'k8_label': "The lanterns stayed lit on every road.", 'k8_tap': "A coach bell, tied to the lantern's foot.",
+    'k9_label': "Letters home.", 'k9_tap': "Most say the weather. One says: he's eating well, don't worry.",
+    'k9_regular': "Somebody reads these every day.",
+    'k10_label': "A Keeper Scout's lamp.", 'k10_tap': "Old Scouts didn't write much down. They said things twice.",
+    'k11_brass': "The first Picking Day drum. The peace's gift.", 'k11_new': "Restored with the kind support of Glimmerwell Co.",
+    'k11_tap': "The drum turns. Nothing falls out.", 'k11_parade': "A card pinned on: PICKING DAY SUSPENDED. BY ORDER.",
+    'k11_after': "The one Walkling nobody could call.",
+    'k12_label': "Kids' corner. Stamps are free.", 'k12_tap': "Stamp the card. Five cases, five stamps.",
+    'k12_easel': "Drawings by visiting kids. One Walkling has a lantern tail.",
+    'k13_friends': "FRIENDS OF THE MUSEUM.", 'k13_friends_named': "FRIENDS OF THE MUSEUM. {name}.",
+    'w1_label': "The Bright Years. New light for every roof.", 'w1_tap': "Partnership started in hard years. The years aren't named.",
+    'w2_label': "Our first lamp. It lit the hard years.", 'w2_tap': "It looks newer than the cart next door.",
+    'w3_label': "Touch to learn more!", 'w3_s1': "Hard years.", 'w3_s2': "New partners.", 'w3_s3': "Brighter by nature! Have a bright day!",
+    'w3_next': "Next", 'w3_leave': "Leave",
+    'wm_sponsor': "THE BRIGHT YEARS WING. Given by Glimmerwell Co.",
+})
 # District signposts one tile inside each mouth (names are placeholders until Story's name check, D1277).
 DISTRICT = {'highcharity': 'LANTERN SQUARE', 'hc_civic': 'CHARTER HILL', 'hc_exchange': 'EXCHANGE QUARTER',
             'hc_waterfront': 'LANTERN QUAY', 'hc_college': 'COLLEGE GREEN'}
@@ -121,7 +210,7 @@ LOOKS = {
     'hc_resident':  {'skin': '1', 'hair': 'curls', 'hairCol': 'p', 'outfit': 'sweater', 'outfitCol': 'r', 'accent': 'y'},
     'hc_visitor':   {'skin': '6', 'hair': 'short', 'hairCol': 'd', 'outfit': 'raincoat', 'outfitCol': 'y', 'accent': 'w'},
     'hc_governor':  {'skin': '4', 'hair': 'short', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y'},
-    'hc_president': {'skin': '3', 'hair': 'short', 'hairCol': 'w', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y', 'accessory': 'sash'},   # PLACEHOLDER (LH-2 bust is open)
+    'hc_president': {'skin': '3', 'hair': 'short', 'hairCol': 'w', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y', 'accessory': 'sash'},   # RETIRED (LOOK_LOCK D2275): nobody wears it; the President is `president`. Kept, never removed
     'hc_aide':      {'skin': '2', 'hair': 'bun', 'hairCol': 'd', 'outfit': 'jacket', 'outfitCol': 'g', 'accent': 'w'},
     # §8.2 scheduled townsfolk (PLACEHOLDER looks from the kit's parts)
     'hc_student_a': {'skin': '3', 'hair': 'curls', 'hairCol': 'd', 'outfit': 'sweater', 'outfitCol': 'r', 'accent': 'w', 'accessory': 'glasses'},
@@ -129,11 +218,17 @@ LOOKS = {
     'hc_clerk_x':   {'skin': '1', 'hair': 'short', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'm', 'accent': 'w'},
     'hc_shopper':   {'skin': '6', 'hair': 'bob', 'hairCol': 'd', 'outfit': 'raincoat', 'outfitCol': 't', 'accent': 'y'},
     'hc_officeworker': {'skin': '2', 'hair': 'short', 'hairCol': 'h', 'outfit': 'jacket', 'outfitCol': 'm', 'accent': 'w'},
+    # WAR_MUSEUM v0.1.1 §7 (D2315): the three looks from the kit's parts, checked by tests/look_lock.spec.js. The curator is a
+    # civilian (no Keeper green, no pin); the docent wears Glimmerwell's staff set (rule 11: wine top, soot trim, the lanyard).
+    'hc_curator':   {'skin': '2', 'hair': 'long', 'hairCol': '5', 'outfit': 'cardigan', 'outfitCol': 'E', 'accent': 'C', 'accessory': 'glasses'},
+    'hc_docent':    {'skin': '2', 'hair': 'pony', 'hairCol': 'A', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N', 'accessory': 'lanyard'},
+    'hc_bench_regular': {'skin': '4', 'hair': 'buzz', 'hairCol': 'w', 'outfit': 'coat', 'outfitCol': 'I', 'accent': 'F', 'accessory': 'cap'},
 }
 SPEAKERS = {'Child': 'hc_child', 'Parent': 'hc_parent', 'Old holder': 'hc_oldholder', 'Dockhand': 'hc_dockhand',
-            'Editor': 'hc_editor', 'Keeper reader': 'clerk', 'The President': 'hc_president', 'Aide': 'hc_aide',
+            'Editor': 'hc_editor', 'Keeper reader': 'clerk', 'The President': 'president', 'Aide': 'hc_aide',
             'Commander': 'captain', 'Duty Keeper': 'officer', 'Governor Merriden': 'hc_governor', 'Visitor': 'hc_visitor',
-            'Resident': 'hc_resident'}
+            'Resident': 'hc_resident', 'Captain Lumen': 'captain',
+            'Curator Edda Lorne': 'hc_curator', 'Associate Tansy': 'hc_docent', 'Bench regular': 'hc_bench_regular'}   # WAR_MUSEUM §7
 
 # ---------- helpers ----------
 def nbrs(x, y, w, h):
@@ -692,7 +787,8 @@ prop('highcharity', 'hc2_sq_news_poster', 37, 30, 'poster_stand', r=3, lines={'e
 for i, x in enumerate((17, 29)): prop('hc_college', f'hc2_college_bike_{i}', x, 12, 'bike', r=2)
 
 # Parks are spotless: clipped hedges and flowerbeds on open grass, a few per chunk, never on a way through.
-# The Court's old corner (v0.3, D1354; the layout's §7.6) stays plain grass: nothing is placed there.
+# The Court's old corner (v0.3, D1354; the layout's §7.6) stays plain grass: no planting is placed there. WAR_MUSEUM (D2300) builds
+# the museum on it, below, after every other placement on the hill.
 VACANT = {'hc_civic': [(2, 38, 14, 44)]}
 def vacant(cid, x, y): return any(x0 <= x <= x1 and y0 <= y <= y1 for x0, y0, x1, y1 in VACANT.get(cid, []))
 for cid, c in CHUNKS.items():
@@ -747,6 +843,50 @@ else:
 hc_parade.use_rotor_frames(PARADE_ART is not None)
 SC.update(PARADE['scenes'])
 LOOKS.update(PARADE['looks'])
+
+# ---------- WAR_MUSEUM v0.1.1: the Muster Road Museum on Charter Hill (D2300, D2301, D2305, D2314) ----------
+# Design specs/WAR_MUSEUM.md §1.2, §4.3, §5.2 (settled by Vincent Thu Nov 5, 2026, all defaults; rule 9 previews approved). D2300
+# lifts HIGH_CHARITY_LAYOUT §7.6's "nothing new is placed there" for the museum only: roof rows 38-41 and facade rows 42-43 on
+# cells 2-14, a paved forecourt on row 44, door 8,44, facing south onto the sidewalk. E1 Banner Front as previewed (D2301): a
+# green shingle gable on pale ashlar, arched lit windows, J trim, a lit finial, the cut-stone lintel, two banners (the Wing's is
+# the only wine on the front), the forecourt pieces and the boot-and-paw print trail on row 45 (decals, walkable). Rule 10 (D2314):
+# the facade cells beside the door (7,43 and 9,43) stay bare, there is no badge plate, and the town map gives it the plain door
+# mark (the door is not in TOWN_DOOR_ART). Opens from story.hc_arrived (D2305), behind HC_MUSEUM, after HC phase 1. Built here,
+# after every other placement on the hill, so no earlier piece or id moves; only the corner's round planter (15,41) goes (§5.2).
+HC_MUSEUM = True
+MUSEUM_BOX, MUSEUM_DOOR = (2, 38, 14, 43), (8, 44)
+if HC_MUSEUM:
+    M = CHUNKS['hc_civic']
+    for y in range(MUSEUM_BOX[1], MUSEUM_BOX[3] + 2):          # 38-41 roof, 42-43 facade, 44 the forecourt
+        for x in range(MUSEUM_BOX[0], MUSEUM_BOX[2] + 1):
+            if M.ch(x, y) != 'g': fail(f'hc_civic: museum cell {(x, y)} is not lawn ({M.ch(x, y)})')
+            if (x, y) in M.block or (x, y) in M.reserved: fail(f'hc_civic: museum cell {(x, y)} is taken')
+            M.grid[y] = M.grid[y][:x] + ('R' if y <= 41 else 'H' if y <= 43 else 'P') + M.grid[y][x + 1:]
+    for o in [o for o in M.objs if o['id'] == 'hc2_plant_hc_civic_5']:
+        if (o['x'], o['y']) != (15, 41): fail('hc_civic: hc2_plant_hc_civic_5 moved; WAR_MUSEUM §5.2 removes the planter at 15,41')
+        M.objs.remove(o); M.ids.discard(o['id']); M.block.pop((o['x'], o['y']), None)
+    roofs['hc_civic']['museum'] = roof_entry([MUSEUM_BOX[0], MUSEUM_BOX[1], MUSEUM_BOX[2], 41],
+        {'roof': 'roof_shingle_g', 'wall': 'wall_ashlar_w', 'door': 'door_double', 'win': ['win_arch'], 'trim': 'J', 'shape': 'gable'})
+    dx, dy = MUSEUM_DOOR
+    M.add({'kind': 'door', 'id': 'hc_museum', 'x': dx, 'y': dy, 'to': 'hc_museum_in', 'tx': 7, 'ty': 14, 'facing': 'up',
+           'need': 'story.hc_arrived', 'setFlag': 'story.wm_visited'}, blocks=False)
+    M.reserved.add((dx, dy)); M.targets['door:hc_museum'] = (dx, dy)
+    M.add({'kind': 'decal', 'id': 'hc2_finial_museum', 'x': 8, 'y': 38, 'sprite': 'hc_finial'})   # A34: lit, like every roof but the Hall's
+    M.add({'kind': 'prop', 'id': 'wm_lintel', 'x': 8, 'y': 42, 'sprite': 'wm_x_lintel'})            # A-X1, on the facade
+    M.add({'kind': 'prop', 'id': 'wm_ban_k', 'x': 4, 'y': 43, 'sprite': 'wm_x_banner_keeper'})      # A-X2
+    M.add({'kind': 'prop', 'id': 'wm_ban_w', 'x': 12, 'y': 43, 'sprite': 'wm_x_banner_wing'})       # A-X3
+    for oid, x, sprite, kw in (('wm_urn_w', 2, 'stone_urn', {}), ('wm_lamp_w', 3, 'hc_lamp_box', {'lines': {'else': TXT['hb2_box']}}),
+                               ('wm_poster', 5, 'poster_stand', {}), ('wm_bench', 11, 'bench_long', {}),
+                               ('wm_lamp_e', 13, 'hc_lamp_box', {'lines': {'else': TXT['hb2_box']}}), ('wm_urn_e', 14, 'stone_urn', {})):
+        if not M.safe_block(x, 44): fail(f'hc_civic: {oid} at {(x, 44)} would block the museum forecourt')
+        M.add(dict({'kind': 'prop', 'id': oid, 'x': x, 'y': 44, 'sprite': sprite}, **kw))
+    if not M.safe_block(6, 44): fail('hc_civic: wm_sign at (6, 44) would block')
+    M.add({'kind': 'sign', 'id': 'wm_sign', 'x': 6, 'y': 44, 'text': TXT['wm_sign']})
+    for x in range(8, 19, 2):                                    # A-X4: the prints lead the last ten tiles along row 45 (§1.2)
+        if not M.walk(x, 45): fail(f'hc_civic: print {(x, 45)} is not on the sidewalk')
+        M.add({'kind': 'decal', 'id': f'wm_prints_{x}', 'x': x, 'y': 45, 'sprite': 'wm_x_prints'})
+    for x in (7, 9):                                             # D2314: the cells beside the door stay bare
+        if any(o['x'] == x and o['y'] == 43 for o in M.objs): fail(f'hc_civic: rule 10 cell {(x, 43)} is dressed')
 
 # ---------- the final outdoor checks ----------
 for cid, c in CHUNKS.items():
@@ -804,9 +944,10 @@ def room_check(rid, r, arrival, targets):
 def P(oid, x, y, sprite, **kw): return dict({'kind': 'prop', 'id': oid, 'x': x, 'y': y, 'sprite': sprite}, **kw)
 def D(oid, x, y, sprite, **kw): return dict({'kind': 'decal', 'id': oid, 'x': x, 'y': y, 'sprite': sprite}, **kw)
 def N(oid, name, look, x, y, facing='down', **kw): return dict({'kind': 'npc', 'id': oid, 'name': name, 'look': look, 'x': x, 'y': y, 'facing': facing, 'still': True}, **kw)
-def S_(oid, x, y, text, sprite=None):
+def S_(oid, x, y, text, sprite=None, **kw):
     o = {'kind': 'sign', 'id': oid, 'x': x, 'y': y, 'text': text}
     if sprite: o['sprite'] = sprite
+    o.update(kw)
     return o
 
 ROOMS = {}
@@ -870,18 +1011,30 @@ objs.append(N('hc_reader', 'Keeper reader', 'clerk', 1, 6, 'right', lines={'else
 ROOMS['hc_news_2'] = room('hc_news_2', 'Block News House', 'hc_news', 'hc_exchange', g, 'hc_news_2', objs, (11, 12))
 
 # hc_gov_1, lobby and the Governor's office, 16x16 (§7.3 floor 1). Keepers path, Act 2 on (D1426, D1439, layout v0.4
-# §5.3): the door, Governor Merriden and the ORDERS DOWN chute (HB12) open with GOV1. The stair goes to floor 3 in phase 1
-# (the Cabinet Room, floor 2, is phase 2 and follows GOV1 when built); the President's rooms stay Keepers path, Act 5, after
-# meeting the Governor (story.hc_gov_met, PLACEHOLDER flag).
+# §5.3): the door, Governor Merriden and the ORDERS DOWN chute (HB12) open with GOV1. CABINET_AND_COUNCILS 1b: the stair goes to
+# the Cabinet Room (floor 2), open on the seat's key (CAB, §4.3, D1465 moved there) or on GOV3, so an Act 5 save from before the
+# cabinet still reaches the President's rooms (floor 3) through it. A blocked stair says its deny on the bump.
 part = lambda: '#' + '.' * 8 + '#' + '.' * 5 + '#'
 g = ['#' * 16, '#' + 'W' * 14 + '#'] + [part() for _ in range(3)] + ['#' + '.' * 14 + '#'] * 2 + [part() for _ in range(8)] + ['#######m########']
 GOV3 = '!story.side=glimmer & story.act>=5 & story.hc_gov_met'
+CAB = '!story.side=glimmer & story.thr_chip_rumour & story.hc_parade_seen'     # CABINET §4.3: the room opens
+STAIR2 = CAB + ' | ' + GOV3
+LEAD = ['!story.side=glimmer', 'story.km_reported', '!story.thr_chip_rumour']   # CABINET §4.3: the lead-in's key
+SIT1 = ['!story.side=glimmer', 'story.pres_cabinet_first', '!story.km_seat_pick']   # S1's key (K2a's flag; K2a waits on the parade)
 objs = [{'kind': 'warp', 'id': 'hc_gov_1_mat', 'x': 7, 'y': 15, 'to': 'hc_civic', 'tx': 32, 'ty': 16, 'facing': 'down'},
-        {'kind': 'warp', 'id': 'hc_gov_up', 'x': 1, 'y': 2, 'to': 'hc_gov_3', 'tx': 2, 'ty': 12, 'facing': 'up', 'need': GOV3},
+        {'kind': 'warp', 'id': 'hc_gov_up', 'x': 1, 'y': 2, 'to': 'hc_gov_2', 'tx': 1, 'ty': 3, 'facing': 'down', 'need': STAIR2,
+         'deny': TXT['cab_deny']},
         D('hc2_gov_stair_1', 1, 2, 'stair_flight')]
 objs += [P(f'hc2_lobbydesk_{x}', x, 9, 'keep_desk', name='the Keeper desk') for x in (2, 3, 4)]
 objs.append(N('hc_gov_keeper_a', 'Keeper', 'officer', 3, 8, 'down', lines={'story.gov_posted & !story.hc_gov_met': TXT['gov_desk'], 'else': 'Welcome to the Governor\'s House, holder.'}))
-objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={STAIR2: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+# CABINET §4.3 (D1470 = A): Lumen's lead-in, four SIGNED lines, on a Captain Lumen body in the lobby (default staging), keyed after
+# the Kilnmouth report-back. It is the only setter of story.thr_chip_rumour; the body leaves once it is set. Keyed on a story flag,
+# not `else`, so the High Charity letter's lines (D174, spliced in front of everyday chatter) stay behind it.
+LUMEN = 'Captain Lumen'
+SC['thr_cabinet_lead'] = [['say', LUMEN, TXT['lead_1']], ['say', LUMEN, TXT['lead_2']], ['say', LUMEN, TXT['lead_3']],
+                          ['say', LUMEN, TXT['lead_4']], ['setFlag', 'story.thr_chip_rumour', True]]
+objs.append(N('cab_lumen_lobby', LUMEN, 'captain', 4, 3, 'down', when=LEAD, lines={'story.km_reported': '@thr_cabinet_lead'}))
 objs += [P(f'hc2_govdesk_{x}', x, 4, 'keep_desk', name="the Governor's desk") for x in (11, 12)]
 SC['hc2_chute'] = [['say', '', TXT['hb12_chute']], ['setFlag', 'story.hc_chute', True]]
 objs.append(P('hc_chute_mouth', 13, 4, 'hc_chute_mouth', name='the ORDERS DOWN chute', scene='hc2_chute', lines={'else': TXT['hb12_chute']}))
@@ -901,14 +1054,77 @@ SC['hc_gov_meet'] = [
     ['say', GM, TXT['gov_m8']],
     ['setFlag', 'story.km_assigned', True], ['setFlag', 'story.hc_gov_met', True],
 ]
+# CABINET §3.5 K6 (1a): the Kilnmouth report-back replaces his repeat once the fence permit is read; it opens the lead-in (§4.3).
+SC['km_report'] = [['say', GM, TXT['k6_1']], ['say', GM, TXT['k6_2']], ['say', GM, TXT['k6_3']], ['setFlag', 'story.km_reported', True]]
 objs.append(N('hc_governor', GM, 'hc_governor', 12, 3, 'down', when=['story.act>=2'],
-              lines={'story.gov_posted & !story.hc_gov_met': '@hc_gov_meet', 'story.km_assigned': TXT['gov_after'], 'else': TXT['gov_line']}))
+              lines={'story.gov_posted & !story.hc_gov_met': '@hc_gov_meet', 'story.km_permit_seen & !story.km_reported': '@km_report',
+                     'story.km_assigned': TXT['gov_after'], 'else': TXT['gov_line']}))
 objs += [P('hc2_gov_flag_w', 10, 2, 'banner_keeper'), P('hc2_gov_flag_e', 14, 2, 'banner_keeper')]
 ROOMS['hc_gov_1'] = room('hc_gov_1', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_1', objs, (7, 14))
 
+# hc_gov_2, the Cabinet Room, 14x12 (§7.3 floor 2; CABINET_AND_COUNCILS v0.2.2 §4.1-§4.3, phase 1b). Rule 9: Vincent approved the
+# previews (Wed Nov 4, 2026: 14x12, the seat tells as drawn, a third floor tile); the placements are the layout draft's (§3-§5).
+# Reached by stairs only: down to floor 1 (1,2), up to floor 3 (1,10, GOV3). The long table (3x5 slices) with twelve chairs, even
+# seats west at the Governor's right hand; the twelfth is a walkable decal and S1's trigger. Tells as drawn: the Treasury's folder
+# with its `r` ribbon (table slice 2), Roads and Coaches' newer chair (seat 4). The members sit as bodies only at a sitting.
+g = ['#' * 14, '#' + 'W' * 12 + '#', '#' + '.' * 12 + '#'] + ['#..=' + '.' * 9 + '#' for _ in range(5)] + \
+    ['#..+--*......#', '#' + '.' * 12 + '#', '#' + '.' * 12 + '#', '#' * 14]
+objs = [{'kind': 'warp', 'id': 'hc_gov2_down', 'x': 1, 'y': 2, 'to': 'hc_gov_1', 'tx': 2, 'ty': 2, 'facing': 'right'},
+        {'kind': 'warp', 'id': 'hc_gov2_up', 'x': 1, 'y': 10, 'to': 'hc_gov_3', 'tx': 2, 'ty': 12, 'facing': 'up', 'need': GOV3},
+        D('hc2_gov_stair_2', 1, 2, 'stair_flight'), D('hc2_gov_stair_2up', 1, 10, 'stair_flight')]
+# the wall face (row 1): the order paper, the seating board (B1, B2), the towns map, the chute pipe, the OUT slot, a clock
+objs += [D('cab_order_paper', 3, 1, 'pa_notice_pins'),
+         D('cab_seat_board', 4, 1, 'cab_seat_board', when=['!story.km_seat_filled']),
+         D('cab_seat_board_full', 4, 1, 'cab_seat_board_full', when=['story.km_seat_filled']),
+         S_('cab_board_6', 4, 1, TXT['cab_board_6'], 'none', when=['!story.km_seat_filled']),
+         S_('cab_board_7', 4, 1, TXT['cab_board_7'], 'none', when=['story.km_seat_filled'])]
+objs += [D(f'cab_towns_map_{i}', 5 + i, 1, f'cab_towns_map_{i}') for i in range(3)]
+objs += [D('cab_chute_pipe', 8, 1, 'cab_chute_pipe'), D('cab_out_slot', 9, 1, 'cab_out_slot'), D('cab_clock', 11, 1, 'pa_clock_round')]
+# the floor: the charter case, records, the flag, the gallery and its ends, the sideboard, the minutes desk, the tall clock
+objs += [P('cab_charter', 2, 2, 'cab_charter_case', name="the Keepers' charter"), P('cab_records', 1, 6, 'pc_records', name='records'),
+         P('cab_flag_w', 1, 8, 'pc_flag_stand', name='a flag'), P('cab_plant', 12, 2, 'pv_fern', name='a fern'),
+         P('cab_ballot', 12, 8, 'pc_ballot_box', name='a ballot box'), P('cab_clock_tall', 12, 10, 'pn_clock_tall', name='a tall clock'),
+         P('cab_sideboard_0', 5, 10, 'cab_sideboard_0', name='a sideboard'), P('cab_sideboard_1', 6, 10, 'cab_sideboard_1', name='a sideboard'),
+         P('cab_minutes_desk_0', 9, 10, 'pc_clerk_desk_0', name='the minutes desk'), P('cab_minutes_desk_1', 10, 10, 'pc_clerk_desk_1', name='the minutes desk')]
+objs += [P(f'cab_rail_{y}', 11, y, 'pc_rail', name='the gallery rail') for y in (3, 4, 6, 7, 8)]
+objs.append(D('cab_rail_gate', 11, 5, 'pc_rail_gate'))
+objs += [P(f'cab_gallery_{y}', 12, y, 'cab_gallery_chair', name='a gallery chair') for y in (3, 4, 6, 7)]
+# the table (x 5-7, y 3-7); slice 13 is the twelfth place, set: its tap reads the twelfth chair's plate (L2)
+for i in range(15):
+    x, y = 5 + i % 3, 3 + i // 3
+    kw = {'name': 'the twelfth place', 'lines': {'else': TXT['cab_plate']}} if i == 13 else {'name': 'the cabinet table'}
+    objs.append(P(f'cab_table_{i}', x, y, f'cab_table_{i}', **kw))
+CAB_SEATS = {1: (6, 2), 2: (4, 3), 3: (8, 3), 4: (4, 4), 5: (8, 4), 6: (4, 5), 7: (8, 5), 8: (4, 6), 9: (8, 6), 10: (4, 7), 11: (8, 7), 12: (6, 8)}
+for n, (x, y) in CAB_SEATS.items():
+    if n == 1: objs.append(P('cab_chair_1', x, y, 'cab_chair_head', name="the Governor's chair"))
+    elif n == 12: objs.append(D('cab_chair_12', x, y, 'cab_chair_up'))
+    else: objs.append(P(f'cab_chair_{n}', x, y, 'cab_chair_r_new' if n == 4 else 'cab_chair_r' if x == 4 else 'cab_chair_l', name='a cabinet chair'))
+# S1 (§4.5, v0.1 settled): K2a sets story.pres_cabinet_first and plays on entering; K2a waits on the parade (#296), so S1 is built
+# behind its flag. The holder walks the runner to the twelfth chair (10 steps, D1985) and S1 plays there. Flags are written at the
+# end of a pick (the packet's "each pick sets"), so "Not yet" and an interrupted sitting write nothing and replay.
+PRES = 'The President'
+def s1_pick(line, pick):
+    return [['say', PRES, line], ['say', GM, TXT['s1_4']], ['setFlag', 'story.cab_seat', True],
+            ['setFlag', 'story.km_seat_pick', pick], ['setFlag', 'story.km_seat_filled', True]]
+SC['cab_s1'] = [
+    ['choice', TXT['s1_ask'], [
+        [TXT['s1_town'], s1_pick(TXT['s1_3a'], 'town'), None, 'story.km_names>=3'],
+        [TXT['s1_cmdr'], s1_pick(TXT['s1_3b'], 'commander')],
+        [TXT['s1_co'], s1_pick(TXT['s1_3c'], 'company')],
+        [TXT['s1_wait'], [['say', GM, TXT['s1_3d']]], None, 'story.km_names<3'],
+    ], GM],
+]
+objs.append({'kind': 'trigger', 'id': 'cab_seat12', 'x': 6, 'y': 8, 'r': 0, 'when': SIT1, 'scene': 'cab_s1'})
+# the sitting's bodies (S1): the Governor at the head, Captain Lumen in the Keepers' chair, the President at the Governor's shoulder
+# (K2a's staging, behind its flag). Lighter C's three company bodies (seats 3, 4, 9) are phase 1c.
+objs += [N('cab_governor', GM, 'hc_governor', 6, 2, 'down', when=SIT1), N('cab_lumen', LUMEN, 'captain', 4, 3, 'right', when=SIT1),
+         N('cab_president', PRES, 'president', 7, 2, 'down', when=SIT1)]
+objs.append(N('hc_gov2_keeper', 'Keeper', 'officer', 2, 10, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+ROOMS['hc_gov_2'] = room('hc_gov_2', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_2', objs, (1, 3), wall={'windows': [10, 12]})
+
 # hc_gov_3, the President's rooms, 12x14 (§7.3 floor 3). No Summit staging here (X7).
 g = ['#' * 12, '#' + 'W' * 10 + '#'] + ['#' + '.' * 10 + '#' for _ in range(6)] + ['#.=======..#'] + ['#' + '.' * 10 + '#' for _ in range(4)] + ['#' * 12]
-objs = [{'kind': 'warp', 'id': 'hc_gov_down', 'x': 1, 'y': 12, 'to': 'hc_gov_1', 'tx': 2, 'ty': 2, 'facing': 'right'},
+objs = [{'kind': 'warp', 'id': 'hc_gov_down', 'x': 1, 'y': 12, 'to': 'hc_gov_2', 'tx': 1, 'ty': 9, 'facing': 'up'},   # CABINET 1b: via floor 2
         D('hc2_gov_stair_3', 1, 12, 'stair_flight')]
 objs += [D(f'hc2_letters_{x}', x, 1, 'hc_thanks_letters') for x in (1, 3, 7, 9)]
 objs += [P('hc2_pres_desk_w', 6, 3, 'keep_desk', name='the desk'), P('hc2_pres_plate', 7, 3, 'hc_desk_plate', name='THE PRESIDENT', lines={'else': 'A desk plate: THE PRESIDENT.'}),
@@ -923,17 +1139,164 @@ objs.append(P('hc2_card', 4, 9, 'hc_bright_card', name='a small card', lines={'e
 objs.append(P('hc2_pres_wireset', 7, 9, 'tv_set', name='the wire set'))
 objs.append(P('hc2_stamp', 10, 10, 'hc_lampstock_stamp', name='a stamp', lines={'else': TXT['hb13_stamp']}))
 SC['hc2_chambers'] = [['say', 'The President', TXT['hb13_president']], ['setFlag', 'story.hc_chambers', True]]
-objs.append(N('hc_president', 'The President', 'hc_president', 7, 2, 'down', scene='hc2_chambers', lines={'else': TXT['hb13_president']}))
+objs.append(N('hc_president', 'The President', 'president', 7, 2, 'down', scene='hc2_chambers', lines={'else': TXT['hb13_president']}))
 objs.append(N('hc_aide', 'Aide', 'hc_aide', 2, 11, 'down', lines={'else': TXT['hb13_aide']}))
 objs.append(N('hc_clerk3', 'Clerk', 'clerk', 9, 7, 'left'))
 objs.append(N('hc_commander3', 'Commander', 'captain', 1, 11, 'down', lines={'else': TXT['hb13_commander']}))
 ROOMS['hc_gov_3'] = room('hc_gov_3', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_3', objs, (2, 12))
 
+# hc_museum_in, the Muster Road Museum, 14x16 (WAR_MUSEUM v0.1.1 §3-§5, §7; I1 Loop Gallery). Rule 9: Vincent approved the
+# previews (Thu Nov 5, 2026, D2301), so it is built as previewed: the placement is §5.2's, cell for cell. One room split down a
+# seam: the city's Long Watch on oak parquet (x 1-7, `.`), Glimmerwell's Bright Years Wing on pale stone (x 8-12, `,`), the sand
+# runner from the mat up the seam to the empty case (`:` and `;`, x 6-7, rows 5-14), the kids' rug (`~`, x 1-4, rows 12-14).
+# The wall face (row 1) is dressed in every cell; its exhibits are `none` signs on the wall cells, tapped from row 2. Wall pieces
+# with no exhibit (the Glimmerwell banner, the clock) are decals only, and the K1 shelf at 1,1 is tapped at 6,1 (a fern stands
+# below 1,1). Prop library v0.2 has landed, so the three spots the packet marks "in v0.2 if it lands" take those pieces (§5.2):
+# pu_lantern_shelf for A-W1, pf_front_counter_civic for the desk, pt_station for the clock. Every exhibit is a tap (label, then
+# what the tap adds, keyed on the story's own flags, §3.2); the Act 4 lines wait for story.hc_trial_called (§3.3).
+if HC_MUSEUM:
+    CUR_ = 'Curator Edda Lorne'; DOC_ = 'Associate Tansy'; REG_ = 'Bench regular'
+    def wm_row(y):
+        out = ''
+        for x in range(1, 13):
+            if x in (6, 7) and 5 <= y <= 14: out += ':' if x == 6 else ';'
+            elif x <= 4 and 12 <= y <= 14: out += '~'
+            else: out += ',' if x >= 8 else '.'
+        return '#' + out + '#'
+    g = ['#' * 14, '#' + 'W' * 12 + '#'] + [wm_row(y) for y in range(2, 15)] + ['#######m######']
+    # The Stamp Trail (§2.1, D2307): the curator's card (story.wm_card) is the accept, by talk; five stamps, each once, in any
+    # order (story.wm_st_<case> beside the packet's count story.wm_trail); the empty case is the snag and its choice
+    # (story.wm_trail_pick, read only by her later greeting); the fifth stamp, wherever it lands, pays once (story.wm_trail_done).
+    REWARD = [['give', 'old_oil_lamp', 1], ['say', '', TXT['wm_got_lamp']], ['acorns', 50], ['say', '', TXT['wm_journal']],
+              ['setFlag', 'story.wm_trail_done', True]]
+    def stamp(key, before=()):
+        return ['if', f'story.wm_card & !story.wm_st_{key}', list(before) + [
+            ['setFlag', f'story.wm_st_{key}', True], ['inc', 'story.wm_trail', 1], ['sfx', 'tap'], ['toast', TXT['wm_stamped']],
+            ['if', 'story.wm_trail>=5 & !story.wm_trail_done', REWARD, []]], []]
+    def lit_by(pick): return ['if', f'story.wm_plaque={pick}', [['say', '', TXT['wm_lit_by']]], []]   # §2.2: the plaque's plate
+    def say_(*keys): return [['say', '', TXT[k]] for k in keys]
+    def when_(c, keys, other=()): return ['if', c, say_(*keys), say_(*other)]
+    SNAG = ['choice', TXT['wm_snag'], [[TXT['wm_pick_' + k], [['say', CUR_, TXT['wm_res_' + k]], ['setFlag', 'story.wm_trail_pick', k]]]
+                                       for k in ('lantern', 'name', 'empty')], CUR_]
+    SC.update({
+        'wm_k1': say_('k1_label', 'k1_tap') + [['if', 'partner:out', say_('k1_pet'), []], lit_by('lanterns'), stamp('lanterns')],
+        'wm_k2': say_('k2_label') + [when_('story.wb_cut', ['k2_after'], ['k2_tap'])],
+        'wm_k3': say_('k3_label', 'k3_tap'),
+        'wm_k4a': say_('k4_label') + [when_('story.plates_read>=1', ['k4_tap'])],
+        'wm_k4b': say_('k4_label') + [when_('story.plates_read>=5', ['k4_tap']), ['say', '', TXT['k4_eighth']]],
+        'wm_k5': say_('k5_label') + [when_('story.hc_trial_called', ['k5_card_after'], ['k5_card'])] + say_('k5_tap') + [stamp('case', [SNAG])],
+        'wm_k6': say_('k6_label', 'k6_tap') + [when_('story.hc_trial_called', ['k6_after']), stamp('map')],
+        'wm_k6_tally': say_('k6_tally'),
+        'wm_k7': say_('k7_label', 'k7_tap') + [when_('story.wb_cut', ['k7_cut']), when_('story.hc_trial_called', ['k7_after'])],
+        'wm_k8': say_('k8_label', 'k8_tap'),
+        'wm_k9': say_('k9_label', 'k9_tap', 'k9_regular') + [lit_by('letters')],
+        'wm_k10': say_('k10_label', 'k10_tap') + [stamp('scout')],
+        'wm_k11': say_('k11_tap') + [when_('story.hc_parade_seen', ['k11_parade']), when_('story.hc_trial_called', ['k11_after']),
+                                     lit_by('drum'), stamp('drum')],
+        'wm_k11_labels': say_('k11_brass', 'k11_new'),
+        'wm_k12': say_('k12_label', 'k12_tap'),
+        'wm_w1': say_('w1_label', 'w1_tap'),
+        'wm_w2': say_('w2_label', 'w2_tap'),
+        'wm_w3': say_('w3_label') + [['choice', TXT['w3_s1'], [
+            [TXT['w3_next'], [['choice', TXT['w3_s2'], [[TXT['w3_next'], say_('w3_s3')], [TXT['w3_leave'], []]], '']]],
+            [TXT['w3_leave'], []]], '']],
+        'wm_runner': [['say', '', TXT['wm_runner']], ['setFlag', 'story.wm_runner', True]],
+    })
+    # The donation lantern (§2.2, D2308): 10 or 50 from the bag through the bank's moneyDelta (BANK_AND_HOMES, #334), one ledger line
+    # with the memo "Museum gift" (`pay`'s ref museum_gift; bank.js SCENE_MEMO). story.wm_given counts; the Friends board shows the
+    # holder's name from 100; at 500 the curator offers the plaque (story.wm_plaque). The lantern glows for a beat (`glow`; reduced
+    # motion lights it without the pulse).
+    PLAQUE = ['choice', TXT['wm_plaque_ask'], [[TXT['wm_plaque_l'], [['setFlag', 'story.wm_plaque', 'lanterns']]],
+                                               [TXT['wm_plaque_d'], [['setFlag', 'story.wm_plaque', 'drum']]],
+                                               [TXT['wm_plaque_t'], [['setFlag', 'story.wm_plaque', 'letters']]]], CUR_]
+    def gift(n):
+        return ['pay', n, [
+            ['if', 'story.wm_given<100', [['inc', 'story.wm_given', n], ['if', 'story.wm_given>=100', [['toast', TXT['wm_friends_toast']]], []]],
+             [['inc', 'story.wm_given', n]]],
+            ['glow', 'wm_donation'], ['sfx', 'rest'],
+            ['if', 'story.wm_given>=500 & !story.wm_plaque', [PLAQUE], []]], say_('wm_short'), 'museum_gift']
+    SC['wm_give'] = [['choice', TXT['wm_give'], [[TXT['wm_give_10'], [gift(10)]], [TXT['wm_give_50'], [gift(50)]], [TXT['wm_give_no'], []]], '']]
+    SC['wm_plaque'] = [PLAQUE]
+    # The people (§7). Lines are keyed on the story's flags; plain repeats turn by this visit's talks (`talked:` marks, never saved).
+    SC['wm_cur_hello'] = [['say', CUR_, TXT['wm_cur_hello']], ['say', CUR_, TXT['wm_hook']], ['say', '', TXT['wm_ask']],
+                          ['setFlag', 'story.wm_card', True]]
+    SC['wm_cur_talk'] = [['if', 'story.plates_read>=1 & !talked:wm_cur_p', [['say', CUR_, TXT['wm_cur_plates']], ['mark', 'wm_cur_p']], [
+                          ['if', '!talked:wm_cur_w', [['say', CUR_, TXT['wm_cur_wing']], ['mark', 'wm_cur_w']], [
+                           ['if', '!talked:wm_cur_s', [['say', CUR_, TXT['wm_cur_stone']], ['mark', 'wm_cur_s']], [
+                            ['say', CUR_, TXT['wm_cur_case']]]]]]]]]
+    SC['wm_doc_talk'] = [['if', '!talked:wm_doc_h', [['say', DOC_, TXT['wm_doc_hello']], ['mark', 'wm_doc_h']], [
+                          ['if', 'talked:wm_drum & !talked:wm_doc_d', [['say', DOC_, TXT['wm_doc_drum']], ['mark', 'wm_doc_d']], [
+                           ['say', DOC_, TXT['wm_doc_any']]]]]]]
+    SC['wm_eld_talk'] = [['if', 'story.hc_trial_called & !talked:wm_eld_l', [['say', REG_, TXT['wm_eld_late']], ['mark', 'wm_eld_l']], [
+                          ['if', '!talked:wm_eld_a', [['say', REG_, TXT['wm_eld_a']], ['mark', 'wm_eld_a']], [['say', REG_, TXT['wm_eld_b']]]]]]]
+    SWITCHER = 'story.switched_a3 | story.side=glimmer'
+    ex = lambda sc: {'lines': {'else': '@' + sc}}
+    objs = [{'kind': 'warp', 'id': 'hc_museum_in_mat', 'x': 7, 'y': 15, 'to': 'hc_civic', 'tx': 8, 'ty': 45, 'facing': 'down'}]
+    # the wall face (row 1), every cell dressed (S2): K1 old lanterns, K2 the notice, K4 the plate frames (filled by the plates
+    # packet's count story.plates_read, which nothing sets yet), K3 the chapter, K1 again, W1 (new lanterns, the panel, the photo
+    # wall), the sponsor board, the Glimmerwell banner, the clock
+    objs += [D('wm_lanterns_old_a', 1, 1, 'pu_lantern_shelf'), D('wm_notice', 2, 1, 'wm_notice')]
+    PR = 'story.plates_read'
+    for side, x, lo, top in (('a', 3, 0, 4), ('b', 4, 4, 3)):   # frames 1-4, then 5-7 (the eighth frame stays empty, §3.2 K4)
+        for k in range(top + 1):                                  # board shows k filled frames
+            c = ([f'{PR}>={lo + k}'] if k else []) + ([f'{PR}<{lo + k + 1}'] if k < top else [])
+            objs.append(D(f'wm_plates_{side}_{k}', x, 1, f'wm_plates_{k}', when=c))
+    objs += [D('wm_chapter', 5, 1, 'wm_chapter'), D('wm_lanterns_old_b', 6, 1, 'pu_lantern_shelf'),
+             D('wm_lanterns_new_a', 7, 1, 'wm_lanterns_new'), D('wm_wing_panel', 8, 1, 'wm_wing_panel'), D('wm_photo', 9, 1, 'photo_wall'),
+             D('wm_sponsor', 10, 1, 'wm_sponsor'), D('wm_banner_glim', 11, 1, 'pg_banner'), D('wm_clock', 12, 1, 'pt_station')]
+    objs += [S_('wm_tap_k2', 2, 1, TXT['k2_label'], 'none', **ex('wm_k2')), S_('wm_tap_k4a', 3, 1, TXT['k4_label'], 'none', **ex('wm_k4a')),
+             S_('wm_tap_k4b', 4, 1, TXT['k4_label'], 'none', **ex('wm_k4b')), S_('wm_tap_k3', 5, 1, TXT['k3_label'], 'none', **ex('wm_k3')),
+             S_('wm_tap_k1', 6, 1, TXT['k1_label'], 'none', **ex('wm_k1'))]
+    objs += [S_(f'wm_tap_w1_{x}', x, 1, TXT['w1_label'], 'none', **ex('wm_w1')) for x in (7, 8, 9)]
+    objs.append(S_('wm_tap_sponsor', 10, 1, TXT['wm_sponsor'], 'none'))
+    # the floor (§5.2)
+    objs += [P('wm_fern_k', 1, 2, 'pv_fern', name='a fern'), P('wm_glim_planter', 12, 2, 'pg_planter', name='a planter'),
+             P('wm_sea_lantern', 1, 4, 'wm_road_lantern', name='the road lantern', **ex('wm_k8')),   # K8; id kept from v0.1 (§5.2)
+             P('wm_lectern_stone', 2, 4, 'pc_lectern', name="the carters' tally", **ex('wm_k6_tally')),
+             P('wm_mapcase_0', 3, 4, 'wm_mapcase_0', name="the Stone's road", **ex('wm_k6')),
+             P('wm_mapcase_1', 4, 4, 'wm_mapcase_1', name="the Stone's road", **ex('wm_k6')),
+             P('wm_rope_w', 5, 4, 'wm_rope_post', name='a rope post'),
+             P('wm_case_empty_0', 6, 4, 'wm_case_empty_0', name='the empty case', **ex('wm_k5')),
+             P('wm_case_empty_1', 7, 4, 'wm_case_empty_1', name='the empty case', **ex('wm_k5')),
+             P('wm_rope_e', 8, 4, 'wm_rope_post', name='a rope post'),
+             N('npc_docent', DOC_, 'hc_docent', 11, 4, 'left', lines={SWITCHER: TXT['wm_doc_switch'], 'else': '@wm_doc_talk'}),
+             P('wm_glim_case', 10, 6, 'pg_display_case', name='our first lamp', **ex('wm_w2')),
+             P('wm_kiosk', 12, 6, 'pg_kiosk', name='the Partnership kiosk', **ex('wm_w3')),
+             P('wm_cart_0', 1, 7, 'wm_cart_0', name='the lantern cart', **ex('wm_k7')),
+             P('wm_cart_1', 2, 7, 'wm_cart_1', name='the lantern cart', **ex('wm_k7')),
+             P('wm_scout_lamp', 4, 7, 'wm_scout_lamp', name="the Scout's lamp", **ex('wm_k10')),
+             P('wm_bench_0', 3, 9, 'pq_bench_wood_0', name='a bench'), P('wm_bench_1', 4, 9, 'pq_bench_wood_1', name='a bench'),
+             P('wm_drum', 9, 9, 'wm_drum', name='the Picking Day drum', **ex('wm_k11')),
+             P('wm_lectern_drum', 10, 9, 'pc_lectern', name="the drum's plates", **ex('wm_k11_labels')),
+             P('wm_tree_w', 12, 9, 'pv_potted_tree', name='a potted tree'),
+             P('wm_letters', 1, 10, 'wm_letters', name='letters home', **ex('wm_k9')),
+             N('npc_elder', REG_, 'hc_bench_regular', 2, 10, 'left', lines={'else': '@wm_eld_talk'}),
+             P('wm_easel', 1, 12, 'easel', name='the easel', lines={'else': TXT['k12_easel']}),
+             N('npc_curator', CUR_, 'hc_curator', 8, 12, 'down', lines={
+                 '!story.wm_card': '@wm_cur_hello', 'story.wm_given>=500 & !story.wm_plaque': '@wm_plaque',
+                 'story.wm_trail_done & story.wm_trail_pick=empty': TXT['wm_cur_best'], 'story.hc_trial_called': TXT['wm_cur_seen'],
+                 SWITCHER: TXT['wm_cur_switch'], 'else': '@wm_cur_talk'}),
+             P('wm_desk_0', 9, 12, 'pf_front_counter_civic_0', name="the curator's desk"),
+             P('wm_desk_1', 10, 12, 'pf_front_counter_civic_1', name="the curator's desk"),
+             P('wm_records', 11, 12, 'pc_records', name='records'),
+             P('wm_friends', 12, 12, 'wm_friends', name='the Friends board',
+               lines={'story.wm_given>=100': TXT['k13_friends_named'], 'else': TXT['k13_friends']}),
+             P('wm_stamp_table', 3, 13, 'wm_stamp_table', name='the stamp table', **ex('wm_k12')),
+             P('wm_stool_b', 4, 13, 'wm_stool', name='a stool'),
+             P('wm_cubbies', 1, 14, 'walkling_cubbies', name='cubbies'),
+             P('wm_stool_a', 3, 14, 'wm_stool', name='a stool'),
+             P('wm_donation', 11, 14, 'wm_donation', name='the donation lantern', **ex('wm_give')),
+             P('wm_flag', 12, 14, 'pc_flag_stand', name='a flag')]
+    # §5.2's runner tap (7,6) is a walk-on line, once (story.wm_runner), on both runner cells of row 6: a sign there would be an
+    # unseen wall in the middle of the two-wide runner.
+    objs += [{'kind': 'trigger', 'id': f'wm_runner_{x}', 'x': x, 'y': 6, 'r': 0, 'when': ['!story.wm_runner'], 'scene': 'wm_runner'} for x in (6, 7)]
+    ROOMS['hc_museum_in'] = room('hc_museum_in', 'Muster Road Museum', 'hc_museum', 'hc_civic', g, 'hc_museum_in', objs, (7, 14))
+
 # AGENTS rule 9 (room redesigns): a room is built here only after Vincent has seen its 390 previews and said yes. The phase 1
 # rooms above were approved on Tue Nov 3, 2026 (handoff/maps/HC_CITY_V2.md, "Sign-off"). These v0.4 rooms are specced but have
 # no approved preview (and need the rule 9 inspiration pass first), so they are held: never built, listed in the output.
+# hc_gov_2, the Cabinet Room, left this list when Vincent approved its previews (Wed Nov 4, 2026; CABINET_AND_COUNCILS 1b, above).
 RULE9_HELD = {
-    'hc_gov_2': "Cabinet Room, Governor's House floor 2 (layout §7.3; CABINET_AND_COUNCILS §4.1; WALK_BESIDE §2.1): no grid in the packet, no preview",
     'hc_lantern_up': 'grand Lantern House gallery (layout §7.1): grid in §7.1, no preview',
     'hc_college_in': 'College Great Hall (layout §7.4): no grid, no preview',
     'hc_trial_in': 'the Muster Hall, Hall 8 (layout §7.5; also waits on the Hall 8 build and HC_TRIAL_HALL): blockout only',
@@ -948,9 +1311,15 @@ TARGETS = {
     'hc_lantern_in': ((8, 20), {'mat': (8, 21), 'ines': (7, 15), **{f'bed{i}': (x + 1, y) for i, (x, y) in enumerate(beds)}}),
     'hc_news_1': ((7, 14), {'mat': (7, 15), 'stair': (12, 12), 'editor': (7, 8), 'spike': (11, 8)}),
     'hc_news_2': ((11, 12), {'stair': (12, 12), 'reader': (1, 7), 'tray': (6, 8)}),
-    'hc_gov_1': ((7, 14), {'mat': (7, 15), 'stair': (1, 2), 'governor_front': (12, 5)}),
+    'hc_gov_1': ((7, 14), {'mat': (7, 15), 'stair': (1, 2), 'governor_front': (12, 5), 'lumen_front': (4, 4)}),
+    'hc_gov_2': ((1, 3), {'stair_down': (1, 2), 'stair_up': (1, 10), 'arrive_up': (1, 9), 'seat12': (6, 8), 'governor_side': (5, 2),
+                          'charter_front': (2, 3), 'gallery': (12, 5), 'board_front': (4, 2), 'keeper_front': (2, 9)}),
     'hc_gov_3': ((2, 12), {'stair': (1, 12), 'president_front': (7, 4) if False else (5, 4), 'cups': (3, 10), 'stamp': (10, 11)}),
 }
+if HC_MUSEUM:   # WAR_MUSEUM §5.3: a tap or talk cell for every target, from the arrival (7,14)
+    TARGETS['hc_museum_in'] = ((7, 14), {'mat': (7, 15), 'curator': (8, 13), 'donation': (10, 14), 'friends': (12, 13), 'drum': (8, 9),
+        'stamp_table': (3, 12), 'easel': (2, 12), 'elder': (3, 10), 'empty_case': (7, 5), 'letters': (1, 11), 'scout': (4, 8),
+        'first_lamp': (10, 5), 'cart': (1, 8), 'map_case': (3, 5), 'kiosk': (11, 6), 'docent': (10, 4), 'face_row': (9, 2), 'road_lantern': (1, 5)})
 # kept room objects count as blockers for the room checks
 for rid, r in ROOMS.items():
     probe = dict(r, objs=r['objs'] + [dict({'kind': 'prop', 'id': k.split(':')[1]}, x=v['x'], y=v['y']) for k, v in room_keep.items() if v['map'] == rid])
@@ -983,7 +1352,7 @@ def walk_says(steps, sid):   # every say, at any depth (if and choice branches),
             for opt in st[2]:
                 if len(opt[0]) > 30: fail(f'{sid}: choice over 30')
                 walk_says(opt[1], sid)
-        if st[0] == 'if': walk_says(st[2], sid); walk_says(st[3] if len(st) > 3 else [], sid)
+        if st[0] in ('if', 'pay'): walk_says(st[2], sid); walk_says(st[3] if len(st) > 3 else [], sid)   # pay: WAR_MUSEUM's gift
 for sid, steps in SC.items():
     walk_text(steps, sid)
     walk_says(steps, sid)
@@ -993,14 +1362,21 @@ for sid in SC:
 
 # ---------- the reputation cast (every named body needs an entry; only added while the city is on) ----------
 # D1439: the Governor is a civil post, not a Keeper; the cast has no civil value, so he takes 'none' (as civilians do)
-KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk'}
+KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk', 'Captain Lumen'}
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
-CAST = [dict({'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50}, **({'label': SCHED_LABEL[n]} if n in SCHED_LABEL else {}))
+GLIMMER_NAMES = {'Associate Tansy': {'rank': 'Associate', 'given': 'Tansy'}}   # WAR_MUSEUM §7.2: the Wing's company docent
+CAST = [dict({'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'glimmer' if n in GLIMMER_NAMES else 'none', 'base': 50},
+             **({'label': SCHED_LABEL[n]} if n in SCHED_LABEL else {}), **GLIMMER_NAMES.get(n, {}))
         for n in names]
 CAST += [r for r in PARADE['castRows'] if r['name'] not in names]   # HC_PARADE's generic labels (D1361)
 for e in CAST:   # NPC_RANKS: a Keeper cast entry needs a rank, a pending proposal or a flag; the city's ranks are Story's to set
     if e['faction'] == 'keepers': e['rankFlag'] = 'D1374: city cast, ranks PLACEHOLDER until Story'
+
+# WAR_MUSEUM §8: every museum flag is a new story.* key on S.flags (save pixelpets.save.v2, v 2, additive; nothing is written at
+# load). story.wm_trail_done is the Stamp Trail's side-chain step (quests.js); the rest are results and counters, never steps.
+WM_NOT_STEPS = ['story.wm_visited', 'story.wm_card', 'story.wm_trail', 'story.wm_trail_pick', 'story.wm_given', 'story.wm_plaque',
+                'story.wm_runner', 'story.wm_st_lanterns', 'story.wm_st_map', 'story.wm_st_scout', 'story.wm_st_drum', 'story.wm_st_case']
 
 # ---------- write ----------
 for k, v in room_keep.items(): keep[k] = v
@@ -1050,7 +1426,8 @@ out = {
     'castAt': PARADE['castAt'],
     'notStepFlags': ['story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',
                      'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
-                     'story.gov_told'] + PARADE['notStepFlags'],   # GOVERNOR_MEETING §6.2; story.km_assigned is the gov_meet chain step
+                     'story.gov_told', 'story.cab_seat', 'story.km_seat_filled'] + PARADE['notStepFlags']
+                    + (WM_NOT_STEPS if HC_MUSEUM else []),   # + CABINET §6 (1b)   # GOVERNOR_MEETING §6.2; story.km_assigned is the gov_meet chain step
 }
 for n in notes: print('note:', n)
 if fails:

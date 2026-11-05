@@ -197,7 +197,8 @@ test('modern compass leads the dock button row, then quest, bag and map (D780)',
 });
 
 test('arcade compass is the first header button and is a 44 px target', async ({ page }) => {
-  await boot(page, starterSave());
+  const s = starterSave(); s.settings.controls = 'arcade';   // Arcade opt-in: the header compass is an Arcade layout check
+  await boot(page, s);
   await page.evaluate(() => PixelPets.showTab('pet'));
   const home = await page.evaluate(() => {
     const b = document.querySelector('#repBtn');

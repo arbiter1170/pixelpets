@@ -26,8 +26,8 @@ CIV_LOOKS = {   # PLACEHOLDER townsfolk looks from the look kit (existing parts 
     'hc_pr_mv_1': {'skin': '2', 'hair': 'pony', 'hairCol': 'F', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
     'hc_pr_mv_2': {'skin': '5', 'hair': 'short', 'hairCol': 'd', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
     'hc_pr_mv_3': {'skin': '3', 'hair': 'curls', 'hairCol': 'k', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
-    'hc_pr_mv_4': {'skin': '1', 'hair': 'bob', 'hairCol': 'y', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
-    'hc_pr_mv_5': {'skin': '4', 'hair': 'spiky', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_4': {'skin': '1', 'hair': 'bob', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_5': {'skin': '4', 'hair': 'buzz', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
     'hc_pr_mv_6': {'skin': '6', 'hair': 'bun', 'hairCol': 'h', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
 }
 # Generic labels (D1361: no new names). Officer A / Officer B are the packet's FRIEND SLOT placeholders.

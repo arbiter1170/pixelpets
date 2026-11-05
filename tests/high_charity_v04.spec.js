@@ -17,7 +17,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 const CHUNKS = ['highcharity', 'hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college'];
-const BUILT_ROOMS = ['hc_lantern_in', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_3'];
+const BUILT_ROOMS = ['hc_lantern_in', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_2', 'hc_gov_3'];   // hc_gov_2: CABINET 1b, previews approved Nov 4
 const DATA = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'hc_city_v2.json'), 'utf8'));
 const BRIGHTGATE = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'detail_zzzzz_brightgate.json'), 'utf8'));
 const SHOTS = path.join(__dirname, '..', 'test-results', 'high_charity_v04');
@@ -220,20 +220,21 @@ test('HB14 the capital road (D1279): a sealed sea gate on the Quay\'s south end 
   expect(await page.evaluate(() => Object.keys(PixelPets.state.flags).length)).toBe(before);
 });
 
-test('rule 9: rooms with no approved preview are held (not in WORLD); floor 1\'s stair still goes to floor 3; the built rooms stand', async ({ page }) => {
+test('rule 9: rooms with no approved preview are held (not in WORLD); floor 1\'s stair goes to the Cabinet Room (approved, CABINET 1b); the built rooms stand', async ({ page }) => {
   await boot(page);
   const held = Object.keys(DATA.rule9Held);
-  expect(held).toEqual(expect.arrayContaining(['hc_gov_2', 'hc_lantern_up', 'hc_college_in', 'hc_trial_in', 'hc_trial_stone']));
+  expect(held).toEqual(expect.arrayContaining(['hc_lantern_up', 'hc_college_in', 'hc_trial_in', 'hc_trial_stone']));
+  expect(held).not.toContain('hc_gov_2');
   const r = await page.evaluate(ids => ({
     present: ids.filter(id => !!WORLD[id]),
-    built: ['hc_lantern_in', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_3'].filter(id => !!WORLD[id]),
+    built: ['hc_lantern_in', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_2', 'hc_gov_3'].filter(id => !!WORLD[id]),
     up: WORLD.hc_gov_1.objs.filter(o => o.id === 'hc_gov_up').map(o => o.to),
     warpsInto: Object.values(WORLD).flatMap(m => (m.objs || []).filter(o => o && (o.kind === 'warp' || o.kind === 'door') && ids.includes(o.to)).map(o => o.id)),
   }), held);
   expect(r.present).toEqual([]);
   expect(r.warpsInto).toEqual([]);
   expect(r.built).toEqual(BUILT_ROOMS);
-  expect(r.up).toEqual(['hc_gov_3']);
+  expect(r.up).toEqual(['hc_gov_2']);
 });
 
 test('taps reach every city door, mouth, sign and person (auditTaps on the preview): no reach gaps in the city', async ({ page }) => {
