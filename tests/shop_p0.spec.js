@@ -151,7 +151,7 @@ test('priced prompts keep the Acorn chip, and a buy shows the new total before t
   expect(await reachChoice(page)).toBe('What will they eat?');
   const menu = await expectChip(page, true);
   expect(menu.text).toBe('55');
-  expect(menu.label).toBe('55 Acorns');
+  expect(menu.label).toBe('55 Acorns. Open your book.');   // BANK_AND_HOMES D2220: the chip is a button
   const w = page.viewportSize().width;
   if (w === 320 || w === 390) {
     await page.screenshot({ path: path.join(artifactsDir('shop-p0'), 'hesper-menu-' + w + '.png') });
@@ -164,7 +164,7 @@ test('priced prompts keep the Acorn chip, and a buy shows the new total before t
   const after = await chipBox(page);
   expect(after.text).toBe('25');
   expect(after.hdrText).toBe('25');
-  expect(after.label).toBe('25 Acorns');
+  expect(after.label).toBe('25 Acorns. Open your book.');
   expect(after.hdrLabel).toBe('25 Acorns');
   expect(after.opacity).toBe(1);
   expect(after.price).toBe(true);
@@ -264,7 +264,7 @@ test('reduced motion snaps the Acorn count, with no number in between', async ({
   for (const row of samples) for (const part of row.split('|')) seen.add(part);
   expect([...seen].sort()).toEqual(['25', '55']);
   const label = await page.evaluate(() => document.querySelector('#fcAcorns').getAttribute('aria-label'));
-  expect(label).toBe('25 Acorns');
+  expect(label).toBe('25 Acorns. Open your book.');
   await finishScene(page);
 });
 
