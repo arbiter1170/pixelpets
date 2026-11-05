@@ -1,0 +1,25 @@
+# Line endings: every text file is stored and checked out with LF, on every OS. Windows clones with
+# core.autocrlf=true otherwise get CRLF, and specs that splice game.js or split repo files on '\n' fail.
+* text=auto eol=lf
+
+# Binary: never touch line endings or diff as text.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+*.mid   binary
+*.midi  binary
+*.mp3   binary
+*.ogg   binary
+*.wav   binary
+*.zip   binary
+*.pdf   binary
+
+# Stored with CRLF since it was added. Kept byte-for-byte (no renormalize churn); git leaves it as it is.
+handoff/maps/AUDIT.csv -text
