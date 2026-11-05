@@ -1,6 +1,7 @@
 /* D1436 (STORY v0.7.15 §8 row 7): a new-flow save never takes the Bright Pavilion Tour, so at a Glimmer pick, right after
    the Tier 1 lanyard is handed over, Associate Juniper clips it to the Fernbrook Seal, logs the Seal and takes the holder's
-   photo for the wall beside the Sanctuary crate list (data/detail_zz_pick_log.json, PLACEHOLDER copy). The beat sets
+   photo for the wall beside the Sanctuary crate list (data/detail_zz_pick_log.json, Story's lines, STORY_LINES D2132:
+   steps 2 and 4 re-voiced, and a narration step where the partner won't look at the camera). The beat sets
    story.tour1_s1 (the flag the photo news reads) and adds 1 to story.tour_unease. The "Bright Pavilion Tour ends with..."
    news needs story.tour1_s3, so only a save that took the Tour sees it. A save with Tour flags never plays the beat and
    never gains a second point; a Keepers pick never reaches it. Save stays pixelpets.save.v2, flags additive only. */
@@ -11,10 +12,13 @@ trackErrors(test, expect);
 
 const BEAT = [
   ['Associate Juniper', 'Hold still, partner! Your Tier 1 Lanyard clips right onto your Fernbrook Seal. Snap!'],
-  ['Associate Juniper', 'Now I just log your Seal for the partnership file. One tap... done! Every Seal counts.'],
+  ['Associate Juniper', 'Now I log your Seal for the partnership file. One tap... done! Every single Seal counts, you know.'],
   ['', 'A flash! Your photo goes up on the Pavilion wall, right beside the Sanctuary crate list.'],
-  ['Associate Juniper', 'Gorgeous! Brighter by nature. Have a bright day!'],
+  ['', "{pet} won't look at the camera."],   // D2132 step 3b
+  ['Associate Juniper', "Gorgeous! You'll be the first face on the wall. Have a bright day!"],
 ];
+// The played text has the partner's name where the data says {pet}.
+const unpet = lines => lines.map(([who, text]) => [who, text.replace(/^.+(?= won't look at the camera\.$)/, '{pet}')]);
 const WELCOME = /^Yay! Welcome to the partnership, .+! Brighter by nature\.$/;
 // ACT1_KEEPER_JOIN (D1553): the beat moved from the Glimmer pick to Juniper's lanyard step (enrol_lanyard), after Ilse's
 // enrolment on the lanyard face. The line after the beat is the handset (the old pick's Tobin line is retired).
@@ -116,7 +120,8 @@ for (const reduce of [false, true]) {
     // The beat plays once, in order, right after the welcome (where the lanyard is handed over) and before Tobin's line.
     const at = beatAt(lines);
     expect(at).toBeGreaterThan(0);
-    expect(lines.slice(at, at + BEAT.length)).toEqual(BEAT);
+    expect(unpet(lines.slice(at, at + BEAT.length))).toEqual(BEAT);
+    expect(lines[at + 3][1]).not.toContain('{pet}');
     expect(lines[at - 1][0]).toBe('Associate Juniper');
     expect(lines[at - 1][1]).toMatch(WELCOME);
     expect(lines[at + BEAT.length]).toEqual(['', TOBIN]);
@@ -195,11 +200,11 @@ test('the enrolment alone: no Juniper beat, no photo flag, no unease (the beat i
   expect((await stored(page)).v).toBe(2);
 });
 
-test('copy: the beat is PLACEHOLDER, fits 110, keeps the Glimmerwell voice and no banned words', async ({ page }) => {
+test('copy: the beat is Story\'s (D2132), fits 110, keeps the Glimmerwell voice and no banned words', async ({ page }) => {
   await boot(page, pickSave());
   const d = await page.evaluate(() => ({ file: MAPDATA.detail_zz_pick_log }));
-  expect(d.file._placeholders.note).toMatch(/^PLACEHOLDER/);
-  expect(d.file._placeholders.paths).toEqual(['scenes.pick_log']);
+  expect(d.file._placeholders).toBeUndefined();
+  expect(d.file._lines).toMatch(/D2132/);
   const says = [];
   const walk = n => { if (Array.isArray(n)) { if (n[0] === 'say') says.push([n[1], n[2]]); n.forEach(walk); } };
   walk(d.file.scenes.pick_log);

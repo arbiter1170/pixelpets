@@ -143,7 +143,7 @@ const MEETING_HEAD = [
   "I've work for you. Kilnmouth's springs have gone cold this season. Nobody there can tell me why.",
   'A Calm Tower went up there the same season. Its permit is in order. I checked it myself.',
   "And their council has an empty seat. Everyone has a name for it. I'd like the town's.",
-  'Go and look. Listen more than you talk. Then come back and tell me what you found.',
+  'Go and look. Listen more than you talk. Then come back and tell me what you found, in plain words.',   // D2138
 ];
 // Into the office: the posted Cadet walks through the House door and stands at governor_front (12,5), facing up.
 async function toOffice(page) {
