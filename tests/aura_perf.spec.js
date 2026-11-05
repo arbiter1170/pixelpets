@@ -4,7 +4,7 @@
 const fs = require('fs');
 const { test, expect } = require('@playwright/test');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
-const { starterSave, installSave, gotoGame } = require('./helpers');
+const { starterSave, installSave, gotoGame, openSettings } = require('./helpers');
 const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 
 let env = null;
@@ -106,7 +106,7 @@ test.describe('effect budget', () => {
     await gotoGame(page, '?cloud=emu&debug=1' + emuQuery());
     await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true && window.PixelPets.net && window.PixelPets.net.uid, null, { timeout: 25000 });
     await page.evaluate(() => PixelPets.showTab('walk'));
-    await page.locator('#settingsBtn').click();
+    await openSettings(page);
     await page.locator('#setRoomCode').click();
     await page.locator('#roomCodeInput').fill('AMB-4RQ');
     await page.locator('#roomJoin').click();

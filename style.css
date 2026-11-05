@@ -1833,3 +1833,5 @@ body:not(.ctl-modern) #thChip .th-stripe{bottom:-6px;left:0;right:0}
 .side-row .side-name{display:block;color:var(--y);font-size:16px;line-height:1.2;font-weight:normal}
 .side-row[data-side="glimmer"] .side-name{color:var(--w)}
 .side-row .side-line{margin:2px 0 0;font-size:14px;line-height:1.25;color:var(--w)}
+/* WALK_BESIDE D1972: the Keepers' whole word under the tier, in the row's own text colour; wraps at 320 */
+.side-row .side-word,.st-row .side-word{margin:4px 0 0;font-size:14px;line-height:1.25;color:var(--w);overflow-wrap:break-word;white-space:normal}
