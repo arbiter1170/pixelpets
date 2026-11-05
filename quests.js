@@ -58,6 +58,8 @@
     'story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',   // HIGH_CHARITY_LAYOUT §11 hooks
     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
     'story.cab_seat', 'story.km_seat_filled',   // CABINET_AND_COUNCILS §6 (1b): S1 writes them beside the chain step story.km_seat_pick
+    'story.wm_visited', 'story.wm_card', 'story.wm_trail', 'story.wm_trail_pick', 'story.wm_given', 'story.wm_plaque', 'story.wm_runner',   // WAR_MUSEUM §8:
+    'story.wm_st_lanterns', 'story.wm_st_map', 'story.wm_st_scout', 'story.wm_st_drum', 'story.wm_st_case',   // results and counters (city only); wm_trail_done is the side step
     'story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen',   // HC_PARADE (D1365): beats inside the parade scene (city only); story.hc_greeted stays the step
     'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue',   // High Charity and Mahopac bits; neither is a main-chain step
     // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
@@ -567,6 +569,13 @@
       { id: 'lens_moment', label: 'The lens at Mahopac', when: ['story.lens_note', '!story.climb_open'], done: ['story.lens_seen'],
         text: 'Warden Ilse is waiting at the lens in Mahopac.', place: 'Breckenridge Observatory',
         target: { map: 'mahopac_obs', x: 3, y: 2 } },
+    ],
+    // WAR_MUSEUM §2.1 (D2307): the museum's quest, the Stamp Trail (PLACEHOLDER name, D2302). Accepted by talk: the curator hands
+    // over the card (story.wm_card); five stamps, any order; the fifth pays once (story.wm_trail_done). Optional in every act.
+    [
+      { id: 'wm_trail', label: 'The Stamp Trail', when: ['story.wm_card'], done: ['story.wm_trail_done'],
+        text: "Stamp the card at the lantern wall, the map case, the Scout's lamp, the drum, and the empty case.", place: 'Muster Road Museum',
+        target: { map: 'hc_museum_in', x: 6, y: 4 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();

@@ -4979,6 +4979,7 @@ function cond(c, live, o){
   else if (c.startsWith('talked:')) v = mapRT.talked.has(c.slice(7));
   // MAHOPAC_DREAMS E1 (D1941): `lens:<moment>` asks PPStanding.lensMoment, the lens's first match, on the flags as the scene sees them.
   else if (c.startsWith('lens:')) v = PPStanding.lensMoment(live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags) === c.slice(5);
+  else if (c === 'partner:out') v = followerOn();   // WAR_MUSEUM K1: the partner walks out beside the holder
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
   else if (c === 'enrol:ask') v = ENROL_CHOICE === 'ask';   // ACT1_KEEPER_JOIN D1562: the enrolment's pin-or-lanyard question
@@ -5668,6 +5669,18 @@ function openClockCard(){
   openEnvCard();
 }
 function closeClockCard(){ if ($('#ovClock').hidden) return; $('#ovClock').hidden = true; lockTabs(false); }
+// WAR_MUSEUM §2.2: a warm disc over a fed donation lantern, 900 ms; it swells and fades, or holds steady under reduced motion.
+const glowFx = [];
+function drawGlowFx(g, cx, cy){
+  const t = now();
+  for (let i = glowFx.length - 1; i >= 0; i--) {
+    const f = glowFx[i], k = (t - f.t0) / 900;
+    if (k >= 1 || !CUR || CUR.id !== f.map) { glowFx.splice(i, 1); continue; }
+    g.save(); g.globalCompositeOperation = 'lighter';
+    g.fillStyle = 'rgba(255,205,117,' + (f.still ? 0.3 : (0.35 * Math.sin(k * Math.PI)).toFixed(3)) + ')';
+    g.beginPath(); g.arc(f.x * TS + 8 - cx, f.y * TS + 6 - cy, 14, 0, Math.PI * 2); g.fill(); g.restore();
+  }
+}
 const shotFx = [];
 function drawShotFx(g, cx, cy){
   const t = now();
@@ -6221,6 +6234,24 @@ function onLand(){
 /* ---------- items (INVENTORY v1 §3): one catalog for the Bag, the Travel Shelf, battle, scene `give` and map pickups ---------- */
 // use: where it works ('battle' and/or 'field'); target: needs a pet; cap: stack limit (enforced on grant, not on load); price in Acorns.
 const ITEM_ART = {
+  old_oil_lamp: [   // WAR_MUSEUM §2.1 (D2307): the Stamp Trail's keepsake, a dented brass oil lamp, unlit; PAL only
+    '................',
+    '................',
+    '.......dd.......',
+    '......dFFd......',
+    '......dGGd......',
+    '.....ddGGdd.....',
+    '....dGyyyyGd....',
+    '...dGywyyyyGd...',
+    '..dGyyyyyyyyGddd',
+    '.dGGyyyyyyyyGGAd',
+    '.dGGGGGGGGGGGGd.',
+    '..ddFFFFFFFFdd..',
+    '....dFFFFFFd....',
+    '...dGGGGGGGGd...',
+    '....dddddddd....',
+    '................',
+  ],
   lantern_wick: [   // DAY1_TRIAL1_FLOW (D1154): a coiled wick with a small flame, PAL only
     '................',
     '.......y........',
@@ -6509,6 +6540,7 @@ const ITEMS = {
   keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
   lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Host Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Brisa sells them.' },   // D1154, FPT Part A
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
+  old_oil_lamp:   { name: 'Old Oil Lamp',   plural: 'Old Oil Lamps',   cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A keepsake from the Muster Road Museum.', blurb: 'Given for a fully stamped card.' },   // WAR_MUSEUM D2307 (PLACEHOLDER words)
 };
 const ITEM_ORDER = Object.keys(ITEMS);
 function drawItemIcon(canvas, id){
@@ -7959,6 +7991,7 @@ function drawMap(t){
   drawHqGlow(g, cx, cy);
   drawLampLights(g, cx, cy, VW, VH);
   drawShotFx(g, cx, cy);
+  drawGlowFx(g, cx, cy);
   wild.poofs = wild.poofs.filter(f => wild.clock - f.t < 500);
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
@@ -10295,6 +10328,17 @@ async function execStep(st){
       await sayBox('', playerName() + ' got ' + acorns(n) + '!');
       return;
     }
+    // WAR_MUSEUM §2.2 (D2308): ["pay", n, okSteps, shortSteps, ref] spends n Acorns from the bag when the scene's writes land, through
+    // the bank's moneyDelta (BANK_AND_HOMES, #334) as one `scene` line whose ref names its memo (museum_gift: "Museum gift"), then runs
+    // okSteps; a bag short of n runs shortSteps and spends nothing.
+    case 'pay': {
+      const n = Math.max(0, Number(a) | 0), spent = sc.vars.paid | 0, ref = typeof d === 'string' ? d : '';
+      if ((S.money | 0) - spent < n) { sfx('denied'); await execSteps(c || []); return; }
+      sc.vars.paid = spent + n; pend(() => { moneyDelta('scene', -n, ref); });
+      await execSteps(b || []); return;
+    }
+    // WAR_MUSEUM §2.2: ["glow", objectId] lights that object for a beat (the donation lantern); reduced motion lights it, no pulse.
+    case 'glow': { const o = CUR && CUR.objs.find(q => q.id === a); if (o) glowFx.push({ map: CUR.id, x: o.x, y: o.y, t0: now(), still: prefersReduced() }); return; }
     case 'sfx': { if (a) sfx(a); return; }
     case 'toast': { if (a) sc.toasts.push(expand(a)); return; }   // ACT1_KEEPER_JOIN 7g: a toast once the scene ends
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
@@ -13062,6 +13106,7 @@ const REGION_MAP = {
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_civic: 'highcharity', hc_exchange: 'highcharity', hc_waterfront: 'highcharity', hc_college: 'highcharity',   // HIGH_CHARITY_LAYOUT: one node for every chunk (D1275)
     hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_2: 'highcharity', hc_gov_3: 'highcharity',
+    hc_museum_in: 'highcharity',   // WAR_MUSEUM: the Muster Road Museum (city only)
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
@@ -19240,6 +19285,13 @@ if (HC_V2_ON) {
                     flags: KMREP.concat(['story.thr_chip_rumour', 'story.pres_cabinet_first', 'story.km_names=3']) },
     hc2_cab_town: { place: 'HC Cabinet seated, town', text: 'Act 2: after S1, the Bathkeeper named.', map: 'hc_gov_2', x: 1, y: 3, facing: 'down',
                     flags: KMREP.concat(['story.thr_chip_rumour', 'story.pres_cabinet_first', 'story.cab_seat', 'story.km_seat_pick=town', 'story.km_seat_filled']) },
+  });
+  // WAR_MUSEUM v0.1.1 (D2305): the Muster Road Museum opens from story.hc_arrived, so HC_F reaches it; Act 4 shows the D2318 card.
+  Object.assign(DEBUG_EXTRAS, {
+    hc2_museum_door: { place: 'HC Muster Road Museum door', text: 'Charter Hill, the old corner (D2300).', map: 'hc_civic', x: 8, y: 45, facing: 'up', flags: HC_F },
+    hc2_museum: { place: 'HC Muster Road Museum', text: 'The arrival; the curator is two steps east.', map: 'hc_museum_in', x: 7, y: 14, facing: 'up', flags: HC_F },
+    hc2_museum_a4: { place: 'HC Museum, Act 4', text: 'After the call: the empty case reads the Muster Hall.', map: 'hc_museum_in', x: 7, y: 14, facing: 'up',
+                     flags: HC_F.concat(['story.act=4', 'story.hc_parade_seen', 'story.wb_cut', 'story.hc_trial_called']) },
   });
 }
 // A checkpoint past a Hall means the match route: the Seal, plus the tag on the Glimmer path (SEALS_BOTH_PATHS §4.7).

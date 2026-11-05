@@ -127,7 +127,8 @@
 
   // Memo text for one line. `R` resolves ids against the game's data (game.js passes it):
   // { place(ref), holder(ref), item(ref), look(ref), meal(ref), store(ref), scene(ref), event(ref) }, each returning '' when unknown.
-  const SCENE_MEMO = Object.freeze({ ans_close: 'The Answerers', juniper_bonus: "Juniper's bonus" });   // §3.5 `scene` labels
+  const SCENE_MEMO = Object.freeze({ ans_close: 'The Answerers', juniper_bonus: "Juniper's bonus",
+    museum_gift: 'Museum gift' });   // §3.5 `scene` labels; museum_gift: WAR_MUSEUM §2.2 (D2308), the donation lantern
   function memo(row, R){
     const src = row[1], ref = refOf(row), r = R || {};
     const call = (k, v) => (typeof r[k] === 'function' ? (r[k](v) || '') : '');

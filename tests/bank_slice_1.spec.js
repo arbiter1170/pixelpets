@@ -317,11 +317,12 @@ test.describe('D2234 the ledger seam: moneyDelta (T-B3)', () => {
     expect(mini.match(/S\.money\s*(=(?!=)|\+=|-=)/g)).toBeNull();
     expect(game.slice(start, end)).toContain('battle.coop');   // D331: a co-op guest writes nothing
     // The wrapped sites: 13 in game.js and the Event Hall, plus three debug writes (the dawn dividend and the wallet are the bank's own).
+    // WAR_MUSEUM (D2308) adds a third `scene` site: the scene step `pay`, the museum's donation lantern ("Museum gift").
     const sites = [...outside.matchAll(/moneyDelta\('([a-z_]+)'/g)].map(m => m[1]);
     const count = k => sites.filter(x => x === k).length;
     expect({ find: count('find'), look: count('look'), scene: count('scene'), meal: count('meal'), rest: count('rest'), tourney: count('tourney'),
       clip: count('clip'), shop: count('shop'), wild: count('wild'), debug: count('debug') })
-      .toEqual({ find: 2, look: 2, scene: 2, meal: 1, rest: 1, tourney: 1, clip: 1, shop: 1, wild: 1, debug: 3 });
+      .toEqual({ find: 2, look: 2, scene: 3, meal: 1, rest: 1, tourney: 1, clip: 1, shop: 1, wild: 1, debug: 3 });
     expect(outside).toContain("moneyDelta(t.hall ? 'hall' : 'holder', money,");
     expect(mini).toContain("api.moneyDelta('event', n, id)");
   });
