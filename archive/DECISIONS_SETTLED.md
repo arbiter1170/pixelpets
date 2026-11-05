@@ -2,6 +2,52 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Wed Nov 4, 2026: Vincent settles LOOK_LOCK's fixes (all defaults; recorded by Claude Code with the build, `claude/look-fixes`)
+
+Vincent: "Look lock: all defaults". The rule throughout: recolour the lookalike, never the main character. Design rows in `specs/LOOK_LOCK.md` (design repo); sheets in `handoff/shots/look_fixes/`.
+
+- **D2273 (red, SETTLED):** Associate Juniper wears her own key `juniper`: the Associate coat, soot trim and crimson bag, with long black hair. Tobin, the plain Associate and the others keep `associate`; parade supporter 2 keeps short dark hair.
+- **D2274 (red, SETTLED):** Archivist Mo wears her own key `mo`: the Keeper clerk coat with a white bob and glasses. Clerk Wynn, the Cadet, the Keeper reader and the High Charity clerk keep `clerk`; Keeper Pryce keeps his grey bun.
+- **D2275 (red, SETTLED):** the High Charity preview President wears `president` (the cardigan); `hc_president` is retired, kept defined and unworn.
+- **D2276 (red, SETTLED):** Dorian's two briefing copies wear `dorian`, Imogen's wears `imogen`.
+- **D2277 (red, SETTLED):** the eleven recolours as proposed: Clerk Nia's hair red; parade supporter 5 a buzz cut; Pim's hoodie sky; the Quilt Stitcher's sweater teal; the Commander's hair black; Dr. Ivo in a white lab coat; `regenx` hair grey; Mr. Gristle's coat dark; Brannoch's vest teal; the Diner Regular's hoodie green with a red buzz cut; supporter 4's hair orange.
+- **F6 (WARDROBE_SHOP 4a rows, built):** Captain Lumen in High Charity wears `captain` (`petra` kept, unworn); Keeper Moss and Cadet Arlo in Keeper green; Warden Teodor's trim white; Watch Saffie in the watch navy.
+- **D2278 (yellow, SETTLED):** Ken (`sm_ken`) and Sefton (`h1_cadet`) join the Keeper on-duty list; the Junior Bright wears its own Glimmer-set look `junior_bright`.
+- Also fixed: Route 4's three Keepers named the missing look `keeper_officer` and drew as villagers; they wear `officer` and join the on-duty list.
+- **D2350 (red, SETTLED by Vincent, Thu Nov 5, 2026):** the Hall 4 crew (`bg_hallcrew`: Rod Tender, Line Runner, Sky Watcher) wear a teal `t` vest instead of navy; Dad unchanged. Vincent: "Yes, to both". Built on `claude/look-fixes` on the default (Wed Nov 4); recorded here when Vincent saw the sheet (`handoff/shots/look_fixes/bg_hallcrew_390.png`, `_320.png`).
+
+## Wed Nov 4, 2026: Vincent approves animated pixel sprites in battle (SPRITE_ANIM, recorded by Claude Code)
+
+Relayed by the coordinator: D2070 yes as previewed, D2071 yes (drawn leans); the yellows settle on their defaults. Built in #321.
+
+- **D2070 (Wed Nov 4, 2026, red, SETTLED by Vincent):** battle Walklings take pose frames (breathe, wind-up, strike, flinch, happy) in their own letters and PAL, inside today's lunge, squash and knock (`sprite_anim.js`).
+- **D2071 (Wed Nov 4, 2026, red, SETTLED by Vincent):** asymmetric frames: the three leans are `full` 16-column letter grids.
+- **D2072 (Wed Nov 4, 2026, yellow, SETTLED on the default):** the hit frame is a flinch only (duck 1 px, lean away 1 px, eyes squeezed shut); never hurt.
+- **D2073 (Wed Nov 4, 2026, yellow, SETTLED on the default):** timings: idle 500/500 ms, today's blink, foe 250/1170 ms behind; wind-up 0-80 ms; strike to contact + stop; flinch max(170, stop + knock) ms; happy with the hearts.
+- **D2074 (Wed Nov 4, 2026, yellow, SETTLED on the default):** FULL drops the whole-sprite 1 px bob (the breathe replaces it); CALM and OFF keep it.
+- **D2075 (Wed Nov 4, 2026, yellow, SETTLED on the default):** CALM and reduced motion: today's idle plus held strike, flinch and happy; OFF is today's sprite exactly.
+- **D2076 (Wed Nov 4, 2026, yellow, SETTLED on the default):** the happy frame ships on the befriend hearts (FULL and CALM).
+- **D2077-D2079 (Wed Nov 4, 2026, green, SETTLED):** code shape (`sprite_anim.js`, `saPose`, `saSet`), the generator and hand rows, the build and test plan.
+
+## Tue Nov 3, 2026: Vincent approves the Lantern House and the President's look (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the crackdown: "Approved, president has a preview/look that is seen on the TV during his broadcast moment. Build his character based off that."
+
+- **D1413 (Tue Nov 3, 2026, red, SETTLED by Vincent):** yes: the rebuilt Fernbrook Lantern House (the wire station, LANTERN_HOUSE_FERNBROOK) deploys; rule 9 previews approved (`handoff/shots/lantern_house_fernbrook/build/`).
+- **D1414 (Tue Nov 3, 2026, red, SETTLED by Vincent):** the President's look is the bust on the wire set (`wire_wall_pres`), and his character is built from it: NPC look `president` (skin 3, short grey hair, Keeper green `J` cardigan with a gold front for the bust's gold lapels) and cast `cd_president`, both in `data/detail_zz_crackdown.json`; sheet in `handoff/shots/post_trial_crackdown/build/president_sheet.png`. On-screen naming was not ruled on, so the speaker label stays "The President" (D1241 cleared the name for later use).
+
+## Tue Nov 3, 2026: Vincent's rulings on POST_TRIAL_CRACKDOWN (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the crackdown packet: "Let's build it", then on the spec's defaults "Yes, but I'll change some", with one change: "There should be no pick yet, need placeholder and to spec a quest from the warden in starting area who summons the keeper back home to meet her." He also chose the full Lantern House redesign (still behind rule 9 previews, D1413) and draft art now (D1412).
+
+- **The pick after the crackdown (Tue Nov 3, 2026, red, SETTLED by Vincent; the same call as D1395, recorded with its wording in docs PR #278).** Vincent: "Only change is the pick doesn't happen right when the curfew ends." Everything else follows the spec defaults: the holder is let go at dawn and the curfew order (posts, notice, cordon, Glimmerwell on the east road) stands until the pick. On the first step out of the Lantern House after the dawn release, Warden Ilse phones (Amos passes the message on if the holder has no phone); the holder goes home to the Lodge for the debrief (`warden_summons`, `warden_meet`); the pick waits on `story.warden_met` until the rendezvous build moves it to `story.rdv_done`. The quest that follows is RENDEZVOUS_VINCENT (D1396-D1410, #278), merged with WARDEN_SUMMONS by Vincent at 9:56 AM ET: Ilse phones (D1404), is distraught at the President at the Lodge, and sends the holder on to Vincent. Supersedes D1203's "pick at dawn". D1200 ("The curfew is good to run through dawn") and D1405 (townsfolk back by day once Ilse calls; posts and notice until the pick) are what is built.
+- **Rows closed with this ruling (moved word for word from Open).** D1197, D1198, D1201, D1202, D1204, D1205 and D1207: the spec defaults, accepted and built. D1200: built as Vincent settled it (the curfew runs through dawn; the order's posts stand until the pick, D1405). D1203: amended by D1395. D1206: already superseded by D1224 (the Hall stays shut, `story.hall1_shut`), which is what is built. D1198, D1200, D1201, D1202 and D1203 are recorded with Vincent's own words in the 7:52 and 8:05 AM ET sections below (#278), so only D1197 and D1204-D1207 are moved here.
+| D1197 | red, POST_TRIAL_CRACKDOWN §13 | The crackdown after Trial 1: a Keeper Commander with two Keeper tanks (no guns) and officers closes Fernbrook, stops its Trials, sends Glimmerwell away, threatens the holder's Seal (words only) and orders the holder and Fen out; Fen defies him and appeals to the Warden. Fills D1175 | Not built. Spec and storyboard in `handoff/shots/post_trial_crackdown/` | `data/detail_zz_crackdown.json` (new) |
+| D1204 | yellow, POST_TRIAL_CRACKDOWN §10a.5 | Engine E1-E5: prop casts, per-tile `ms`, `_move` frames for moving props, width-aware cull, `walkAll` step (all prototyped); E6 footprint only if needed | Not built. Default: add E1-E5 | `game.js` |
+| D1205 | yellow, POST_TRIAL_CRACKDOWN §13 | A Keeper wire set prop plays Block News as `say` lines; three Block News stories in NEWS | Not built. Default yes, Fernbrook only | the new overlay, `data/news.json` |
+| D1206 | yellow, POST_TRIAL_CRACKDOWN §12 | The Trial Hall is closed by `deny` during the curfew only; open as a place after the pick | Not built. Default yes | `data/fernbrook_rooms.json` |
+| D1207 | yellow, POST_TRIAL_CRACKDOWN §5 | Fernbrook NPCs and the plaza cast hidden during the curfew; officers posted at 6,6 and 21,7; notice and cordon | Not built. Default yes | the new overlay |
+
 ## Tue Nov 3, 2026: Vincent settles KEEPER_ANTHEM v0.2.1 (design specs/KEEPER_ANTHEM.md §12, master 52f62a2; recorded by Claude Code with the build, `claude/keeper-anthem-build`)
 
 Every row was settled by Vincent on its default (v0.1.1 for D1375-D1384, v0.2.1 for D1419-D1423), as the design spec records them. Built as written.
@@ -98,6 +144,7 @@ Vincent, in the Claude Code session that built the contested Fernbrook Trial Hal
 - **D1193 (yellow, SETTLED by the art and design agent on Vincent's delegation):** keep the §5.3 holder spots: neutral `h1_local` on the seam (8,20), `h1_challenger` on the polish (12,12), the Keeper cadet `h1_cadet` on the Keeper half of the dais (3,5) facing right. Each stands on their own side's material; sight lines, paths and Fen's gate unchanged (`handoff/shots/trial_hall_fernbrook_art/ART_NOTES.md`).
 - **D1195 (yellow, SETTLED by the art and design agent on Vincent's delegation):** the Glimmerwell floor is lighter, by +21 greyscale luma on the T12 measure (east 166, west 145), inside a band of more than 20 and less than 40. +28 would need a cool grey PAL lacks; more white reads as glass. The halves also differ warm against cool and busy against quiet (`ART_NOTES.md`).
 - The 36 new prop lines are June's pass, drafted by Claude in June's role, for Vincent to approve (D1196's PLACEHOLDER copy replaced).
+- **D1196 (green, SETTLED by Vincent, Thu Nov 5, 2026):** the 36 new prop lines are June's pass (drafted by Claude in June's role) and are approved. Vincent, via the Chief of Staff, on the #311 catch-up: "311 yes" (the 390/320 compare sheets for the art pass and the 36 lines). The room stays behind `HALL2_RELEASED = false`; turning it on is a separate one-line PR.
 
 ## Tue Nov 3, 2026, 9:57 AM ET: Vincent settles the rest of GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
 
@@ -1105,3 +1152,10 @@ Recorded from design GEAR_SWITCH v0.1.3 (design commit 8a06d36), without renumbe
 | D1071 | yellow | GLIMMERWELL_PALETTE v0.2.3: map halos and legend for E | Superseded by D1086 |
 | D1072 | red | GLIMMERWELL_PALETTE v0.2.3: "mint" in player text | Superseded by D1087 |
 | D1073 | green | GLIMMERWELL_PALETTE v0.2.4: olive porters | Superseded and moot: porters stay blue |
+
+## MAHOPAC_DREAMS v0.1 (settled Wed Nov 4, 2026)
+
+| Id | Colour | Call | Outcome |
+|---|---|---|---|
+| D1002 (g) | yellow, STORMBELL_SPIRE | the dream-ledger echo | Settled by D1924 (Vincent, Wed Nov 4, 2026): the Spire debrief for W, the lens for L, P1 for G (design `specs/MAHOPAC_DREAMS.md` §5) |
+| D1940-D1951 | red D1940-D1946, yellow D1947-D1950, green D1951 | the lens moment, Mom's walk north, the silence, the epilogue card, the echoes, Dad's whereabouts, the side card, build notes | Settled by Vincent, Wed Nov 4, 2026, on every default (design `specs/MAHOPAC_DREAMS.md` §14) |

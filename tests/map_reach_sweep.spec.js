@@ -124,7 +124,7 @@ const LINES_B7 = [
 ];
 const LINES_B8 = [
   ['fb_lantern_in', 3, 4, 'up', 'A wooden counter. A bowl of water sits on it.'],
-  ['fb_lantern_in', 10, 4, 'up', 'A small lamp. The shade is warm.'],
+  ['fb_lantern_in', 10, 10, 'up', 'A small lamp. The shade is warm.'],   // LANTERN_HOUSE_FERNBROOK: fb_lamp moved 10,3 -> 10,9
   ['fb_lantern_in', 8, 4, 'right', 'Herbs hang here to dry.'],
   ['fb_lantern_in', 9, 8, 'up', 'A crate of orchard apples.'],
   ['fb_lantern_in', 7, 10, 'right', 'A low table. The top is clear.'],
@@ -302,6 +302,8 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
         if (mode === 'b6') doorKinds.push('trigger');
         objs.forEach((o) => {
           if (doorKinds.indexOf(o.kind) < 0) return;
+          // PROP_DRESS: library dressing hung on a wall face (dress_*, no lines, not tappable) has no floor side; prop_dress.spec.js covers it
+          if (/^dress_/.test(o.id) && !PixelPets.tileInfo(o.x, o.y).walk) return;
           const onTile = o.kind === 'warp' || o.kind === 'trigger';
           if (!(onTile ? seen.has(o.x + ',' + o.y) : adj(o.x, o.y))) missed.push(o.id);
         });
@@ -340,7 +342,7 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
   }
   // Literal tallies from a full pass. A skipped map, or a map that dropped a person or prop, fails here.
   const COUNTS = {
-    hm_home_in: { npc: 2, trainer: 0, sign: 1, prop: 6, warp: 2 },   // PARTNER_DAY: Mom and Maze; the bed and mirror moved upstairs, coat pegs came
+    hm_home_in: { npc: 2, trainer: 0, sign: 1, prop: 13, warp: 2 },   // PARTNER_DAY: Mom and Maze; the bed and mirror moved upstairs, coat pegs came. PROP_DRESS (D2032): +7 dressing pieces
     hm_home_up: { npc: 0, trainer: 0, sign: 0, prop: 7, warp: 1 },   // PARTNER_DAY: Mom moved down; Maze's cushion
     hm_lodge_in: { npc: 1, trainer: 0, sign: 0, prop: 7, warp: 1 },
     hm_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 6, warp: 1 },
@@ -351,7 +353,7 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
     dream_2004: { npc: 2, trainer: 0, sign: 1, prop: 10, warp: 0 },
     dream_party: { npc: 0, trainer: 0, sign: 1, prop: 4, warp: 0 },
     dream_drive: { npc: 1, trainer: 0, sign: 0, prop: 3, warp: 0 },
-    fb_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 12, warp: 1 },
+    fb_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 22, warp: 1 },   // LANTERN_HOUSE_FERNBROOK: + wire set, lamps, switchboard, desk, four benches, call box
     fb_hall_in: { npc: 1, trainer: 3, sign: 1, prop: 24, warp: 1 },   // DAY1_TRIAL1_FLOW: the three holders before Fen
     hm_hq_f1: { npc: 5, trainer: 0, sign: 1, prop: 41, warp: 2 },
     hm_hq_f2: { npc: 4, trainer: 0, sign: 1, prop: 28, warp: 1 },

@@ -201,6 +201,7 @@ test('a REST that leaves food low holds the ring still', async ({ page }) => {
 
 test('arcade, a missing starter, and another Walkling do not light the heart', async ({ page }) => {
   const s = starterSave();
+  s.settings.controls = 'arcade';   // Arcade opt-in: the first check is that Arcade never lights the heart
   s.party[0].hunger = 10;
   s.party[0].energy = 5;
   await installSave(page.context(), s, { quietDay: true });

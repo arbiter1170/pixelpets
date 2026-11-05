@@ -5,7 +5,8 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 test('walking into a sign does not open it; TALK does', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  const s = starterSave(); s.settings.controls = 'arcade';   // Arcade opt-in: the test is about the TALK button
+  await installSave(page.context(), s, { quietDay: true });
   await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
   await page.evaluate(() => PixelPets.showTab('walk'));

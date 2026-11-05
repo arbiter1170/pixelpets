@@ -20,7 +20,7 @@
     "Officer Bren": "officer",
     "Officer Vale": "hmp_vale",
     "Sergeant Bram": "officer",
-    "Archivist Mo": "clerk",
+    "Archivist Mo": "mo",
     "Clerk Wynn": "clerk",
     "Captain Lumen": "captain",
     "Operator Rue": "officer",
@@ -68,7 +68,7 @@
             "story.side=glimmer": "The House is ours. Look. Do not sit.",
             "standing.keepers>=3": "Captain Lumen asked after you today.",
             "standing.keepers>=1": "Door's open for a Keeper. Come through.",
-            "story.side=keepers": "New to the coat? Bram will sign you in.",
+            "story.side=keepers": "New to the coat? Drummond will sign you in.",
             "else": "Citizen. The House is for the watch."
           }}
         ]
@@ -208,7 +208,7 @@
           "kind": "npc",
           "id": "hq_mo",
           "name": "Archivist Mo",
-          "look": "clerk",
+          "look": "mo",
           "x": 3,
           "y": 5,
           "facing": "up",
@@ -390,7 +390,7 @@
         ["say", "Sergeant Bram", "Your company likes a bright day. This doorway is as far as you come."],
         ["setFlag", "story.met_bram", true]
       ], [
-        ["say", "Sergeant Bram", "Sergeant Bram. I run the door, and Bren walks the road."],
+        ["say", "Sergeant Bram", "Sergeant Drummond. I run the door, and Bren walks the road."],
         ["say", "Sergeant Bram", "Before you pledge, you are a citizen. The watch eats first."],
         ["say", "Sergeant Bram", "Pledge, and do the work, and the chairs get warmer."],
         ["say", "Sergeant Bram", "Mo has the shelf. Wynn has the book. Lumen and Rue keep the upstairs."],
@@ -423,7 +423,7 @@
         ["say", "Clerk Wynn", "They say have a bright day. The copy in my book does not."],
         ["setFlag", "story.met_wynn", true]
       ], [
-        ["say", "Clerk Wynn", "Bram keeps the door. I keep the copies. The captain keeps the rank."],
+        ["say", "Clerk Wynn", "Drummond keeps the door. I keep the copies. The captain keeps the rank."],
         ["setFlag", "story.met_wynn", true]
       ]]
     ],

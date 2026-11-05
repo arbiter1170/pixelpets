@@ -7,12 +7,14 @@ trackErrors(test, expect);
 test.beforeEach(async ({}, info) => { test.skip(info.project.name !== '390', 'sideways sizes are set in the test; one project is enough'); });
 
 const SIDE = [{ width: 844, height: 390 }, { width: 667, height: 375 }, { width: 568, height: 320 }];
+// Every test here is about Arcade (the pad, TALK, the grips): the seeded save opts in, since starterSave() is Modern.
+const arcadeSave = () => { const s = starterSave(); s.settings.controls = 'arcade'; return s; };
 const inside = (b, w, h) => b.x >= 0 && b.y >= 0 && b.x + b.width <= w + 0.5 && b.y + b.height <= h + 0.5;
 
 for (const vp of SIDE) {
   test(`sideways arcade: grips outside the game window, modern buttons inside (${vp.width}x${vp.height})`, async ({ page }) => {
     await page.setViewportSize(vp);
-    await installSave(page.context(), starterSave(), { quietDay: true });
+    await installSave(page.context(), arcadeSave(), { quietDay: true });
     await gotoGame(page);
     await page.evaluate(() => PixelPets.showTab('walk'));
     await page.waitForTimeout(300);
@@ -45,7 +47,7 @@ for (const vp of SIDE) {
 
 test('sideways arcade: the pad walks, TALK is the one talk button, and the tip still says pad', async ({ page }) => {
   await page.setViewportSize({ width: 844, height: 390 });
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForTimeout(300);
@@ -63,7 +65,7 @@ test('sideways arcade: the pad walks, TALK is the one talk button, and the tip s
 
 test('turning the phone moves the pad between the grip and the walk screen, and saves nothing', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   const home = () => page.evaluate(() => ({ grips: PixelPets.layout.grips, pad: document.querySelector('#dpad').parentNode.className, talk: document.querySelector('#talkBtn').parentNode.id,
@@ -96,7 +98,7 @@ test('sideways modern has no grips', async ({ page }) => {
 
 test('upright arcade: the 44 px pad gives the map its height back', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForTimeout(200);
@@ -106,7 +108,7 @@ test('upright arcade: the 44 px pad gives the map its height back', async ({ pag
 
 test('an upright phone with a short window (keyboard up) gets no grips', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 300 });
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });
   await gotoGame(page);
   expect(await page.evaluate(() => PixelPets.layout)).toEqual({ mode: 'arcade', land: false, grips: false });
   await expect(page.locator('#gripL')).toBeHidden();

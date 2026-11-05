@@ -8,7 +8,9 @@
     "hall_slot_1": "Tour. Vincent, Oct 13, 2026: slot 1 stays the stated default (Bright Pavilion Tour). The Audit battle is optional stop 4.",
     "hall_slot_2": "Sacrifice stub (Build 5). Quota is the free floor: three names spoken aloud. Setting a snack down is narrative only (the item stays in the bag, so the review cannot soft-lock). The Tuning, Pick another and the quota give the Bright Tier 2 tag and story.seal2, not the Seal. Face Hale for the Seal battles hall2_hale (merged row, seal_cobblecrest) and onWin runs seal2; after a tag close Hale offers the match again until it is won (D1324, D1325, D1328). Real cost is still D24 (partly superseded by D1325, D1328).",
     "rook_r5": "Built (Build 6). Keepers brinewick_hook sets story.rook_end ally. Glimmerwell brinewick_hook@glimmer sets stays. Both set story.cobble_end. Not bond-gated. Tone confirmation is still D25.",
-    "d1448_rook_signup": "D1448: Partner Day is only the Keepers' starter day. Rook's teaser@glimmer line says \"Sign-up day\": stand-in copy until Story replaces it (OPEN_DECISIONS row B-7 (copy))."
+    "d1448_rook_signup": "D1448: Partner Day is only the Keepers' starter day. Rook's teaser@glimmer line is Story's (STORY_LINES D2136): late on Partner Day, the jingle, the wine sticker, matching his Keepers-side teaser.",
+    "d2134_fen_after": "STORY_LINES D2134: Fen's Open-lean nudge (60 characters) is a talk line on fen_after itself (slicePatch, the 110 rule). The lines.fen_after bag, which repeated the same three keys and is held to the 40-character ambient rule, is gone; applyGlimmerLines leaves fen_after's own lines as they were.",
+    "d2144_unease": "STORY_LINES D2144 (Vincent, Nov 4, 2026): glen_cleared@glimmer asks the holder to answer Rook's \"looked... empty\". \"They did look empty.\" adds one story.tour_unease point, capped at 2; \"Imogen says they're fine.\" adds nothing. The Testing threshold in hale_trial@glimmer stays 2 (D26), so a new save that agrees with Rook hears Quinn's softer line and Rook's aside (D2145)."
   },
   "slicePatch": {
     "maps": {
@@ -91,13 +93,14 @@
             "y": 9,
             "look": "fen",
             "when": [
-              "story.orchard_cleared"
+              "story.orchard_cleared | story.fen_sent_home & story.seal1 & story.side_pick_done"
             ],
             "lines": {
+              "!story.orchard_cleared": "Tobin's by the cart. Show him what a strong team looks like.",
               "story.side=glimmer": "The trees still know your step.",
               "!story.side=glimmer": "Thank you. The blossoms remember."
             },
-            "_note": "fen_orchard leaves once the orchard is cleared. These lines need a Fen who stays. No new look."
+            "_note": "fen_orchard leaves once the orchard is cleared. These lines need a Fen who stays. No new look. D1432: her Hall is shut after Seal 1 and the pick, so on the Day 1 flow she waits here from the pick (a Keepers save sees her before Tobin's battle; that line is draft copy for Story, OPEN_DECISIONS D1186)."
           },
           {
             "kind": "trigger",
@@ -156,27 +159,7 @@
       [
         "say",
         "Master Fen",
-        "{name}, my Pomlets have rooted here since the first blossom. Help me open these crates?"
-      ],
-      [
-        "say",
-        "Master Fen",
-        "No lanterns, no lanyards. Just steady hands and a little patience."
-      ],
-      [
-        "say",
-        "Associate Juniper",
-        "Hi hi! Don't mind us. We're relocating these little ones to a lovely Comfort Sanctuary."
-      ],
-      [
-        "say",
-        "Tobin",
-        "Tired is just relaxed with bad lighting! They'll nap under soft lamps. Clean energy, all round."
-      ],
-      [
-        "say",
-        "Associate Juniper",
-        "Help us pack and we'll sign you up for a Junior Bright trial lanyard. Today only!"
+        "You've seen where the crates go. Help me open them, or help them pack."
       ],
       [
         "say",
@@ -185,158 +168,88 @@
       ],
       [
         "say",
+        "Associate Juniper",
+        "The Sanctuary has warm beds and a vet. It's kind, really!"
+      ],
+      [
+        "say",
         "Master Fen",
         "A lanyard is a ribbon, {name}. Roots are a promise. Choose what you can carry."
       ],
       [
-        "say",
-        "",
-        "This decides who you travel with. Choose with care. This road is a long one."
-      ],
-      [
         "choice",
-        "Who do you help?",
+        "What do you do?",
         [
           [
             "Open the crates with Fen",
             [
               [
-                "choice",
-                "Really? Stand with the Keepers",
-                [
-                  [
-                    "Yes, the Keepers",
-                    [
-                      [
-                        "setFlag",
-                        "story.side",
-                        "keepers"
-                      ],
-                      [
-                        "setFlag",
-                        "story.side_pick_done",
-                        true
-                      ],
-                      [
-                        "setFlag",
-                        "story.met_fen",
-                        true
-                      ],
-                      [
-                        "standing",
-                        "keepers",
-                        null,
-                        "sp_pick"
-                      ],
-                      [
-                        "say",
-                        "Master Fen",
-                        "Then we grow together. Tobin won't listen to me. He might listen to a holder with a strong team."
-                      ],
-                      [
-                        "say",
-                        "Associate Juniper",
-                        "Aw. No hard feelings! The trial lanyard offer stays open. Have a bright day!"
-                      ],
-                      [
-                        "say",
-                        "Master Fen",
-                        "And if your path ever bends, the Lantern House keeps a door open. Paths do bend."
-                      ],
-                      [
-                        "run",
-                        "know_us"
-                      ]
-                    ]
-                  ],
-                  [
-                    "Think about it",
-                    [
-                      [
-                        "say",
-                        "",
-                        "You step back from the gate. The orchard can wait a moment."
-                      ]
-                    ]
-                  ]
-                ]
+                "setFlag",
+                "story.orchard_lean",
+                "open"
+              ],
+              [
+                "inc",
+                "story.fen_lean"
+              ],
+              [
+                "inc",
+                "story.sway_fernbrook",
+                2
+              ],
+              [
+                "setFlag",
+                "story.met_fen",
+                true
+              ],
+              [
+                "say",
+                "Master Fen",
+                "Then we grow together. Tobin won't listen to me. He might listen to a holder with a strong team."
+              ],
+              [
+                "say",
+                "Associate Juniper",
+                "Aw. No hard feelings! The trial lanyard offer stays open. Have a bright day!"
               ]
             ]
           ],
           [
-            "Pack crates with Tobin",
+            "Help Tobin pack",
             [
               [
-                "choice",
-                "Really? Join Glimmerwell?",
-                [
-                  [
-                    "Yes, Glimmerwell",
-                    [
-                      [
-                        "setFlag",
-                        "story.side",
-                        "glimmer"
-                      ],
-                      [
-                        "setFlag",
-                        "story.side_pick_done",
-                        true
-                      ],
-                      [
-                        "setFlag",
-                        "story.met_fen",
-                        true
-                      ],
-                      [
-                        "standing",
-                        "glimmer",
-                        null,
-                        "sp_pick"
-                      ],
-                      [
-                        "say",
-                        "Associate Juniper",
-                        "Yay! Welcome to the partnership, {name}! Brighter by nature."
-                      ],
-                      ["if", "story.seal1", [["seal", "seal_glim_1"]]],
-                      [
-                        "say",
-                        "Tobin",
-                        "Grab that crate lid, trainee. First rule: always smile at the units."
-                      ],
-                      [
-                        "say",
-                        "Tobin",
-                        "Thin handset. No crest. It still sits on their wires."
-                      ],
-                      [
-                        "give",
-                        "cracked_phone",
-                        1
-                      ],
-                      [
-                        "say",
-                        "Master Fen",
-                        "...I see. The Lantern House door stays open, {name}. It always has."
-                      ],
-                      [
-                        "run",
-                        "know_us"
-                      ]
-                    ]
-                  ],
-                  [
-                    "Think about it",
-                    [
-                      [
-                        "say",
-                        "",
-                        "You step back from the gate. The orchard can wait a moment."
-                      ]
-                    ]
-                  ]
-                ]
+                "setFlag",
+                "story.orchard_lean",
+                "pack"
+              ],
+              [
+                "inc",
+                "story.fen_lean",
+                -1
+              ],
+              [
+                "inc",
+                "story.sway_fernbrook",
+                -2
+              ],
+              [
+                "setFlag",
+                "story.met_fen",
+                true
+              ],
+              [
+                "say",
+                "Tobin",
+                "Grab that crate lid, new hire."
+              ],
+              [
+                "run",
+                "orchard@glimmer"
+              ],
+              [
+                "say",
+                "Associate Juniper",
+                "The trial lanyard offer stays open. Have a bright day!"
               ]
             ]
           ],
@@ -350,7 +263,8 @@
               ]
             ]
           ]
-        ]
+        ],
+        ""
       ]
     ],
     "orchard@glimmer": [
@@ -547,7 +461,7 @@
       [
         "say",
         "Rook",
-        "Yeah, I'm in too. Since spring. Sign-up day, the jingle, the sticker: all them."
+        "Yeah, I'm in too. Since spring. Late on Partner Day, the jingle, the wine sticker: that was all them."
       ],
       [
         "say",
@@ -903,6 +817,42 @@
         "Proud. They looked... empty, Imogen."
       ],
       [
+        "choice",
+        "Rook looks at you.",
+        [
+          [
+            "They did look empty.",
+            [
+              [
+                "say",
+                "Rook",
+                "...Yeah. Empty. Okay. So it's not just me."
+              ],
+              [
+                "if",
+                "story.tour_unease<2",
+                [
+                  [
+                    "inc",
+                    "story.tour_unease"
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "Imogen says they're fine.",
+            [
+              [
+                "say",
+                "Rook",
+                "Right. Imogen knows lamps. ...Sure she does."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
         "say",
         "Rook",
         "They gave me treats to calm the units. You take them. You will use them."
@@ -1219,12 +1169,12 @@
                       [
                         "say",
                         "Associate Quinn",
-                        "Some holders feel a flutter. We call it increasing the bond. Nothing sharp. Nothing cold."
+                        "You look worried, sweetie. Some holders feel a flutter after. That's the bond. Nothing sharp. Nothing cold."
                       ],
                       [
                         "say",
                         "Rook",
-                        "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."
+                        "Nothing sharp? Who said anything about sharp? ...It's fine. They'll get stronger. I want that. I do."
                       ]
                     ],
                     [
@@ -1510,10 +1460,6 @@
     "amos": {
       "story.side=glimmer": "Beds are beds. Rest up, wine-vest.",
       "!story.side=glimmer": "Rest well, holder. Roots need sleep."
-    },
-    "fen_after": {
-      "story.side=glimmer": "The trees still know your step.",
-      "!story.side=glimmer": "Thank you. The blossoms remember."
     }
   },
   "walkAway": [
@@ -1536,15 +1482,15 @@
   },
   "flags": {
     "story.side": "\"keepers\" (default, absent on old saves) or \"glimmer\". Pledge, not permanent.",
-    "story.side_pick_done": "The Fernbrook gate choice was made once.",
+    "story.side_pick_done": "The Act 1 face is set (ACT1_KEEPER_JOIN: the enrolment, or Juniper's lanyard step; on an old save, the gate pick). Written once, never cleared.",
     "story.beat.<scene>": "Set by the engine when a story beat finishes: which side played it.",
     "story.switches": "How many times the pledge changed at a Pledge desk.",
     "story.switch_chapter": "The chapter (Seals earned) of the last switch.",
     "story.switch_at": "Date.now() of the last switch.",
-    "story.tour1_s1": "Bright Pavilion Tour stop 1 done (lantern stand). Not a quest step.",
+    "story.tour1_s1": "Bright Pavilion Tour stop 1 done (lantern stand). Not a quest step. On a new-flow save (no Tour) Juniper's pick beat sets it instead (D1436, detail_zz_pick_log.json), so the photo news reads the same; story.tour1_s3 marks a save that took the Tour.",
     "story.tour1_s2": "Tour stop 2 done (Comfort Check at the crates). Not a quest step.",
     "story.tour1_s3": "Tour stop 3 done (Hall slideshow). Not a quest step. Stop 4 stays open until story.seal1.",
-    "story.tour_unease": "D193. +1 on the Comfort Check question and on the stage-photo flinch. At 2 or more, Testing softens Quinn's second line and Rook speaks once. Old saves may still have tour.doubt; that key is read once and left on disk.",
+    "story.tour_unease": "D193. +1 on the Comfort Check question and on the stage-photo flinch (on a new-flow save, +1 once at Juniper's pick photo, D1436). At 2 or more, Testing softens Quinn's second line and Rook speaks once. Old saves may still have tour.doubt; that key is read once and left on disk.",
     "story.arbiter_test_seen": "Quinn offered Testing at least once.",
     "story.arbiter_test_done": "One Walkling was chipped. A second Testing offer is refused.",
     "story.arbiter_test_active": "True during the Tuning beat. Cool tint and arbiter_test music. Cleared when the chip is in.",

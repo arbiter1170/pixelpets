@@ -100,7 +100,10 @@ test('QA 1: the stair door lands at (6,19) facing up; the mat goes back to Recor
 });
 
 test('QA 2 / E1: the camera follows, clamps top and bottom, never shows outside the grid; whole width visible', async ({ page }) => {
-  await boot(page, labSave());
+  // Arcade opt-in: this is the Arcade camera (its map window is shorter than the 22-row bay at every width); Modern's
+  // full-screen map is taller than the bay at 390, and tests/maps_b1.spec.js E1 covers the Modern camera.
+  const s = labSave(); s.settings.controls = 'arcade';
+  await boot(page, s);
   const cam = async (x, y) => { await at(page, x, y); await page.waitForTimeout(150);
     return page.evaluate(() => { const c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect(), wrap = document.querySelector('#mapWrap').getBoundingClientRect();
       return { x: PixelPets.walk.cam.x, y: PixelPets.walk.cam.y, w: c.width, h: c.height, cssW: r.width, wrapW: wrap.width }; }); };

@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir, openSettings, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -90,7 +90,7 @@ async function walkTour(page) {
       continue;
     }
     if (text && text.indexOf('Tap WALK') >= 0) {
-      await page.locator('#tabs button[data-tab="walk"]').click();
+      await showScreen(page, 'walk');
       continue;
     }
     const label = await page.locator('#tutActs button').first().textContent();
@@ -290,7 +290,7 @@ test('an older save with a grown starter marks the grow up tip seen @w1', async 
     return { flag: n.flags['story.unlock_growup'] === true, v: n.v };
   });
   expect(wildOnly).toEqual({ flag: false, v: 2 });
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setTipsReplay').click();
   await page.locator('#setClose').click();
   await expect(page.locator('#unlockCard')).toBeVisible({ timeout: 4000 });

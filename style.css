@@ -810,6 +810,63 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 #ovShop .shop-buy:disabled{cursor:default}
 #ovShop .shop-empty{margin:0;color:var(--h);font-size:16px;line-height:1.35;padding:8px 4px}
 body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
+/* BANK_AND_HOMES D2221: the account sheet #ovBank, on #ovShop's pattern (a bottom sheet, 8 px gutters, max 464, who-chip, bag pill,
+   44 px X) in civic slate and brass: sheet d, a 2 px G inset, a cream C page with sage D rules and k ink. Gains print in J, spends
+   in k; no red ink. Under the modern dock it sits 8 px above the dock so the chip stays in view (a tap there closes it). */
+#ovBank{--C:#e3d3ac;--D:#9fae86;--F:#5c4033;--G:#b5845a;--J:#2f5a3e;--K:#7a8aa0}
+#ovBank.overlay{background:transparent;align-items:flex-end;justify-content:center;padding:0 8px 8px;z-index:11}
+#ovBank .bank-sheet{width:100%;max-width:464px;height:min(78vh,calc(100vh - 62px));box-sizing:border-box;margin:0;background:var(--d);border:2px solid var(--k);box-shadow:inset 0 0 0 2px var(--G);padding:8px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+body.mhc-frame.ctl-modern #ovBank.overlay{padding-bottom:calc(156px + var(--sa-b) + 8px)}
+body.mhc-frame.ctl-modern #ovBank .bank-sheet{height:min(78vh,calc(100vh - 156px - var(--sa-b) - 24px))}
+#ovBank .bank-head{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;min-height:52px;flex:0 0 auto}
+#ovBank .bank-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+#ovBank .bank-who{align-self:flex-start;display:flex;align-items:center;gap:6px;padding:2px 8px 2px 6px;background:var(--k);color:var(--y);font-size:16px;line-height:20px;box-shadow:0 0 0 2px var(--d);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ovBank .bank-who canvas{width:12px;height:12px;flex:0 0 auto;image-rendering:pixelated;image-rendering:crisp-edges}
+#ovBank .bank-prompt{margin:0;color:var(--w);font-size:16px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ovBank .bank-pill{display:flex;align-items:center;gap:4px;background:var(--k);box-shadow:0 0 0 2px var(--d);color:var(--y);padding:4px 8px;min-height:32px;box-sizing:border-box;font-size:18px}
+#ovBank .bank-pill canvas{width:16px;height:16px;image-rendering:pixelated;image-rendering:crisp-edges}
+#ovBank .bank-x{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:0;background:var(--h);color:var(--k);font-size:20px;line-height:44px;cursor:pointer}
+#ovBank .bank-tabs{display:grid;grid-template-columns:repeat(var(--tabs,2),minmax(0,1fr));gap:4px;flex:0 0 auto;margin-bottom:-8px}
+#ovBank .bk-tab{height:44px;min-height:44px;padding:0 2px;border:0;background:var(--k);box-shadow:inset 0 0 0 2px var(--d);color:var(--h);font-size:16px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#ovBank .bk-tab.sel{background:var(--C);color:var(--k);box-shadow:none}
+#ovBank .bank-page{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--C);border:2px solid var(--k);color:var(--k);padding:6px 8px 8px;display:flex;flex-direction:column;gap:0}
+#ovBank .bank-page > *{flex:0 0 auto}
+#ovBank .bk-id{display:flex;justify-content:space-between;gap:8px;color:var(--m);font-size:14px;line-height:18px}
+#ovBank .bk-id .bk-who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ovBank .bk-id .bk-no{flex:0 0 auto}
+#ovBank .bk-total{display:flex;align-items:center;gap:6px;margin-top:4px}
+#ovBank .bk-acorn{width:20px;height:24px;image-rendering:pixelated;image-rendering:crisp-edges;flex:0 0 auto}
+#ovBank .bk-sum{font-size:32px;line-height:34px;font-weight:bold}
+#ovBank .bk-unit{font-size:18px;align-self:flex-end;padding-bottom:4px}
+#ovBank .bk-split{color:var(--m);font-size:16px;line-height:20px;margin-top:2px;white-space:pre}
+#ovBank .bk-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;margin:8px 0 4px;padding:6px 8px 8px;background:var(--w);border:2px solid var(--D)}
+#ovBank .bk-card-main{min-width:0;display:flex;flex-direction:column;gap:2px}
+#ovBank .bk-card-h{font-size:16px;line-height:20px}
+#ovBank .bk-since{font-size:14px;line-height:18px;color:var(--m)}
+#ovBank .bk-kv{display:flex;align-items:baseline;gap:10px;font-size:16px;line-height:20px}
+#ovBank .bk-kv > span{color:var(--m);min-width:64px}
+#ovBank .bk-kv.dawn > span{color:var(--k)}
+#ovBank .bk-remark{margin:2px 0 0;color:var(--F);font-size:16px;line-height:1.2}
+#ovBank .bk-card-side{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px}
+#ovBank .bk-stamp{width:48px;height:48px;box-sizing:border-box;border:3px solid var(--o);border-radius:50%;box-shadow:inset 0 0 0 3px var(--w),inset 0 0 0 4px var(--o);color:var(--o);font-size:14px;display:flex;align-items:center;justify-content:center;transform:rotate(-8deg)}
+#ovBank .bk-stamp.stamp-in{animation:bkStamp 180ms steps(1,end) both}
+@keyframes bkStamp{0%{transform:rotate(-8deg) scale(.8)}33%{transform:rotate(-8deg) scale(1.1)}66%,100%{transform:rotate(-8deg) scale(1)}}
+#ovBank .bk-thanks{width:88px;min-width:88px;height:44px;min-height:44px;padding:0;border:0;background:var(--y);color:var(--k);box-shadow:inset 0 -4px 0 var(--o);font-size:16px;cursor:pointer}
+#ovBank .bk-sec{color:var(--m);font-size:14px;line-height:18px;margin-top:6px}
+#ovBank .bk-row{display:flex;align-items:center;gap:8px;min-height:44px;box-sizing:border-box;border-bottom:2px solid var(--D);padding:2px 4px}
+#ovBank .bk-memo{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+#ovBank .bk-m{font-size:16px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ovBank .bk-sub{font-size:14px;line-height:16px;color:var(--m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ovBank .bk-n{flex:0 0 auto;font-size:18px;color:var(--k)}
+#ovBank .bk-n.in{color:var(--J)}
+#ovBank .bk-band{margin:6px -4px 2px;padding:2px 4px;background:var(--D);color:var(--k);font-size:14px;line-height:18px}
+#ovBank .bk-band:first-child{margin-top:0}
+#ovBank .bk-fold{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:34px;margin:6px -4px 0;padding:2px 4px;background:var(--D);font-size:14px}
+#ovBank .bk-fold b{font-size:16px;white-space:pre}
+#ovBank .bk-empty{margin:8px 0;color:var(--m);font-size:16px;line-height:1.3}
+#ovBank .bk-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:2px 8px;margin-top:auto;padding-top:10px;color:var(--m);font-size:14px;line-height:18px}
+#ovBank .bk-treasury{color:var(--K);font-size:12px;line-height:16px;margin-left:auto}
+@media (max-width:359px){#ovBank .bk-sum{font-size:28px;line-height:30px}#ovBank .bk-kv > span{min-width:58px}#ovBank .bk-thanks{width:80px;min-width:80px}}
 /* ONLINE_SAVES: Settings row, panel and the "which game to keep" choice (only built when the cloud path is on) */
 .set-row.set-cloud{padding:8px 14px}
 .set-cloud .set-lab{display:flex;flex-direction:column;gap:3px}
@@ -858,6 +915,11 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .map-level{flex:1 1 0;height:44px;min-height:44px;border:2px solid var(--h);background:var(--d);color:var(--w);font-size:18px;padding:0 4px}
 .map-level.on{background:var(--y);color:var(--k);border-color:var(--o)}
 .map-level.off{opacity:.45;color:var(--m)}
+/* ROUTE_TO_GOVERNOR §4 (D1851): the two region sheets, switched by buttons under the parchment (rule 6: 44 px). */
+.map-sheets{width:100%;display:flex;gap:4px;padding:4px 6px 0;box-sizing:border-box;flex:0 0 auto}
+.map-sheets[hidden]{display:none}
+.map-sheet{flex:1 1 0;min-width:44px;height:44px;min-height:44px;border:2px solid var(--h);background:var(--d);color:var(--w);font-size:16px;padding:0 4px}
+.map-sheet.on{background:var(--y);color:var(--k);border-color:var(--o)}
 .map-chips{display:flex;gap:6px;width:min(468px, calc(100% - 12px));flex:0 0 auto}
 .map-chips[hidden]{display:none}
 .map-chip{min-width:44px;height:44px;padding:0 10px;background:var(--d);color:var(--w);border:2px solid var(--h);font-size:16px}
@@ -868,7 +930,7 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .map-pin{display:flex;gap:8px;align-items:center;min-height:22px;color:var(--h);font-size:14px}
 .map-pin b{color:var(--w);background:var(--k);min-width:16px;text-align:center}
 #regionCanvas{width:320px;height:192px;image-rendering:pixelated;flex:0 0 auto;touch-action:none}
-.map-place{position:relative;width:min(320px, calc(100% - 12px));box-sizing:border-box;background:var(--n);box-shadow:0 0 0 2px var(--h);padding:6px 8px 8px;min-height:74px}
+.map-place{position:relative;width:min(320px, calc(100% - 12px));box-sizing:border-box;background:var(--n);box-shadow:0 0 0 2px var(--h);padding:6px 8px 8px;min-height:74px;flex-shrink:0}   /* ROUTE_TO_GOVERNOR: never squeezed under its text when the sheet buttons take a row; the overlay scrolls */
 .map-acts{display:flex;justify-content:flex-end;gap:6px;margin-top:6px}
 .map-act{min-height:44px;min-width:44px;padding:0 10px;background:var(--y);color:var(--k);font-size:16px}
 .map-act[hidden]{display:none}
@@ -1525,7 +1587,16 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 #repBack{min-height:44px}
 /* Modern walk acorn chip (D179): nav plate, 44 tall, number from cell 19, just left of the gear. Read-only. Fades with the badge in scenes.
    The plate is at least 32 cells and grows with the number. The 8x8 icon stays on the header, the bag and the shop. */
-.fc-acorns{position:absolute;top:calc(6px + var(--sa-t));right:calc(56px + var(--sa-r));height:44px;min-width:64px;box-sizing:border-box;padding:11px 6px 0 38px;gap:0;display:flex;align-items:flex-start;pointer-events:none;background:none;box-shadow:none}
+.fc-acorns{position:absolute;top:calc(6px + var(--sa-t));right:calc(56px + var(--sa-r));height:44px;min-width:64px;box-sizing:border-box;padding:11px 18px 0 38px;gap:0;display:flex;align-items:flex-start;pointer-events:auto;background:none;box-shadow:none;border:0;margin:0;color:var(--y);font-size:18px;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
+/* BANK_AND_HOMES D2220: the chip is a button that opens the book. The plate grows 12 px for the h caret; pressed drops the plate and
+   the glyph 2 cells, as the nav buttons do; one y pip with a k edge while today's dividend waits; a 2 px y focus ring. */
+.fc-acorns .fc-caret{position:absolute;right:9px;top:19px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--h);pointer-events:none}
+.fc-acorns.nav-press .frame-art,.fc-acorns.nav-press #fcAcornN,.fc-acorns.nav-press .fc-caret{transform:translateY(4px)}
+.fc-acorns.bank-due::after{content:"";position:absolute;right:0;top:0;width:6px;height:6px;background:var(--y);border:2px solid var(--k);pointer-events:none}
+.fc-acorns:focus{outline:none}
+.fc-acorns:focus-visible{outline:2px solid var(--y);outline-offset:2px}
+.fc-acorns:disabled{cursor:default}
+body.ctl-modern.scene-on .float-ctl .fc-acorns{pointer-events:none}
 .fc-acorns .frame-art{filter:drop-shadow(1px 0 0 #1a1c2c) drop-shadow(-1px 0 0 #1a1c2c) drop-shadow(0 1px 0 #1a1c2c) drop-shadow(0 -1px 0 #1a1c2c)}
 #fcAcornN{line-height:18px}
 .fc-top .env-badge{min-width:0}
@@ -1632,8 +1703,8 @@ body.mhc-frame.ctl-modern .fc-dock-chip{flex:1 1 auto;min-width:0;max-width:100%
 body.mhc-frame.ctl-modern .fc-dock-chip #thChip{align-self:stretch;height:44px;max-width:100%}
 body.mhc-frame.ctl-modern .fc-dock-r1-right{display:flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto}
 body.mhc-frame.ctl-modern .fc-dock-r1-right .fc-acorns{
-  position:relative;top:auto;right:auto;height:44px;min-width:64px;padding:11px 6px 0 38px;
-  pointer-events:none;overflow:hidden;isolation:isolate}
+  position:relative;top:auto;right:auto;height:44px;min-width:64px;padding:11px 18px 0 38px;
+  pointer-events:auto;overflow:hidden;isolation:isolate}
 body.mhc-frame.ctl-modern .fc-dock-r2-left,
 body.mhc-frame.ctl-modern .fc-dock-r2-right{display:flex;flex-direction:row;align-items:center;gap:6px;height:44px}
 body.mhc-frame.ctl-modern .fc-dock-r2-left{flex:0 0 auto}
@@ -1824,3 +1895,5 @@ body:not(.ctl-modern) #thChip .th-stripe{bottom:-6px;left:0;right:0}
 .side-row .side-name{display:block;color:var(--y);font-size:16px;line-height:1.2;font-weight:normal}
 .side-row[data-side="glimmer"] .side-name{color:var(--w)}
 .side-row .side-line{margin:2px 0 0;font-size:14px;line-height:1.25;color:var(--w)}
+/* WALK_BESIDE D1972: the Keepers' whole word under the tier, in the row's own text colour; wraps at 320 */
+.side-row .side-word,.st-row .side-word{margin:4px 0 0;font-size:14px;line-height:1.25;color:var(--w);overflow-wrap:break-word;white-space:normal}

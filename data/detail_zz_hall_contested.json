@@ -1,6 +1,6 @@
 {
  "spec": "handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md (v0.3; D1189-D1196)",
- "_about": "Two parts. slicePatch (live, unflagged): D1192, the town sign says Fernbrook Trial Hall (maps_slice.json is verbatim design data, so it is overridden here). hallPatch (FLAGGED): the contested Hall, applied by game.js only when HALL2_ON (debug plus ?hall2=1, or HALL2_RELEASED after Vincent's yes; AGENTS rule 9). It runs after fernbrook_rooms.json, so its rows and objects win. Flag off, fb_hall_in is exactly today's room.",
+ "_about": "Two parts. slicePatch (live, unflagged): D1192, the town sign says Fernbrook Trial Hall (maps_slice.json is verbatim design data, so it is overridden here). hallPatch (FLAGGED): the contested Hall, applied by game.js only when HALL2_ON (debug plus ?hall2=1, or HALL2_RELEASED after Vincent's yes; AGENTS rule 9). It runs after fernbrook_rooms.json, so its rows and objects win. Flag off, fb_hall_in is exactly today's room. D1432 (Vincent, Nov 3, 2026): after Seal 1 and the pick the Hall is shut on both paths and keeps the split look until Fen's own Act 2 turn; the Keeper and Glimmerwell looks also need story.fen_turned (additive, set by nothing yet; her turn will set it). D1727 (REPORT_FLAGS default, pending Vincent): the look reads Fen's own turn, story.fen_turned=glimmer / =keepers, not the holder's story.side (under always undercover every holder is a Keeper in public by then). D1434: banners name no colour.",
  "_placeholders": "The lines under hallPatch.addObjs are June's pass (drafted by Claude in June's role, Vincent to approve; Tue Nov 3, 2026), replacing the spec's PLACEHOLDER copy (D1196). No line asks the holder to join a side (D1145).",
  "slicePatch": {
   "maps": {
@@ -19,21 +19,21 @@
  },
  "hallPatch": {
   "_whenKey": {
-   "_note": "D1191 (Vincent, Tue Nov 3, 2026, 11:17 AM ET): the props switch on who controls the town. Each `when` reads cond()'s hold:<node>=<id> term, which asks mapHold() (game.js REGION_MAP fernbrook hold rules), so the props can never drift from the map.",
+   "_note": "D1191 (Vincent, Tue Nov 3, 2026, 11:17 AM ET): the props switch on who controls the town. Each `when` reads cond()'s hold:<node>=<id> term, which asks mapHold() (game.js REGION_MAP fernbrook hold rules), so the props can never drift from the map. D1432 (Vincent, Nov 3, 2026) layers on top: until story.fen_turned is set (nothing sets it yet) every prop keeps the split look, so each look term also reads story.fen_turned; once it is set the props follow the hold. D1727 (pending Vincent) would read story.fen_turned=<side> instead of the hold.",
    "split": [
-    "hold:fernbrook=split"
+    "hold:fernbrook=split | !story.fen_turned"
    ],
    "keepers": [
-    "hold:fernbrook=keepers"
+    "hold:fernbrook=keepers & story.fen_turned"
    ],
    "glimmer": [
-    "hold:fernbrook=glimmer"
+    "hold:fernbrook=glimmer & story.fen_turned"
    ],
    "notKeepers": [
-    "!hold:fernbrook=keepers"
+    "!hold:fernbrook=keepers | !story.fen_turned"
    ],
    "notGlimmer": [
-    "!hold:fernbrook=glimmer"
+    "!hold:fernbrook=glimmer | !story.fen_turned"
    ]
   },
   "maps": {
@@ -71,7 +71,7 @@
        "else": "A lamp by the flower dais."
       },
       "when": [
-       "!hold:fernbrook=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ]
      },
      {
@@ -84,7 +84,7 @@
        "else": "A lamp by the flower dais."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -97,7 +97,7 @@
        "else": "A stand of pale ribbons."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -110,7 +110,7 @@
        "else": "A hedge in a low planter."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -123,7 +123,7 @@
        "else": "A hedge in a low planter."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -136,7 +136,7 @@
        "else": "A round pot of cut blooms."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -149,7 +149,7 @@
        "else": "A bowl of loose petals."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -162,7 +162,7 @@
        "else": "A basket of pink blooms."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -185,7 +185,7 @@
        "else": "A bench along the path."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -208,7 +208,7 @@
        "else": "A stool pulled off the path."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -221,7 +221,7 @@
        "else": "A lamp in the top hedge. Fen's dais is one more step up."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -234,7 +234,7 @@
        "else": "A little spout keeps the lily trough full."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -247,7 +247,7 @@
        "else": "Rose cuttings, potted to grow on."
       },
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -275,7 +275,7 @@
       "y": 2,
       "sprite": "banner_keeper_old",
       "when": [
-       "!hold:fernbrook=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
        "else": "An old Keeper banner with a faded gold lantern. The hem has been mended by hand, in more than one thread."
@@ -288,7 +288,7 @@
       "y": 2,
       "sprite": "banner_keeper_old",
       "when": [
-       "!hold:fernbrook=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
        "else": "Another old Keeper banner. Half the fringe has worn away. It's been patched, never replaced."
@@ -301,7 +301,7 @@
       "y": 2,
       "sprite": "banner_glim",
       "when": [
-       "hold:fernbrook=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
        "else": "A Glimmerwell banner with the honey diamond. It hangs from the same old nail the Keeper banner used."
@@ -314,7 +314,7 @@
       "y": 2,
       "sprite": "banner_glim",
       "when": [
-       "hold:fernbrook=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
        "else": "Another Glimmerwell banner. The hooks are new. The stone behind it is paler, where the old banner hung."
@@ -327,7 +327,7 @@
       "y": 2,
       "sprite": "keep_lamp_wall",
       "when": [
-       "!hold:fernbrook=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
        "else": "An oil lamp in an old iron bracket. Years of flame have turned the stone above it black."
@@ -340,7 +340,7 @@
       "y": 2,
       "sprite": "keep_honour_board",
       "when": [
-       "!hold:fernbrook=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
        "else": "An oak board of names in gold leaf. The oldest have worn to shadows. The newest still shines."
@@ -353,7 +353,7 @@
       "y": 2,
       "sprite": "keep_lamp_wall",
       "when": [
-       "!hold:fernbrook=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
        "else": "An oil lamp, its wick trimmed neat. The flame flickers a little. Nobody here seems to mind."
@@ -366,7 +366,7 @@
       "y": 2,
       "sprite": "keep_insignia",
       "when": [
-       "!hold:fernbrook=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
        "else": "The Keeper crest, carved deep into the old stone. Whoever cut it meant it to last."
@@ -379,7 +379,7 @@
       "y": 2,
       "sprite": "crest_cover",
       "when": [
-       "hold:fernbrook=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
        "else": "A black cloth hides the old crest. A small wine tag: 'Under renovation. Thanks for your patience!'"
@@ -392,7 +392,7 @@
       "y": 2,
       "sprite": "glim_plaque",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "An engraved steel plate: 'FERNBROOK TRIAL HALL. Brought to you by Glimmerwell Co. Brighter by nature!'"
@@ -405,7 +405,7 @@
       "y": 2,
       "sprite": "glim_plaque_covered",
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
        "else": "A slip is tacked over the steel plate, in careful brush letters: 'Fernbrook Trial Hall.' Nothing else."
@@ -418,7 +418,7 @@
       "y": 2,
       "sprite": "banner_glim_half",
       "when": [
-       "hold:fernbrook=split"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
        "else": "A Glimmerwell banner, pinned up by one corner. The old Keeper banner underneath still shows its lantern."
@@ -431,7 +431,7 @@
       "y": 2,
       "sprite": "banner_glim",
       "when": [
-       "hold:fernbrook=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
        "else": "The Glimmerwell banner hangs straight now, pinned at every corner. Nothing shows underneath."
@@ -444,7 +444,7 @@
       "y": 2,
       "sprite": "banner_keeper_old",
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
        "else": "The old Keeper banner hangs straight again. A few pin holes in the cloth are the only sign."
@@ -457,7 +457,7 @@
       "y": 2,
       "sprite": "banner_glim",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A Glimmerwell banner, wine with a honey trim. Not a crease on it, not a speck of dust."
@@ -470,7 +470,7 @@
       "y": 3,
       "sprite": "comfort_lamp",
       "when": [
-       "hold:fernbrook=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
        "else": "A Comfort Lamp stands where the old dais lamp was. The same steady glow as all the others. It hums."
@@ -483,7 +483,7 @@
       "y": 3,
       "sprite": "comfort_lamp",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A Comfort Lamp by the dais. Its glass is spotless, and the wine-red light never wavers."
@@ -496,7 +496,7 @@
       "y": 6,
       "sprite": "banner_glim_stand",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A Glimmerwell banner on a chrome stand, set where a ribbon stand used to be."
@@ -509,7 +509,7 @@
       "y": 7,
       "sprite": "comfort_lamp",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A Comfort Lamp clipped to the top planter, humming. The dais is one more step up."
@@ -522,7 +522,7 @@
       "y": 8,
       "sprite": "comfort_lamp",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A Comfort Lamp with a small wine tag: 'Free to every home. It's a partnership!'"
@@ -535,7 +535,7 @@
       "y": 8,
       "sprite": "comfort_lamp_off",
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
        "else": "A Comfort Lamp, switched off under a cream cloth. Nobody has thrown it out. Nobody has turned it on."
@@ -548,7 +548,7 @@
       "y": 10,
       "sprite": "glim_planter",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A black lacquer planter with one shrub, clipped into a ball. Every planter on this side matches."
@@ -561,7 +561,7 @@
       "y": 16,
       "sprite": "glim_planter",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "Another black planter, another perfect ball. Not one leaf out of place. Not one flower, either."
@@ -574,7 +574,7 @@
       "y": 18,
       "sprite": "comfort_lamp",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A Comfort Lamp. The polished floor under it shines like still water."
@@ -587,7 +587,7 @@
       "y": 20,
       "sprite": "bulletin_keepers_x",
       "when": [
-       "hold:fernbrook=split"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
        "else": "The Keeper board: hand-written slips, tacked every which way. A glossy Glimmerwell flyer covers one corner."
@@ -600,7 +600,7 @@
       "y": 20,
       "sprite": "bulletin_keepers",
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
        "else": "The Keeper board, all hand-written slips again. Someone took the flyer down and left the tack."
@@ -613,7 +613,7 @@
       "y": 20,
       "sprite": "bulletin_glimmer",
       "when": [
-       "hold:fernbrook=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
        "else": "Glimmerwell posters cover the old Keeper board, edge to edge, all one size. Not one slip shows."
@@ -626,7 +626,7 @@
       "y": 20,
       "sprite": "bulletin_glimmer_x",
       "when": [
-       "hold:fernbrook=split"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
        "else": "Bright posters, all one size: 'Comfort Lamps for every home!' One hand-written Keeper slip hangs on below."
@@ -639,7 +639,7 @@
       "y": 20,
       "sprite": "bulletin_glimmer",
       "when": [
-       "hold:fernbrook=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
        "else": "A Glimmerwell board of new posters, squared to the edges. The biggest one reads: 'Brighter by nature!'"
@@ -652,7 +652,7 @@
       "y": 20,
       "sprite": "bulletin_keepers",
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
        "else": "The posters are down. Hand-written Keeper slips are tacked up in their place, a bit crooked."
@@ -665,7 +665,7 @@
       "y": 21,
       "sprite": "seam_rope",
       "when": [
-       "hold:fernbrook=split"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
        "else": "A wine velvet rope where the new tile starts. A tag: 'Glimmerwell Co. works. Mind the polish!'"
@@ -678,7 +678,7 @@
       "y": 20,
       "sprite": "grout_bucket",
       "when": [
-       "hold:fernbrook=split"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
        "else": "A bucket of grout and a trowel, left mid-job. Moss is already poking up through the last seam."
@@ -691,7 +691,7 @@
       "y": 22,
       "sprite": "tile_crate",
       "when": [
-       "hold:fernbrook=keepers"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
        "else": "A crate of polished tiles, pried up and stacked. Most of the polish is still down. It's slow work."
@@ -704,7 +704,7 @@
       "y": 22,
       "sprite": "keep_crate",
       "when": [
-       "hold:fernbrook=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
        "else": "A crate of the old oil lamps, boxed up by the door. A honey tag on the lid: 'Relocated.'"
@@ -717,7 +717,7 @@
       "y": 20,
       "sprite": "glimmer_stand",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A Glimmerwell stand of samples in neat rows. A card: 'Take one! Have a bright day!' Nobody is minding it."
@@ -730,7 +730,7 @@
       "y": 20,
       "sprite": "comfort_lamp",
       "when": [
-       "!hold:fernbrook=keepers"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
        "else": "A Comfort Lamp right by the door. It's the first thing anyone sees coming in. That may be the point."

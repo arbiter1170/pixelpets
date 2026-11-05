@@ -184,7 +184,6 @@ test('Keepers free the crates, fight Tobin, and Hale pays the road snacks', asyn
     quest: PixelPets.quest.id,
     v: PixelPets.state.v,
     check: PixelPets.questCheck,
-    toast: document.querySelector('#toast').textContent,
     chains: PixelPets.sideActive.map(a => a.chain),
   }));
   expect(wrap.done).toBe(true);
@@ -193,7 +192,8 @@ test('Keepers free the crates, fight Tobin, and Hale pays the road snacks', asyn
   expect(wrap.quest).toBe('hc_council');
   expect(wrap.v).toBe(2);
   expect(wrap.check).toEqual([]);
-  expect(wrap.toast).toBe('Now tracking: Explore Route 1');
+  // Modern (the default) queues toasts: the tracking line shows once the standing toast has had its turn.
+  await expect(page.locator('#toast')).toHaveText('Now tracking: Explore Route 1', { timeout: 15000 });
   expect(wrap.chains).not.toContain('rc_meet');
 });
 

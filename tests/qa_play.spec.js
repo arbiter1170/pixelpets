@@ -1,7 +1,7 @@
 /* Phone QA regressions from the evil-faction playthrough.
    Widths come from the Playwright projects (320, 375, 390). */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, newPlayerPicker } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, newPlayerPicker, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -48,7 +48,7 @@ test('look DONE stays on screen and the name row stays hidden', async ({ page })
 test('the bag shows both handsets, and the walk tip follows Heights', async ({ page }) => {
   await installSave(page.context(), glimmerSave(), { quietDay: true });
   await gotoDebug(page);
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await showScreen(page, 'walk');
   const tip = await page.locator('#walkTip').innerText();
   expect(tip).toBe(HEIGHTS_TIP);
   expect(tip).not.toContain('east gate');

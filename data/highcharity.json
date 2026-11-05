@@ -21,13 +21,13 @@
     "maps": {
       "hearthmoor": {
         "gridRows": {
-          "9": "TgggggggggggpgpgggggTTTT"
+          "9": "TgggggggggggggpgpgggTTTT"
         },
         "addObjs": [
           {
             "kind": "warp",
             "id": "hm_to_hc",
-            "x": 12,
+            "x": 16,
             "y": 9,
             "to": "highcharity",
             "tx": 32,
@@ -44,7 +44,7 @@
             "id": "hm_bram",
             "name": "Porter Bram",
             "look": "bram",
-            "x": 11,
+            "x": 15,
             "y": 9,
             "facing": "right",
             "when": [
@@ -58,7 +58,7 @@
           {
             "kind": "sign",
             "id": "hm_sign_coach",
-            "x": 13,
+            "x": 17,
             "y": 9,
             "when": [
               "story.side_pick_done"
@@ -414,7 +414,7 @@
         {
           "kind": "npc",
           "id": "hc_kite",
-          "name": "Kit",
+          "name": "Mabry",
           "look": "kit",
           "x": 38,
           "y": 23,
@@ -536,7 +536,7 @@
           "id": "hc_sign_gym",
           "x": 23,
           "y": 14,
-          "text": "DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome."
+          "text": "DOJO · Practice before the Hall next door. Stones, tides, and blooms are all welcome."
         },
         {
           "kind": "sign",
@@ -655,7 +655,7 @@
           "kind": "npc",
           "id": "hc_lumen",
           "name": "Captain Lumen",
-          "look": "petra",
+          "look": "captain",
           "x": 2,
           "y": 3,
           "facing": "down",
@@ -973,7 +973,7 @@
           "facing": "down",
           "lines": {
             "story.side=glimmer": "No trial today. The floor is just clean.",
-            "else": "No Seal here. Hall Masters keep those."
+            "else": "No Seal here. The Hall next door's been shut since the war."
           }
         },
         {
@@ -1322,7 +1322,7 @@
           "id": "hc_hall_note",
           "x": 2,
           "y": 8,
-          "text": "EVENT HALL · Solo booths up top. Games for two with Brin."
+          "text": "EVENT HALL · Solo booths up top. Games for two with Tove."
         }
       ]
     },
@@ -1942,7 +1942,7 @@
       "hair": "short",
       "hairCol": "d",
       "outfit": "coat",
-      "outfitCol": "m",
+      "outfitCol": "g",
       "accent": "y"
     },
     "mira": {
@@ -2004,7 +2004,7 @@
     "nia": {
       "skin": "1",
       "hair": "spiky",
-      "hairCol": "o",
+      "hairCol": "r",
       "outfit": "hoodie",
       "outfitCol": "r",
       "accent": "y"
@@ -2023,9 +2023,9 @@
     "Keeper Moss": "moss",
     "Mira": "mira",
     "Baker Cole": "cole",
-    "Kit": "kit",
+    "Mabry": "kit",
     "Porter Quin": "quin",
-    "Captain Lumen": "petra",
+    "Captain Lumen": "captain",
     "Keeper Rowan": "sorrel",
     "Dockhand Ness": "ness",
     "Teacher Mae": "nessa",

@@ -33,14 +33,27 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // PARTNER_DAY (#258): the new hall and bedroom (hm_home_hall, hm_home_room), Mom (moved down from hm_home_up) and Maze,
     // the home pegs, the up_cushion, and hm_buddy_pre / hm_lizzy_pre in Hearthmoor add talk 12, warp 4 (hall_mom,
     // hall_room, hall_stairs, room_door) and trigger 2 (mom_luck_at, room_not_yet). None of these depend on the clock.
+    // POST_TRIAL_CRACKDOWN: +1 sign (the curfew notice), +21 talk (curfew posts, Fen at the gate, Juniper's camp, the six Lantern House
+    // townsfolk and the wire station's props), +3 triggers (cd_start, cd_resume, ilse_call).
     // WEIR_HUT (D1590-D1599): the hut door, its mat, the first-step trigger, and 27 talk taps (Vincent Chi, 14 room props, eight
     // jar shelves (one shows per sill tile at a time), the lamp, barrel and nets outside) add door 1, warp 1, trigger 1, talk 27.
-    door: 49, warp: 101, sign: 96, talk: 784, scene: 40, trigger: 41, board: 7,
-    trainer: 28, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
+    // ACT1_KEEPER_JOIN: +7 talk (Imogen's and the Keeper Scout's Wickerglen bodies, the Constable, three lamp lines, the ledger crate).
+    // ACT2_COVER_STORY (#312): Mom at the Lodge gate and at your door add talk 2; the gate step and the home fallback add trigger 2.
+    // ROUTE_TO_GOVERNOR (#315): Route 4, its sightings and the north road add warp 22, sign 7, talk 19, scene 1, trigger 6,
+    // trainer 3, pickup 4, wild 3 (recounted on the merged tree, Wed Nov 4, 2026).
+    // MAHOPAC_DREAMS (#314): the lens room adds talk 2 (Mom and Warden Ilse at the lens) and sign 1 (the sill).
+    // WALK_BESIDE (#324): Archivist Mo at the Lodge steps adds talk 1 and the steps' trigger adds trigger 1 (both behind story.cab_seat).
+    // BRIGHTGATE (#316): the city's five districts, the HQ, Hall 4 and their rooms add door 30, warp 79, sign 21, talk 224,
+    // trigger 3, trainer 8, wild 1, shop 1 (recounted on the merged tree, Wed Nov 4, 2026).
+    // KILNMOUTH (#318): Claybank Road, the town and its six rooms (Hall 5 and the Hall Stone room among them) add door 9,
+    // warp 22, sign 11, talk 76, trigger 4, trainer 7, pickup 1, wild 2, shop 1 (recounted on the tree merged with main at
+    // 5052c15, Wed Nov 4, 2026; the four tap-side moves change no count).
+    door: 88, warp: 224, sign: 137, talk: 1136, scene: 41, trigger: 60, board: 7,
+    trainer: 46, pickup: 22, wild: 15, shop: 16, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
+  // The Hearthmoor coach (hm_to_hc) left this list when it moved off the Keeper House roof to (16,9).
   expect(audit.reachGaps).toEqual([
-    'hearthmoor:hm_to_hc walk-on tile is solid or blocked',
     'fernbrook:fb_east walk-on tile is solid or blocked',
     'fernbrook:fb_tour2 walk-on tile is solid or blocked',
     'route2:r2_east walk-on tile is solid or blocked',
@@ -68,10 +81,14 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // WEIR_HUT (D1591): the desk is two tiles; while Vincent Chi stands at (3,3) its left half is boxed in and the right half
     // (weir_desk_r, the same line) answers from (4,3). tests/weir_hut.spec.js taps it.
     'hw_weir_hut_in:weir_desk_l has no free neighbour',
+    // (route4:r4_east_bar_n left this list with KILNMOUTH (#318): the Claybank Road warps at (23,1)-(23,3) put its east neighbour on the walk region.)
+    // BRIGHTGATE (#316): the shuttle's home gate stays inert until D2090/D2091 (story.bg_shuttle_live); its stop is not open yet.
+    'brightgate:bs_gate_home walk-on tile is solid or blocked',
   ]);
   expect(audit.n).toBeGreaterThan(100);
   const sceneOnly = audit.rows.filter((r) => r.kind === 'prop' && r.act === 'scene' && !r.talkable).map((r) => r.id).sort();
-  expect(sceneOnly).toEqual(['balloon_blue', 'balloon_red', 'balloon_yellow']);
+  // ROUTE_TO_GOVERNOR (#315): the Route 4 trough is a tap scene ("Rest a while" / "Not now"), tested in route_to_governor.spec.js.
+  expect(sceneOnly).toEqual(['balloon_blue', 'balloon_red', 'balloon_yellow', 'r4_trough']);
   for (const id of sceneOnly) {
     const row = audit.rows.find((r) => r.id === id);
     expect(row.tappable).toBe(true);

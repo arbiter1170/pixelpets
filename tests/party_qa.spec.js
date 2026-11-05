@@ -1,7 +1,7 @@
 /* Extra QA for the party board, Walkling sheet, held items, and battle send-outs.
    Players never load this file. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -69,14 +69,14 @@ test('journal counts and silhouettes stay on the WALKLINGS tab', async ({ page }
       locked: document.querySelector('#tabs').classList.contains('locked'),
     };
   });
-  expect(grid.n).toBe(57);
+  expect(grid.n).toBe(69);
   expect(grid.slots).toBe(6);
   expect(grid.header).toContain('Joined 1');
   expect(grid.header).toContain('Met 1');
-  expect(grid.header).toContain('Out there 57');
+  expect(grid.header).toContain('Out there 69');
   expect(grid.joined).toBe('joined');
   expect(grid.met).toBe('met');
-  expect(grid.unmet).toBe(55);
+  expect(grid.unmet).toBe(67);   // + the twelve Act 2 forms (ROUTE_TO_GOVERNOR, KILNMOUTH)
   expect(grid.unmetButtons).toBe(0);
   expect(grid.unmetMark).toBe(true);
   expect(grid.locked).toBe(false);
@@ -193,7 +193,7 @@ test('the bag will not use up a holdable item', async ({ page }) => {
   save.bag = { soft_berry: 1, heal_snack: 1 };
   save.flags['story.side_pick_done'] = true;
   await boot(page, save);
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await showScreen(page, 'walk');
   await expect(page.locator('#walkBagBtn')).toBeVisible();
   await page.locator('#walkBagBtn').click();
   await expect(page.locator('#ovBag')).toBeVisible();

@@ -50,8 +50,11 @@ async function seedRaw(context, raw) {
   }, raw);
 }
 
-async function bootKind(page, context, kind, search) {
+// ACT1_KEEPER_JOIN §9.1: the gate fixtures are marked as past the old-save move (as tests/helpers.js installSave does), so
+// they read the gates they were written for; the §7.3 proof below loads a real old save (`real`).
+async function bootKind(page, context, kind, search, real) {
   const save = kindSave(kind);
+  if (!real && save.flags['story.side_pick_done']) save.flags['story.ilse_call_old'] = true;
   save.last = Date.now();
   const raw = JSON.stringify(save);
   await seedRaw(context, raw);
@@ -153,8 +156,10 @@ test('T-ORDER: cond() and evalCond agree on every §7.1 gate string, for every s
   // The OR forms are really there (one entry each, never glued to an AND in one string except where | splits first).
   expect(strings).toEqual(expect.arrayContaining([
     'story.side_pick_done | story.orchard_cleared',
-    '!story.seal1 | !story.side_pick_done & !story.orchard_cleared',
-    'story.lizzy_class | story.orchard_cleared | story.seal1',   // DAY1_TRIAL1_FLOW D1169 (was story.crates_seen | story.orchard_cleared)
+    // ACT1_KEEPER_JOIN (D1551): the rubble also clears on story.warden_met.
+    '!story.seal1 | !story.side_pick_done & !story.orchard_cleared & !story.warden_met',
+    // DAY1_TRIAL1_FLOW D1169 (was story.crates_seen | story.orchard_cleared), and D1432: shut once Seal 1 and the enrolment are in.
+    'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done & !story.keeper_cadet',
     'story.reached_cobblecrest | story.seal1 & !story.crates_seen',
     'story.side_pick_done | story.pitch_k & story.pitch_g',
   ]));
@@ -196,6 +201,8 @@ const DAY1_DELTA = {
   p: Object.assign({ 'quest:current': 'crates' }, NEW_FLOW), n: NEW_FLOW, p_fen_only: Object.assign({ 'quest:current': 'crates' }, NEW_FLOW),
   p_glimmer_only: NEW_FLOW, p_fernbrook_only: NEW_FLOW, "b'": { 'quest:current': 'hall1_holders' },
 };
+// D1432 (Vincent, Nov 3, 2026): a save with Seal 1 and the pick finds the Hall shut on both paths until Fen's Act 2 turn.
+for (const k of ['c', 'c_glimmer', 'c_cobble', 'c_escort']) DAY1_DELTA[k] = Object.assign({}, DAY1_DELTA[k], { 'fernbrook:fb_hall': false });
 for (const kind of Object.keys(K.KINDS)) {
   test(`gate matrix: kind ${kind} reads every §7.1 gate as before the OR change`, async ({ page, context }) => {
     await bootKind(page, context, kind, '?debug=1');
@@ -216,23 +223,36 @@ test('gate matrix: the §7.4 asserts hold on the seven kinds', () => {
     expect(B[k]['fernbrook:fb_rubble'], k).toBe(!B[k]['fernbrook:fb_east']);
     expect(B[k]['fernbrook:fb_sign_route2'], k).toBe(!B[k]['fernbrook:fb_sign_route2_open']);
   }
-  // Hall door: shut for a1, p, n; open for a2, b, b', c.
+  // Hall door: shut for a1, p, n; open for a2, b, b', c (the recorded before-matrix; D1432 then shuts it for c, DAY1_DELTA).
   expect(K.SEVEN.map(k => B[k]['fernbrook:fb_hall'])).toEqual([false, true, true, true, true, false, false]);
   // The heights skipIf: skipped once Seal 1 is in (b, c), live for a1, a2, b', p, n.
   expect(K.SEVEN.map(k => B[k]['quest:heights.skipIf'])).toEqual([false, false, true, false, true, false, false]);
 });
 
 // ---------- §7.3: no save change (CLEAN build, no debug) ----------
+const MOVE_KEYS = ['story.keeper_cadet', 'story.orchard_lean', 'story.fen_lean', 'story.sway_fernbrook', 'story.cover_done', 'story.ilse_call_old'];
 
 for (const kind of K.SEVEN) {
   test(`§7.3 save proof: kind ${kind} loads byte-identical, then one save only adds keys; v stays 2`, async ({ page, context }) => {
-    const raw = await bootKind(page, context, kind, '');
+    const raw = await bootKind(page, context, kind, '', true);
     expect(await page.evaluate(() => window.PixelPets.debug)).toBe(false);
     // After load: the raw save at the end of boot, before any save the game makes once it runs.
     const afterLoad = await page.evaluate(() => window.ppAtBoot);
     const writes = await page.evaluate(() => window.ppSaveWrites.slice());
-    expect(writes.filter(w => !w.booted), 'no save write during load').toEqual([]);
-    expect(afterLoad).toBe(raw);
+    const before0 = JSON.parse(raw);
+    // ACT1_KEEPER_JOIN §9.1 (D1546 B): a save that already picked is moved to the Keepers once, at load. That is the only
+    // write during load; it adds the move's keys (and turns a Glimmerwell side to keepers) and changes nothing else.
+    const picked = !!before0.flags['story.side_pick_done'];
+    if (!picked) {
+      expect(writes.filter(w => !w.booted), 'no save write during load').toEqual([]);
+      expect(afterLoad).toBe(raw);
+    } else {
+      expect(writes.filter(w => !w.booted).length, 'one move write during load').toBe(1);
+      const moved = JSON.parse(afterLoad), add = Object.keys(moved.flags).filter(k => !(k in before0.flags)).sort();
+      expect(add.every(k => MOVE_KEYS.includes(k)), add.join(',')).toBe(true);
+      expect(moved.flags['story.keeper_cadet']).toBe(true);
+      for (const k of Object.keys(before0.flags)) if (k !== 'story.side') expect(moved.flags[k], k).toEqual(before0.flags[k]);
+    }
     // One save through a real save path (the pagehide handler); the game may already have saved once after boot.
     await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
     await page.waitForFunction(() => window.ppSaveWrites.length > 0);
@@ -249,7 +269,7 @@ for (const kind of K.SEVEN) {
       } else if (JSON.stringify(a) !== JSON.stringify(b) && !FADE.test(p)) changed.push(p);
     };
     walk(before, after, '');
-    expect(changed).toEqual([]);
+    expect(changed.filter(p => !(picked && p === '.flags.story.side'))).toEqual([]);
     const flagKeys = Object.keys(after.flags);
     expect(flagKeys.filter(f => /[|&]/.test(f)), 'no literal a|b flag').toEqual([]);
     expect(flagKeys.filter(f => NEW_FLAGS.includes(f)), 'nothing sets the new flags yet').toEqual([]);
@@ -271,16 +291,19 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
     const cmp = (id, src, skip) => {
       const a = Object.assign({}, overlay(id)), b = Object.assign({}, src);
       for (const k of skip) { delete a[k]; delete b[k]; }
-      out[id] = JSON.stringify(a) === JSON.stringify(b) && JSON.stringify(live(id).when) === JSON.stringify(overlay(id).when);
+      // ACT1_KEEPER_JOIN (D1551): objPatch re-gates a few of them last (fb_east, the Route 2 sign, the rubble, Tobin's battle).
+      const join = (MAPDATA.detail_zz_keeper_join.objPatch[id] || {}).when;
+      out[id] = JSON.stringify(a) === JSON.stringify(b) && JSON.stringify(live(id).when) === JSON.stringify(join || overlay(id).when);
     };
     for (const id of ['fb_east', 'fb_sign_route2_open', 'fb_rubble', 'fb_sign_route2']) cmp(id, route2(id), ['when']);
     for (const id of ['rook_fb', 'fb_teaser']) cmp(id, slice(id), ['when']);
-    cmp('fb_hall', live('fb_hall'), []);
+    cmp('fb_hall', live('fb_hall'), ['shutWhen', 'deny']);   // POST_TRIAL_CRACKDOWN (D1224): objPatch adds the shut read and its deny line first
     // DAY1_TRIAL1_FLOW: Fen's orchard body and the two crates also take Part A's line keys; the Hall sign its new text.
     const sliceSkip = (id, skip) => cmp(id, slice(id), skip);
     sliceSkip('fen_orchard', ['when', 'lines']); sliceSkip('fern_associate', ['when']);
     sliceSkip('fb_crate_a', ['lines']); sliceSkip('fb_crate_b', ['lines']); sliceSkip('fb_sign_hall', ['text']);
     out.hallNeed = live('fb_hall').need;
+    out.hallShut = live('fb_hall').shutWhen;
     out.hallDeny = live('fb_hall').deny;
     out.count = WORLD.fernbrook.objs.filter(o => ['fb_east', 'fb_sign_route2_open', 'fb_rubble', 'fb_sign_route2', 'rook_fb', 'fb_teaser', 'fb_hall'].includes(o.id)).length;
     out.slips = MAPDATA.town_board.towns.fernbrook.reports.filter(r => /^fb_hall_/.test(r.id)).map(r => r.text);
@@ -289,9 +312,11 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
   expect(diffs).toEqual({
     fb_east: true, fb_sign_route2_open: true, fb_rubble: true, fb_sign_route2: true, rook_fb: true, fb_teaser: true, fb_hall: true,
     fen_orchard: true, fern_associate: true, fb_crate_a: true, fb_crate_b: true, fb_sign_hall: true,
-    hallNeed: 'story.lizzy_class | story.orchard_cleared | story.seal1',   // D1169
+    // D1169, and D1432: shut once Seal 1 and the pick are both in.
+    hallNeed: 'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done & !story.keeper_cadet',
+    hallShut: 'story.hall1_shut',
     // June's line while Day 1 is not done (FPT §2.1); Fen's note while she is away (DAY1_TRIAL1_FLOW §7, PLACEHOLDER).
-    hallDeny: { '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
+    hallDeny: { 'story.hall1_shut & !story.side_pick_done': 'Shut by order of High Charity. A Keeper cordon blocks the door.', 'story.hall1_shut': 'Shut by order of High Charity. The notice on the door has started to curl.', 'story.seal1 & story.side_pick_done | story.seal1 & story.keeper_cadet': "Shut by order of High Charity. Master Fen's Hall stays closed for now.", '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Gone to see the Keepers. Back soon. Mind the roots. — Fen'" },
     count: 7,
     slips: ['The Trial Hall is latched. Tobin is by the orchard gate, counting crates.', 'The Trial Hall is shut. Master Fen is away on Keeper business.', 'The Trial Hall is open. The steps were swept this morning.'],
   });

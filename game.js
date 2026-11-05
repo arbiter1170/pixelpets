@@ -106,6 +106,11 @@ if (HC_V2_ON) {   // the city's room skins and battle backdrops exist only while
   if (typeof HC_CITY_SKINS !== 'undefined') { Object.assign(SKINS, HC_CITY_SKINS); Object.assign(HOUSE_SKINS, HC_CITY_SKINS); }
   if (window.BattleBG && BattleBG.enableCity) BattleBG.enableCity();
 }
+// HC_PARADE PLACEHOLDER balloons (city only): the crowd's clap on cue (E8) and the Officer's raised hand.
+if (HC_V2_ON && typeof GLYPH !== 'undefined') {
+  if (!GLYPH.emote_clap) GLYPH.emote_clap = ['.kkkkkkk.', 'kwwwwwwwk', 'kwywwwywk', 'kwwy.ywwk', 'kw3wkw3wk', 'kw33w33wk', 'kw33w33wk', 'kww3w3wwk', 'kwwwwwwwk', '.kwkkkkk.', '.kk......'];
+  if (!GLYPH.emote_hand) GLYPH.emote_hand = ['.kkkkkkk.', 'kwwwwwwwk', 'kw3w3w3wk', 'kw3w3w3wk', 'kw33333wk', 'kw3333wwk', 'kww333wwk', 'kww333wwk', 'kwwwwwwwk', '.kwkkkkk.', '.kk......'];
+}
 function writeDebugPref(on){ try { if (on) sessionStorage.setItem(DEBUG_KEY, '1'); else sessionStorage.removeItem(DEBUG_KEY); } catch(e) {} }
 function syncDebugQuery(on){
   try {
@@ -171,6 +176,7 @@ for (const [id, sk] of Object.entries(SKINS)) if (sk.wall) Object.assign(TILES, 
 const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
 const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
 const fadedCol = col => Object.fromEntries(Object.entries(col).map(([ch, v]) => [ch, PAL[FADE_KEY[PAL_KEY[v]]] || v]));
+if (typeof SA === 'object') SA.fade = { col: fadedCol, key: FADE_KEY };   // SPRITE_ANIM: faded pets' pose frames fade the same way
 function fadedStage(st){
   if (!st.grid) return { src: st.half, col: fadedCol(st.col) };
   return { src: st.grid.map(row => [...row].map(ch => ch === '.' ? '.' : (FADE_KEY[ch] || ch)).join('')), col: null };
@@ -832,10 +838,9 @@ function bossRestTick(d){
 }
 // D848: the Brinewick road opens after Rook's last crates and that side's chapter end. One derived flag, so map objects
 // can gate on it without an OR: the Keepers close at the Lantern Council, Glimmerwell at the Signal Review. Never cleared.
-function openRoad3(){
+function openRoad3(){   // ACT1_KEEPER_JOIN E4 (D1548): either chapter finale opens the road, whatever the face
   if (!S || !S.flags || S.flags['story.route3_open'] || !S.flags['story.rc_done']) return;
-  const glim = S.flags['story.side'] === 'glimmer';
-  if (glim ? S.flags['story.gb_done'] : S.flags['story.hc_council_done']) S.flags['story.route3_open'] = true;
+  if (S.flags['story.gb_done'] || S.flags['story.hc_council_done']) S.flags['story.route3_open'] = true;
 }
 function toggleStill(p){
   if (!isAttune(p)) return false;
@@ -1166,7 +1171,9 @@ function drainToast(){
   };
   step();
 }
+const toastLog = [];   // ?debug=1 only: every toast shown this session (tests read PixelPets.toasts)
 function toast(msg){
+  if (DEBUG && toastLog.length < 200) toastLog.push(String(msg));
   if (careLes.holdEarly) { careLes.held.push(msg); return; }
   if (!mhcToastOn()) {
     toastGen++; toastQ = []; toastBusy = false;
@@ -1504,12 +1511,13 @@ function syncHdrAcorns(){
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (hdrAcornsShown != null && n > hdrAcornsShown && !reduce) acornGainUntil = performance.now() + 300;
   if (n !== hdrAcornsShown) {
-    box.setAttribute('aria-label', acorns(n)); const chip = $('#fcAcorns'); if (chip) chip.setAttribute('aria-label', acorns(n));
+    box.setAttribute('aria-label', acorns(n)); const chip = $('#fcAcorns'); if (chip) chip.setAttribute('aria-label', acorns(n) + BANK_COPY.chip);   // D2220
     const shown = hdrAcornsShown == null ? n : acornShownNow();
     if (hdrAcornsShown != null && n < shown && !reduce) startAcornTick(shown, n); else { stopAcornTick(); paintAcornCount(n); }
     hdrAcornsShown = n;
   }
   syncAcornFrame();
+  syncBankChip();
 }
 // The badge band gives the chip its room (the badge text clamps first at 320).
 function fitAcornChip(){
@@ -1577,7 +1585,7 @@ let befLes = { took: false, fromBar: false, bar: false };
 let lessonDraw = { hop: 0, y: 0 };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
 let envPeek = false;   // mapReadySoon: read the state as if TODAY were shut, without touching its hidden attribute
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envPeek && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || ($('#ovSide') && !$('#ovSide').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envPeek && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || ($('#ovBank') && !$('#ovBank').hidden) || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || ($('#ovSide') && !$('#ovSide').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -3778,9 +3786,10 @@ function battleBgOn(){ return battleBgForce != null ? battleBgForce : BATTLE_BG_
 function battleSceneId(id = S && S.world.map){ return battleBgOn() && window.BattleBG && WORLD[id] && BattleBG.scenes[id] ? id : null; }
 function battleEnv(m, mode, wf = 0){
   const sk = m.skin && SKINS[m.skin];
-  return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream,
+  return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream, roofs: m.roofs || null,
     walk: ch => sk && sk.walk && sk.walk[ch] != null ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk,
-    tile: (ch, x, y) => cellImg(m, ch, x, y, wf), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; } };   // animated props: their first frame
+    tile: (ch, x, y) => cellImg(m, ch, x, y, wf), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; },   // animated props: their first frame
+    named: n => { const t = n && TILES[n]; return Array.isArray(t) ? t[0] : t || null; } };   // a roof-kit tile by its TILES name (roofs: roof, wall)
 }
 // Same cache as makeBackdrop (BD_CAP). Rooms ignore the sky, so one canvas serves every sky mode.
 function makeBattleBackdrop(id, H, mode, W = 56){
@@ -3879,6 +3888,9 @@ if (MD.interiors && MD.interiors.dialog) {
 // Map-pass overlays (handoff/maps): data/detail_*.json, ours, one file per batch, so the verbatim design copies stay untouched.
 // Each may carry `tiles` (new map chars only, never a redefinition) and a `slicePatch`, applied after every other patch.
 const DETAIL_KEYS = Object.keys(MD).filter(k => k.startsWith('detail_')).sort();
+// BRIGHTGATE_LAYOUT: an overlay may add reputation cast entries (`cast`); a name the cast already has keeps its entry.
+if (MD.reputation && Array.isArray(MD.reputation.cast)) for (const k of DETAIL_KEYS) for (const e of MD[k].cast || [])
+  if (e && e.name && !MD.reputation.cast.some(c => c && c.name === e.name)) MD.reputation.cast.push(Object.assign({}, e));
 const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles, (MD.cobblecrest && MD.cobblecrest.tiles) || {}, (MD.cobblecrest && MD.cobblecrest.roomTiles) || {}, (MD.highcharity && MD.highcharity.tiles) || {},
   ...DETAIL_KEYS.map(k => MD[k].tiles || {}));
 function applyMapPatch(W, patch){
@@ -3909,6 +3921,7 @@ function applyObjPatch(W, patch){
       const P = JSON.parse(JSON.stringify(pt));
       if (P.when) o.when = P.when;
       if (P.whenAdd) o.when = [].concat(o.when || [], P.whenAdd);
+      if (P.need) o.need = P.need;   // MAHOPAC_DREAMS DA1: a warp's key, on whichever overlay's copy of it stands
       if (P.linesFirst) o.lines = Object.assign({}, P.linesFirst, o.lines || {});
       if (P.linesBefore && o.lines) {
         const out = {}, anchor = P.linesBefore.anchorKey in o.lines ? P.linesBefore.anchorKey : 'else';
@@ -3920,6 +3933,9 @@ function applyObjPatch(W, patch){
       if (P.linesSet && o.lines) for (const [k, v] of Object.entries(P.linesSet)) if (k in o.lines) o.lines[k] = v;
       if (P.scheduleFirst && Array.isArray(o.schedule)) o.schedule = P.scheduleFirst.concat(o.schedule);
       if (P.shopAdd && Array.isArray(o.shop)) for (const it of P.shopAdd) if (o.shop.indexOf(it) < 0) o.shop.push(it);
+      // POST_TRIAL_CRACKDOWN (D1224): a door can be shut by a cond on top of its `need`, with keyed deny lines put first.
+      if (P.shutWhen) o.shutWhen = P.shutWhen;
+      if (P.denyFirst) o.deny = Object.assign({}, P.denyFirst, o.deny && typeof o.deny === 'object' ? o.deny : { else: o.deny || 'The door is locked.' });
     }
   }
 }
@@ -3950,6 +3966,9 @@ function applyHcCity(W){
   for (const [rid, p] of Object.entries(V.roomPatch || {})) { const r = W[rid]; if (!r) continue;
     if (p.music) r.music = p.music;
     if (Array.isArray(p.add)) for (const o of p.add) if (!r.objs.some(x => x.id === o.id)) r.objs.push(JSON.parse(JSON.stringify(o))); }
+  // ROUTE_TO_GOVERNOR §5.9 (D1853): a warp outside the city that names a `city` target (the river road's Charter Hill gate) lands
+  // there while the city is on; with the city off it keeps its plain target (Lantern Square's coach gate).
+  for (const m of Object.values(W)) for (const o of (m && m.objs) || []) if (o && o.city && W[o.city.to]) Object.assign(o, o.city);
 }
 const WORLD = (() => {
   const W = JSON.parse(JSON.stringify(MD.maps_slice.maps));
@@ -4008,15 +4027,29 @@ if (HC_V2_ON) Object.assign(SCENES, JSON.parse(JSON.stringify(window.PP_HC_V2.sc
 // FACE_ME (Vincent, Nov 3, 2026): Lizzy's reunion can start from Buddy, with Lizzy wandered off or facing away. She walks
 // back beside the holder and faces them first (whichever of her bodies is here: the morning plaza, the plaza, the school).
 if (SCENES.lizzy_intro) SCENES.lizzy_intro = [['faceMe', ['hm_lizzy_pre', 'hm_lizzy', 'school_lizzy']]].concat(SCENES.lizzy_intro);
+// ACT1_KEEPER_JOIN D1562 (Vincent, Nov 3, 2026, night: "Always undercover"): the enrolment no longer asks pin or lanyard;
+// every new holder takes the lanyard for Ilse. The question stays in the data behind the `enrol:ask` term (scene `enrol`),
+// so ENROL_CHOICE = 'ask' brings D1511's pin-or-lanyard choice back with no other change.
+const ENROL_CHOICE = 'lanyard';
+// A top-level say first (as before); else one inside an `if` branch, so a second file's swap can wrap a line an earlier file
+// already wrapped (B-2: the crackdown's "After last night," variant wraps Fen's Glimmer-pick line before day1's swap does).
+function swapLine(steps, sw){
+  const at = steps.findIndex(st => Array.isArray(st) && st[0] === 'say' && st[2] === sw.text);
+  if (at >= 0) { const copy = steps.slice(); copy[at] = ['if', sw.when, JSON.parse(JSON.stringify(sw.to)), [steps[at]]]; return copy; }
+  for (let i = 0; i < steps.length; i++) {
+    const st = steps[i]; if (!Array.isArray(st) || st[0] !== 'if') continue;
+    for (const b of [2, 3]) {
+      const inner = Array.isArray(st[b]) && swapLine(st[b], sw); if (!inner) continue;
+      const step = st.slice(), copy = steps.slice(); step[b] = inner; copy[i] = step; return copy;
+    }
+  }
+  return null;
+}
 // DAY1_TRIAL1_FLOW: a detail file may append steps to a built scene (`sceneTails`, e.g. Mom's ask after mom_wake) or wrap one
 // built line so a condition swaps it (`lineSwaps`: { scene, text, when, to }). The design JSON stays verbatim.
 for (const k of DETAIL_KEYS) {
   for (const [id, tail] of Object.entries(MD[k].sceneTails || {})) if (SCENES[id] && id[0] !== '_') SCENES[id] = SCENES[id].concat(JSON.parse(JSON.stringify(tail)));
-  for (const sw of MD[k].lineSwaps || []) {
-    const steps = SCENES[sw.scene]; if (!steps) continue;
-    const at = steps.findIndex(st => Array.isArray(st) && st[0] === 'say' && st[2] === sw.text);
-    if (at >= 0) { const copy = steps.slice(); copy[at] = ['if', sw.when, JSON.parse(JSON.stringify(sw.to)), [steps[at]]]; SCENES[sw.scene] = copy; }
-  }
+  for (const sw of MD[k].lineSwaps || []) { const out = SCENES[sw.scene] && swapLine(SCENES[sw.scene], sw); if (out) SCENES[sw.scene] = out; }
 }
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 // HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
@@ -4035,7 +4068,8 @@ if (HALL2_ON) {
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 // Glimmerwell is the company faction. A Keeper hears them as the dark side: first meeting and their battles use the sinister loops.
-const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers', bw_dorian: 'glimmer', hall3_marisol: 'keepers' };
+// Hall Masters (Fen, Hale, Marisol) are neutral, faction `none`, as in data/reputation.json (D1437); their battles keep the trial loop.
+const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'none', hall2_hale: 'none', bw_dorian: 'glimmer', hall3_marisol: 'none' };
 for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
@@ -4093,7 +4127,7 @@ function condKeyOk(c){
     const part = raw.trim();
     if (!part || part === 'else' || part === 'talked' || part === 'has:name') return !!part;
     const s = part[0] === '!' ? part.slice(1) : part;
-    return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s.startsWith('seal:') || /^bag:[a-z0-9_]+$/.test(s) || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
+    return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s === 'enrol:ask' || s.startsWith('seal:') || /^bag:[a-z0-9_]+$/.test(s) || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
   });
 }
 function glimmerDevCheck(){
@@ -4430,6 +4464,8 @@ function switchSide(to, opts){
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
   S.flags['story.switch_via'] = 'rook';
+  // REPORTS_AND_ENDINGS §9 (D1629, D1725): only a switch from Act 3 on makes the switcher's path and stops the reports.
+  if (to === SC_STANDING.switch.oneWay && actNow(false) >= SC_STANDING.switch.openAct) S.flags['story.switched_a3'] = true;
   noteRepJoin();   // D178: the side you left, met people only, once per switch
   syncSide(); save();
   return true;
@@ -4462,10 +4498,10 @@ function rookOfferSteps(to){
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
 if (MD.act1_route2 && MD.act1_route2.looks) for (const [k, v] of Object.entries(MD.act1_route2.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
-NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 's', outfit: 'coat', outfitCol: 'w', accent: 'c' };
+NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 'h', outfit: 'coat', outfitCol: 'w', accent: 'c' };   // LOOK_LOCK D2277: grey hair, not Quinn's ice bun
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.mahopac && MD.mahopac.looks) for (const [k, v] of Object.entries(MD.mahopac.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
-const LOOK_OF_NAME = Object.assign({ 'Hattie': 'neighbour_hattie', 'Odile': 'orchard_odile', 'Keeper Amos': 'keeper_amos', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
+const LOOK_OF_NAME = Object.assign({ 'Hattie': 'neighbour_hattie', 'Odile': 'orchard_odile', 'Keeper Amos': 'keeper_amos', 'Associate Juniper': 'juniper', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
 LOOK_OF_NAME.Hattie = 'neighbour_hattie';   // PEOPLE_LOOKS_28: the verbatim interiors speakers still say villager
@@ -4753,7 +4789,7 @@ let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };   // per map visit, never saved
 let edgeExitCache = null;   // MAP_EDGE_TAPS P1: rebuilt on the next tap after arrive (useMap)
 function useMap(id){
-  CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
+  CUR = WORLD[id] || WORLD.hearthmoor; if (CUR.tilePatch) patchCells(CUR); MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };
   patrolClock = 0;
   edgeExitCache = null;
@@ -4771,6 +4807,7 @@ function trackFor(map){
   }
   if (!map) return null;
   if (map.music && PPSound.musicIds().includes(map.music)) return map.music;
+  if (map.music === 'sweet') return 'town_glimmer';   // BRIGHTGATE_LAYOUT: SCENE_MUSIC's `sweet` is a data ask until its slice lands
   if (map.id === 'cobble_quarry') return 'quarry';
   if (map.dream) return 'dream';
   if (map.backdrop === 'grove') return 'grove';
@@ -4792,7 +4829,7 @@ function battleTrack(kind, trainerId){
   if (kind === 'wild') return WILD_TRACKS[wildTune % WILD_TRACKS.length];
   const base = trainerMusicId(trainerId);
   if (kind === 'trainer' && RIVAL_IDS.indexOf(base) >= 0) return 'rival';
-  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale' || base === 'hall3_marisol')) return 'trial';
+  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale' || base === 'hall3_marisol' || base === 'hall4_master')) return 'trial';
   if (kind === 'trainer' && trainerFaction(base) === 'glimmer' && side() !== 'glimmer')
     return (S && S.flags['music.glimmer_fought']) ? 'glimmer_battle' : 'glimmer_first';
   return 'battle';
@@ -4884,7 +4921,8 @@ function repCond(c, o){
                                   story.side_pick_done & story.seal1, then story.side; absent counts as the Keepers, as side() does).
      curfew                       story.seal1 & story.crackdown, no pick yet: POST_TRIAL_CRACKDOWN §5's curfew (D1200, D1207). The
                                   plaza's people are indoors (their `when` holds `!fbplaza:curfew`); the props stay. It lifts at the
-                                  pick result, the same read that flips the hold (D1171).
+                                  pick result, the same read that flips the hold (D1171). D1395: the pick now waits for Warden Ilse,
+                                  so the curfew order stands through the trip home.
      after                        story.seal1, no pick and no crackdown yet: the argument is back on (the short gap between the Seal
                                   and the crackdown).
      watch                        the first trial is next: story.lizzy_class & !story.seal1 on the Day 1 flow (#261: the Hall door
@@ -4941,10 +4979,17 @@ function cond(c, live, o){
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = hasSeal(c.slice(5));
   else if (/^seals>=\d+$/.test(c)) v = sealsHeld() >= +c.slice(7);   // D1329: Seals held, tags never count
-  else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
+  else if (c.startsWith('bag:')) v = itemCount(c.slice(4)) > 0;
+  else if (c.startsWith('map:')) v = !!WORLD[c.slice(4)];   // ROUTE_TO_GOVERNOR: a map this build has (Kilnmouth's road lands later)   // D1154: an item in the bag (not item.<id>, which means a pickup taken)
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
+  // MAHOPAC_DREAMS: `talked:<id>` is a runtime mark for this map visit (a talk, or a scene's ["mark", id]); never saved.
+  else if (c.startsWith('talked:')) v = mapRT.talked.has(c.slice(7));
+  // MAHOPAC_DREAMS E1 (D1941): `lens:<moment>` asks PPStanding.lensMoment, the lens's first match, on the flags as the scene sees them.
+  else if (c.startsWith('lens:')) v = PPStanding.lensMoment(live && scene ? Object.assign({}, S.flags, scene.view.flags) : S.flags) === c.slice(5);
+  else if (c === 'partner:out') v = followerOn();   // WAR_MUSEUM K1: the partner walks out beside the holder
   else if (c === 'chip:partner') v = chipOn(pet());
   else if (c === 'chip:any') v = chippedPets().length > 0;
+  else if (c === 'enrol:ask') v = ENROL_CHOICE === 'ask';   // ACT1_KEEPER_JOIN D1562: the enrolment's pin-or-lanyard question
   else if (c.startsWith('rep:') || c.startsWith('reptier')) v = repCond(c, o);
   else {
     const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c);
@@ -4966,6 +5011,8 @@ function needMet(need){
 }
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
 function present(o){
+  if (o._cutHide) return false;   // HC_PARADE: a scene's ["hide"] step keeps this body off the map until the scene ends
+  if (o.cutGone) return false;   // a real map NPC a scene walked off a map edge (`walkTo ... {drop: true}`), until the scene ends
   if (o.when && !o.when.every(c => cond(c, false, String(c).indexOf('away:') >= 0 ? o : undefined))) return false;
   if (!schedHere(o)) return false;
   if (o.kind === 'pickup' && S.flags['item.' + o.id]) return false;
@@ -4974,13 +5021,28 @@ function present(o){
 }
 // A pushed dream prop that was left mid-circuit (reload, resume) starts where it stopped, not back at its first tile.
 const rollSpot = o => { const st = +S.flags[o.rollFlag] || 0, c = o.circuit[st % o.circuit.length]; return st && c ? { x: c[0], y: c[1] } : o; };
+// BRIGHTGATE_LAYOUT §4.3 (D1488): a `glide` object (a Courtesy Cruiser, a Sky Concierge) runs its lane x0..x1 on row y and back,
+// `speed` tiles a second with `pause` seconds at each end, on the shared clock. It never blocks, never talks, and reduced
+// motion parks it at its west end. Drawn on the y-sorted layer.
+function glidePos(o){
+  const gl = o.glide || {}, x0 = gl.x0 != null ? gl.x0 : o.x, x1 = gl.x1 != null ? gl.x1 : o.x, sp = gl.speed || 3.2, pa = gl.pause != null ? gl.pause : 1.4;
+  if (prefersReduced() || x1 === x0) return { x: o.x, y: o.y, fx: x0, fy: o.y, moving: false, facing: 'right' };
+  const d = Math.abs(x1 - x0) / sp, cyc = 2 * (d + pa), p = (now() / 1000) % cyc;
+  if (p < pa) return { x: o.x, y: o.y, fx: x0, fy: o.y, moving: false, facing: 'right' };
+  if (p < pa + d) return { x: o.x, y: o.y, fx: x0 + (x1 - x0) * (p - pa) / d, fy: o.y, moving: true, facing: 'right' };
+  if (p < 2 * pa + d) return { x: o.x, y: o.y, fx: x1, fy: o.y, moving: false, facing: 'left' };
+  return { x: o.x, y: o.y, fx: x1 + (x0 - x1) * (p - 2 * pa - d) / d, fy: o.y, moving: true, facing: 'left' };
+}
 function objPos(o){
+  if (o && o.kind === 'glide') return glidePos(o);
   const sched = schedPos(o);
   if (sched) { const P = mapRT.pos[o.id]; return P && P.sk === sched.x + ',' + sched.y ? P : sched; }   // NPC_LIFE: a walk around this row's tile
   return mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
 }
-function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
-const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
+// KILNMOUTH perf (K-T11): the tile test runs before present(), so a path search no longer reads every object's `when` for every cell
+// (the same object is found: the three tests are all required, only their order changed).
+function objAt(x, y, pred){ return CUR.objs.find(o => { const q = objPos(o); return q.x === x && q.y === y && present(o) && (!pred || pred(o)); }) || null; }
+const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind] && !o.fly);   // HC_PARADE E7: a flyer never blocks
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
 // Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; that skin's walk table wins over TILE_DEF.
 // House skins use the same lookup (SKINS). A map with no skin keeps the shared tile table.
@@ -5104,7 +5166,7 @@ function tileOk(mapId, x, y, selfId){
   const sk = m.skin && SKINS[m.skin];
   const walks = (sk && sk.walk && sk.walk[ch] != null) ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk;
   if (!walks) return false;
-  return !(m.objs || []).some(o => BLOCK_KINDS[o.kind] && o.x === x && o.y === y && o.id !== selfId && !SCHED[o.name]
+  return !(m.objs || []).some(o => BLOCK_KINDS[o.kind] && o.x === x && o.y === y && o.id !== selfId && !(o._schedKey || SCHED[o.name])
     && !(o.when && [].concat(o.when).some(c => String(c).indexOf('away:') >= 0)));
 }
 function standRow(bag, row){
@@ -5169,16 +5231,17 @@ function intentRow(name){
   return bag.rows[bag.rows.length - 1] || null;
 }
 function clockSpot(name){ return placedRow(name); }
+function schedKeyOf(o){ return o ? (o._schedKey || o.name) : null; }   // the body's own bag (a name two towns share has one bag per body)
 function schedHere(o){
-  const bag = o && SCHED[o.name];
+  const bag = o && SCHED[schedKeyOf(o)];
   if (!bag || !bag.byId[o.id]) return true;
-  const row = placedRow(o.name);
+  const row = placedRow(schedKeyOf(o));
   return !!(row && row.bodyId === o.id);
 }
 function schedPos(o){
-  const bag = o && SCHED[o.name];
+  const bag = o && SCHED[schedKeyOf(o)];
   if (!bag || !bag.byId[o.id]) return null;
-  const row = placedRow(o.name);
+  const row = placedRow(schedKeyOf(o));
   if (!row || row.bodyId !== o.id) return null;
   return { x: row.x, y: row.y, facing: row.facing };
 }
@@ -5199,14 +5262,22 @@ function wireSchedules(){
   }
   // A shared name is not enough. Overlay maps reuse Pip and Wren; only the body that carries the
   // rows, and bodies that stand on a row's map (Buddy follows Lizzy's maps), join the schedule.
-  const rowsOf = {}, mapsOf = {};
+  // Two towns can both schedule a generic "Child" or "Parent" (Brightgate and the High Charity preview): when more than one
+  // body carries rows under one name, each gets its own bag keyed `name#id`, and a body without rows joins the bag whose
+  // maps hold its map. Every body records its bag (`_schedKey`), so schedHere/schedPos read it by body, not by name.
+  const srcCount = {};
+  for (const [, o] of named) if (Array.isArray(o.schedule)) srcCount[o.name] = (srcCount[o.name] || 0) + 1;
+  const keyOf = o => srcCount[o.name] > 1 ? o.name + '#' + o.id : o.name;
+  const rowsOf = {}, mapsOf = {}, keysOf = {};
   for (const [mapId, o] of named) {
     if (!Array.isArray(o.schedule)) continue;
-    rowsOf[o.name] = o.schedule.map(r => ({
+    const k = keyOf(o);
+    (keysOf[o.name] || (keysOf[o.name] = [])).push(k);
+    rowsOf[k] = o.schedule.map(r => ({
       when: r.when || '', map: r.map || null, x: r.x | 0, y: r.y | 0, facing: r.facing || null,
       notDrawn: !r.map, state: r.state || null, place: typeof r.place === 'string' ? r.place : null,
     }));
-    const maps = mapsOf[o.name] || (mapsOf[o.name] = new Set());
+    const maps = mapsOf[k] || (mapsOf[k] = new Set());
     const n = CLOCK_NUDGE[o.id];
     for (const r of o.schedule) {
       let map = r.map || null;
@@ -5215,17 +5286,19 @@ function wireSchedules(){
     }
     maps.add(mapId);
   }
-  if (mapsOf.Lizzy) mapsOf.Buddy = new Set(mapsOf.Lizzy);
+  if (mapsOf.Lizzy) { mapsOf.Buddy = new Set(mapsOf.Lizzy); if (!keysOf.Buddy) keysOf.Buddy = ['Buddy']; }
   for (const [mapId, o] of named) {
-    const maps = mapsOf[o.name];
-    if (!maps) continue;
-    if (!Array.isArray(o.schedule) && !maps.has(mapId)) continue;
-    const bag = SCHED[o.name] || (SCHED[o.name] = { rows: null, sourceId: null, onMap: {}, byId: {}, hold: null, follow: null });
+    const keys = keysOf[o.name];
+    if (!keys) continue;
+    const k = Array.isArray(o.schedule) ? keyOf(o) : keys.find(g => mapsOf[g] && mapsOf[g].has(mapId));
+    if (!k) continue;
+    const bag = SCHED[k] || (SCHED[k] = { rows: null, sourceId: null, onMap: {}, byId: {}, hold: null, follow: null });
     bag.onMap[mapId] = o;
     bag.byId[o.id] = o;
+    o._schedKey = k;
     if (Array.isArray(o.schedule) && !bag.rows) {
       bag.sourceId = o.id;
-      bag.rows = rowsOf[o.name];
+      bag.rows = rowsOf[k];
       bag.sleepWhen = o.sleepWhen || null;
     }
   }
@@ -5247,11 +5320,19 @@ wireSchedules();
 // DAY1_TRIAL1_FLOW (Vincent, Nov 2, 2026): a step with `npc` points at that person's body where it stands now, so the
 // holder never hunts. A scheduled person (SCHED rows) uses placedRow; anyone else is found by name (or `npcIds`) among the
 // bodies present in WORLD, this map first. The step's own target stays the fallback. Read only; nothing is saved.
+// `npcIds` naming the body that carries the rows picks that body's own schedule, so a name two towns share (Brightgate's
+// and the city's Child) cannot pick the other town; a bare name shared by two scheduled bodies has no bag and is scanned.
+function schedKeyOfIds(ids){
+  if (!ids) return null;
+  for (const id of ids) for (const [k, bag] of Object.entries(SCHED)) if (bag.rows && bag.sourceId === id) return k;
+  return null;
+}
 const npcSpotCache = new Map();   // name|ids|map -> { t, mid, o }: which body, re-read for its live tile (the cue runs every frame)
 const NPC_SPOT_MS = 400;
 function npcSpot(name, ids){
   if (!name || !S) return null;
-  if (!ids && SCHED[name] && SCHED[name].rows) { const r = placedRow(name); return r ? { map: r.map, x: r.x, y: r.y, place: r.place || CLOCK_PLACE[r.map] || null } : null; }
+  const sk = ids ? schedKeyOfIds(ids) : (SCHED[name] && SCHED[name].rows ? name : null);
+  if (sk) { const r = placedRow(sk); return r ? { map: r.map, x: r.x, y: r.y, place: r.place || CLOCK_PLACE[r.map] || null } : null; }
   const key = name + '|' + (ids || []).join(',') + '|' + (CUR ? CUR.id : ''), t = performance.now();
   let hit = npcSpotCache.get(key);
   if (!hit || t - hit.t > NPC_SPOT_MS || (hit.o && !present(hit.o))) {
@@ -5500,9 +5581,17 @@ function liveContactSpot(name){
   return person.spots.find(s => present(s.o)) || null;
 }
 function whereNow(name){
-  if (name === 'Mom' || name === 'Dad') return wherePack('home', 'home', 'fixed');
+  // MAHOPAC_DREAMS G2 (D1949, D1921): Dad shows no place line (he is only ever met in the Mahopac dreams); Mom stays at home.
+  if (name === 'Dad') return null;
+  if (name === 'Mom') return wherePack('home', 'home', 'fixed');
   // DAY1_TRIAL1_FLOW (D1166): after her go-home talk Fen is away with the Keeper authorities until Lizzy's class is done.
   if (name === 'Master Fen' && S && S.flags['story.fen_sent_home'] && !S.flags['story.lizzy_class']) return wherePack('work', 'away on Keeper business', 'story');
+  // POST_TRIAL_CRACKDOWN §7.2: under the curfew order (the crackdown until the pick) people are where the curfew put them.
+  if (S && S.flags['story.crackdown'] && !S.flags['story.side_pick_done']) {
+    if (name === 'Master Fen') return wherePack('work', S.flags['story.post_trial_done'] ? 'the orchard gate' : 'Lantern House', 'story');
+    if (name === 'Associate Juniper') return wherePack('work', 'east road', 'story');
+    if ((name === 'Odile' || name === 'Wynne' || name === 'Tobin') && !S.flags['story.warden_called']) return wherePack('out', 'Lantern House (curfew)', 'story');   // home by day once Ilse calls (D1405)
+  }
   if (name === 'Warden Ilse' || name === 'Officer Ness' || name === 'Rook') {
     if (window.PPRep) {
       const tier = PPRep.repTier(name);
@@ -5587,6 +5676,18 @@ function openClockCard(){
   openEnvCard();
 }
 function closeClockCard(){ if ($('#ovClock').hidden) return; $('#ovClock').hidden = true; lockTabs(false); }
+// WAR_MUSEUM §2.2: a warm disc over a fed donation lantern, 900 ms; it swells and fades, or holds steady under reduced motion.
+const glowFx = [];
+function drawGlowFx(g, cx, cy){
+  const t = now();
+  for (let i = glowFx.length - 1; i >= 0; i--) {
+    const f = glowFx[i], k = (t - f.t0) / 900;
+    if (k >= 1 || !CUR || CUR.id !== f.map) { glowFx.splice(i, 1); continue; }
+    g.save(); g.globalCompositeOperation = 'lighter';
+    g.fillStyle = 'rgba(255,205,117,' + (f.still ? 0.3 : (0.35 * Math.sin(k * Math.PI)).toFixed(3)) + ')';
+    g.beginPath(); g.arc(f.x * TS + 8 - cx, f.y * TS + 6 - cy, 14, 0, Math.PI * 2); g.fill(); g.restore();
+  }
+}
 const shotFx = [];
 function drawShotFx(g, cx, cy){
   const t = now();
@@ -6011,6 +6112,16 @@ function findPath(goals){
   const prev = new Map([[key(sx, sy), null]]), q = [[sx, sy]];
   const isGoal = (x, y) => goals.some(g => g.x === x && g.y === y);
   if (isGoal(sx, sy)) return [];
+  // KILNMOUTH perf (K-T11): file the map's objects by tile once, so each step reads only its own tile's objects (the same tests
+  // as solid(), warpBlocked() and warpAt(): the first present object there, in map order).
+  const byTile = new Map();
+  for (const o of CUR.objs) { const p = objPos(o), k = key(p.x, p.y), l = byTile.get(k); if (l) l.push(o); else byTile.set(k, [o]); }
+  const here = (x, y, pred) => (byTile.get(key(x, y)) || []).find(o => present(o) && pred(o)) || null;
+  const stopAt = (x, y) => {
+    if (solidTile(x, y) || here(x, y, o => BLOCK_KINDS[o.kind])) return true;
+    const wp = here(x, y, o => o.kind === 'warp');
+    return !!wp && ((!!wp.need && !needMet(wp.need)) || !isGoal(x, y));
+  };
   let visits = 0;
   while (q.length && visits < cap) {
     const [x, y] = q.shift();
@@ -6018,7 +6129,7 @@ function findPath(goals){
     for (const [dx, dy] of Object.values(DIRS)) {
       const hop = hopLanding(x + dx, y + dy, dx, dy);   // a hop ledge is one edge, one way (D560)
       const nx = hop ? hop.x : x + dx, ny = hop ? hop.y : y + dy, k = key(nx, ny);
-      if (prev.has(k) || solid(nx, ny) || wildAt(nx, ny) || warpBlocked(nx, ny) || (warpAt(nx, ny) && !isGoal(nx, ny))) continue;
+      if (prev.has(k) || stopAt(nx, ny) || wildAt(nx, ny)) continue;
       prev.set(k, [x, y]);
       if (isGoal(nx, ny)) { const out = []; let c = [nx, ny]; while (c && !(c[0] === sx && c[1] === sy)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); } return out; }
       q.push([nx, ny]);
@@ -6059,9 +6170,13 @@ function tryStep(d){
     S.world.facing = dn; clearMoves(); sfx('denied');
     const door = lanternDoorHere(); runSteps(placeSteps(door), { npc: door }); return;
   }
-  if (warpBlocked(nx, ny)) { S.world.facing = dn; return; }   // the gate trigger one tile earlier tells you why
+  if (warpBlocked(nx, ny)) {   // the gate trigger one tile earlier tells you why; CABINET 1b: or the warp's own `deny`, on the bump
+    S.world.facing = dn; const wb = warpAt(nx, ny);
+    if (wb && wb.deny) { clearMoves(); sfx('denied'); runSteps([['say', '', denyLine(wb)]]); }
+    return;
+  }
   const w = wildAt(nx, ny);
-  if (w) { if (p && w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
+  if (w) { if (p && w.x === nx && w.y === ny && !w.beside) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly; one walking beside you only blocks (WALK_BESIDE R5)
   walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0; walk.hop = false; closePartnerTray();
   S.world.facing = dn;
   S.world.x = nx; S.world.y = ny;
@@ -6101,6 +6216,7 @@ function onLand(){
     updateHUD();
   }
   if (S.steps % 50 === 0 && !found) toast(S.steps + ' steps! Nice walk.');   // a find says more than the step count
+  besideStep();                              // WALK_BESIDE E3 (R4): a wild walking beside you takes its step
   const x = S.world.x, y = S.world.y;
   const wp = warpAt(x, y);
   if (wp && needMet(wp.need)) {
@@ -6115,6 +6231,7 @@ function onLand(){
     save();
   }
   if (checkTriggers()) { if (mapRT.grace > 0) mapRT.grace--; return; }
+  if (checkCalls()) return;
   const spottedNow = checkSight();   // grace is read first, then this step spends one (D280: step 3 is the first that can re-arm)
   if (mapRT.grace > 0) mapRT.grace--;
   if (spottedNow) return;
@@ -6124,6 +6241,24 @@ function onLand(){
 /* ---------- items (INVENTORY v1 §3): one catalog for the Bag, the Travel Shelf, battle, scene `give` and map pickups ---------- */
 // use: where it works ('battle' and/or 'field'); target: needs a pet; cap: stack limit (enforced on grant, not on load); price in Acorns.
 const ITEM_ART = {
+  old_oil_lamp: [   // WAR_MUSEUM §2.1 (D2307): the Stamp Trail's keepsake, a dented brass oil lamp, unlit; PAL only
+    '................',
+    '................',
+    '.......dd.......',
+    '......dFFd......',
+    '......dGGd......',
+    '.....ddGGdd.....',
+    '....dGyyyyGd....',
+    '...dGywyyyyGd...',
+    '..dGyyyyyyyyGddd',
+    '.dGGyyyyyyyyGGAd',
+    '.dGGGGGGGGGGGGd.',
+    '..ddFFFFFFFFdd..',
+    '....dFFFFFFd....',
+    '...dGGGGGGGGd...',
+    '....dddddddd....',
+    '................',
+  ],
   lantern_wick: [   // DAY1_TRIAL1_FLOW (D1154): a coiled wick with a small flame, PAL only
     '................',
     '.......y........',
@@ -6410,8 +6545,9 @@ const ITEMS = {
   atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
   route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
   keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
-  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Keeper Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Wynne sells them.' },   // D1154, FPT Part A
+  lantern_wick:   { name: 'Lantern Wick',   plural: 'Lantern Wicks',   cap: 1,  price: 8,   use: ['field'],           target: false, key: true, keyNote: 'For Host Amos and his dark window.', blurb: 'A fresh wick for a Lantern House lamp. Brisa sells them.' },   // D1154, FPT Part A
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
+  old_oil_lamp:   { name: 'Old Oil Lamp',   plural: 'Old Oil Lamps',   cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A keepsake from the Muster Road Museum.', blurb: 'Given for a fully stamped card.' },   // WAR_MUSEUM D2307 (PLACEHOLDER words)
 };
 const ITEM_ORDER = Object.keys(ITEMS);
 function drawItemIcon(canvas, id){
@@ -6447,7 +6583,7 @@ function walkFind(p, cday){
   cday.finds++;
   const r = findRng(); let what = null;
   if (r >= 0.6 && r < 0.85) { const id = FINDS.items[findRng() < 0.5 ? 0 : 1]; if (grantItem(id, 1).added) what = itemLabel(id, 1); }
-  if (!what) { const n = FINDS.acornMin + Math.floor(findRng() * (FINDS.acornMax - FINDS.acornMin + 1)); S.money = (S.money || 0) + n; what = acorns(n); }
+  if (!what) { const n = FINDS.acornMin + Math.floor(findRng() * (FINDS.acornMax - FINDS.acornMin + 1)); moneyDelta('find', n); what = acorns(n); }
   addBond(p, BOND.find); sfx('stinger_item');
   toast(petName(p) + ' dug something up! Found ' + what + '.'); save();
   return true;
@@ -6619,6 +6755,17 @@ function checkArriveTriggers(){
   }
   return false;
 }
+// HC_PARADE E10 (D1369): a trigger with `load: true` plays when its map loads (a boot or an arrival) while its `when` holds and the
+// holder stands within `r` (Part 2 of the parade, or the next street battle, after the app closed on Charter Hill).
+function checkLoadTriggers(){
+  if (!S || !CUR || scene || fade.busy || (battle && battle.on)) return false;
+  const x = S.world.x, y = S.world.y;
+  for (const o of CUR.objs) {
+    if (o.kind !== 'trigger' || !o.load || !present(o) || Math.abs(o.x - x) + Math.abs(o.y - y) > (o.r || 0)) continue;
+    mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
+  }
+  return false;
+}
 // WEIR_HUT D1598: a trigger may name a scene another build fills in (chi_hut_first -> chi_meet). Until that scene exists the
 // trigger is a stub: it never fires, never stops the walk and writes nothing.
 const sceneBuilt = o => !o.scene || !!sceneSteps(o.scene);
@@ -6628,7 +6775,7 @@ function checkTriggers(){
     if (o.kind !== 'trigger' || !sceneBuilt(o)) continue;
     const inside = present(o) && Math.abs(o.x - x) + Math.abs(o.y - y) <= (o.r || 0);
     if (!inside) {
-      if (o.id === 'fb_side_pick' && mapRT.trig[o.id] && !S.flags['story.side_pick_done']) {
+      if (o.id === 'fb_side_pick' && mapRT.trig[o.id] && !S.flags['story.side_pick_done'] && !S.flags['story.orchard_lean']) {   // the lean is made: no walk-away line
         const lines = (MD.glimmer_path && MD.glimmer_path.walkAway) || [];
         if (lines.length) { toast(lines[walkAwayI % lines.length]); walkAwayI++; }
       }
@@ -6637,6 +6784,48 @@ function checkTriggers(){
     }
     if (mapRT.trig[o.id]) continue;
     mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
+  }
+  return false;
+}
+// ACT1_KEEPER_JOIN E7: story calls (data/detail_*.json `calls`: { id, when, scene }). The first free outdoor step with no scene,
+// fade, sheet or battle rings the first call whose `when` holds (Ilse's second call, the recall). The scene's own answer writes
+// the flag that ends its `when`; until then it rings again on the next outdoor step, like the dawn call (D1404).
+// ACT1_KEEPER_JOIN §9 (D1503 B, D1546 B): a save that picked a side before the join becomes a Keeper Cadet in public, once,
+// automatically at load (after normalizeV2, before the first map), with no call. story.ilse_call_old is written in the same step,
+// so it can never run twice. Only additive keys and one value change (story.side glimmer -> keepers, by assignment, never
+// switchSide: no cost, story.switches stays 0). Seals, Tier lanyards, the cracked handset, chips, standing and Rook stay (D1547).
+const OLD_MOVE_TOAST = "You're a Keeper Cadet now. See Ilse.";   // PLACEHOLDER, <= 40
+let oldMoveToast = false;
+const oldSaveMoveWanted = F => !!(F && F['story.side_pick_done'] && !F['story.keeper_cadet'] && !F['story.ilse_call_old']);
+function applyOldSaveMove(F){
+  const glim = F['story.side'] === 'glimmer';
+  F['story.keeper_cadet'] = true;
+  if (glim) F['story.side'] = 'keepers';
+  if (!F['story.orchard_lean']) F['story.orchard_lean'] = glim ? 'pack' : 'open';
+  if (F['story.fen_lean'] == null) F['story.fen_lean'] = glim ? -1 : 1;   // D1550: one step, only if unset
+  F['story.sway_fernbrook'] = glim ? -2 : 3;                               // D1545 A: the town stays as it was
+  F['story.cover_done'] = true;
+  F['story.ilse_call_old'] = true;
+  return true;
+}
+function oldSaveMoveAtLoad(){
+  if (!S || !oldSaveMoveWanted(S.flags)) return false;
+  applyOldSaveMove(S.flags); oldMoveToast = true; return true;
+}
+function oldSaveMoveDue(){   // the toast on the first free moment
+  if (!oldMoveToast || !S || scene || fade.busy || overlayOpen()) return;
+  oldMoveToast = false; toast(OLD_MOVE_TOAST);
+}
+const HOST_NOTES = [].concat(...DETAIL_KEYS.map(k => MD[k].hostNotes || [])).filter(n => n && n.scene && n.line);
+const hostNoteDue = () => HOST_NOTES.find(n => SCENES[n.scene] && (n.when || []).every(w => cond(w, false))) || null;
+const STORY_CALLS = [].concat(...DETAIL_KEYS.map(k => MD[k].calls || [])).filter(c => c && c.scene);
+function checkCalls(){
+  if (!S || !CUR || scene || fade.busy || overlayOpen() || (battle && battle.on)) return false;
+  oldSaveMoveDue();
+  if (isRoom() || /^dream/.test(CUR.id)) return false;
+  for (const c of STORY_CALLS) {
+    if (!SCENES[c.scene] || !(c.when || []).every(w => cond(w, false))) continue;
+    clearMoves(); runScene(c.scene); return true;
   }
   return false;
 }
@@ -7177,7 +7366,7 @@ function settleHop(){
 function warpTo(at, after){
   if (fade.busy) return;
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('warp');
-  fade.busy = true; fade.t0 = now(); settleHop(); clearMoves();
+  fade.busy = true; fade.t0 = now(); settleHop(); clearMoves(); kmPrevMap = CUR ? CUR.id : null;   // KILNMOUTH E6: the map a warp leaves
   setTimeout(() => { arriveAt(at); }, FADE_MS / 2);
   setTimeout(() => { fade.busy = false; if (after) after(); maybeLanternGuide(); }, FADE_MS);
 }
@@ -7192,12 +7381,17 @@ function arriveAt(at){
   }
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null; walk.hop = false;
-  resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
+  resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; if (CUR.id === 'brightgate') S.flags['story.reached_brightgate'] = true; bump.talked = null; markMapSeen();
   placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); humOnArrive(); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
   try { syncPlaceYield(true); } catch (e) {}
   try { noteMhcRestRoom(); } catch (e) {}
   try { sideBarArrive(); } catch (e) {}   // SIDE_BADGE: who holds the town or route you just walked into
+  try { kmArrive(); } catch (e) {}   // KILNMOUTH E6: the visit counter
+  if (CUR.objs.some(o => o.load)) {   // HC_PARADE E10: once the warp's fade has cleared, a `load` trigger on this map may play
+    const mid = CUR.id, tryLoad = n => { if (!CUR || CUR.id !== mid || scene) return; if (fade.busy && n < 40) { setTimeout(() => tryLoad(n + 1), 60); return; } checkLoadTriggers(); };
+    setTimeout(() => tryLoad(0), 0);
+  }
 }
 // DAY1_TRIAL1_FLOW: a door's `deny` may be keyed like npc lines ({ cond: line, else: line }); the first true key wins.
 function denyLine(dr){
@@ -7207,7 +7401,7 @@ function denyLine(dr){
 }
 function enterDoor(dr){
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
-  if (dr.need && !needMet(dr.need)) { runSteps([['say', '', denyLine(dr)]]); return; }
+  if ((dr.need && !needMet(dr.need)) || (dr.shutWhen && cond(dr.shutWhen, false))) { runSteps([['say', '', denyLine(dr)]]); return; }
   // BRINEWICK: a door may write one story flag on entry, the same `setFlag` field a warp already carries (the depot door).
   if (dr.to && WORLD[dr.to]) { sfx('tap'); if (dr.setFlag) S.flags[dr.setFlag] = true; warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
@@ -7232,6 +7426,15 @@ function glimmerHallSteps(t, pn){
   if (!S.flags['story.tour1_s1'] || !S.flags['story.tour1_s2'] || !S.flags['story.tour1_s3']) return [['run', 'tour1_wait']];
   return [['run', 'tour1_s4']];
 }
+// POST_TRIAL_CRACKDOWN §6: a detail file may add one keeper-keyed question to the Lantern House panel
+// (`lanternAsk`: { "<keeper>": { when: [conds], label, scene } }), e.g. Amos's pitch after the crackdown night.
+function lanternAsk(who){
+  for (const k of DETAIL_KEYS) {
+    const a = MD[k].lanternAsk && MD[k].lanternAsk[who];
+    if (a && a.scene && sceneSteps(a.scene) && [].concat(a.when || []).every(c => cond(c, false))) return [a.label, [['run', a.scene]]];
+  }
+  return null;
+}
 // D1128: Fen's challenge hint (below this lead level). PLACEHOLDER copy (Story).
 const FEN_HINT_LV = 12;
 const FEN_HINT_LINE = "My Walklings are Lv 12 to 14. Bring a second Walkling, or win a few more battles first.";
@@ -7240,6 +7443,7 @@ function placeSteps(dr){
     const who = dr.keeper || '';
     const hold = lanternHold();
     const opts = [lanternRestOption()];
+    const ask = !hold && lanternAsk(who); if (ask) opts.push(ask);
     opts.push(hold
       ? ['Not yet', [['say', who, 'The door stays shut until the party is rested.']]]
       : ['Leave', []]);
@@ -7283,10 +7487,12 @@ function factionOfMap(id){
   if (!id) return null;
   if (id === 'gw_preview') return window.PPFleet ? PPFleet.previewFaction() : null;   // the preview lot follows its chosen hold
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
+  if (id === 'kilnmouth' || id.indexOf('km_') === 0) return kmFaction(id);   // KILNMOUTH E8: the town follows its hold (CAB §3.6)
   if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
   if (id === 'bw_depot_in') return 'glimmer';                               // BRINEWICK (B6): a Keepers harbour with a Glimmerwell depot
   if (id === 'brinewick' || id.indexOf('bw_') === 0) return 'keepers';
   if (id === 'highcharity' || id.indexOf('hc_') === 0) return 'keepers';   // the capital wears the same gold and green as Hearthmoor
+  if (id === 'brightgate' || id.indexOf('bg_') === 0) return 'glimmer';    // BRIGHTGATE_LAYOUT D1496: the company's city; no hold flips it here
   if (id === 'hearthmoor' || id.indexOf('hm_') === 0 || id === 'fernbrook' || id === 'route1' || id === 'route2') return 'keepers';
   return null;
 }
@@ -7294,7 +7500,8 @@ function factionOfMap(id){
 // along the wall), trim (a PAL key) and shape ('gable', 'steep', 'point', 'dome', 'arch', 'drum', 'flat' or 'stepped', plus any of
 // '+chimney', '+mast', '+bell', '+clock', '+bunting', '+emblem', '+slit'). An entry with none of these draws exactly as before.
 // Each styled building is painted once per map and faction, then cut into 16x16 cells that replace its R and H tiles.
-const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPpt', bldCache = new Map(), BLD_CAP = 3;
+// BRIGHTGATE_LAYOUT: l (mown lawn), I (panel paving) and o (cobbles) show behind a cut roof too, so no grass with mint shows there (D2000).
+const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPptlIo', bldCache = new Map(), BLD_CAP = 3;
 const bldKey = (x, y) => y * 4096 + x;
 function buildingsOf(m){
   const out = [], at = (x, y) => (m.grid[y] && m.grid[y][x]) || '';
@@ -7771,7 +7978,7 @@ function drawMap(t){
   tickGlides();
   // y-sorted so objects, creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
   const ents = wild.list.map(w => ({ y: w.fy, draw: () => drawWild(g, w, cx, cy, VW, VH, t) }));
-  for (const o of CUR.objs) if (present(o) && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
+  for (const o of CUR.objs) if (present(o) && !o.fly && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
     const q = objPos(o); ents.push({ y: (q.fy != null ? q.fy : q.y) - 0.02, draw: () => drawObj(g, o, cx, cy, VW, VH, t) });
   }
   if (auraMapOk() && p && p.aura) auraFrame(p.aura, t, 0); else { auraLive = 0; auraDrawn = 0; }
@@ -7785,16 +7992,18 @@ function drawMap(t){
   const fleetOn = !!(window.PPFleet && PPFleet.live(CUR.id));
   if (fleetOn) { PPFleet.drawGround(g, cx, cy, VW, VH, t); PPFleet.mapEnts(g, cx, cy, VW, VH, t).forEach(e => ents.push(e)); }
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
+  drawFlyers(g, cx, cy, VW, VH, t);           // HC_PARADE E7: the flying layer, over people and roofs
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
   if (fleetOn) PPFleet.drawAir(g, cx, cy, VW, VH, t);
   drawHqGlow(g, cx, cy);
   drawLampLights(g, cx, cy, VW, VH);
   drawShotFx(g, cx, cy);
+  drawGlowFx(g, cx, cy);
   wild.poofs = wild.poofs.filter(f => wild.clock - f.t < 500);
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
   drawBubbles(g, cx, cy, t);
-  if (!isRoom()) drawWeather(g, VW, VH, t);   // weather tint is skipped indoors (INTERIORS §2.1)
+  if (!isRoom()) { drawMapOverlays(g, cx, cy, VW, VH, t); drawWeather(g, VW, VH, t); }   // weather tint is skipped indoors (INTERIORS §2.1); KILNMOUTH E4 clouds under it
   drawDream(g, VW, VH, t);
   drawObjectiveCue(g, cx, cy, t);
   drawNeedBubble(g, cx, cy, t);
@@ -8541,10 +8750,24 @@ function propArtKey(o){
   if (o && o.sprite === 'lab_tank' && glimmerBayDark()) return 'rx4b_tank';
   return o && o.sprite;
 }
+function propCullMargin(o){ const a = WART[o.sprite]; const w = a ? (a.width || (a[0] && a[0].width) || TS) : TS; return Math.max(0, (w - TS) / 2); }
+/* HC_PARADE E7 (D1369): a prop with `fly: true` (a Keeper rotor craft) draws after people and roofs, `alt` px above its cell,
+   and its `shadow` sprite sits on the ground cell below. It never blocks (BLOCK_KINDS skip it). Reduced motion holds frame 0. */
+function drawFlyers(g, cx, cy, VW, VH, t){
+  for (const o of CUR.objs) {
+    if (!o.fly || !present(o)) continue;
+    const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
+    if (X < -48 || X > VW + 48 || Y < -48 || Y > VH + 48) continue;
+    const sh = o.shadow && WART[o.shadow]; if (sh) g.drawImage(sh, X + 8 - sh.width / 2, Y + 14 - sh.height / 2);
+    let key = o.sprite; if (q.moving && WART[key + '_move']) key += '_move';
+    const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y - (o.alt != null ? o.alt : 24));
+  }
+}
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   const wide = o.ox ? 48 : 0;   // a 64 px tank or 32 px car drawn across its bay: cull by its full width
-  if (X < -26 - wide || Y < -24 - wide || X > VW + 10 + wide || Y > VH + 2) return;
+  const wm = Math.max(wide, o.kind === 'prop' || o.kind === 'glide' ? propCullMargin(o) : 0);   // E4 (D1204): wide art (a 64 px tank, a 96 px beam) keeps drawing past the edge
+  if (X < -26 - wm || Y < -24 - wide || X > VW + 10 + wm || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
     if (o.pet === 'maze' && WART.maze_sit) { drawMaze(g, X, Y, t); return; }
@@ -8564,8 +8787,12 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     g.drawImage(img, X - 1 + b.dx, Y - 2 + b.dy); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
   else if (o.kind === 'prop') {
-    const key = propArtKey(o);
+    let key = propArtKey(o); if (q.moving && WART[key + '_move']) key += '_move';   // E3 (D1204): a moving prop shows its `_move` frames
     const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X + (o.ox || 0), Y + (o.oy || 0));   // ox/oy: wide art across its bay (a parked car or tank)
+  }
+  else if (o.kind === 'glide') {   // BRIGHTGATE_LAYOUT: a gliding vehicle; `_move` frames while it moves, `_l` facing west
+    const k = o.sprite + (q.moving && WART[o.sprite + '_move'] ? '_move' : '') + (q.facing === 'left' ? '_l' : ''), a = WART[k] || WART[o.sprite];
+    if (a) drawArt(g, artFrame(a, t), X + (o.ox || 0), Y + (o.oy || 0));
   }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') {
@@ -8981,7 +9208,7 @@ function wardPress(card){
     const row = wardrobeRow(card.id);
     if (!row || !S) return;
     if ((S.money | 0) < row.price) { sfx('denied'); toast('Not enough Acorns.'); return; }
-    S.money = (S.money | 0) - row.price;
+    moneyDelta('look', -row.price, bankShopRef(card.id, wardOwner));
     S.flags[row.flag] = true;
     save();
     sfx('tap');
@@ -9228,6 +9455,9 @@ function interact(o){
   if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) { noteContact(objName(o)); npcReact(o, null, 'hop', REACT_HOP_MS); } }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
+    // BRIGHTGATE_LAYOUT §5.2: a Master whose row names a `crew` waits until each of them is beaten (Hall 4; Fen keeps hallCrewDone).
+    if (!S.flags['trainer.' + o.id] && t && Array.isArray(t.crew) && t.crew.some(c => TRAINERS[c] && !S.flags['trainer.' + c]))
+      return runSteps([['say', t.name, (t.lines && t.lines.crew) || 'Beat my crew first.']], ctx);
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
     if (o.id === 'rc_tobin' && S.flags['story.gb_hollis_told'] && !S.flags['story.gb_tobin']) {
       return runSteps([
@@ -9237,7 +9467,11 @@ function interact(o){
     }
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
-  if (LANTERN_GUIDE_IDS[o.id]) { openLanternGuide(o, false); return; }
+  if (LANTERN_GUIDE_IDS[o.id]) {
+    const note = hostNoteDue();   // ACT1_KEEPER_JOIN §4.8: Ilse's letters come through a Host, never the wire
+    if (note) return runSteps([['say', objName(o), note.line], ['run', note.scene]], ctx);
+    openLanternGuide(o, false); return;
+  }
   if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
   if (o.kind === 'sign') {
     const line = linesFor(o);
@@ -9250,11 +9484,11 @@ function interact(o){
       openShop([], 'Travel Shelf', 'Leave Acorns, take a snack. \u2014 I.');
       return;
     }
-    openShop(o.shop, shopHeading(o), o.shopFlavour || null);
+    openShop(o.shop, shopHeading(o), o.shopFlavour || null, o.id || '');
     return;
   }
   if (o.wardrobe) {
-    mapRT.talked.add(o.id);
+    mapRT.talked.add(o.id); wardOwner = o.id || '';   // BANK_AND_HOMES D2234: the store a look's ledger memo names
     const line = linesFor(o);
     const steps = [];
     if (typeof line === 'string' && line && line.charAt(0) !== '@') steps.push(['say', objName(o), line]);
@@ -9403,6 +9637,7 @@ async function runSteps(steps, ctx = {}){
     vars: { tags: [], line: null, suggest: null }, skip: false, deferRespawn: false, toasts: [], boxes: 0 };
   if (unlock.on && unlock.id) { unlock.held = unlock.id; unlockClose(); }
   walk.target = walk.path = walk.arrive = walk.queued = null; dropAim(); wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
+  wbAbort();   // WALK_BESIDE R8 (c): a scene ends a walk beside silently
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   cueFactionMusic(ctx, steps);
@@ -9466,7 +9701,7 @@ function endScene(){
     else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
-  if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
+  if (cue && !(battle && battle.on) && (PPSound.musicWant === cue || (cue === 'hush' && !PPSound.musicWant))) {
     const back = trackFor(CUR); if (back && back !== cue) PPSound.music(back, { fadeOut: 400, fadeIn: 500 });
   }
   scheduleTutorial(true);
@@ -9481,6 +9716,8 @@ const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', m
   mom_wake: [{ id: 'mom_up', name: 'Mom', look: 'mom', map: 'hm_home_up' }] };   // PARTNER_DAY: Mom lives downstairs now
 // Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the holder).
 const CAST_AT_LOOK = { rook_walk: { name: 'Rook', look: 'rook' }, rook_walk_in: { name: 'Rook', look: 'rook' } };
+for (const k of DETAIL_KEYS) for (const [id, c] of Object.entries(MD[k].castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;
+if (HC_V2_ON) for (const [id, c] of Object.entries(window.PP_HC_V2.castAt || {})) if (id[0] !== '_') CAST_AT_LOOK[id] = c;   // HC_PARADE casts (city only)   // POST_TRIAL_CRACKDOWN: data casts ({ name, look } or { sprite })
 function castOnSay(who, text){
   const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
   for (const c of cast) {
@@ -9511,9 +9748,14 @@ function expand(text){
   const p = viewPet(), sp = p ? SPECIES[spi(p)] : null, v = scene ? scene.vars : {};
   const line = (v && v.line) || flagOf('story.starter_line', true), rv = COUNTER[line] && SPECIES[SP_INDEX[COUNTER[line]]];
   const vals = { name: curName(true) || DEFAULT_PLAYER_NAME, player: curName(true) || DEFAULT_PLAYER_NAME, pet: viewPetName(), chip: chipLabel(), species: p ? nameOf(spi(p), p.stage) : '',
-    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '' };
-  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType)\}/g, (m, k) => vals[k]);
+    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '',
+    date: cardDate() };
+  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType|date)\}/g, (m, k) => vals[k]);
 }
+// MAHOPAC_DREAMS E3 (D1946): `{date}` is the device's date when the line shows, short month and day in capitals ("NOV 4"),
+// for the Mahopac epilogue card. Nothing is stored.
+const CARD_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+function cardDate(d){ d = d || new Date(); return CARD_MONTHS[d.getMonth()] + ' ' + d.getDate(); }
 function chipLabel(){
   const list = chippedPets();
   if (list.length) return petName(list[0]);
@@ -9569,7 +9811,28 @@ async function walkCast(paths){
 }
 // INTRO_CUTSCENE (D801-D809): scene staging. A walk or wait hides the text box but keeps the tap layer: the first tap
 // doubles the pace, the second ends the beat (D808). Casts and prop swaps last until the scene ends (cutReset).
-const cutRT = { busy: false, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [] };
+const cutRT = { busy: false, holds: 0, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [], gone: [], cam: null, camEase: null };
+/* HC_PARADE (owner's direction, Tue Nov 3, 2026): ["camera", id] makes the view follow a scene actor (the President's car, then
+   the President) instead of the holder; ["camera", null] hands it back. A switch eases over 400 ms; reduced motion and SKIP cut.
+   The scene's end always returns the view to the holder (cutReset). */
+function cutCamPoint(){
+  let x = walk.fx, y = walk.fy;
+  const o = cutRT.cam && CUR ? CUR.objs.find(q => q.id === cutRT.cam) : null;
+  if (o) { const q = objPos(o); x = q.fx != null ? q.fx : q.x; y = q.fy != null ? q.fy : q.y; }
+  const e = cutRT.camEase;
+  if (e) {
+    const k = Math.min(1, (now() - e.t0) / 400);
+    if (k >= 1 || prefersReduced()) cutRT.camEase = null;
+    else { const m = 1 - (1 - k) * (1 - k); x = e.x + (x - e.x) * m; y = e.y + (y - e.y) * m; }
+  }
+  return { x, y };
+}
+function cutCamera(sc, id){
+  const p = cutCamPoint();
+  cutRT.camEase = cutFast(sc) ? null : { x: p.x, y: p.y, t0: now() };
+  cutRT.cam = id || null;
+  if (sc) (sc.camLog = sc.camLog || []).push(cutRT.cam);   // for the debug probe (hcParade)
+}
 function cutFast(sc){ return !!(sc && sc.skip) || signalCastFast(); }
 function cutVar(sc, v){
   if (typeof v !== 'string' || v[0] !== '$') return v;
@@ -9579,7 +9842,11 @@ function cutVar(sc, v){
   return val == null ? null : val;
 }
 function cutTap(){ if (!cutRT.busy) return false; if (cutRT.speed < 2) cutRT.speed = 2; else cutRT.end = true; return true; }
-function cutHold(on){ const box = $('#sbox'); if (box) box.hidden = on; cutRT.busy = on; if (on) { cutRT.speed = 1; cutRT.end = false; } }
+function cutHold(on){   // nested holds (E5 walkAll runs several walks at once): the box comes back when the last one ends
+  if (on) { if ((cutRT.holds = (cutRT.holds | 0) + 1) > 1) return; }
+  else { cutRT.holds = Math.max(0, (cutRT.holds | 0) - 1); if (cutRT.holds) return; }
+  const box = $('#sbox'); if (box) box.hidden = on; cutRT.busy = on; if (on) { cutRT.speed = 1; cutRT.end = false; }
+}
 function cutWait(ms){
   cutHold(true); let t = 0, last = now();
   return new Promise(res => (function tick(){
@@ -9599,6 +9866,10 @@ function drawCurtain(g, cx, cy, VW, VH){   // the room is centred on a PAL k voi
 function cutCastAt(sc, id, x, y, facing){
   if (!CUR || CUR.objs.some(o => o.id === id)) return;
   const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || CAST_AT_LOOK[id] || { id, name: '', look: 'villager' };
+  if (c.sprite) {   // E1 (D1204): a cast entry with a sprite places a prop (a Keeper tank, its beam), not a person
+    pushCast(Object.assign({ kind: 'prop', id, sprite: c.sprite, x, y, cast: true }, c.fly ? { fly: true, shadow: c.shadow, alt: c.alt } : {}));
+    mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' }; return;
+  }
   pushCast(Object.assign({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true }, c.pet ? { pet: c.pet } : {}));
   mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' };
 }
@@ -9606,13 +9877,73 @@ function cutProp(sc, id, sprite){
   const o = id && CUR && CUR.objs.find(q => q.id === id); if (!o || !sprite) return;
   cutRT.props.push({ o, sprite: o.sprite }); o.sprite = sprite;
 }
+function cutHide(what){
+  if (!CUR) return;
+  const ids = Array.isArray(what) ? new Set(what) : null;
+  const hit = o => ids ? ids.has(o.id) : (o.kind === 'npc' || o.kind === 'trainer' || (o.kind === 'prop' && /^hc_tank/.test(o.sprite || '')));
+  cutRT.hidden = cutRT.hidden || [];
+  for (const o of CUR.objs) if (!o.cast && !o._cutHide && hit(o)) { o._cutHide = true; cutRT.hidden.push(o); }
+}
+/* HC_PARADE §5 (D1359 the forced battles, D1360 the loss rule, D1361 the pick). ["hcFight", n, spec]: battle n of the street
+   battles. The ally and the two foes are picked at random from the side's pools (spec.pools[side].ally / .foe: cast ids on the
+   map), never the same actor twice in the series (scene.hcUsed). The ally fights beside the holder (TRAINERS ally, Bump only:
+   allyAct); the two foes take the field together (a group battle), level-matched to the lead within 1. A win sets
+   story.hc_sf_<n> and the foes are led off; a loss ends nothing: the ally's line, the team restored, the same battle again, no
+   Acorns lost and no flag set (the rematch mark is cleared). Picks are not saved: a reload picks again. Solo only (D1364). */
+let hcRng = Math.random;
+async function hcFight(sc, n, spec){
+  const flag = 'story.hc_sf_' + n; if (!spec || flagOf(flag, true)) return;
+  const sd = side() === 'glimmer' ? 'glimmer' : 'keepers', P = (spec.pools || {})[sd]; if (!P) return;
+  const used = sc.hcUsed = sc.hcUsed || new Set();
+  const live = id => CUR.objs.some(o => o.id === id && present(o));
+  const pick = (ids, k) => { const pool = (ids || []).filter(id => !used.has(id) && live(id)), out = [];
+    while (out.length < k && pool.length) out.push(pool.splice(Math.floor(hcRng() * pool.length), 1)[0]);
+    out.forEach(id => used.add(id)); return out; };
+  const [ally] = pick(P.ally, 1), foes = pick(P.foe, 2);
+  if (!ally || foes.length < 2) { console.warn('hcFight: pool too small for battle ' + n); return; }
+  sc.hcLast = { ally, foes };
+  const me = { x: S.world.x, y: S.world.y }, st = (spec.stage || {})[sd] || spec.stage || {};
+  const allyObj = CUR.objs.find(o => o.id === ally), home = allyObj ? Object.assign({}, objPos(allyObj)) : null;
+  const at = (d, i) => ({ x: me.x + d[i][0], y: me.y + d[i][1] });
+  const aAt = at(st.ally || [[-1, 0]], 0), fA = at(st.foe || [[-1, -2], [1, -2]], 0), fB = at(st.foe || [[-1, -2], [1, -2]], 1);
+  const G = { ghost: true };
+  await Promise.all([cutWalkTo(sc, ally, aAt.x, aAt.y, G), cutWalkTo(sc, foes[0], fA.x, fA.y, G), cutWalkTo(sc, foes[1], fB.x, fB.y, G)]);
+  if (!scene) return;
+  const allyName = P.allyName || 'Ally', lead = leadPet(), lv = Math.max(2, lead ? levelOf(lead) : 5);
+  if (P.call) await sayBox(allyName, expand(P.call));
+  if (!scene) return;
+  const team = (P.team || ['mole/1']), r = () => team[Math.floor(hcRng() * team.length)];
+  const tid = 'hc_sf_' + n, aid = 'hc_sf_ally';
+  TRAINERS[aid] = { name: allyName, team: [{ form: (P.allyTeam || team)[0], level: lv }], money: 0 };
+  TRAINERS[tid] = { name: P.foeName || 'Foe', group: true, ally: aid, faction: sd === 'keepers' ? 'glimmer' : 'keepers',
+    team: [{ form: r(), level: Math.max(2, lv + (hcRng() < 0.5 ? 0 : -1)) }, { form: r(), level: Math.max(2, lv + (hcRng() < 0.5 ? 0 : 1)) }],
+    lines: Object.assign({}, P.lines || {}) };
+  for (;;) {
+    commitPending(); save();
+    $('#ovScene').hidden = true;
+    const res = await new Promise(resolve => { if (!openBattle({ kind: 'trainer', trainerId: tid, mapIntro: true, onEnd: resolve })) resolve(null); });
+    if (!scene) return;
+    $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
+    if (res == null) throw ABORT;
+    if (res === 'win') break;
+    delete S.flags['rematch.' + trainerMusicId(tid)]; delete S.flags['rematch.' + tid];
+    S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); updateHUD(); save();   // D1360: the team is restored, nothing lost
+    await sayBox(allyName, expand(spec.again || 'Get up. Again.'));
+    if (!scene) return;
+  }
+  sc.view.flags[flag] = true; pend(() => { S.flags[flag] = true; }); commitPending(); save();
+  const off = spec.off || [-12, 0];
+  await Promise.all(foes.map((id, i) => { const q = CUR.objs.find(o => o.id === id); const p0 = q ? objPos(q) : me;
+    return cutWalkTo(sc, id, p0.x + off[0], p0.y + off[1] + i, { line: true, drop: true }); }));
+  if (scene && home) await cutWalkTo(sc, ally, home.x, home.y, G);   // the ally steps back into the line; the next pick comes forward
+}
 // Shortest 4-way path to (x, y), as pathBeside's BFS: walls and blockers stop it, the walker and its `with` do not.
-function cutPath(from, to, selfId, withId){
+function cutPath(from, to, selfId, withId, ghost){
   const free = (x, y) => {
     if (x === to.x && y === to.y) return !solidTile(x, y);
     if (selfId !== 'player' && x === S.world.x && y === S.world.y) return false;
     if (solidTile(x, y)) return false;
-    const b = blockerAt(x, y); return !b || b.id === selfId || b.id === withId;
+    const b = blockerAt(x, y); return !b || b.id === selfId || b.id === withId || (ghost && !!b.cast);   // HC_PARADE: a staging walk may pass other scene actors
   };
   const key = (x, y) => y * 64 + x, prev = new Map([[key(from.x, from.y), null]]), q = [[from.x, from.y]];
   while (q.length) {
@@ -9626,27 +9957,38 @@ function cutPath(from, to, selfId, withId){
   while (c && !(c[0] === from.x && c[1] === from.y)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); }
   return out;
 }
+// HC_PARADE: `{line: true}` walks a straight lane (x first, then y) through other walkers and kerbs: a parade column, a flyer.
+function cutLine(from, to){
+  const out = []; let x = from.x, y = from.y;
+  while (x !== to.x) { x += Math.sign(to.x - x); out.push({ x, y }); }
+  while (y !== to.y) { y += Math.sign(to.y - y); out.push({ x, y }); }
+  return out;
+}
 async function cutWalkTo(sc, who, x, y, opts){
   if (typeof x === 'string' || Array.isArray(x)) { opts = y; const t = Array.isArray(x) ? x : cutVar(sc, x); if (!t) return; x = t[0]; y = t[1]; }
   opts = opts && typeof opts === 'object' ? opts : {};
   fxStop();   // settle a cast's hop-in first (castPartner), or its settle() would snap the walker back mid-walk
   const isP = who === 'player', o = isP ? null : CUR.objs.find(q => q.id === who);
   if (!isP && !o) return;
-  const from = isP ? { x: S.world.x, y: S.world.y } : objPos(o), path = cutPath(from, { x, y }, who, opts.with);
+  const from = isP ? { x: S.world.x, y: S.world.y } : objPos(o), path = opts.line ? cutLine(from, { x, y }) : cutPath(from, { x, y }, who, opts.with, !!opts.ghost);
   if (!path) { console.warn('walkTo: no path for ' + who); return; }
   const mate = opts.with ? CUR.objs.find(q => q.id === opts.with) : null, fast = cutFast(sc);
   if (!fast) cutHold(true);
   let prev = { x: from.x, y: from.y };
   for (const p of path) {
     if (!scene) break;
-    const ms = fast || cutRT.end ? 0 : (isP ? STEP_MS : 120) / cutRT.speed;
+    const ms = fast || cutRT.end ? 0 : (isP ? STEP_MS : (opts.ms > 0 ? opts.ms : 120)) / cutRT.speed;   // E2 (D1204): a slow walker (a Keeper tank) sets its own ms a tile
     if (isP && mate) await Promise.all([cutStepPlayer(p, ms), glideCast([{ id: mate.id, x: prev.x, y: prev.y }], ms)]).then(() => { const P = mapRT.pos[mate.id]; if (P) P.moving = false; });
     else if (isP) await cutStepPlayer(p, ms);
     else { const mv = [{ id: who, x: p.x, y: p.y }]; if (mate) mv.push({ id: mate.id, x: prev.x, y: prev.y });
       await glideCast(mv, ms); for (const m of mv) { const P = mapRT.pos[m.id]; if (P) P.moving = false; } }
     prev = p;
   }
-  if (opts.drop) dropCastIds([who].concat(mate ? [mate.id] : []));
+  if (opts.drop) {   // a cast leaves the map; a real map NPC (B-2, D1442: the supporter led away) only hides until the scene ends,
+    const ids = [who].concat(mate ? [mate.id] : []), real = ids.map(id => CUR.objs.find(q => q.id === id)).filter(q => q && !q.cast && !((scene && scene.cast) || []).some(c => c.o === q));
+    for (const q of real) { q.cutGone = true; cutRT.gone.push(q); delete mapRT.pos[q.id]; }   // so it is back on its tile next time
+    dropCastIds(ids.filter(id => !real.some(q => q.id === id)));
+  }
   if (!fast) cutHold(false);
 }
 function cutStepPlayer(p, ms){            // the frame loop skips updateWalk while the scene box is open, so this drives its own tween
@@ -9659,8 +10001,10 @@ function cutStepPlayer(p, ms){            // the frame loop skips updateWalk whi
   })());
 }
 function cutReset(sc){
-  cutRT.busy = false; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
+  cutRT.busy = false; cutRT.holds = 0; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true); cutRT.cam = null; cutRT.camEase = null;
   for (const p of cutRT.props) p.o.sprite = p.sprite; cutRT.props = [];
+  for (const o of cutRT.hidden || []) delete o._cutHide; cutRT.hidden = [];
+  for (const o of cutRT.gone) delete o.cutGone; cutRT.gone = [];
   const box = $('#sbox'); if (box) box.hidden = false;
 }
 async function relayStart(){
@@ -9698,6 +10042,17 @@ async function readWalk(dir){
   await walkCast([{ id: 'gb_read_pet', steps: steps }]);
   if (dir === 'back') dropCastIds(['gb_read_pet']);
 }
+// MAHOPAC_DREAMS §8: SCENE_MUSIC (design, draft) names cues that have no loop yet. A built loop id plays as built; `hearth`
+// falls back to the room's own loop, `ledger` to `dream`, and `hush` to silence (a 900 ms fade) for the rest of the scene.
+// Any other unknown id does nothing, as before.
+const MUSIC_FALLBACK = { hearth: 'room', ledger: 'dream', hush: null };
+function musicStepId(a){
+  const ids = PPSound.musicIds();
+  if (ids.includes(a) || !(a in MUSIC_FALLBACK)) return a;
+  const f = MUSIC_FALLBACK[a];
+  if (f === 'room') return trackFor(CUR);
+  return f && ids.includes(f) ? f : null;
+}
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene; if (k === 'priceOn') { document.body.classList.add('price-on'); return; }
   switch (k) {
@@ -9708,12 +10063,13 @@ async function execStep(st){
       // D135: Juniper's bonus line pays 300 Acorns once per scene view. The got-line uses the usual Acorn wording.
       if (a === 'Associate Juniper' && b === 'Bonus Acorns are on the way. Have a bright day!' && !sc.view.flags['rc.acorns']) {
         sc.view.flags['rc.acorns'] = true;
-        pend(() => { S.money = (S.money | 0) + 300; });
+        pend(() => { moneyDelta('scene', 300, 'juniper_bonus'); });
         await sayBox('', playerName() + ' got ' + acorns(300) + '!');
         if (!scene) return;
       }
       const box = c && typeof c === 'object' ? c.box : null;
-      await sayBox(a, tx, box); return;
+      sbFaceOff = !!(c && typeof c === 'object' && c.face === false);   // HC_PARADE D1356: The President speaks with no portrait
+      try { await sayBox(a, tx, box); } finally { sbFaceOff = false; } return;
     }
     case 'choice': {
       sc.skip = false;
@@ -9751,7 +10107,7 @@ async function execStep(st){
       const meal = ((sc.npc && sc.npc.meals) || []).find(m => m.id === a);
       if (!meal) return;
       if ((S.money | 0) < meal.price) { sfx('denied'); toast('Not enough Acorns.'); return; }
-      S.money = (S.money | 0) - meal.price;
+      moneyDelta('meal', -meal.price, meal.id);
       syncHdrAcorns();
       p.hunger = clamp(p.hunger + careGain(meal.food, p.hunger, FEED_BANDS), 0, 100);
       p.happy = clamp(p.happy + careJoy(p, meal.joy), 0, 100);
@@ -9768,9 +10124,10 @@ async function execStep(st){
       return;
     }
     case 'setFlag': {
-      const v = b === '$line' ? sc.vars.line : b;
+      let v = b === '$line' ? sc.vars.line : b;
       // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
       const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
+      if (a === 'story.cv_mom_day' && v) v = dayKey(Date.now());   // ACT2_COVER_STORY D1696: the day Mom last packed the snack
       sc.view.flags[a] = v; pend(() => {
         const was = S.flags[a];
         const prevSeals = sealCount();
@@ -9872,7 +10229,7 @@ async function execStep(st){
     // DAY1_TRIAL1_FLOW (D1154): ["take", id, n] uses up n of an item (the wick goes on Amos's lamp). Nothing happens if it is not held.
     case 'take': { const n = Math.min(itemCount(a), Math.max(1, b | 0)); if (n > 0) pend(() => { S.bag[a] = Math.max(0, (S.bag[a] | 0) - n); if (!S.bag[a]) delete S.bag[a]; }); return; }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
-    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity' || r === 'brinewick') S.world.respawn = r; }); return; }
+    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity' || r === 'brinewick' || r === 'brightgate') S.world.respawn = r; }); return; }
     case 'play': {
       sc.skip = false;
       $('#ovScene').hidden = true;
@@ -9894,7 +10251,7 @@ async function execStep(st){
     case 'payRest': {
       if (!lanternRestNeeded()) { sc.view.flags['lantern.rest'] = 'full'; setRestDue(false); sfx('rest'); noteLanternRest(); return; }
       const have = S.money | 0, fee = Math.min(have, LANTERN_REST_COST);
-      if (fee > 0) { S.money = have - fee; sc.view.flags['lantern.rest'] = 'paid'; }
+      if (fee > 0) { moneyDelta('rest', -fee, atTown() || ''); sc.view.flags['lantern.rest'] = 'paid'; }
       else sc.view.flags['lantern.rest'] = 'covered';
       S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); setRestDue(false); sfx('rest'); noteLanternRest(); return;
     }
@@ -9925,6 +10282,7 @@ async function execStep(st){
     }
     case 'rest': if (atLantern()) await bedTuck(sc); sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
+    case 'mark': { if (a) mapRT.talked.add(String(a)); return; }   // MAHOPAC_DREAMS: a runtime mark for this map visit (talked:<id>)
     case 'keepPlace': sc.deferRespawn = false; return;   // this scene walks the holder to the Lantern House itself (ROOK_LANTERN_WALK)
     // The guide teaches the Lantern House once: its "Lanterns" unlock card would repeat the same lesson right after the rest.
     case 'lanternGuide': { const g = lanternGuideHere(); if (g) await execSteps(lanternGuideSteps(g, true)); if (S) S.flags['story.unlock_lantern'] = true; return; }
@@ -9942,9 +10300,18 @@ async function execStep(st){
     case 'faceMe': await faceMeWalk(a); return;   // FACE_ME: walk back beside the holder and face them
     // INTRO_CUTSCENE (D801): staging for any scene. None takes a tap; SKIP and reduced motion snap them (D809).
     case 'walkTo': await cutWalkTo(sc, a, b, c, d); return;
+    case 'walkAll': { await Promise.all((a || []).map(w => cutWalkTo(sc, w[0], w[1], w[2], w[3]))); return; }   // E5 (D1204): [[id, x, y, opts], ...] walk together
     case 'wait': { if (!cutFast(sc)) await cutWait(a | 0); return; }
+    case 'sky': sc.sky = a || null; return;   // KILNMOUTH E2 (D1831): this scene's sky; the clock comes back when it ends
     case 'curtain': { cutCurtain(a === 'on', cutFast(sc)); return; }
     case 'castAt': { cutCastAt(sc, a, b, c, d); return; }
+    // HC_PARADE: ["hide", "people" | [ids]] keeps the map's own people (and parked tanks) off the map until the scene ends.
+    case 'hide': { cutHide(a); return; }
+    case 'camera': { cutCamera(sc, a); return; }
+    // HC_PARADE E8 (D1369): ["emoteAll", [ids], glyph, ms] shows one emote on every listed actor in the same frame (the clap).
+    case 'emoteAll': { if (sc.skip) return; for (const id of a || []) sceneEmote(id, b, (c | 0) || 1200); return; }
+    // HC_PARADE §5 (D1359-D1361): a street battle with an ally and two foes picked at random; a loss restarts it.
+    case 'hcFight': { sc.skip = false; await hcFight(sc, a, b); return; }
     case 'prop': { cutProp(sc, cutVar(sc, a), b); return; }
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
@@ -9962,17 +10329,39 @@ async function execStep(st){
     // ["acorns", n]: pays n Acorns when the scene's writes land, and says so. A scene that sets its flag pays once.
     case 'acorns': {
       const n = Math.max(0, Number(a) | 0); if (!n) return;
-      pend(() => { S.money = (S.money | 0) + n; });
+      const ref = String(sc.id || '').split('@')[0];
+      pend(() => { moneyDelta('scene', n, ref); });
       if (sc.skip) return;
       await sayBox('', playerName() + ' got ' + acorns(n) + '!');
       return;
     }
+    // WAR_MUSEUM §2.2 (D2308): ["pay", n, okSteps, shortSteps, ref] spends n Acorns from the bag when the scene's writes land, through
+    // the bank's moneyDelta (BANK_AND_HOMES, #334) as one `scene` line whose ref names its memo (museum_gift: "Museum gift"), then runs
+    // okSteps; a bag short of n runs shortSteps and spends nothing.
+    case 'pay': {
+      const n = Math.max(0, Number(a) | 0), spent = sc.vars.paid | 0, ref = typeof d === 'string' ? d : '';
+      if ((S.money | 0) - spent < n) { sfx('denied'); await execSteps(c || []); return; }
+      sc.vars.paid = spent + n; pend(() => { moneyDelta('scene', -n, ref); });
+      await execSteps(b || []); return;
+    }
+    // WAR_MUSEUM §2.2: ["glow", objectId] lights that object for a beat (the donation lantern); reduced motion lights it, no pulse.
+    case 'glow': { const o = CUR && CUR.objs.find(q => q.id === a); if (o) glowFx.push({ map: CUR.id, x: o.x, y: o.y, t0: now(), still: prefersReduced() }); return; }
     case 'sfx': { if (a) sfx(a); return; }
+    case 'toast': { if (a) sc.toasts.push(expand(a)); return; }   // ACT1_KEEPER_JOIN 7g: a toast once the scene ends
     // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
     // KEEPER_ANTHEM M6 (D1381): ["music", id, { fadeOut, fadeIn, minDelay, near, keep }]; plain ["music", id] is 180 / 140 ms as before.
     // `near` starts a swelling cue at full; `keep` holds this cue over a scene warp (M7).
-    case 'music': { if (a && !sc.skip) { const o = (b && typeof b === 'object') ? b : {}; sc.musicCue = a; sc.keepMusic = !!o.keep;
-      try { PPSound.music(a, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near }); } catch (e) {} } return; }
+    // MAHOPAC_DREAMS §8: SCENE_MUSIC's proposed cues fall back (musicStepId) until their loops exist; a real loop always wins.
+    case 'music': {
+      if (!a || sc.skip) return;
+      const o = (b && typeof b === 'object') ? b : {}, id = musicStepId(a);
+      sc.musicCue = id || 'hush'; sc.keepMusic = !!o.keep;
+      try {
+        if (id) PPSound.music(id, { fadeOut: o.fadeOut != null ? o.fadeOut : 180, fadeIn: o.fadeIn != null ? o.fadeIn : 140, minDelay: o.minDelay, near: !!o.near });
+        else PPSound.hush(900);
+      } catch (e) {}
+      return;
+    }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
       if (a === 'open') openReveal(sc);
@@ -10078,7 +10467,7 @@ async function grantTourneyPrize(){
   if (S.flags['weekly.hc_tourney'] === key) { await sayBox('Clerk Nia', "You already have this week's ribbon. The match was still lovely."); return; }
   const r = grantItem('hearty_snack', 1);
   if (r.added < 1) { await sayBox('Clerk Nia', "Your bag can't hold the snack. Make room and the prize will wait."); return; }
-  S.money = (S.money || 0) + 40;
+  moneyDelta('tourney', 40);
   S.flags['weekly.hc_tourney'] = key;
   sfx('stinger_item'); save();
   await sayBox('Clerk Nia', "This week's prize is a Hearty Snack and 40 Acorns.");
@@ -10125,11 +10514,12 @@ async function sceneEncounter(id){
 const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['story.starter_line']] || t.counterTeam.ember)) || [];
 
 /* --- the bottom text box (#ovScene) --- */
+let sbFaceOff = false;   // HC_PARADE D1356: a say step with {face: false} keeps the small frame empty
 function sbRender(who, text, box, asHolder){
   // INTRO_CUTSCENE D800: a scene with a portraits table shows the speaker's own sprite at 4x; the holder speaks on narrator prompts.
   const pt = scene && PORTRAIT_FOR[scene.id], pk = pt ? (asHolder ? pt.$player : pt[who]) || null : null;
   if (asHolder && pk) who = curName(true) || DEFAULT_PLAYER_NAME;
-  const key = who && LOOK_OF_NAME[who];
+  const key = who && !sbFaceOff && LOOK_OF_NAME[who];
   const look = key ? npcLook({ look: key, name: who }) : null;
   $('#sbWho').textContent = shownName(who) || ''; $('#sbWho').hidden = !who;
   $('#sbText').textContent = text; $('#sbText').classList.toggle('narr', !who);
@@ -10350,7 +10740,8 @@ function syncWalkCam(t){
   const c = $('#mapCanvas'); if (!c || !c.width || !walk) return;
   tickCamBias(t == null ? performance.now() : t);
   // Follow the keeper's drawn (whole-pixel) spot, so an odd canvas size can't make the keeper wobble 1 px against the screen.
-  const VW = c.width, VH = c.height, px_ = Math.round(walk.fx * TS), py_ = Math.round(walk.fy * TS);
+  const cp = scene && (cutRT.cam || cutRT.camEase) ? cutCamPoint() : null;   // HC_PARADE: a scene's ["camera", id] follows that actor
+  const VW = c.width, VH = c.height, px_ = Math.round((cp ? cp.x : walk.fx) * TS), py_ = Math.round((cp ? cp.y : walk.fy) * TS);
   const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
   const prevY = walk.cam.y;
   // Clamp to the band above the partner strip. Centre in the open band under the area chip, so a north
@@ -10824,6 +11215,10 @@ const WILD_TARGET = 4;                          // creatures kept around the map
 const WILD_LIFE_S = [150, 270];                 // seconds (of Walk-tab time) before a creature wanders off
 const WILD_RESPAWN_S = [5, 12];                 // seconds between spawns while below the target
 const WILD_STEP_MS = 520, WILD_IDLE_MS = [900, 3200], WILD_LEASH = 4;
+// WALK_BESIDE §6.2 (D1973): "walk beside" on this roaming. near/lostAt/lampR/pickupR in tiles (Manhattan), stillMs/lookMs in
+// wild.clock ms. All of it is runtime (each wild's `beside`, the `wb` record); the only save writes are the day stamp, a reward
+// and Standing (§6.4).
+const WB = Object.freeze({ near: 2, stillMs: 3000, steps: 12, lookMs: 1500, lostAt: 3, lampR: 6, pickupR: 8 });
 const WILD_STAGE2_CHANCE = 0.05;                // wild second forms are rare (they skip the first evolution)
 const ANY_SPECIES_CHANCE = 0.08;                // small share for any species, so nothing is impossible anywhere
 const wild = { list: [], poofs: [], seq: 0, chase: null, started: false, clock: 0, nextSpawn: 0, auto: true };
@@ -10835,7 +11230,9 @@ const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow
 // npcOnly species (the fetch line): weight 0 everywhere. A keeper cannot meet one, so it is not in the journal either.
 const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
 const wildSpecies = sp => !sp.labOnly && !sp.npcOnly;
-const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && wildSpecies(SPECIES[i]));
+// tableOnly species (ROUTE_TO_GOVERNOR §7.1, D1862: the Act 2 lines) are wild only on an authored spawn table that names them:
+// never in the 8% any-species roll and never in a habitat pick, so they cannot turn up on an Act 1 map.
+const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && !SPECIES[i].tableOnly && wildSpecies(SPECIES[i]));
 // CREATURES_SLICE §3: authored spawn tables, rows [speciesId, baseWeight, minLv, maxLv]. Effective weight = base x (1 + 0.25 x the
 // species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
 const SPAWNS = {
@@ -10846,12 +11243,12 @@ const SPAWNS = {
 };
 // HUSHWATER E1: detail spawn tables join the same loop. Rows whose species is not in SPECIES are skipped until B2.
 for (const src of [MD.act1_route2, MD.cobblecrest, ...DETAIL_KEYS.map(k => MD[k])]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = (src === MD.act1_route2 || src === MD.cobblecrest) ? v : Object.assign({}, v, { table: (v.table || []).filter(row => SP_INDEX[row[0]] != null) });
-const spawnKey = () => (CUR && CUR.spawns) || 'proto';
+const spawnKey = () => (CUR && (spawnsWhen(CUR) || CUR.spawns)) || 'proto';   // KILNMOUTH E5: spawnsWhen first
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
 function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
 const starterMult = sp => !sp.starter ? 1 : (S.flags && S.flags['story.seal1']) ? 0.2 : 0;
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => wildSpecies(sp) && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => wildSpecies(sp) && !sp.tableOnly && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
 const anyWeights = () => SPECIES.map((sp, i) => ANY_POOL.includes(i) ? starterMult(sp) : 0);
 function spawnOdds(tags = envTags(), key = spawnKey()){   // expected spawn probability per species for these tags on this map's table
   const t = SPAWNS[key];
@@ -10911,22 +11308,27 @@ function wildAt(x, y, except){ return wild.list.find(w => w !== except && ((w.x 
 const playerOn = (x, y) => (S.world.x === x && S.world.y === y) || (walk.to && walk.from.x === x && walk.from.y === y);
 function spawnSpot(sp){
   const pref = { grass: (x, y) => MAP[y][x] === 't', shore: (x, y) => nextTo(x, y, 'w'), woods: (x, y) => nextTo(x, y, 'T') }[SPECIES[sp].tiles || 'grass'];
+  // ROUTE_TO_GOVERNOR E8 (D1871): `spawnNear` (the adder: 'h', a drystone wall) is tried first; then the line's tiles, then tall grass.
+  const near = SPECIES[sp].spawnNear, wall = [];
   const best = [], ok = [];
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) {
     if (!roamable(x, y) || wildAt(x, y) || Math.abs(x - S.world.x) + Math.abs(y - S.world.y) < 3 || (fol.x === x && fol.y === y)) continue;
     if (MW > 24 && Math.abs(x - S.world.x) + Math.abs(y - S.world.y) > 10) continue;      // wide maps: within 10 tiles of you (§4)
+    if (near && nextTo(x, y, near)) wall.push([x, y]);
     if (pref(x, y)) best.push([x, y]); else if (MAP[y][x] === 't') ok.push([x, y]);
   }
-  const list = best.length ? best : ok;
+  const list = wall.length ? wall : best.length ? best : ok;
   return list.length ? list[Math.random() * list.length | 0] : null;
 }
+// ROUTE_TO_GOVERNOR E8 (D1871): a line's `idleMul` stretches its idle between steps (the reed-heron stands still: 3).
+const wildIdle = sp => rnd(WILD_IDLE_MS) * ((SPECIES[sp] && SPECIES[sp].idleMul) || 1);
 function spawnWild(sp, stage, at){
   if (sp == null) sp = pickSpecies();
   if (stage == null) stage = pickStage();
   const spot = at || spawnSpot(sp); if (!spot) return null;
   const c = wild.clock;
   const w = { id: ++wild.seq, sp, stage, lv: wildLv(sp, stage), x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
-    born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + rnd(WILD_IDLE_MS), phase: Math.random() * 3000, shyUntil: 0 };
+    born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + wildIdle(sp), phase: Math.random() * 3000, shyUntil: 0 };
   wild.list.push(w); return w;
 }
 // One nearby wild on Hearthmoor after Rook's first battle, until it is met or the keeper already has a second friend.
@@ -10957,11 +11359,12 @@ function updateWild(dt){
   if (!wild.started) { wild.started = true; if (wild.auto) for (let i = 0; i < 3; i++) spawnWild(); wild.nextSpawn = c + rnd(WILD_RESPAWN_S) * 1000; }
   for (const w of wild.list.slice()) {
     if (w.to) {
-      const k = clamp((c - w.t0) / WILD_STEP_MS, 0, 1);
+      const k = clamp((c - w.t0) / (w.dur || WILD_STEP_MS), 0, 1);   // a walk-beside step keeps the holder's pace (w.dur)
       w.fx = w.from.x + (w.to.x - w.from.x) * k; w.fy = w.from.y + (w.to.y - w.from.y) * k;
-      if (k >= 1) { w.fx = w.x; w.fy = w.y; w.to = null; w.idleUntil = c + rnd(WILD_IDLE_MS); }
+      if (k >= 1) { w.fx = w.x; w.fy = w.y; w.to = null; w.dur = 0; w.idleUntil = c + wildIdle(w.sp); }
       continue;
     }
+    if (w.beside) continue;                                                            // WALK_BESIDE E2: no expiry, no roaming
     const chased = wild.chase === w.id;
     if (!w.guide && c - w.born > w.life && !chased) { removeWild(w, onScreen(w)); continue; }       // wandered off
     const far = Math.abs(w.x - S.world.x) > 11 || Math.abs(w.y - S.world.y) > 9;
@@ -10975,11 +11378,12 @@ function updateWild(dt){
     w.from = { x: w.x, y: w.y }; w.x += d[0]; w.y += d[1]; w.to = { x: w.x, y: w.y }; w.t0 = c;
   }
   if (wild.auto && (wild.list.length < 2 || (wild.list.length < WILD_TARGET && c >= wild.nextSpawn))) { spawnWild(); wild.nextSpawn = c + rnd(WILD_RESPAWN_S) * 1000; }
+  besideTick(dt);
 }
 function drawWild(g, w, cx, cy, VW, VH, t){
   const x = Math.round(w.fx*TS - cx) - 1, y0 = Math.round(w.fy*TS - cy) - 2;
   if (x < -18 || y0 < -18 || x > VW || y0 > VH) return;
-  const tt = t + w.phase, bob = w.to ? Math.floor(clamp((wild.clock - w.t0) / WILD_STEP_MS, 0, 1) * 2) % 2 : Math.floor(tt / 450) % 2;
+  const tt = t + w.phase, bob = w.to ? Math.floor(clamp((wild.clock - w.t0) / (w.dur || WILD_STEP_MS), 0, 1) * 2) % 2 : Math.floor(tt / 450) % 2;
   const age = wild.clock - w.born;
   g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(x + 3, Math.round(w.fy*TS - cy) + 14, 12, 2);
   if (age < 400) g.globalAlpha = age / 400;                              // fade in on spawn
@@ -10989,6 +11393,151 @@ function drawWild(g, w, cx, cy, VW, VH, t){
   const gx = Math.round(w.fx), gy = Math.round(w.fy);
   if (MAP[gy] && MAP[gy][gx] === 't') g.drawImage(TILES.t, 0, 10, 16, 6, gx*TS - cx, gy*TS - cy + 10, 16, 6);
   if (w.stage > 0 && Math.floor(tt / 350) % 5 === 0) drawGlyph(g, 'spark', x + 14, y0 - 2);   // rare form twinkle
+  // WALK_BESIDE R6, E6: the built notice "!" over it as it stops and turns (SPOT_BANG_MS), never under reduced motion. The
+  // overworld wild sprites have no left/right flip, so the turn is its `face` only (no facing change drawn).
+  const B = w.beside;
+  if (B && B.phase === 'look' && wild.clock < B.glyphUntil && !prefersReduced()) {
+    const under = S.world.x === Math.round(w.fx) && S.world.y === Math.round(w.fy) - 1;   // the holder stands on the tile above: beside, not on them
+    drawGlyph(g, 'emote_bang', x + (under ? 15 : 5), y0 - (under ? 6 : 13)); B.glyphs++;
+  }
+}
+/* ---------- WALK_BESIDE §6 (D1973-D1979): "walk beside" ----------
+   Stand still within WB.near tiles of a wild for WB.stillMs and it walks beside you for WB.steps landings, then stops and turns
+   toward what the act points at (§6.3). Stay still with it for WB.lookMs and the walk completes, once a local day
+   (daily.walk_beside): a Joy Crumb (10 Acorns with a full stack) and Keepers +1 with muteAlign, none for a switcher (§6.4).
+   A tap scoots it, walking off loses it, a warp, door, scene or battle ends it silently; none of those spends the day (D1977).
+   Taps only (D268). Never a battle, a story.* flag or a new save field (§6.6). Copy is PLACEHOLDER (Story). */
+const WB_LINES = Object.freeze({
+  start: 'It walks beside you a while.', lost: 'It goes on without you.',
+  crumb: 'It left a Joy Crumb where it stood.', acorns: 'Found 10 Acorns where it stood.',
+  lamp: "It turns to the lamp's hum. You wait.", grass: "It stops. Something's in the grass.",
+  north: 'It stops and looks north. You look too.', sky: 'It stops and looks up. So do you.',
+  sea: 'It turns toward the sea. You look.', high: 'It turns toward the high road.', holder: 'It looks at you a while. Then it goes.',
+});
+const wb = { still: 0, cand: null };
+const wbDay = () => dayKey(Date.now());
+const wbSpent = () => !!(S && S.flags && S.flags['daily.walk_beside'] === wbDay());
+const wbDist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+function wbDirTo(a, b){ if (!a || !b) return null; const dx = b.x - a.x, dy = b.y - a.y; if (!dx && !dy) return null; return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); }
+// §6.3 (D1975), pure: `near` = { act, seals, at (its tile), holder, lamp, pickup, grass } (tiles the caller found, or null).
+// A Comfort Lamp within WB.lampR wins in every act. Returns { to, dir, toast }; dir is null when there is nothing to face.
+function wbTurnOf(flags, near){
+  const F = flags || {}, n = near || {};
+  const act = n.act != null && Number.isFinite(+n.act) ? +n.act : PPStanding.actOf(F, n.seals);
+  const T = (to, dir) => ({ to, dir, toast: WB_LINES[to === 'pickup' ? 'grass' : to] });
+  if (n.lamp) return T('lamp', wbDirTo(n.at, n.lamp));
+  if (act <= 1) return n.pickup ? T('pickup', wbDirTo(n.at, n.pickup)) : T('grass', wbDirTo(n.at, n.grass));
+  if (act <= 3) return T('north', 'up');              // reuses sv_sign_a2's look north
+  if (act === 4) return T('sky', 'up');
+  if (act === 5 && !F['story.solvane_met']) return T('sea', 'down');
+  if (act <= 6) return T('high', 'up');
+  return T('holder', wbDirTo(n.at, n.holder));        // Act 7 and the post-game
+}
+function wbNear(w){
+  const at = { x: w.x, y: w.y }, best = (list, r) => { let b = null, bd = Infinity; for (const t of list) { const d = wbDist(at, t); if (d <= r && d < bd) { b = t; bd = d; } } return b; };
+  const objs = (CUR.objs || []).filter(present), pos = o => { const q = objPos(o); return { x: q.x, y: q.y }; };
+  const lamp = best(objs.filter(o => o.sprite === 'comfort_lamp').map(pos), WB.lampR);
+  const pickup = best(objs.filter(o => o.kind === 'pickup' && !S.flags['item.' + o.id]).map(pos), WB.pickupR);
+  const grass = [];
+  if (!pickup) for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (MAP[y][x] === 't' && !(x === at.x && y === at.y)) grass.push({ x, y });
+  return { act: actNow(false), seals: sealsHeld(), at, holder: { x: S.world.x, y: S.world.y }, lamp, pickup, grass: best(grass, Infinity) };
+}
+// "Free" (R4): not solid (tiles and blockers: crates, lamps, buildings), not a warp or door, not the holder, the follower or another wild.
+function wbFree(x, y, w){
+  if (!MAP[y] || MAP[y][x] == null || solid(x, y) || warpAt(x, y) || doorAt(x, y)) return false;
+  if (x === S.world.x && y === S.world.y) return false;
+  if (fol.x != null && followerOn() && fol.x === x && fol.y === y) return false;
+  return !wildAt(x, y, w);
+}
+// R4: the side tile (perpendicular to the holder's facing, its own side first), then the tile the follower just left, then any
+// free neighbour (nearest first). Its own tile counts when it is one of those.
+function wbSpot(w){
+  const h = S.world, f = DIRS[h.facing] || DIRS.down, near = (a, b) => wbDist(a, w) - wbDist(b, w);
+  const side = [[f[1], f[0]], [-f[1], -f[0]]].map(([dx, dy]) => ({ x: h.x + dx, y: h.y + dy })).sort(near);
+  const back = fol.from ? [{ x: fol.from.x, y: fol.from.y }] : [];
+  const any = Object.values(DIRS).map(([dx, dy]) => ({ x: h.x + dx, y: h.y + dy })).sort(near);
+  for (const t of side.concat(back, any)) if (wbFree(t.x, t.y, w)) return t;
+  return null;
+}
+function wbMove(w, t){
+  if (w.to) { w.fx = w.x; w.fy = w.y; w.to = null; }
+  if (!t || (t.x === w.x && t.y === w.y)) return;
+  w.from = { x: w.x, y: w.y }; w.x = t.x; w.y = t.y; w.to = { x: t.x, y: t.y }; w.t0 = wild.clock; w.dur = STEP_MS;
+}
+// One toast per beat; the live region mirrors it with the species name (§6.5).
+function wbSay(w, line, chirp){
+  toast(line);
+  if (chirp) sfx('chirp_' + String((SPECIES[w.sp] || {}).type || 'PLAIN').toLowerCase(), 0.16);
+  const el = $('#wbLive'); if (el) el.textContent = nameOf(w.sp, w.stage) + ': ' + line;
+}
+function wbRelease(w){
+  if (!w || !w.beside) return;
+  w.born += Math.max(0, wild.clock - w.beside.since);   // its life timer paused while it walked (R4)
+  w.beside = null; w.hx = w.x; w.hy = w.y;              // the leash re-anchors where it stands (R7)
+}
+function wbAbort(){ for (const w of wild.list) wbRelease(w); wb.still = 0; wb.cand = null; }   // R8 (c): silent, no reward, no stamp
+function wbScoot(w){ wbRelease(w); wild.chase = null; walk.target = null; w.idleUntil = 0; w.shyUntil = wild.clock + 1500; }   // R8 (a)
+const wbNetLive = () => !!(window.PPNet && typeof PPNet.live === 'function' && PPNet.live());
+// R1, R2: where and when the wait may run. The map tick (updateWild) already skips overlays, scenes and the encounter intro.
+function wbCanWait(){
+  if (!S || !CUR || !CUR.spawns || CUR.dream || wbSpent() || wbNetLive()) return false;
+  if (wild.list.some(w => w.guide)) return false;
+  return standingStill() && !walk.intro && !trayOpen() && !overlayOpen() && !(battle && battle.on);
+}
+function wbStart(w){
+  w.beside = { left: WB.steps, phase: 'walk', since: wild.clock, still: 0, face: null, to: null, glyphUntil: 0, glyphs: 0 };
+  if (wild.chase === w.id) wild.chase = null;
+  if (wbDist(w, S.world) > 1) wbMove(w, wbSpot(w));
+  wb.still = 0; wb.cand = null;
+  wbSay(w, WB_LINES.start, true);
+}
+// E3 (R4, R6): called from onLand. One landing, one step beside; the twelfth stops it and it turns.
+function besideStep(){
+  const w = wild.list.find(o => o.beside && o.beside.phase === 'walk'); if (!w) return;
+  w.beside.left = Math.max(0, w.beside.left - 1);
+  wbMove(w, wbSpot(w));
+  if (w.beside.left > 0) return;
+  wbTurn(w);
+}
+function wbTurn(w){
+  const turn = wbTurnOf(S.flags, wbNear(w)), B = w.beside;
+  B.phase = 'look'; B.still = 0; B.face = turn.dir; B.to = turn.to; B.glyphUntil = wild.clock + STEP_MS + SPOT_BANG_MS;
+  const hd = turn.to === 'holder' ? wbDirTo(S.world, w) : turn.dir; if (hd) S.world.facing = hd;   // one facing change, no animation
+  walk.path = walk.target = walk.arrive = walk.queued = walk.repath = null; dropAim();   // a tap-walk stops with it; held input stays the holder's
+  wbSay(w, turn.toast, false);
+}
+function wbComplete(w){
+  const r = grantItem('joy_crumb', 1);
+  if (r.added) wbSay(w, WB_LINES.crumb); else { moneyDelta('find', 10, 'walk_beside'); wbSay(w, WB_LINES.acorns); }
+  if (!S.flags['story.switched_a3']) addStanding('keepers', 1, { muteAlign: true });
+  S.flags['daily.walk_beside'] = wbDay();
+  const c = wild.clock; wbRelease(w); w.idleUntil = c + 2000;
+  updateHUD(); save();
+}
+// E2: after the roaming loop. The wait (R2), the look (R7) and walking off (R8 b).
+function besideTick(dt){
+  const ms = dt * 1000, w = wild.list.find(o => o.beside);
+  if (w) {
+    const d = wbDist(w, S.world);
+    if (d > WB.lostAt || (w.beside.phase === 'look' && !standingStill())) { wbSay(w, WB_LINES.lost); wbRelease(w); return; }
+    if (w.beside.phase !== 'look' || d > WB.near) return;
+    w.beside.still += ms;
+    if (w.beside.still >= WB.lookMs) wbComplete(w);
+    return;
+  }
+  if (!wbCanWait()) { wb.still = 0; wb.cand = null; return; }
+  const c = wild.clock, here = S.world;
+  let cand = null;
+  for (const o of wild.list) {
+    if (o.guide || o.to || (o.shyUntil || 0) > c || wild.chase === o.id || wbDist(o, here) > WB.near) continue;
+    const d = wbDist(o, here), cd = cand ? wbDist(cand, here) : Infinity;
+    if (d < cd || (d === cd && o.id < cand.id)) cand = o;
+  }
+  if (!cand) { wb.still = 0; wb.cand = null; return; }
+  if (wb.cand !== cand.id) { wb.cand = cand.id; wb.still = 0; }
+  cand.idleUntil = Math.max(cand.idleUntil, c + 250);   // it holds still while you do
+  wb.still += ms;
+  if (wb.still >= WB.stillMs) wbStart(cand);
 }
 
 // Dream maps (Mahopac memories): a plum wash and slow sparks, indoors or out. The keeper is drawn smaller.
@@ -11008,8 +11557,9 @@ function drawDream(g, VW, VH, t){
 /* ---------- weather overlay (cheap, stateless pixel particles) ---------- */
 const WX_RND = Array.from({ length: 360 }, (_, i) => { const v = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); });
 function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/flake count (the Pet tab canvas is small)
-  const tags = envTags(), has = k => tags.includes(k);
-  if (window.PPClock) {
+  const tags = envTags(), has = k => tags.includes(k), forced = forcedSky();   // KILNMOUTH E2: a scene or map sky wins over the clock tint
+  if (forced) drawForcedSky(g, VW, VH, forced);
+  else if (window.PPClock) {
     const r = PPClock.now(), mins = r.hh * 60 + r.mm;
     if (r.phase === 'dawn') {
       const k = 1 - (mins - 5 * 60) / 120;
@@ -11021,7 +11571,7 @@ function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/fl
       g.fillRect(0, 0, VW, VH);
     }
   }
-  if (has('night')) { g.fillStyle = 'rgba(16,18,52,.42)'; g.fillRect(0, 0, VW, VH); }
+  if (has('night') && !forced) { g.fillStyle = 'rgba(16,18,52,.42)'; g.fillRect(0, 0, VW, VH); }
   if (has('fog')) { g.fillStyle = 'rgba(244,244,244,.18)'; g.fillRect(0, 0, VW, VH); }
   if (has('rain') || has('storm')) {
     if (!has('night')) { g.fillStyle = 'rgba(41,54,111,.22)'; g.fillRect(0, 0, VW, VH); }   // overcast
@@ -11125,7 +11675,7 @@ function buildPresetButtons(){
   add('auto', 'AUTO');
   Object.entries(PPEnv.PRESETS).forEach(([k, p]) => add(k, p.name));
 }
-function resetWild(){ wild.list = []; wild.poofs = []; wild.chase = null; wild.started = false; wild.auto = !!CUR.spawns; }   // Hearthmoor and rooms never spawn
+function resetWild(){ wbAbort(); wild.list = []; wild.poofs = []; wild.chase = null; wild.started = false; wild.auto = !!CUR.spawns; }   // Hearthmoor and rooms never spawn
 
 /* ---------- battle (BATTLE.md v0.3.1) ---------- */
 // Meeting a wild creature (bump/tap/G) opens a turn-based battle; befriending is one of its actions (§2). The befriend bar
@@ -11147,6 +11697,7 @@ function fadeTick(sample){
     if (!S.flags['daily.buddy_pat']) S.flags['daily.buddy_pat'] = d;
     else if (S.flags['daily.buddy_pat'] !== d) { delete S.flags['story.buddy_pat_today']; delete S.flags['daily.buddy_pat']; }
   } else if (S.flags && S.flags['daily.buddy_pat'] && S.flags['daily.buddy_pat'] !== d) delete S.flags['daily.buddy_pat'];
+  if (S.flags && S.flags['story.cv_mom_day'] && S.flags['story.cv_mom_day'] !== d) delete S.flags['story.cv_mom_day'];   // D1696: one snack a day
   bossRestTick(d); openRoad3();
   for (const p of allPets()) {
     if (!isFaded(p)) continue;
@@ -11185,7 +11736,7 @@ function noBattleToast(){
   toast(S.party.some(canStepIn) ? 'Battles start at 10 NRG. REST first!' : 'Your team needs a rest first!');
 }
 function startEncounterIntro(sp, stage, wid, lv){
-  clearMoves();
+  clearMoves(); wbAbort();                                 // WALK_BESIDE R8 (c)
   if (!leadPet()) {                                        // nobody able: no battle, the creature turns shy (§1)
     noBattleToast(); const w = wid && wild.list.find(o => o.id === wid); if (w) { w.idleUntil = 0; w.shyUntil = wild.clock + 1500; }
     return;
@@ -11274,6 +11825,7 @@ function applySoftBerry(p, before){
 
 /* --- open / close --- */
 function openBattle(o){
+  wbAbort();                                                  // WALK_BESIDE R8 (c): a battle ends a walk beside silently
   { const bb = $('#buildBar'); if (bb) bb.hidden = true; }   // hide the new-build bar at once, not on the next 500 ms poll
   markAlive();                                                // the crash marker notes this page is now in a battle
   const lead = leadPet();
@@ -11421,7 +11973,7 @@ function closeBattle(){
 // free only at 0 Acorns; a holder with fewer pays what they have. A party with nothing to restore pays nothing. Home naps stay free.
 const LANTERN_REST_COST = 5;
 const lanternRestNeeded = () => !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow) || Math.round(p.energy) < 100));
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1, bg_lantern_in: 1 };
 // BED_TUCK (Vincent, Nov 3, 2026): every Lantern House rest, the first one included, is shown, not told. The holder walks the
 // partner over to a bed, tucks it in, it sleeps (eyes shut, a "z"), wakes with a heart, and hops back out, healed. The bed is
 // the nearest one this holder can stand beside (a prop whose line is `@lantern_rest`). Runtime only; nothing is saved.
@@ -11548,21 +12100,22 @@ function blockLanternExit(){
   mark('fernbrook', 'fb_lantern_sign');
   mark('highcharity', 'hc_lantern_sign');
   mark('brinewick', 'bw_lantern_sign');   // BRINEWICK
+  mark('brightgate', 'bg_lantern_sign');   // BRIGHTGATE_LAYOUT §9 (rule 10)
+  put('bg_lantern_in', 'bg_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns, or what you have."');   // §7: the note as everywhere
 })();
 // Lantern House guides (D617, D618). One additive flag. The cost in the first line is LANTERN_REST_COST.
-const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1, bw_lantern_host: 1 };
+const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1, bw_lantern_host: 1, bg_lantern_host: 1 };
 const LANTERN_GUIDE_G2 = 'Lose a battle and you wake at the closest Lantern House. Tap me any time to hear this again.';
 function lanternCostLine(){
   return 'Welcome in. Talk to a bed and your whole team rests and heals, for ' + LANTERN_REST_COST + ' Acorns, or what you have.';
 }
 function lanternGuideBody(who){
+  const opts = [['Got it', []], ['Say it again', '@lantern_again']];
+  const ask = lanternAsk(who); if (ask) opts.push(ask);   // POST_TRIAL_CRACKDOWN §6: Amos's pitch after the night
   return [
     ['say', who, lanternCostLine()],
     ['say', who, LANTERN_GUIDE_G2],
-    ['choice', 'Got all that?', [
-      ['Got it', []],
-      ['Say it again', '@lantern_again'],
-    ]],
+    ['choice', 'Got all that?', opts],
   ];
 }
 function lanternGuideSteps(o, mark){
@@ -11593,6 +12146,7 @@ const TOWN_DOOR_ART = {
   hm_lantern: 'heal_lantern', cc_lantern: 'heal_lantern', fb_lantern: 'heal_lantern', hc_lantern: 'heal_lantern',
   hm_store: 'acorn_board',
   bw_lantern: 'heal_lantern', bw_store: 'acorn_board',   // BRINEWICK: the Lantern House and the Chandlery read like every other town's
+  bg_lantern: 'heal_lantern', bg_store: 'acorn_board',   // BRIGHTGATE_LAYOUT §3.5, §9 (D1490, D2001): rule 10 in a Glimmerwell city
 };
 const TOWN_STALL_ART = {
   cobblecrest: [['dottie', 'acorn_board']],
@@ -11623,8 +12177,9 @@ const LANTERN_NEAR = {
   fb_heights: [['fernbrook']],
   route3: [['cobblecrest', 'brinewick']],   // BRINEWICK: Route 3 runs from Cobblecrest's east gate down to the harbour
   brinewick: [['brinewick']],
+  brightgate: [['brightgate']],   // BRIGHTGATE_LAYOUT: every bg_ chunk is the brightgate node (REGION_MAP.interiors)
 };
-const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1, brinewick: 1 };
+const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1, brinewick: 1, brightgate: 1 };
 function respawnTown(){
   const cur = nodeOf(S.world.map);
   const tiers = (cur && LANTERN_NEAR[cur]) || [];
@@ -12480,7 +13035,7 @@ const MAP_HOLD_LINE = {
   keepers: 'The Keepers hold this place.',
   glimmer: 'Glimmerwell holds this place.',
   split: 'Both sides keep a claim.',
-  wild: 'Wild country. No faction holds it.',
+  wild: 'Wild country. Nobody walks ahead here.',   // WALK_BESIDE D1934, D1971: the fallback for every node with no line
 };
 const REGION_MAP = {
   title: 'THE AMBERWILD', unknownLabel: '???', unknownBlurb: "You haven't been here yet.",
@@ -12488,7 +13043,7 @@ const REGION_MAP = {
     hearthmoor:    { kind: 'town',  col: 2,  row: 6, label: 'HEARTHMOOR',  labelAt: 'below', blurb: 'Hill village of the Keepers. Home.',
       hold: [{ id: 'keepers', line: 'Home. The Keepers hold this town.' }] },
     route1:        { kind: 'route', col: 6,  row: 7, label: 'ROUTE 1',     labelAt: 'below', blurb: 'Hearthmoor to Fernbrook, by the stream.', path: [[2, 6], [4, 7], [8, 7], [10, 6]],
-      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
+      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road. Walk beside, not ahead.' }] },   // WALK_BESIDE D1934
     proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]],
       hold: [{ id: 'wild' }] },
     fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Fernbrook Trial Hall.',
@@ -12504,9 +13059,9 @@ const REGION_MAP = {
         { id: 'keepers', when: ['story.side_pick_done', 'story.seal1', '!story.side=glimmer'], line: 'The Keepers hold the town now. The orchard stays rooted.' },
         { id: 'split', line: 'Keepers keep the town. Glimmerwell keeps a stand.' }] },
     route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]],
-      hold: [{ id: 'split', line: 'Keepers keep the road. Glimmerwell runs the Census.' }] },
+      hold: [{ id: 'split', line: 'Keepers walk beside. Glimmerwell runs the Census.' }] },   // WALK_BESIDE D1934
     route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]],
-      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the glen.' }] },
+      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the glen. The lamps walk ahead.' }] },   // WALK_BESIDE D1934
     hw_cut:        { kind: 'side',  col: 15, row: 3, label: 'HUSHWATER',   labelAt: 'below', blurb: 'A quiet stream, quarry to glen.', path: [[12, 2], [15, 3], [17, 3]],
       hold: [{ id: 'wild' }] },
     cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.',
@@ -12525,20 +13080,47 @@ const REGION_MAP = {
       hold: [{ id: 'split', line: "Keepers walk it. Glimmerwell's crates roll down it." }] },    // BRINEWICK (B6): the harbour at the foot of Route 3. A Keepers town with a Glimmerwell depot on the east pier.
     brinewick:     { kind: 'town',  col: 15, row: 10, label: 'BRINEWICK',   labelAt: 'left', blurb: 'Harbour town. Tide Trial Hall.', path: [[17, 9], [16, 10], [15, 10]],
       hold: [{ id: 'split', line: 'Keepers keep the harbour. Glimmerwell leases the east pier.' }] },
+    // ROUTE_TO_GOVERNOR §4 (D1851, D1852): Route 4 on the built (south) sheet, the coach's line from Hearthmoor to the fork and on.
+    route4:        { kind: 'route', col: 4,  row: 5, label: 'ROUTE 4',     labelAt: 'right', blurb: 'The coach road north. The fork, then the river.', path: [[2, 6], [4, 5], [4, 3], [2, 1]],
+      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
+    // The north sheet, "THE AMBERWILD · NORTH" (D1851). None of these maps is built yet, so each stays ??? and grey (not
+    // reachable); Kilnmouth shows its name once the Governor has named it (story.km_assigned). Labels PLACEHOLDER (D1857).
+    kilnmouth:     { sheet: 'north', kind: 'town', col: 8, row: 6, label: 'KILNMOUTH', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', nameWhen: ['story.km_assigned'],
+      coach: { path: [[8, 6], [7, 8], [8, 10], [9, 11]], when: ['story.km_council'] }, hold: [{ id: 'wild' }] },
+    km_road:       { sheet: 'north', kind: 'route', col: 9, row: 9, label: 'CLAYBANK ROAD', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', path: [[9, 11], [9, 9], [8, 6]], hold: [{ id: 'wild' }] },
+    // BRIGHTGATE_LAYOUT §5.1, §9 (D1481): built, but no route or coach reaches it yet, so it stays ??? and grey until a save has
+    // been there (story.reached_brightgate; ?debug=1 places in this build). Blurb and hold line PLACEHOLDER (Story).
+    brightgate:    { sheet: 'north', kind: 'town', col: 15, row: 5, label: 'BRIGHTGATE', labelAt: 'below', blurb: "Glimmerwell's city. Brightgate HQ.",
+      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the city. Have a bright day!' }] },
+  },
+  // ROUTE_TO_GOVERNOR §4 (D1851): two sheets. The seam is column 9 on both; the markers are drawn, not tapped (no 44 px box
+  // fits between the labels), and two buttons under the canvas switch sheets. NORTH shows once the holder has seen the fork.
+  sheets: { south: { title: 'THE AMBERWILD', button: 'THE AMBERWILD' }, north: { title: 'THE AMBERWILD · NORTH', button: 'NORTH', when: ['story.r4_fork | story.km_assigned'] } },
+  seamCol: 9,
+  marks: {
+    south: [{ id: 'river_r4', kind: 'river', path: [[6, 0], [5, 2], [3, 2], [2, 1]] },
+      { id: 'seam_north', kind: 'seam', col: 9, row: 0, label: 'KILNMOUTH', from: [4, 3], via: [8, 2], when: ['story.r4_fork | story.km_assigned'] }],
+    north: [{ id: 'fog', kind: 'fog', cols: [6, 10], rows: [0, 5] }, { id: 'dry_hill', kind: 'hill', col: 11, row: 4 },
+      { id: 'north_road_stub', kind: 'stub', path: [[8, 6], [8, 2], [8, 0]], when: ['story.act>=3'] },
+      { id: 'seam_south', kind: 'seam', col: 9, row: 11, label: 'THE AMBERWILD' }],
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'], brightgate: ['story.reached_brightgate'], route4: ['story.reached_route4'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', hm_store: 'hearthmoor', hm_wardrobe: 'hearthmoor', hm_diner: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook', fbh_press_in: 'fernbrook', fbh_picker_in: 'fernbrook', fbh_stitch_in: 'fernbrook',   // FERNBROOK_HOMES
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_civic: 'highcharity', hc_exchange: 'highcharity', hc_waterfront: 'highcharity', hc_college: 'highcharity',   // HIGH_CHARITY_LAYOUT: one node for every chunk (D1275)
-    hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_3: 'highcharity',
+    hc_news_1: 'highcharity', hc_news_2: 'highcharity', hc_gov_1: 'highcharity', hc_gov_2: 'highcharity', hc_gov_3: 'highcharity',
+    hc_museum_in: 'highcharity',   // WAR_MUSEUM: the Muster Road Museum (city only)
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
     hw_rim: 'hw_cut', hw_falls: 'hw_cut', hw_weir_hut_in: 'hw_cut',   // WEIR_HUT
-    bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick' },
+    bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick',
+    route4_reeds: 'route4', route4_withy: 'route4',   // ROUTE_TO_GOVERNOR: the river road and the withy beds are Route 4
+    bg_campus: 'brightgate', bg_works: 'brightgate', bg_oldtown: 'brightgate', bg_partner: 'brightgate', bg_lantern_in: 'brightgate',   // BRIGHTGATE_LAYOUT §9: one node
+    bg_store_in: 'brightgate', bg_hq_lobby: 'brightgate', bg_review_in: 'brightgate', bg_gala_in: 'brightgate', bg_hall_in: 'brightgate' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -12551,6 +13133,10 @@ function nodeOf(id){
   if (N[REGION_MAP.interiors[id]]) return REGION_MAP.interiors[id];
   const mat = (m.objs || []).find(o => o.kind === 'warp' && N[o.to]); return mat ? mat.to : null;
 }
+// ROUTE_TO_GOVERNOR §4: a node's sheet (south unless it says north); which sheets this save can open; the sheet on show.
+const nodeSheet = id => ((REGION_MAP.nodes[id] || {}).sheet) || 'south';
+const sheetOpen = k => { const sh = REGION_MAP.sheets[k]; return !!sh && (!sh.when || (!!S && sh.when.every(c => cond(c)))); };
+const onSheet = id => nodeSheet(id) === (mapUI.sheet || 'south');
 function markMapSeen(){ const n = nodeOf(S && S.world && S.world.map); if (!n) return; if (!S.mapSeen || typeof S.mapSeen !== 'object') S.mapSeen = {}; S.mapSeen[n] = 1; }
 function mapVisited(id, cur){
   if (!WORLD[id]) return false;                                   // not built in this build: always ??? (§5, test 8)
@@ -12573,7 +13159,7 @@ function syncMapBtn(){
   if (mb) { const grey = !soon; mb.classList.toggle('off', grey); mb.disabled = grey; mb.setAttribute('aria-disabled', grey ? 'true' : 'false'); }
   const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false');
 }
-const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null };
+const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null, sheet: 'south' };
 let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
 // ACT1_KEEPER_JOIN §7 (D1505, E1): one hold condition read on a flags object, the way cond() reads them: `|` first, then `&`,
 // then `!`; 'k=v' compares a flag's value (story.side=glimmer, D1171); 'k>=n', 'k<=n', 'k>n', 'k<n' compare a number, an unset
@@ -12599,6 +13185,99 @@ function matchHold(id, flags){
 }
 function mapHold(id, flags){ return matchHold(id, flags).id; }
 function holdLine(id, flags){ const rule = matchHold(id, flags); return rule.line || MAP_HOLD_LINE[rule.id] || MAP_HOLD_LINE.wild; }
+/* ---------- KILNMOUTH v0.1.1 (design repo, private; D1820-D1849, settled Wed Nov 4, 2026) ---------- */
+// Claybank Road (km_road) and the town (kilnmouth) live in data/detail_zzzzz_kilnmouth.json. This block registers them with
+// the built tables (the region node and its hold rows, the Lantern House, the rule 10 door marks, the respawn tiers) and holds
+// the packet's small engine asks (§12.2): E2 a scene sky and a map sky, E3 state tile patches, E4 the flat cloud, E5
+// spawnsWhen, E6 the visit counter, E8 the hold. Blurbs are PLACEHOLDER (Story).
+Object.assign(REGION_MAP.nodes.kilnmouth, { blurb: 'Spa town of cold springs and bottle kilns.', sway: true,
+  hold: [{ id: 'keepers', when: ['story.km_settled', 'story.sway_kilnmouth>=2'], line: 'Kilnmouth sits its own seat. The Keepers walk its lanes.' },
+    { id: 'glimmer', when: ['story.km_settled', 'story.sway_kilnmouth<=-2'], line: "Glimmerwell holds the town. The water's warm again." },
+    { id: 'split', when: ['story.km_settled'], line: 'Kilnmouth sits its seat. Both sides wait at the springs.' },
+    { id: 'split' }] });   // CAB §3.6 rule 4: split, before the sitting
+Object.assign(REGION_MAP.nodes.km_road, { blurb: 'Up the clay valley from the fork, beside a low creek.' });
+REGION_MAP.flags.kilnmouth = ['story.reached_kilnmouth']; REGION_MAP.flags.km_road = ['story.reached_kilnmouth'];
+LANTERN_ROOMS.km_lantern_in = 1; LANTERN_GUIDE_IDS.km_lantern_host = 1; LANTERN_TOWNS.kilnmouth = 1;
+TOWN_DOOR_ART.km_lantern = 'heal_lantern'; TOWN_DOOR_ART.km_store = 'acorn_board';
+LANTERN_NEAR.kilnmouth = [['kilnmouth']]; LANTERN_NEAR.km_road = [['kilnmouth']];   // a loss on the road wakes you in town once seen, else at the last one
+(function kmLanternSigns(){
+  const find = (map, id) => WORLD[map] && WORLD[map].objs.find(o => o.id === id), n = LANTERN_REST_COST;
+  const sign = find('kilnmouth', 'km_lantern_sign'); if (sign) sign.lines = { else: 'LANTERN HOUSE · Rest and recover. ' + n + ' Acorns, or what you have.' };
+  const note = find('km_lantern_in', 'km_lantern_note'); if (note) note.text = 'A note by the door: "Rest the whole party. ' + n + ' Acorns, or what you have. Kilnmouth"';
+})();
+// E8: the town wears its hold (first matching row of the node); the road is wild. Split shows no band.
+function kmFaction(id){ if (id === 'km_road') return null; const h = mapHold('kilnmouth'); return h === 'keepers' || h === 'glimmer' ? h : null; }
+// E5: a map's `spawnsWhen` rows ([{ when, spawns }], first match) replace its `spawns` table while they hold.
+function spawnsWhen(m){
+  if (!S || !m || !m.spawnsWhen) return null;
+  for (const r of m.spawnsWhen) if (r && r.spawns && (r.when || []).every(c => cond(c, false))) return r.spawns;
+  return null;
+}
+// E3: a map's `tilePatch` rows ([{ when, rows: { y: row } }]) swap whole grid rows while their `when` holds, read on arrival.
+// The base grid stays as drawn (NPC paths, dev checks and the checker read it); nothing is saved.
+function patchCells(m){
+  if (!S || !m.tilePatch) return;
+  const rows = m.grid.slice();
+  for (const p of m.tilePatch) if (p && p.rows && (p.when || []).every(c => cond(c, false)))
+    for (const [y, row] of Object.entries(p.rows)) if (rows[+y] != null && row.length === rows[+y].length) rows[+y] = row;
+  const sig = rows.join('\n'); if (m._patchSig === sig) return;
+  m._patchSig = sig; m.cells = rows.map(r => r.split(''));
+}
+// E2 (D1831): a scene's ['sky', 'dusk' | 'night' | 'dawn'] tints the map for that scene only; a map's `skyWhen` rows force a
+// look while they hold (the curfew's night). The real-sky clock never moves.
+function forcedSky(){
+  if (scene && scene.sky) return scene.sky;
+  if (!S || !CUR || !CUR.skyWhen) return null;
+  for (const r of CUR.skyWhen) if (r && r.sky && (r.when || []).every(c => cond(c, false))) return r.sky;
+  return null;
+}
+function drawForcedSky(g, VW, VH, sky){
+  g.fillStyle = sky === 'night' ? 'rgba(16,18,52,.42)' : sky === 'dusk' ? 'rgba(214,140,48,.25)' : 'rgba(232,164,132,.2)';
+  g.fillRect(0, 0, VW, VH);
+}
+// E4: `overlays` on a map: the flat cloud (one static band at a tile rect, under the HUD) and B4's rolling storm (its scene only).
+// Reduced motion: the storm's edge holds still.
+function drawMapOverlays(g, cx, cy, VW, VH, t){
+  if (!CUR || !CUR.overlays) return;
+  for (const ov of CUR.overlays) {
+    if (ov.scene ? !(scene && scene.id === ov.scene) : !(S && (ov.when || []).every(c => cond(c, false)))) continue;
+    const [x0, y0, x1, y1] = ov.rect, X = x0 * TS - cx, Y = y0 * TS - cy, Wd = (x1 - x0 + 1) * TS, Ht = (y1 - y0 + 1) * TS;
+    if (X > VW || Y > VH || X + Wd < 0 || Y + Ht < 0) continue;
+    if (ov.kind === 'flat') kmFlatCloud(g, X, Y, Wd, Ht);
+    else if (ov.kind === 'storm') kmStormCloud(g, X, Y, Wd, Ht, prefersReduced() ? 0 : t, cx);
+  }
+}
+function kmFlatCloud(g, X, Y, Wd, Ht){
+  g.save(); g.globalAlpha = 0.86;
+  g.fillStyle = PAL.h; g.fillRect(X, Y, Wd, Ht - 3);
+  g.fillStyle = PAL.w; for (let x = 0; x < Wd; x += 24) g.fillRect(X + x + 4, Y, 14, 3);
+  g.fillStyle = PAL.m; g.fillRect(X, Y + Ht - 3, Wd, 3);   // the ruler-straight bottom edge
+  g.restore();
+}
+function kmStormCloud(g, X, Y, Wd, Ht, t, cx){
+  const flat = (CUR.overlays || []).find(o => o.kind === 'flat'), roll = Math.round(Math.sin(t / 900) * 6);
+  const fx0 = flat ? flat.rect[0] * TS - cx : X + Wd / 3, fx1 = flat ? (flat.rect[2] + 1) * TS - cx : X + Wd * 2 / 3, fh = flat ? (flat.rect[3] - flat.rect[1] + 1) * TS : 5 * TS;
+  g.save(); g.globalAlpha = 0.8; g.fillStyle = PAL.d;
+  for (let x = 0; x < Wd; x += 8) {
+    const sx = X + x; if (sx >= fx0 && sx < fx1) continue;   // over the tower the cloud has gone flat
+    g.fillRect(sx, Y, 8, Math.max(8, Ht - 10 + Math.round(Math.sin((x + roll * 3) / 19) * 8)));
+  }
+  g.fillStyle = PAL.m; g.fillRect(fx0, Y, fx1 - fx0, fh);
+  g.restore();
+}
+// ?debug=1 (and the debug pref) only, like window.WORLD: the pieces tests/kilnmouth.spec.js reads.
+if (DEBUG) window.PPKm = Object.freeze({ spawnKey: () => spawnKey(), tileBox: (x, y) => tileBox(x, y), factionOfMap: id => factionOfMap(id), holdLine: id => holdLine(id),
+  mapVisited: (id, cur) => mapVisited(id, cur), forcedSky: () => forcedSky(), respawnTown: () => respawnTown(), artFrame: (a, t) => artFrame(a, t), cond: c => cond(c, false),
+  get WART(){ return WART; }, get TILE_DEF(){ return TILE_DEF; }, get TOWN_DOOR_ART(){ return TOWN_DOOR_ART; }, get LANTERN_NEAR(){ return LANTERN_NEAR; } });
+// E6 (D1841): one visit a game day, entering the town from the road or the coach (not from its own rooms, never at load).
+let kmPrevMap = null;   // set by warpTo (a load or a debug jump sets nothing, so nothing is counted then)
+function kmArrive(){
+  const prev = kmPrevMap; kmPrevMap = null;
+  if (CUR.id !== 'kilnmouth' || !prev || prev === 'kilnmouth' || (WORLD[prev] && WORLD[prev].outdoor === 'kilnmouth')) return;
+  const day = window.PPClock ? Math.floor(PPClock.now().gameMinute / 1440) : 0;
+  if (S.flags['story.km_visit_day'] === day) return;
+  S.flags['story.km_visit_day'] = day; S.flags['story.km_visits'] = Math.min(9, (+S.flags['story.km_visits'] || 0) + 1); save();
+}
 function nodeSeal(id){
   if (!S) return false;
   const seals = S.seals || {}, f = S.flags || {};
@@ -12619,7 +13298,8 @@ const sidesShown = () => !!(S && Object.keys(REGION_MAP.nodes).some(id => mapVis
 function nodePoint(n){ return [n.col * 16 + 8, n.row * 16 + 8]; }
 function nodeGeom(id){
   const n = REGION_MAP.nodes[id]; if (!n) return null;
-  const [x, y] = nodePoint(n), known = mapVisited(id, mapUI.cur), label = known ? n.label : REGION_MAP.unknownLabel;
+  const [x, y] = nodePoint(n), known = mapVisited(id, mapUI.cur), named = !known && !!n.nameWhen && !!S && n.nameWhen.every(c => cond(c));
+  const label = known || named ? n.label : REGION_MAP.unknownLabel;
   const out = n.kind === 'town' ? 22 : 18;                       // clear of the claim halo, the you-ring and the quest ring
   let lx = x, ly = y, align = 'center';
   if (n.labelAt === 'right') { lx = x + out; align = 'left'; }
@@ -12636,7 +13316,9 @@ function paintPlaceCard(){
     name = (room ? outdoor + ' · ' + WORLD[S.world.map].name : outdoor).toUpperCase();
     blurb = REGION_MAP.nodes[id].blurb;
   }
-  $('#mapTitle').textContent = REGION_MAP.title;
+  $('#mapTitle').textContent = (REGION_MAP.sheets[mapUI.sheet || 'south'] || {}).title || REGION_MAP.title;
+  if (!known && geo && geo.label !== REGION_MAP.unknownLabel) name = geo.label;   // named, not reached yet (Kilnmouth)
+  syncSheetButtons();
   $('#mapPlaceName').textContent = name;
   $('#mapPlaceBlurb').textContent = blurb;
   const here = $('#mapHere'); if (here) here.hidden = !(id && id === mapUI.cur);
@@ -12675,6 +13357,7 @@ function openMap(opts){
   if (!mapReady()) { sfx('denied'); return; }
   clearMoves(); markMapSeen();
   mapUI.cur = nodeOf(S.world.map); mapUI.sel = mapUI.cur; mapUI.t0 = performance.now();
+  mapUI.sheet = mapUI.cur ? nodeSheet(mapUI.cur) : 'south';   // the map opens on the current node's sheet
   const indoor = !!(CUR && CUR.kind === 'interior');
   const level = (opts && opts.level) || (indoor ? 'room' : 'town');
   showMapLevel(level, opts && opts.id);
@@ -12690,6 +13373,7 @@ function mapNodeAt(px, py){
   const g = ctx($('#regionCanvas'));
   g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font');
   for (const id in REGION_MAP.nodes) {
+    if (!onSheet(id)) continue;
     const geo = nodeGeom(id); if (!geo) continue;
     const icon = Math.hypot(px - geo.x, py - geo.y);
     g.textAlign = geo.align; const tw = g.measureText(geo.label).width;
@@ -12702,10 +13386,12 @@ function mapNodeAt(px, py){
 }
 function mapNudge(dir){
   if (mapUI.level && mapUI.level !== 'region') { nudgeLayer(dir); return; }
-  const from = REGION_MAP.nodes[mapUI.sel || mapUI.cur]; if (!from) return;
+  const fromId = mapUI.sel && onSheet(mapUI.sel) ? mapUI.sel : (mapUI.cur && onSheet(mapUI.cur) ? mapUI.cur : null);
+  const from = REGION_MAP.nodes[fromId];
+  if (!from) { if (dir === 'up' || dir === 'down') flipSheetFor(dir); return; }
   let best = null, bestD = 1e9;
   for (const id in REGION_MAP.nodes) {
-    if (id === (mapUI.sel || mapUI.cur)) continue;
+    if (id === fromId || !onSheet(id)) continue;
     const n = REGION_MAP.nodes[id], dx = n.col - from.col, dy = n.row - from.row;
     const ok = dir === 'left' ? dx < 0 && Math.abs(dy) <= Math.abs(dx) + 1
       : dir === 'right' ? dx > 0 && Math.abs(dy) <= Math.abs(dx) + 1
@@ -12716,6 +13402,29 @@ function mapNudge(dir){
     if (d < bestD) { bestD = d; best = id; }
   }
   if (best) selectMapNode(best);
+  else if (dir === 'up' || dir === 'down') flipSheetFor(dir);   // "up" from a top-row node turns to the north sheet (and down, back)
+}
+function flipSheetFor(dir){
+  const to = dir === 'up' && (mapUI.sheet || 'south') === 'south' ? 'north' : dir === 'down' && mapUI.sheet === 'north' ? 'south' : null;
+  if (to) setMapSheet(to);
+}
+function setMapSheet(k){
+  if (!REGION_MAP.sheets[k] || !sheetOpen(k) || (mapUI.sheet || 'south') === k) return false;
+  mapUI.sheet = k;
+  mapUI.sel = mapUI.cur && nodeSheet(mapUI.cur) === k ? mapUI.cur : (Object.keys(REGION_MAP.nodes).find(id => nodeSheet(id) === k) || null);
+  if (!mapUI.level || mapUI.level === 'region') paintPlaceCard();
+  sfx('tap'); if (!$('#ovMap').hidden) drawMapOverlay(performance.now());
+  return true;
+}
+// Two buttons under the parchment, at least 44 x 44 px (rule 6), on the region level once the north sheet is open.
+function syncSheetButtons(){
+  const box = $('#mapSheets'); if (!box) return;
+  const show = (!mapUI.level || mapUI.level === 'region') && sheetOpen('north');
+  box.hidden = !show;
+  for (const [k, sel] of [['south', '#mapSheetSouth'], ['north', '#mapSheetNorth']]) {
+    const b = $(sel); if (!b) continue;
+    const on = (mapUI.sheet || 'south') === k; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+  }
 }
 function fitRegionMap(){                                           // whole-number scale only: 2x if there's room for 640 px, else 1x (§2)
   if (mapUI.level && mapUI.level !== 'region') { fitLayerCanvas(); return; }
@@ -12744,7 +13453,9 @@ function mapDevCheck(){
     if (left < 4 || right > 316 || top < 4 || bot > 188) bad.push(id + ': label');
   }
   const pair = (a, b) => { const [ax, ay] = nodePoint(REGION_MAP.nodes[a]), [bx, by] = nodePoint(REGION_MAP.nodes[b]); return Math.hypot(ax - bx, ay - by); };
-  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) if (pair(ids[i], ids[j]) < 28) bad.push('close: ' + ids[i] + ' ' + ids[j]);
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) if (nodeSheet(ids[i]) === nodeSheet(ids[j]) && pair(ids[i], ids[j]) < 28) bad.push('close: ' + ids[i] + ' ' + ids[j]);   // per sheet (ROUTE_TO_GOVERNOR §4)
+  for (const id of ids) if (!REGION_MAP.sheets[nodeSheet(id)]) bad.push(id + ': sheet');
+  for (const [k, list] of Object.entries(REGION_MAP.marks || {})) for (const mk of list) if (mk.kind === 'seam' && mk.col !== REGION_MAP.seamCol) bad.push(k + ': seam col ' + mk.col);
   if (mapHold('cobblecrest', {}) !== 'keepers' || mapHold('cobblecrest', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('cobble');
   if (mapHold('cobble_quarry', {}) !== 'keepers' || mapHold('cobble_quarry', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('quarry');
   if (mapHold('fb_heights', {}) !== 'glimmer' || mapHold('fb_heights', { 'story.sm_done': true }) !== 'split') bad.push('heights');
@@ -12780,13 +13491,48 @@ function mapDevCheck(){
   }
   return bad;
 }
+// ROUTE_TO_GOVERNOR E9 (D1851): the north sheet's parchment, drawn in PAL (the south sheet keeps region_backdrop.png).
+function northBackdrop(R){
+  R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');
+  [[30, 150], [60, 40], [210, 30], [250, 150], [290, 60], [120, 170], [270, 110]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });
+  for (const [cx, cy] of [[24, 24], [36, 36], [276, 24], [292, 172], [212, 172], [40, 120]])   // a few tree clumps (decoration)
+    for (const [dx, dy] of [[0, 0], [7, 3], [-6, 4], [2, 8]]) { R(cx + dx - 2, cy + dy - 2, 5, 5, 't'); R(cx + dx - 1, cy + dy - 2, 2, 2, 'g'); }
+  for (let y = 120; y < 190; y += 2) R(148 + Math.round(Math.sin(y / 9) * 6), y, 2, 2, 'c');      // the stream down the valley
+}
+// Sheet marks: `under` (river, fog, the dry hill) sits below the claims and paths; `over` (the seam markers, the Act 3 stub) above.
+function drawSheetMarks(R, seg, P, sheet, layer){
+  const g = ctx($('#regionCanvas'));
+  for (const mk of (REGION_MAP.marks && REGION_MAP.marks[sheet]) || []) {
+    if (mk.when && !mk.when.every(c => cond(c))) continue;
+    if (layer === 'under' && mk.kind === 'river') for (let i = 0; i < mk.path.length - 1; i++) seg(mk.path[i], mk.path[i + 1], 'c', false);
+    if (layer === 'under' && mk.kind === 'fog') {   // the Act 3 reserve: drawn as fog, not blank (KILNMOUTH A6)
+      const x0 = mk.cols[0] * 16, y0 = mk.rows[0] * 16, x1 = (mk.cols[1] + 1) * 16, y1 = (mk.rows[1] + 1) * 16;
+      for (let y = Math.max(2, y0); y < y1; y++) for (let x = x0; x < x1; x++) { const h = (x * 7 + y * 13) % 5; if (h === 0) R(x, y, 1, 1, 'w'); else if ((x + y) % 2 === 0) R(x, y, 1, 1, 'h'); }
+    }
+    if (layer === 'under' && mk.kind === 'hill') {   // the dry hill: a mark, no node (L1 waits on D976)
+      const [cx, cy] = P([mk.col, mk.row]);
+      for (let i = 0; i < 9; i++) { R(cx - i, cy - 6 + i, 2 * i + 1, 1, 'G'); R(cx - i, cy - 6 + i, 1, 1, 'F'); R(cx + i, cy - 6 + i, 1, 1, 'F'); }
+      R(cx - 8, cy + 3, 17, 1, 'F');
+    }
+    if (layer === 'over' && mk.kind === 'stub') for (let i = 0; i < mk.path.length - 1; i++) seg(mk.path[i], mk.path[i + 1], 'h', true);
+    if (layer === 'over' && mk.kind === 'seam') {   // a drawn arrow at the seam column with the far sheet's name; not a tap target
+      const x = mk.col * 16 + 8, top = mk.row === 0, y = top ? 6 : 186;
+      if (mk.from) { seg(mk.from, mk.via, 'o', true); seg(mk.via, [mk.col, mk.row], 'o', true); }
+      for (let i = 0; i < 5; i++) R(x - i, top ? y + i : y - i, 2 * i + 1, 1, 'k');
+      g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textBaseline = 'middle'; g.textAlign = 'right';
+      g.fillStyle = PAL.k; g.fillText(mk.label, x - 8, top ? y + 4 : y - 4);
+    }
+  }
+}
 function drawRegionMap(t){
   mapLayerMarks = { rings: [], labels: [] };
-  const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, N = REGION_MAP.nodes, cur = mapUI.cur;
+  const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, sheet = mapUI.sheet || 'south', cur = mapUI.cur;
+  const N = {}; for (const [id, n] of Object.entries(REGION_MAP.nodes)) if (nodeSheet(id) === sheet) N[id] = n;   // this sheet's nodes only
   g.setTransform(k, 0, 0, k, 0, 0); g.imageSmoothingEnabled = false;
   const R = (x, y, w, h, col) => { g.fillStyle = PAL[col]; g.fillRect(Math.round(x), Math.round(y), w, h); };
-  const backdrop = regionBackdropOn() ? ensureRegionBackdrop() : null;
+  const backdrop = sheet === 'south' && regionBackdropOn() ? ensureRegionBackdrop() : null;
   if (backdrop && backdrop.complete && backdrop.naturalWidth === 640) g.drawImage(backdrop, 0, 0, 320, 192);
+  else if (sheet === 'north') northBackdrop(R);   // ROUTE_TO_GOVERNOR E9: the north parchment, PAL only
   else {
     R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');                                 // parchment, 2 px orange edge
     [[30, 40], [70, 150], [150, 30], [200, 140], [255, 45], [290, 160], [120, 100]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });   // hill ticks (decoration)
@@ -12796,6 +13542,7 @@ function drawRegionMap(t){
     const [x0, y0] = P(a), [x1, y1] = P(b), n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
     for (let i = 0; i <= n; i++) { if (dashed && Math.floor(i / 4) % 2) continue; R(Math.round(x0 + (x1 - x0) * i / n) - 1, Math.round(y0 + (y1 - y0) * i / n) - 1, 3, 3, col); }
   };
+  drawSheetMarks(R, seg, P, sheet, 'under');
   const discW = (cx, cy, r, yy) => { const dy = yy - cy; if (dy * dy > r * r + r * 0.8) return null; return Math.floor(Math.sqrt(r * r - dy * dy + r * 0.8)); };
   const fillDisc = (cx, cy, r, col, side) => {
     for (let y = cy - r; y <= cy + r; y++) {
@@ -12852,6 +13599,11 @@ function drawRegionMap(t){
     const coach = N[id].link === 'coach';
     for (let i = 0; i < pth.length - 1; i++) seg(pth[i], pth[i + 1], vis[id] ? (coach ? 'g' : 'o') : 'h', !vis[id] || coach);
   }
+  for (const id in N) {   // Kilnmouth's coach (dashed) is drawn only from story.km_council (D1882)
+    const ch = N[id].coach; if (!ch || !(ch.when || []).every(c => cond(c))) continue;
+    for (let i = 0; i < ch.path.length - 1; i++) seg(ch.path[i], ch.path[i + 1], 'g', true);
+  }
+  drawSheetMarks(R, seg, P, sheet, 'over');
   const disc = (cx, cy, r, col) => fillDisc(cx, cy, r, col, 0);
   const ring = (cx, cy, r, col) => { for (let a = 0; a < 360; a += 2) { const x = Math.round(cx + r * Math.cos(a * Math.PI / 180)), y = Math.round(cy + r * Math.sin(a * Math.PI / 180)); R(x - 1, y - 1, 2, 2, col); } };
   g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textBaseline = 'middle';
@@ -12913,7 +13665,8 @@ const ML_SECTION = {
 };
 const ML_CHIPS = { hm_flats_lobby: 'LOBBY', hm_flats_5: '5B', sm_yard: 'YARD', sm_tunnel: 'TUNNEL', sm_hold: 'HOLD', sm_den: 'DEN' };
 const ML_LABEL = { hc_gym_in: 'DOJO' };
-const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K' };
+const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K', y: 't', h: 'm', l: 'g',   // y h l: ROUTE_TO_GOVERNOR's reeds, drystone wall, mown lawn
+  I: 'w', L: 'h', x: 'w', J: 'N', b: 'V', o: 'A', d: 'm', O: 'F', G: 'N', V: 'N', N: 'J', '&': 'g' };   // BRIGHTGATE_LAYOUT's paving, lane, crossing, kerb, bay, cobbles, setts, rail, fence, pad, hedge, flowerbed
 const mapLayers = { ready: false, byId: {}, byFloor: {} };
 let regionBackdropImg = null;
 let mapPinSig = '';
@@ -13338,6 +14091,7 @@ function syncMapChrome(){
   else paintChips();
   if (region) { mapPinSig = ''; mapUI.pins = []; const pins = $('#mapPins'); if (pins) { pins.hidden = true; pins.innerHTML = ''; } }
   syncMapActs();
+  syncSheetButtons();
 }
 function showMapLevel(level, id){
   ensureMapLayers();
@@ -14316,6 +15070,7 @@ function renderRibbit(body){
     day: dayKey(Date.now()),
     night: phoneNight(),
     signal: phoneSignal(),
+    holds: feedHolds(),
   }) : { trending: [], posts: [] };
   renderMyChirps(body);
   const trend = document.createElement('div');
@@ -14394,11 +15149,17 @@ function newsEdition(){
   const st = newsState();
   return st && window.PPNews && PPNews.edition ? PPNews.edition(st) : null;
 }
+// PHONE_FEED (D2172): who holds each region-map node, by the map's own rules, so feed lines can follow a town's hold.
+function feedHolds(){
+  const out = {};
+  for (const id of Object.keys(REGION_MAP.nodes)) out[id] = mapHold(id);
+  return out;
+}
 function newsState(){
   if (!S) return null;
   const ck = window.PPClock ? PPClock.now() : null, p = pet(), sky = chipSky();
   return ({
-    flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(),
+    flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(), holds: feedHolds(),
     hh: ck ? ck.hh : 9, phase: ck ? ck.phase : 'day', sky: sky ? sky.kind : '', town: placeName(),
     me: {
       holder: playerName(), partner: p ? petName(p) : '', partnerSpecies: p ? p.species : '', partnerStage: p ? p.stage : 0,
@@ -14420,7 +15181,7 @@ function newsClip(ed){
     else clips.push({ id: l.id, day: ed.day, back: true });
     have.add(l.id);
   });
-  if (paid) { S.money = (S.money | 0) + paid; toast('Clipped to your scrapbook. +' + paid + ' Acorns'); sfx('pop'); }
+  if (paid) { moneyDelta('clip', paid); toast('Clipped to your scrapbook. +' + paid + ' Acorns'); sfx('pop'); }
   return paid;
 }
 function newsDate(day){
@@ -15200,11 +15961,16 @@ function standingEmblem(k){
   (SC_STANDING.art['emblem_' + k] || []).forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
   return em;
 }
+const CADET_LINE = 'Keeper Cadet, Hearthmoor Lodge';   // D1556, PLACEHOLDER
 function renderStanding(){
   const T = SC_STANDING.tab, sd = side(), rows = $('#stRows'); rows.textContent = '';
   const quiet = PPStanding.SIDES.every(k => standingOf(k, false) <= SC_STANDING.min);
   $('#stPledged').textContent = quiet ? T.empty : PPStanding.fill(T.pledged, { faction: SC_STANDING.sides[sd].name });
   $('#stExplain').textContent = T.explain;
+  // ACT1_KEEPER_JOIN E8 (D1556, D1557): a Cadet gets one line; no pin item. The chip's emblem keeps the public face (D1516).
+  let cadet = $('#stCadet');
+  if (!cadet) { cadet = document.createElement('p'); cadet.id = 'stCadet'; cadet.className = 'q-place'; $('#stPledged').after(cadet); }
+  cadet.hidden = !(S && S.flags['story.keeper_cadet']); cadet.textContent = cadet.hidden ? '' : CADET_LINE;
   for (const k of PPStanding.SIDES) {
     const i = PPStanding.tierInfo(k, standingOf(k, false)), F = SC_STANDING.sides[k], pledged = k === sd;
     const row = document.createElement('div'); row.className = 'st-row' + (pledged ? ' pledged' : ''); row.dataset.side = k;
@@ -15221,7 +15987,9 @@ function renderStanding(){
     const fill = document.createElement('i'); fill.className = 'st-fill-' + k; fill.style.width = Math.round(i.frac * 100) + '%'; bar.append(fill);
     const num = document.createElement('small'); num.textContent = i.next == null ? i.points + ' / ' + SC_STANDING.max : i.points + ' / ' + i.next;
     barRow.append(bar, num);
-    body.append(head, blurb, barRow); row.append(em, body); rows.append(row);
+    body.append(head, blurb, barRow);
+    const word = sideWordLong(k); if (word) body.append(word);   // WALK_BESIDE D1972: the same line on the STANDING tab's Keepers row
+    row.append(em, body); rows.append(row);
   }
 }
 /* ---------- SIDE_BADGE (Vincent, Nov 2, 2026) ---------- */
@@ -15317,10 +16085,19 @@ function openSideCard(){
     const ln = document.createElement('p'); ln.className = 'side-line';
     // Before the pick: the first sentence of what the side asks (no points). After: the tier you hold with them.
     ln.textContent = sd === 'none' ? String(F.asks).split(/(?<=[.!?])\s/)[0] : PPStanding.tierInfo(k, standingOf(k, false)).name;
-    body.append(nm, ln); row.append(em, body); rows.append(row);
+    body.append(nm, ln);
+    const word = sideWordLong(k); if (word) body.append(word);   // WALK_BESIDE E9 (D1972): the whole word, after the charter
+    row.append(em, body); rows.append(row);
   }
   clearMoves(); sfx('tap'); $('#ovSide').hidden = false; lockTabs(true);
   $('#sideClose').textContent = SB_CFG.close; $('#sideClose').focus({ preventScroll: true });
+}
+// WALK_BESIDE E9 (D1972): once story.wb_charter is set, the Keepers row carries the whole word (STANDING_CFG asksLong) on its own
+// line under the tier, in the row's text colour. `asks` stays as built (D1937). Readable text, no button; null otherwise.
+function sideWordLong(k){
+  const F = SC_STANDING.sides[k];
+  if (k !== 'keepers' || !F || !F.asksLong || !(S && S.flags && S.flags['story.wb_charter'])) return null;
+  const p = document.createElement('p'); p.className = 'side-word'; p.textContent = F.asksLong; return p;
 }
 function closeSideCard(){ if ($('#ovSide').hidden) return; $('#ovSide').hidden = true; lockTabs(false); }
 function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
@@ -15478,7 +16255,7 @@ function bagKey(e){
 const SHELF_LINE = 'Travel Shelf \u00b7 Leave Acorns, take a snack. \u2014 I.';
 const SHELF_EMPTY = "Empty for now. Ilse restocks once you've a partner.";
 const SHOP_EMPTY = 'Nothing on the shelf today.';
-let shopIds = [], shopSel = 0, shopMeal = null;
+let shopIds = [], shopSel = 0, shopMeal = null, shopOwner = '', wardOwner = '';
 // The Travel Shelf keeps its fixed title. A stall whose welcome line names the shop (Dottie's "Welcome to Cairnside Supplies!") uses that name.
 function shopHeading(o){
   if (o && o.shopTitle) return o.shopTitle;
@@ -15525,8 +16302,9 @@ function paintMealIcon(cv){
   const g = ctx(cv); g.clearRect(0, 0, 18, 18);
   drawGlyph(g, 'apple', 6, 6);
 }
-function openShop(ids, title, flavour){
+function openShop(ids, title, flavour, owner){
   if (!S || overlayOpen()) return;
+  shopOwner = typeof owner === 'string' ? owner : '';   // BANK_AND_HOMES D2234: the store a ledger memo names
   // SHOP_EXIT: the care walk's C1 card and unlock tips sit above the sheet and covered X. Step aside as a talk does (runSteps).
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('shop');
   if (unlock.on && unlock.id) { unlock.held = unlock.id; unlockClose(); }
@@ -15595,7 +16373,7 @@ function buyItem(id){
   if (itemCount(id) >= it.cap) msg = "Bag can't hold more.";
   else if ((S.money | 0) < it.price) msg = 'Not enough Acorns.';
   if (msg) { sfx('denied'); toast(msg); return { ok: false, msg }; }
-  S.money = (S.money | 0) - it.price; S.bag[id] = itemCount(id) + 1;
+  moneyDelta('shop', -it.price, bankShopRef(id)); S.bag[id] = itemCount(id) + 1;
   sfx('tap'); msg = '+1 ' + it.name; toast(msg); save(); syncHdrAcorns();
   if (!$('#ovShop').hidden && !shopMeal) renderShop();
   return { ok: true, msg };
@@ -15628,7 +16406,7 @@ function buyWardFromShop(id){
   if (ownsLook(id)) msg = 'Already yours.';
   else if ((S.money | 0) < wr.price) msg = 'Not enough Acorns.';
   if (msg) { sfx('denied'); toast(msg); return { ok: false, msg }; }
-  S.money = (S.money | 0) - wr.price; S.flags[wr.flag] = true;
+  moneyDelta('look', -wr.price, bankShopRef(id)); S.flags[wr.flag] = true;
   sfx('tap'); msg = wr.name + ' is yours.'; toast(msg); save(); syncHdrAcorns();
   if (!$('#ovShop').hidden && !shopMeal) renderShop();
   return { ok: true, msg };
@@ -16163,7 +16941,7 @@ async function wildWinRewards(B, result, id){
   if (B.kind !== 'wild' || result !== 'win' || B.coop) return;
   const f = B.foes[B.fi] || B.foes[0]; if (!f) return;
   const c = careDay(), n = wildAcornPay(f.level, c.wildAcorns);
-  c.wildAcorns += n; S.money = (S.money || 0) + n; save();
+  c.wildAcorns += n; moneyDelta('wild', n); save();
   await say(playerName() + ' got ' + acorns(n) + '!', id);   // D813: the holder line, via acorns(n)
 }
 async function results(result, id){
@@ -16181,7 +16959,7 @@ async function results(result, id){
   if (result === 'win' && t) {
     B.cosmeticFirst = S.flags['trainer.' + B.trainerId] !== true;
     const money = t.money != null ? t.money : 10 * Math.max(...trainerTeam(t).map(m => m.level)) * (t.hall ? 3 : 1);
-    if (money > 0) S.money = (S.money || 0) + money;
+    if (money > 0) moneyDelta(t.hall ? 'hall' : 'holder', money, String(B.trainerId || '').split('@')[0]);
     S.flags['trainer.' + B.trainerId] = true;
     delete S.flags['rematch.' + trainerMusicId(B.trainerId)];
     if (t.hall && t.seal) {
@@ -16246,6 +17024,269 @@ function startAcornTick(from, to){
   };
   acornTickJob = job;
   job.raf = requestAnimationFrame(frame);
+}
+/* BANK_AND_HOMES v0.1, first slice (design repo, private; D2220-D2223, D2231, D2233, D2234): the Acorn Account.
+   The bag stays S.money. Every change to it goes through moneyDelta(src, n, ref): it clamps the bag at 0, writes one ledger memo
+   (bank.js) and runs the built HUD sync; nothing else about a spend or a gain changes. A co-op guest writes nothing (D331).
+   The modern Acorns chip (#fcAcorns, now a button) opens #ovBank on BOOK; a second tap (the backdrop), X or Escape closes it.
+   Before Teller Bodin opens the book (story.bank_open) the sheet is in bag mode: "YOUR ACORNS", BOOK and LEDGER, the Yesterday
+   card with no dividend. With the book: CIVIC BANK, the JARS tab (coming soon; phase 2), and the dawn dividend on the first open of
+   each real day (daily.bank_dawn) with the KEPT stamp; the chip's pip shows while it waits. No streak, no catch-up, nothing lost
+   for days away (D867, §7). Later slices plug in here: jars (bankUI tab 'jars'), the EXCHANGE tab (PPMarket, STOCK_MARKET §6.1,
+   through bankWallet()). Every line is PLACEHOLDER until Story signs it (OPEN_DECISIONS D2222-copy). Save stays pixelpets.save.v2,
+   v 2 (§12, save.js normalizeBank). */
+const BANK_COPY = {
+  titleBag: 'YOUR ACORNS', titleBook: 'CIVIC BANK',
+  prompt: { book: 'Counted and kept.', ledger: 'Every Acorn, by day.', jars: 'Jars wait. They never spoil.', exchange: '' },
+  tabs: { book: 'BOOK', ledger: 'LEDGER', jars: 'JARS', exchange: 'EXCHANGE' },
+  foot: 'Kindness has no fee.', treasury: 'Rates by leave of the Treasury.',
+  soon: 'Jars are coming soon. Your bag is yours meanwhile.',
+  bookOf: 'Book of', no: 'No.', acorns: 'Acorns', inBag: 'in bag', inJars: 'in jars',
+  yesterday: 'YESTERDAY', welcome: 'WELCOME BACK', since: 'Since', today: 'TODAY',
+  cameIn: 'Came in', wentOut: 'Went out', dawn: 'Dawn dividend', thanks: 'THANKS', kept: 'KEPT', lately: 'LATELY',
+  empty: 'Nothing yet. Every Acorn in or out lands here.',
+  chip: '. Open your book.',
+};
+const BANK_DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const BANK_DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const BANK_MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+// §3.3: the bank's mark is a brass bell over an open ledger (never an acorn, rule 10). Design's BANK_MARK grid, PAL keys.
+const BANK_MARK = ['.....yy.....', '....yyyy....', '...yyyyyy...', '...yyyyyy...', '..yyyyyyyy..', '.oooooooooo.',
+  '.....oo.....', '............', '.CCCCkCCCCC.', '.CDDCkCDDDC.', '.CCCCkCCCCC.', '.kkkkkkkkkk.'];
+const bankUI = { tab: 'book', card: null, cardDay: '' };
+const bookOpen = () => !!(S && S.flags && S.flags['story.bank_open']);
+const bankNum = n => (n | 0).toLocaleString('en-US');
+const bankSigned = n => (n > 0 ? '+' : n < 0 ? '-' : '') + bankNum(Math.abs(n | 0));
+// The "Brought forward" line: the ledger starts the day this build ships, with the balance then (§3.1). Written once, at the first
+// write or the first open of the book, never at load; a bag of 0 needs no line.
+function bankBroughtForward(was){
+  const b = PPBank.ensure(S);
+  if (b.led.length || b.fold.length || !(was > 0)) return;
+  b.led.push([dayKey(Date.now()), 'open', was | 0]);
+}
+function moneyDelta(src, n, ref){
+  if (!S) return 0;
+  if (battle && battle.on && battle.coop) return 0;   // D331: a co-op guest is paid nothing and writes nothing
+  const was = S.money | 0, next = Math.max(0, was + (Math.trunc(Number(n)) || 0)), d = next - was;
+  if (!d) return 0;
+  bankBroughtForward(was);
+  S.money = next;
+  PPBank.add(S.bank, dayKey(Date.now()), src, d, typeof ref === 'string' ? ref : '');
+  syncHdrAcorns();
+  if (!$('#ovBank').hidden) renderBank();
+  return d;
+}
+// STOCK_MARKET §6.1 (ask B1, default): the EXCHANGE uses the bag. take() refuses rather than go below 0.
+function bankWallet(){
+  return { balance: () => (S ? S.money | 0 : 0), take: (n, ref) => { n = n | 0; if (!S || n < 0 || (S.money | 0) < n) return false; moneyDelta('exch', -n, ref); return true; },
+    give: (n, ref) => { n = n | 0; if (!S || n < 0) return false; moneyDelta('exch', n, ref); return true; } };
+}
+// Ledger refs (24 characters at most): the store's object id and the item, when both fit; else the item alone.
+function bankShopRef(id, owner){
+  const st = owner != null ? owner : ($('#ovShop').hidden ? '' : shopOwner);
+  const both = st && id ? st + '.' + id : '';
+  return both && both.length <= PPBank.REF_MAX ? both : String(id || '').slice(0, PPBank.REF_MAX);
+}
+function bankFindObj(id){
+  if (!id) return null;
+  for (const m of Object.values(WORLD)) for (const o of (m && m.objs) || []) if (o && o.id === id) return { o, m };
+  return null;
+}
+function bankPlaceOf(map){
+  const n = nodeOf(map);
+  if (n && REGION_MAP.nodes[n] && REGION_MAP.nodes[n].label) return String(REGION_MAP.nodes[n].label).toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
+  return WORLD[map] ? String(WORLD[map].name || '').split(',')[0] : '';
+}
+const BANK_RESOLVE = {
+  place: id => { const t = TRAINERS[id]; return t && t.map ? bankPlaceOf(t.map) : ''; },
+  holder: id => { const t = TRAINERS[id]; return t ? holderShown(t) : ''; },
+  item: id => (ITEMS[id] ? ITEMS[id].name : WARDROBE[id] ? WARDROBE[id].name : ''),
+  look: id => (WARDROBE[id] ? WARDROBE[id].name : ''),
+  store: id => { const f = bankFindObj(id); if (!f) return ''; const h = shopHeading(f.o); return h !== 'Travel Shelf' || f.o.id === 'travel_shelf' ? h : String(f.m.name || '').split(',')[0]; },
+  meal: id => { for (const m of Object.values(WORLD)) for (const o of (m && m.objs) || []) { const x = ((o && o.meals) || []).find(q => q && q.id === id); if (x) return x.name || ''; } return ''; },
+};
+function bankDue(){ return bookOpen() && S.flags['daily.bank_dawn'] !== dayKey(Date.now()); }
+function bankBlocked(){ return !S || !!scene || !!(battle && battle.on) || !!tut.on || ($('#ovBank').hidden && overlayOpen()); }
+function bankExchangeReady(){ try { return !!(window.PPMarket && typeof PPMarket.ready === 'function' && PPMarket.ready(S)); } catch (e) { return false; } }
+function bankTabs(){
+  const t = ['book', 'ledger'];
+  if (bookOpen()) t.push('jars');                 // §3.4: JARS appears with the open book (built in phase 2)
+  if (bankExchangeReady()) t.push('exchange');    // §15: the stock app's own gate
+  return t;
+}
+function bankRank(){   // PLACEHOLDER rank words (D2223); holder, never the old word
+  if (S.flags['story.keeper_cadet'] && !S.flags['story.switched_a3']) return 'Keeper Cadet';
+  return side() === 'glimmer' ? 'Junior Bright' : 'Holder';
+}
+function bankBookNo(){ let h = 7; for (const ch of String(S.uid || '')) h = (h * 31 + ch.charCodeAt(0)) % 10000; return String(h).padStart(4, '0'); }
+const bankDate = d => new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
+function bankDayLabel(d, today){
+  const gap = PPBank.dayGap(d, today), dt = bankDate(d);
+  if (gap === 0) return BANK_COPY.today + ' · ' + BANK_DAYS[dt.getDay()];
+  if (gap > 0 && gap < 7) return BANK_DAYS[dt.getDay()];
+  return BANK_MONTHS[dt.getMonth()].slice(0, 3) + ' ' + dt.getDate();
+}
+function openBank(tab){
+  const ov = $('#ovBank'); if (!ov) return;
+  if (!ov.hidden) { closeBank(); return; }        // a second tap on the chip closes it (D2220)
+  if (bankBlocked()) return;
+  bankBroughtForward(S.money | 0);
+  const today = dayKey(Date.now());
+  bankUI.card = null;
+  if (bookOpen()) {
+    if (S.flags['daily.bank_dawn'] !== today) {
+      // §3.7 (D2231): the first open of a real day posts the dividend into the bag; never twice a day, never more for days away.
+      S.flags['daily.bank_dawn'] = today;
+      const amt = PPBank.dividend(PPBank.inJars(S.bank));
+      moneyDelta('dawn', amt);
+      const sum = PPBank.summary(S.bank, today) || { day: dayKey(Date.now() - 86400000), gap: 1, cameIn: 0, wentOut: 0, lines: 0, hall: false, dawn: amt };
+      bankUI.card = Object.assign({ stamp: true }, sum);
+      save();
+    }
+  } else if (bankUI.cardDay !== today) {
+    const sum = PPBank.summary(S.bank, today);
+    if (sum) bankUI.card = Object.assign({ stamp: false }, sum);
+    bankUI.cardDay = today;
+  }
+  bankUI.tab = bankTabs().indexOf(tab) >= 0 ? tab : 'book';
+  if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('shop');
+  clearMoves();
+  ov.hidden = false; lockTabs(true);
+  renderBank(true);
+  if (bankUI.card && bankUI.card.stamp) sfx('notice'); else sfx('tap');
+  syncHdrAcorns();
+}
+function closeBank(){
+  const ov = $('#ovBank'); if (!ov || ov.hidden) return;
+  ov.hidden = true; bankUI.card = null; lockTabs(false); updateHUD(); syncHdrAcorns();
+}
+function bankEl(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function bankAmt(n, cls){ const b = bankEl('b', 'bk-n' + (n > 0 ? ' in' : '') + (cls ? ' ' + cls : ''), bankSigned(n)); return b; }
+function bankRow(row){
+  const r = bankEl('div', 'bk-row'), m = bankEl('div', 'bk-memo');
+  m.append(bankEl('span', 'bk-m', PPBank.memo(row, BANK_RESOLVE)));
+  const sub = PPBank.subline(row, BANK_RESOLVE); if (sub) { m.append(bankEl('span', 'bk-sub', sub)); r.classList.add('two'); }
+  r.append(m, row[1] === 'open' ? bankEl('b', 'bk-n', bankNum(row[2])) : bankAmt(row[2]));   // the balance then, not a gain
+  return r;
+}
+function bankAcornIcon(){
+  const c = document.createElement('canvas'); c.className = 'bk-acorn'; c.setAttribute('aria-hidden', 'true');
+  const A = navArt(), f = A && A.frames && A.frames.acorn;
+  const rows = f ? f.left.slice(4, 16).map(r => r.slice(6, 16)) : null;
+  if (rows) { c.width = rows[0].length; c.height = rows.length; paintGrid(ctx(c), rows, 1, 0, 0); } else { c.width = c.height = 8; paintAcorn(c); }
+  return c;
+}
+function bankCard(){
+  const C = bankUI.card, today = dayKey(Date.now()), card = bankEl('div', 'bk-card'), main = bankEl('div', 'bk-card-main');
+  if (C.gap > 1) {
+    main.append(bankEl('div', 'bk-card-h', BANK_COPY.welcome));
+    const dt = bankDate(C.day), when = C.gap < 7 ? BANK_DAY_NAMES[dt.getDay()] : BANK_MONTHS[dt.getMonth()].charAt(0) + BANK_MONTHS[dt.getMonth()].slice(1, 3).toLowerCase() + ' ' + dt.getDate();
+    main.append(bankEl('div', 'bk-since', BANK_COPY.since + ' ' + when + ':'));
+  } else main.append(bankEl('div', 'bk-card-h', BANK_COPY.yesterday + ' · ' + BANK_DAYS[bankDate(C.day).getDay()]));
+  const kv = (k, n, cls) => { const r = bankEl('div', 'bk-kv' + (cls ? ' ' + cls : '')); r.append(bankEl('span', '', k), bankAmt(n)); return r; };
+  main.append(kv(BANK_COPY.cameIn, C.cameIn), kv(BANK_COPY.wentOut, -C.wentOut));
+  if (C.stamp) {
+    let dawn = 0; for (const row of S.bank.led) if (row[0] === today && row[1] === 'dawn') dawn += row[2];
+    main.append(kv(BANK_COPY.dawn, dawn, 'dawn'));
+  }
+  const say = PPBank.remark(C); if (say) main.append(bankEl('p', 'bk-remark', '"' + say + '"'));
+  card.append(main);
+  const side_ = bankEl('div', 'bk-card-side');
+  if (C.stamp) {
+    const st = bankEl('div', 'bk-stamp', BANK_COPY.kept);
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && !C.stamped) st.classList.add('stamp-in');
+    C.stamped = true;
+    side_.append(st);
+  }
+  const ok = bankEl('button', 'bk-thanks', BANK_COPY.thanks); ok.type = 'button';
+  ok.addEventListener('click', () => { bankUI.card = null; sfx('tap'); renderBank(); });
+  side_.append(ok);
+  card.append(side_);
+  return card;
+}
+function bankBookPage(page){
+  const open = bookOpen();
+  if (open) {
+    const id = bankEl('div', 'bk-id');
+    id.append(bankEl('span', 'bk-who', BANK_COPY.bookOf + ' ' + playerName() + ' · ' + bankRank()), bankEl('span', 'bk-no', BANK_COPY.no + ' ' + bankBookNo()));
+    page.append(id);
+  }
+  const jars = PPBank.inJars(S.bank), bag = S.money | 0;
+  const tot = bankEl('div', 'bk-total');
+  tot.append(bankAcornIcon(), bankEl('b', 'bk-sum', bankNum(bag + jars)), bankEl('span', 'bk-unit', BANK_COPY.acorns));
+  page.append(tot);
+  if (open) page.append(bankEl('div', 'bk-split', BANK_COPY.inBag + ' ' + bankNum(bag) + '  ·  ' + BANK_COPY.inJars + ' ' + bankNum(jars)));
+  if (bankUI.card) page.append(bankCard());
+  page.append(bankEl('div', 'bk-sec', BANK_COPY.lately));
+  const rows = PPBank.lately(S.bank, 4);
+  if (!rows.length) page.append(bankEl('p', 'bk-empty', BANK_COPY.empty));
+  for (const row of rows) page.append(bankRow(row));
+  const foot = bankEl('div', 'bk-foot');
+  foot.append(bankEl('span', 'bk-fee', BANK_COPY.foot));
+  // §10.2 tier 3 (D2227, lines only): a Keeper holder's open book. Writes no flag.
+  if (open && side() !== 'glimmer' && !S.flags['story.switched_a3']) foot.append(bankEl('span', 'bk-treasury', BANK_COPY.treasury));
+  page.append(foot);
+}
+function bankLedgerPage(page){
+  const today = dayKey(Date.now()), days = PPBank.days(S.bank);
+  if (!days.length && !S.bank.fold.length) page.append(bankEl('p', 'bk-empty', BANK_COPY.empty));
+  for (const g of days) {
+    page.append(bankEl('div', 'bk-band', bankDayLabel(g.d, today)));
+    for (const row of g.rows) page.append(bankRow(row));
+  }
+  for (let i = S.bank.fold.length - 1; i >= 0; i--) {
+    const f = S.bank.fold[i], r = bankEl('div', 'bk-fold');
+    r.append(bankEl('span', '', BANK_MONTHS[(+f[0].slice(5, 7) - 1 + 12) % 12] || f[0]), bankEl('b', '', '+' + bankNum(f[1]) + '  ·  -' + bankNum(f[2])));
+    page.append(r);
+  }
+}
+function renderBank(fresh){
+  const ov = $('#ovBank'); if (!ov || ov.hidden || !S) return;
+  PPBank.ensure(S);
+  const open = bookOpen(), tabs = bankTabs();
+  if (tabs.indexOf(bankUI.tab) < 0) bankUI.tab = 'book';
+  $('#bankTitle').textContent = open ? BANK_COPY.titleBook : BANK_COPY.titleBag;
+  $('#bankPrompt').textContent = BANK_COPY.prompt[bankUI.tab] || '';
+  $('#bankMoney').textContent = bankNum(S.money | 0);
+  paintAcorn($('#bankAcorn'));
+  const mk = $('#bankMark'); if (mk && fresh) { const g = ctx(mk); g.clearRect(0, 0, 12, 12); paintGrid(g, BANK_MARK, 1, 0, 0); }
+  const bar = $('#bankTabs'); bar.textContent = '';
+  bar.style.setProperty('--tabs', String(tabs.length));
+  for (const t of tabs) {
+    const b = bankEl('button', 'bk-tab' + (t === bankUI.tab ? ' sel' : ''), BANK_COPY.tabs[t]);
+    b.type = 'button'; b.dataset.tab = t; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', t === bankUI.tab ? 'true' : 'false');
+    b.addEventListener('click', () => { if (bankUI.tab === t) return; bankUI.tab = t; sfx('tap'); renderBank(true); });
+    bar.append(b);
+  }
+  const page = $('#bankPage'), keep = fresh ? 0 : page.scrollTop;
+  page.textContent = ''; page.dataset.tab = bankUI.tab;
+  if (bankUI.tab === 'ledger') bankLedgerPage(page);
+  else if (bankUI.tab === 'jars') page.append(bankEl('p', 'bk-empty bk-soon', BANK_COPY.soon));
+  else if (bankUI.tab === 'exchange') { try { PPMarket.renderExchange(page, S, { wallet: bankWallet(), openNews: () => {}, toast }); } catch (e) { page.append(bankEl('p', 'bk-empty', '')); } }
+  else bankBookPage(page);
+  page.scrollTop = keep;
+}
+function wireBank(){
+  const chip = $('#fcAcorns');
+  if (chip && !chip.dataset.bank) {
+    chip.dataset.bank = '1';
+    chip.addEventListener('click', () => openBank('book'));
+    chip.addEventListener('pointerdown', () => { if (!chip.disabled) chip.classList.add('nav-press'); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => chip.addEventListener(ev, () => chip.classList.remove('nav-press')));
+  }
+  const ov = $('#ovBank'); if (!ov || ov.dataset.wired) return;
+  ov.dataset.wired = '1';
+  $('#bankClose').addEventListener('click', closeBank);
+  ov.addEventListener('click', e => { if (e.target === e.currentTarget) closeBank(); });   // a tap outside the sheet (the chip, too)
+}
+// The chip's states (D2220): the aria-label follows the bag; the pip while today's dividend waits; disabled in a battle, in a scene
+// and under the opening tour (the scene fade already hides it). Called from syncHdrAcorns, so it is cheap and writes only on change.
+function syncBankChip(){
+  const chip = $('#fcAcorns'); if (!chip) return;
+  const due = !!S && bankDue(), off = bankBlocked();
+  if (chip.classList.contains('bank-due') !== due) chip.classList.toggle('bank-due', due);
+  if (chip.disabled !== off) chip.disabled = off;
 }
 // The Seal card (BATTLE §7 Trial Hall): the Seal's sprite plus its name, over the battle stage until the battle closes.
 // Seal 1 art: Design ICONS_SEALS (5d59b34), ICON_ART.seal_fernbrook.grid, copied verbatim (gold rim, leaf on a white glint).
@@ -16347,7 +17388,14 @@ SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL
 // SEALS_BOTH_PATHS §4.6 (D1327): on the Glimmer path the Seal card shows Glimmerwell's cord clipped to the Seal. The overlay
 // reads side(), not the save's tags: the Hall-win card shows before onWin writes the tag. SEAL_CORD holds Pia's 16x16 overlays
 // (design §8, '.' = transparent); until they land the slots are null and the card draws the plain Seal.
-const SEAL_CORD_TIER = Object.freeze({ seal_fernbrook: 1, seal_cobblecrest: 2, seal_brinewick: 3 });   // Halls 4-8 add rows
+const SEAL_CORD_TIER = Object.freeze({ seal_fernbrook: 1, seal_cobblecrest: 2, seal_brinewick: 3, seal_brightgate: 4 });   // Halls 4-8 add rows
+// BRIGHTGATE_LAYOUT §5.2 (Hall 4, VOLT): Seal 4 is `seal_brightgate`. PLACEHOLDER art (a honey bolt in a navy ring) until
+// ICONS_SEALS draws Seal 4; PAL keys only, no mint.
+SEAL_ART.seal_brightgate = [
+  '.....nnnnnn.....', '...nnyyyyyynn...', '..nyybbbbbbyyn..', '.nybbbbbyybbbyn.', '.nybbbbyyybbbyn.', 'nybbbbyyybbbbbyn',
+  'nybbbyyyyyyybbyn', 'nybbbbbbyyybbbyn', 'nybbbbbyyybbbbyn', 'nybbbbyyybbbbbyn', 'nybbbyyybbbbbbyn', '.nybbyybbbbbbyn.',
+  '.nybbybbbbbbbyn.', '..nyybbbbbbyyn..', '...nnyyyyyynn...', '.....nnnnnn.....',
+];
 const SEAL_CORD = [null, null, null];   // PLACEHOLDER: Pia's SEAL_CORD_1-3 (design SEALS_BOTH_PATHS §8)
 function sealCardGrid(id){
   const base = SEAL_ART[id] || SEAL_ART.seal_fernbrook;
@@ -16374,7 +17422,7 @@ async function presentFieldSeal(id){
   $('#btSeal').hidden = true; ov.classList.remove('seal-only'); ov.hidden = true;
   if (!battle.on) setPanel('busy');
 }
-const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard', seal_brinewick: 'Brinewick Seal', seal_glim_3: 'Bright Tier 3 Lanyard' };
+const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard', seal_brinewick: 'Brinewick Seal', seal_glim_3: 'Bright Tier 3 Lanyard', seal_brightgate: 'Brightgate Seal' };
 const sealName = id => SEAL_NAMES[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal';
 
 /* --- learning moves (§3): after RESULTS, after evolving, and the §3.4 sheet --- */
@@ -16608,13 +17656,19 @@ function drawBattle(t, dt){
     if (shy > 4) shy = 4; else if (shy < -4) shy = -4;
     if (ms > end) B.punch = null;
   } else if (punch && punch.mode !== 'full' && t - punch.t0 > 700) B.punch = null;
-  if (auraMode() !== 'full') { shx = 0; shy = 0; meDx = 0; foeDx = 0; }
+  const am = auraMode();
+  if (am !== 'full') { shx = 0; shy = 0; meDx = 0; foeDx = 0; }
+  const saSeen = B.saSeen || (B.saSeen = {});   // SPRITE_ANIM (D2070-D2089): the frame each battler drew this frame (B.view.frames)
+  saSeen.me = saSeen.foe = saSeen.foe2 = saSeen.ally = undefined;
   g.save();
   if (shx || shy) g.translate(shx, shy);
   g.fillStyle = PAL.t; g.fillRect(fx0 - 2, fy0 + 15, 22, 3); g.fillRect(mx0 - 2, my0 + 15, 22, 3);
   const drawMon = (who, si, stage, x0, y0, mirror, faded) => {
     let x = x0, y = y0, mode = (fxT % 2600) < 130 ? 'b' : 'n', hide = false;
-    y += Math.floor(fxT / 450) % 2;
+    // SPRITE_ANIM (D2070-D2089): the pose frame from the idle clock and the step queue. OFF (and SA.on false) is today's bob and blink.
+    const pose = typeof saPose === 'function' ? saPose(am, who, fxT, t, B) : null;
+    if (pose && am !== 'off' && SA.on) saWarm(si, stage, faded);
+    if (pose) { mode = pose.blink ? 'b' : 'n'; y += pose.bob; } else y += Math.floor(fxT / 450) % 2;
     const sq = who === 'me' ? meSq : who === 'foe' ? foeSq : [0, 0];
     for (let i = 0; i < B.fx.length; i++) {
       const e = B.fx[i];
@@ -16634,12 +17688,14 @@ function drawBattle(t, dt){
     if (B.white && B.white.who === who && t >= B.white.t0 && t < B.white.until) mode = 'w';
     if (who === 'me' && !B.meShown) hide = true;
     if (hide) return null;
-    const img = sprSet(si, stage, faded)[mode];
+    const fset = pose && pose.f !== 'base' && mode !== 's' && typeof saSet === 'function' ? saSet(si, stage, faded, pose.f) : null;
+    const img = (fset && fset[mode]) || sprSet(si, stage, faded)[mode];
+    saSeen[who] = fset ? pose.f : 'base';
     const dw = Math.max(1, 18 + (sq[0] || 0)), dh = Math.max(1, 18 + (sq[1] || 0));
     const ox = Math.round(x - (dw - 18) / 2), oy = Math.round(y - (dh - 18) / 2);
     if (mirror) { g.save(); g.translate(ox + dw, oy); g.scale(-1, 1); g.drawImage(img, 0, 0, dw, dh); g.restore(); }
     else g.drawImage(img, ox, oy, dw, dh);
-    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, ox, oy, !!faded, sprSet(si, stage, faded).n);
+    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, ox, oy, !!faded, (fset || sprSet(si, stage, faded)).n);
     if (B.calm && B.calm.who === who) {
       const age = t - B.calm.t0;
       if (age >= 0 && age < B.calm.ms) {
@@ -16733,7 +17789,7 @@ function drawBattle(t, dt){
   g.restore();
   B.view = { t: t, shakeX: shx, shakeY: shy, white: !!(B.white && t >= B.white.t0 && t < B.white.until), tint: tintA,
     meX: mx0 + meDx, foeX: fx0 + foeDx, meRest: mx0, foeRest: fx0, pool: typeof mvPoolCount === 'function' ? mvPoolCount() : 0,
-    sc: Sc, tc: Tc };   // MOVE_FX_2 tests: the user and target centres this frame
+    sc: Sc, tc: Tc, frames: saSeen };   // MOVE_FX_2 tests: the user and target centres this frame; SPRITE_ANIM: each battler's frame
 }
 
 /* ---------- evolution ---------- */
@@ -18152,6 +19208,66 @@ const DEBUG_EXTRAS = {
   hc_hall: { place: 'Event Hall', text: 'The five High Charity games.', map: 'hc_hall_in', x: 5, y: 9, facing: 'up',
     flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'] },
 };
+// ACT1_KEEPER_JOIN D1560: one debug place per beat. The chain checkpoints cover the trunk, the shifts, the report, the lean,
+// the Lodge and Juniper's step; these add the hut, both shifts' spots, the recall and the two old-save kinds (`move`: the
+// load-time move runs on the place's flags, as it would at load).
+{
+  const J0 = ['story.intro_seen', 'story.starter_received', 'story.reached_fernbrook', 'story.met_fen', 'story.lizzy_class', 'story.seal1', 'story.crates_seen',
+    'story.crackdown', 'story.hall1_shut', 'story.post_trial_done', 'story.warden_called', 'story.warden_met', 'story.phone_got'];
+  const J1 = J0.concat(['story.chi_met', 'story.chi_jars=1']);
+  const DONE = J1.concat(['story.shift_g', 'story.shift_k', 'story.met_lead', 'story.chi_done', 'story.chi_jars=6']);
+  const LAN = DONE.concat(['story.orchard_lean=pack', 'story.orchard_cleared', 'story.sway_fernbrook=-2', 'story.ilse_call2', 'story.keeper_cadet', 'story.cover=glimmer', 'story.side=glimmer', 'story.side_pick_done']);
+  Object.assign(DEBUG_EXTRAS, {
+    kj_hut: { place: 'Weir Hut (Act 1)', text: 'Jacob Chi, the first step in.', map: 'hw_weir_hut_in', x: 4, y: 10, facing: 'up', flags: J0 },
+    kj_day: { place: 'Wickerglen day shift', text: "Imogen's lamp crew.", map: 'route2_glen', x: 12, y: 6, facing: 'up', flags: J1 },
+    kj_night: { place: 'Wickerglen dusk watch', text: 'The Keeper Scout.', map: 'route2_glen', x: 12, y: 15, facing: 'right', flags: J1 },
+    kj_lean: { place: 'Orchard gate (the lean)', text: 'Open the crates, or pack them.', map: 'fernbrook', x: 9, y: 9, facing: 'down', flags: DONE },
+    kj_lodge: { place: 'The Lodge (the enrolment)', text: 'Ilse makes you a Cadet.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up', flags: DONE.concat(['story.orchard_lean=open', 'story.orchard_cleared', 'story.sway_fernbrook=2', 'story.ilse_call2']) },
+    kj_recall: { place: 'After Brinewick (recall)', text: 'Ilse calls the Cadet home.', map: 'brinewick', x: 6, y: 13, facing: 'down', flags: LAN.concat(['story.seal2', 'story.gb_done', 'story.route3_open', 'story.reached_brinewick', 'story.seal3', 'story.ep1_end']) },
+    kj_old_glimmer: { place: 'Old Glimmer save (moved)', text: 'A save that picked Glimmerwell.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side=glimmer', 'story.side_pick_done']) },
+    kj_old_keepers: { place: 'Old Keepers save (moved)', text: 'A save that picked the Keepers.', map: 'fernbrook', x: 12, y: 8, facing: 'down', move: true, flags: J0.concat(['story.side_pick_done', 'story.orchard_cleared']) },
+  });
+  // GOVERNOR_MEETING §6.5 (D1475): three Act 2 places. A new save is a cover holder (D1562), recalled after Brinewick and past
+  // the Lantern Council, so the recall call stands in for Ilse's Act 2 call. The House is in the city preview (?hccity=2) only.
+  const A2 = LAN.concat(['story.seal2', 'story.gb_done', 'story.route3_open', 'story.reached_brinewick', 'story.seal3', 'story.ep1_end',
+    'story.ilse_call3', 'story.a2_called', 'story.side=keepers', 'story.cover_done', 'story.rpt_3=told', 'story.hc_council_done']);
+  const door = HC_V2_ON ? { map: 'hc_civic', x: 32, y: 16, facing: 'up' } : { map: 'hearthmoor', x: 11, y: 7, facing: 'down' };
+  Object.assign(DEBUG_EXTRAS, {
+    a2_start: { place: 'Act 2 start (Cadet, after the card)', text: 'Ilse gives the posting.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up', flags: A2 },
+    a2_posted: Object.assign({ place: 'Act 2 posted', text: "The Governor's House opens.", flags: A2.concat(['story.gov_posted']) }, door),
+    a2_met: { place: 'Act 2 met, ledger told', text: 'Ilse hears how it went.', map: 'hm_lodge_in', x: 5, y: 5, facing: 'up',
+      flags: A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.gov_told=told', 'story.shift_g']) },
+  });
+  // BRIGHTGATE_LAYOUT §9 (D1481, D2008): three ?debug=1 places on Gate Plaza's arrival, the only way in until the Act 2 route or
+  // coach link exists. A Keeper guest in Act 2; an unswitched Keeper with an open offer in Act 3; a switcher (story.switched_a3).
+  const BG = A2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned']);
+  const BG_AT = { map: 'brightgate', x: 32, y: 36, facing: 'up' };   // debugStand lands one tile south: the arrival 32,37, facing north
+  Object.assign(DEBUG_EXTRAS, {
+    bg_keeper: Object.assign({ place: 'Brightgate (Act 2, Keeper)', text: 'A guest in the company town.', flags: BG.concat(['story.act=2']) }, BG_AT),
+    bg_offer: Object.assign({ place: 'Brightgate (Act 3, open offer)', text: "Rook's guest, floor 2 only.", flags: BG.concat(['story.act=3', 'story.a3_offer']) }, BG_AT),
+    bg_switched: Object.assign({ place: 'Brightgate (Act 3, switched)', text: 'Staff: the lanyard gate opens.',
+      flags: BG.concat(['story.act=3', 'story.side=glimmer', 'story.switched_a3']) }, BG_AT),
+  });
+}
+// MAHOPAC_DREAMS E4: four places for Mom's walk and the lens (Seal 4, Seal 5, the Ledger Night and the Spire are later builds,
+// so these places seed their flags). Debug only, like every place here.
+{
+  const MD_A2 = ['story.intro_seen', 'story.starter_received', 'story.reached_route1', 'story.reached_fernbrook', 'story.met_fen', 'story.mom_met',
+    'story.mom_chore', 'story.mom_sent', 'story.reached_mahopac', 'story.dream_started', 'story.dream_toy', 'story.dream_party', 'story.dream_dad',
+    'story.dream_woke', 'story.dream_study', 'story.seal1', 'story.crackdown', 'story.post_trial_done', 'story.warden_called', 'story.warden_met',
+    'story.phone_got', 'story.chi_done', 'story.orchard_cleared', 'story.ilse_call2', 'story.keeper_cadet', 'story.cover=glimmer', 'story.side=keepers',
+    'story.side_pick_done', 'story.seal2', 'story.seal3', 'story.route3_open', 'story.ep1_end', 'story.ilse_call3', 'story.a2_called',
+    'story.cover_done', 'story.rpt_1=told', 'story.rpt_2=told', 'story.rpt_3=told', 'story.hc_council_done', 'story.gov_posted',
+    'story.cv_mom_walk', 'story.cv_mom=told', 'story.seal4'];
+  const MD_A5 = MD_A2.concat(['story.seal5', 'story.ilse_ledger', 'story.solvane_met', 'story.lens_note']);
+  const obs = { map: 'mahopac_obs', x: 4, y: 5, facing: 'up' };
+  Object.assign(DEBUG_EXTRAS, {
+    md_mom_offer: { place: "Mahopac: Mom's offer (after Seal 4)", text: 'Tap Mom at home: walk north.', map: 'hm_home_in', x: 5, y: 6, facing: 'up', flags: MD_A2 },
+    md_lens_kept: Object.assign({ place: 'Mahopac: lens, W kept', text: 'Ilse at the lens; a kept report.', flags: MD_A5.concat(['story.rpt_4=kept']) }, obs),
+    md_lens_switch: Object.assign({ place: 'Mahopac: lens, switcher', text: "Ilse at the lens; Juniper's clip.", flags: MD_A5.concat(['story.switched_a3', 'story.ilse_p0']) }, obs),
+    md_lens_cut: Object.assign({ place: 'Mahopac: lens, loyalist', text: 'Ilse at the lens; the Cabinet Room door.', flags: MD_A5.concat(['story.warden_cut']) }, obs),
+  });
+}
 // HIGH_CHARITY_LAYOUT phase 1: one place per chunk arrival and per new room, only while the city preview is on.
 if (HC_V2_ON) {
   const HC_F = ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'];
@@ -18166,6 +19282,23 @@ if (HC_V2_ON) {
     hc2_news: { place: 'HC Block News House', text: 'Front hall and wire room.', map: 'hc_news_1', x: 7, y: 14, facing: 'up', flags: HC_F },
     hc2_gov: { place: "HC Governor's House (Act 2)", text: 'Keepers path, Act 2, the Governor.', map: 'hc_gov_1', x: 7, y: 14, facing: 'up', flags: ACT2 },
     hc2_pres: { place: "HC President's rooms (Act 5)", text: 'Keepers path, Act 5.', map: 'hc_gov_3', x: 2, y: 12, facing: 'up', flags: ACT5 },
+  });
+  // CABINET_AND_COUNCILS 1b (§6 debug places): the lead-in in the lobby, the room before the first sitting, and seated (town).
+  // Kilnmouth (1a) and K2a are not built yet, so these write the flags they would have set.
+  const KMREP = ACT2.concat(['story.gov_posted', 'story.hc_gov_met', 'story.km_assigned', 'story.hc_parade_seen', 'story.km_reported']);
+  Object.assign(DEBUG_EXTRAS, {
+    hc2_cab_lead: { place: 'HC Kilnmouth reported', text: 'Act 2: Captain Lumen in the lobby (the lead-in).', map: 'hc_gov_1', x: 7, y: 14, facing: 'up', flags: KMREP },
+    hc2_cab_room: { place: 'HC Cabinet Room (S1 waits)', text: 'Act 2: the seat, K2a played, S1 at the twelfth chair.', map: 'hc_gov_2', x: 1, y: 3, facing: 'down',
+                    flags: KMREP.concat(['story.thr_chip_rumour', 'story.pres_cabinet_first', 'story.km_names=3']) },
+    hc2_cab_town: { place: 'HC Cabinet seated, town', text: 'Act 2: after S1, the Bathkeeper named.', map: 'hc_gov_2', x: 1, y: 3, facing: 'down',
+                    flags: KMREP.concat(['story.thr_chip_rumour', 'story.pres_cabinet_first', 'story.cab_seat', 'story.km_seat_pick=town', 'story.km_seat_filled']) },
+  });
+  // WAR_MUSEUM v0.1.1 (D2305): the Muster Road Museum opens from story.hc_arrived, so HC_F reaches it; Act 4 shows the D2318 card.
+  Object.assign(DEBUG_EXTRAS, {
+    hc2_museum_door: { place: 'HC Muster Road Museum door', text: 'Charter Hill, the old corner (D2300).', map: 'hc_civic', x: 8, y: 45, facing: 'up', flags: HC_F },
+    hc2_museum: { place: 'HC Muster Road Museum', text: 'The arrival; the curator is two steps east.', map: 'hc_museum_in', x: 7, y: 14, facing: 'up', flags: HC_F },
+    hc2_museum_a4: { place: 'HC Museum, Act 4', text: 'After the call: the empty case reads the Muster Hall.', map: 'hc_museum_in', x: 7, y: 14, facing: 'up',
+                     flags: HC_F.concat(['story.act=4', 'story.hc_parade_seen', 'story.wb_cut', 'story.hc_trial_called']) },
   });
 }
 // A checkpoint past a Hall means the match route: the Seal, plus the tag on the Glimmer path (SEALS_BOTH_PATHS §4.7).
@@ -18182,6 +19315,7 @@ const DEBUG_TRAINER_GATES = [
   ['story.seal2', 'hall2_hale'],
   ['story.brine_dorian', 'bw_dorian'],
   ['story.seal3', 'hall3_marisol'],
+  ['story.seal4', 'hall4_master'],   // BRIGHTGATE_LAYOUT: Hall 4
 ];
 function debugWhy(reason){
   return {
@@ -18352,9 +19486,16 @@ function applyCheckpoint(id){
     reconcileChain(PPQuests.CHAIN, mainI);
     // DAY1_TRIAL1_FLOW §11: the pick now comes after Hall 1 and the post-Trial slot. A checkpoint at or before the `pick`
     // row builds a new-flow save (no pick, orchard not cleared, no Heights); after it, the pick and the orchard come together.
-    const pickAt = PPQuests.CHAIN.findIndex(e => e.id === 'pick');
-    if (pickAt >= 0 && mainI > pickAt) { S.flags['story.side_pick_done'] = true; S.flags['story.orchard_cleared'] = true; }
-    else if (pickAt >= 0) { delete S.flags['story.side_pick_done']; delete S.flags['story.orchard_cleared']; delete S.flags['story.heights_done']; }
+    // ACT1_KEEPER_JOIN: `pick` is the orchard lean; tobin_crates, enrol and enrol_lanyard sit between the lean and the face.
+    // From Rook's teaser on, a checkpoint builds a save that picked before the join (and is marked past the old-save move).
+    const pickAt = PPQuests.CHAIN.findIndex(e => e.id === 'pick'), joinAt = PPQuests.CHAIN.findIndex(e => e.id === 'teaser');
+    const unjoin = () => { for (const k of ['story.keeper_cadet', 'story.cover', 'story.orchard_lean', 'story.side_pick_done']) delete S.flags[k]; };
+    if (pickAt >= 0 && mainI > pickAt && joinAt >= 0 && mainI < joinAt) {
+      unjoin(); S.flags['story.orchard_lean'] = 'open'; S.flags['story.orchard_cleared'] = true;
+      if (id === 'tobin_crates') delete S.flags['story.orchard_cleared'];
+      if (id === 'enrol_lanyard') { S.flags['story.keeper_cadet'] = true; S.flags['story.cover'] = 'glimmer'; }
+    } else if (pickAt >= 0 && mainI > pickAt) { unjoin(); S.flags['story.side_pick_done'] = true; S.flags['story.orchard_cleared'] = true; S.flags['story.ilse_call_old'] = true; }
+    else if (pickAt >= 0) { unjoin(); delete S.flags['story.orchard_cleared']; delete S.flags['story.heights_done']; }
     if (!S.flags['story.seal1']) { delete S.flags['story.tour1_s1']; delete S.flags['story.tour1_s2']; delete S.flags['story.tour1_s3']; }
     if (S.flags['story.rival1_done']) S.flags['story.early_done'] = true;
     syncDebugSeals();
@@ -18365,10 +19506,15 @@ function applyCheckpoint(id){
     reconcileChain(PPQuests.SIDE, sideI);
     S.flags['story.intro_seen'] = true;
     S.flags['story.starter_received'] = true;
-  } else for (const f of extra.flags) {   // "key=value" sets a value (story.act=5 for the HIGH_CHARITY_LAYOUT Act 5 places)
-    const kv = /^([^=]+)=(.+)$/.exec(f);
-    if (kv) S.flags[kv[1]] = isNaN(+kv[2]) ? kv[2] : +kv[2]; else S.flags[f] = true;
+  } else {
+    // ACT1_KEEPER_JOIN §9 debug places start from an unmoved save, then the move runs on their flags as it would at load.
+    if (extra.move) for (const k of ['story.keeper_cadet', 'story.ilse_call_old', 'story.cover', 'story.cover_done', 'story.orchard_lean', 'story.sway_fernbrook', 'story.fen_lean']) delete S.flags[k];
+    for (const f of extra.flags) {   // "key=value" sets a value (story.act=5 for the HIGH_CHARITY_LAYOUT Act 5 places)
+      const kv = /^([^=]+)=(.+)$/.exec(f);
+      if (kv) S.flags[kv[1]] = isNaN(+kv[2]) ? kv[2] : +kv[2]; else S.flags[f] = true;
+    }
   }
+  if (extra && extra.move && oldSaveMoveWanted(S.flags)) applyOldSaveMove(S.flags);   // ACT1_KEEPER_JOIN §9 debug places
   if (S.flags['story.starter_received'] || allPets().length) readyParty();
   else setRestDue(false);
   syncSide();
@@ -18441,6 +19587,7 @@ function setFaction(sd, opts){
   const wasPick = !!S.flags['story.side_pick_done'];
   if (sd === 'keepers') delete S.flags['story.side']; else S.flags['story.side'] = 'glimmer';
   if (!opts || opts.picked !== false) S.flags['story.side_pick_done'] = true;
+  if (S.flags['story.side_pick_done'] && !S.flags['story.keeper_cadet']) S.flags['story.ilse_call_old'] = true;   // a debug pick is past the old-save move
   if (!wasPick && S.flags['story.side_pick_done']) noteRepJoin();   // D178
   syncSide(); save();
   return { ok: true, side: side(), picked: !!S.flags['story.side_pick_done'] };
@@ -18487,7 +19634,7 @@ function fillKit(){
   debugHeal();
   for (const q of allPets()) { q.hunger = 100; q.happy = 100; q.energy = 100; }
   for (const id of ITEM_ORDER) S.bag[id] = ITEMS[id].cap;
-  S.money = Math.max(S.money | 0, 999);
+  moneyDelta('debug', Math.max(0, 999 - (S.money | 0)));
   updateHUD(); save();
   return { money: S.money | 0, bag: Object.assign({}, S.bag) };
 }
@@ -18742,7 +19889,7 @@ function bindDebugPanel(){
     debugOut((ITEMS[id] ? ITEMS[id].name : id) + ' ×' + c + '.');
   });
   $('#dbgSetAcorns').addEventListener('click', () => {
-    S.money = Math.max(0, $('#dbgAcorns').value | 0); save(); debugOut(acorns(S.money) + '.');
+    moneyDelta('debug', Math.max(0, $('#dbgAcorns').value | 0) - (S.money | 0)); save(); debugOut(acorns(S.money) + '.');
   });
   for (const id of ['dbgSpecies', 'dbgStage', 'dbgLevel', 'dbgHp']) {
     const el = $('#' + id); if (!el) continue;
@@ -19105,6 +20252,9 @@ function bindInput(){
   if (roomLv) roomLv.addEventListener('click', () => chooseMapLevel('room'));
   if (townLv) townLv.addEventListener('click', () => chooseMapLevel('town'));
   if (regLv) regLv.addEventListener('click', () => chooseMapLevel('region'));
+  const shS = $('#mapSheetSouth'), shN = $('#mapSheetNorth');   // ROUTE_TO_GOVERNOR §4: the two sheet buttons
+  if (shS) shS.addEventListener('click', () => setMapSheet('south'));
+  if (shN) shN.addEventListener('click', () => setMapSheet('north'));
   const mapSeeBtn = $('#mapSee'), mapBackBtn = $('#mapBack');
   if (mapSeeBtn) mapSeeBtn.addEventListener('click', mapSee);
   if (mapBackBtn) mapBackBtn.addEventListener('click', mapBack);
@@ -19115,6 +20265,7 @@ function bindInput(){
     closeShop();
   });
   $('#ovShop').addEventListener('click', e => { if (e.target === e.currentTarget && !shopMeal) closeShop(); });
+  wireBank();   // BANK_AND_HOMES D2220, D2221: the Acorns chip and the account sheet
   $('#lookShuffle').addEventListener('click', shuffleLook);
   $('#lookDone').addEventListener('click', lookDone);
   $$('#ovWardrobe .ward-tabs button').forEach(b => b.addEventListener('click', () => {
@@ -19256,6 +20407,7 @@ function bindInput(){
       const o = objAt(tx, ty, tappable) || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
       if (scene || fade.busy) { /* nothing */ }
       else if (window.PPNet && PPNet.tapTile(tx, ty)) { closePartnerTray(); wild.chase = null; }
+      else if (w && pet() && w.beside) { closePartnerTray(); wbScoot(w); }   // WALK_BESIDE R8 (a): a tap scoots it, no battle
       else if (w && pet()) { closePartnerTray(); if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
       else if (standingStill() && followerAt(tx, ty)) { clearMoves(); if (trayOpen()) closePartnerTray(); else openPartnerTray(); }   // standing still: the care tray toggles (D542, D578)
       else if (o) { closePartnerTray(); wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
@@ -19303,6 +20455,7 @@ function bindInput(){
       const ae = document.activeElement;
       if (ae && ae.tagName === 'BUTTON') { e.preventDefault(); return; }
     }
+    if (e.key === 'Escape' && !$('#ovBank').hidden) { e.preventDefault(); closeBank(); return; }   // D2220: Back closes the book
     if (e.key === 'Escape' && $('#ovStats') && !$('#ovStats').hidden) { if ($('#scNick') && !$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
     if (e.key === 'Escape' && $('#ovKit') && !$('#ovKit').hidden) { closeKit(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
@@ -19641,7 +20794,7 @@ function hcCityCheck(){
   return bad;
 }
 PPMinigames.bind({
-  careDay, grantItem, addBond, save, pet, sfx, toast, updateHUD, playerName, acorns, itemLabel,
+  careDay, grantItem, addBond, save, pet, sfx, toast, updateHUD, playerName, acorns, itemLabel, moneyDelta,
   BAG_FULL_MSG, fitCanvas, state: () => S,
   party: () => (S && S.party) ? S.party.slice() : [],
   spd: p => { if (!p) return 48; const lv = p.guest ? (p.level || 5) : levelOf(p); const s = statsAt((p.species || 'tide') + '/' + (p.stage || 0), lv); return s ? s.spd : 48; },
@@ -19686,11 +20839,13 @@ function boot(){
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
+  const movedOnLoad = oldSaveMoveAtLoad();             // ACT1_KEEPER_JOIN §9.1 (D1546 B), before the first map spawns
   const paidOnLoad = payHeldBx();                    // silent: a Seal already on the save pays held battle XP, no toast
   if (window.PPRep) PPRep.bind({ state: () => S, side: () => side() });   // LR5: rep.js reads S and the pledge, and does not own them
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
   if (paidOnLoad.moved) save();                      // after away-time is read, so the payout stays on disk
+  if (movedOnLoad) save();                           // the old-save move is written once (§9.1)
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen(); noteBoardTown();
   // D224: the room a save wakes in counts as seen. Same floorSeen object, no new key.
   if (CUR && CUR.kind === 'interior') {
@@ -19711,9 +20866,11 @@ function boot(){
     else if (!S.player.name && S.world.map === 'hearthmoor') setTimeout(() => toast('Warden Ilse would like a word at the Lodge.'), late);
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
+  if (movedOnLoad) setTimeout(oldSaveMoveDue, 3200);   // or on the first step, whichever is first and free
   applyControls();
   if (S && S.flags['story.tut_care'] === 'armed') careDoorLand();
   scheduleTutorial(false);
+  if (CUR && CUR.objs.some(o => o.load)) setTimeout(() => checkLoadTriggers(), late);   // HC_PARADE E10: resume on map load
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   PPSound.setMusic(S.settings.music !== false);
@@ -19732,7 +20889,9 @@ function boot(){
     get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get finds(){ return { at: FINDS.at.slice(), today: S && S.care ? { ...S.care } : null }; }, get wildAcorns(){ const c = S && S.care, day = dayKey(Date.now()); return { ...WILD_ACORNS, day, today: c && c.d === day ? (c.wildAcorns | 0) : 0 }; }, setFindRng: f => { if (DEBUG) findRng = typeof f === 'function' ? f : Math.random; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, get refreshEnv(){ return DEBUG && debugQueryOn() ? () => PPEnv.refresh('refresh') : undefined; },   // ?debug=1 only; the REFRESH path (geoPref 'allow' + permState 'granted'), never prompts
-    get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, guide: !!w.guide, name: nameOf(w.sp, w.stage) })); },
+    get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, guide: !!w.guide, name: nameOf(w.sp, w.stage),
+      beside: DEBUG && w.beside ? { left: w.beside.left, phase: w.beside.phase, face: w.beside.face, to: w.beside.to, still: Math.round(w.beside.still), glyphs: w.beside.glyphs } : null })); },   // WALK_BESIDE E12: `beside` only under ?debug=1, read-only
+    get wbWait(){ return DEBUG ? { still: wb.still, cand: wb.cand, spent: wbSpent(), can: !!S && wbCanWait() } : undefined; },   // WALK_BESIDE E12, debug read
     get poofs(){ return wild.poofs.length; },
     spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
@@ -19806,7 +20965,8 @@ function boot(){
     grantItem: (id, n) => { const r = grantItem(id, n); save(); return r; },
     buyItem: id => buyItem(id),
     openShop: () => openShop(),
-    setMoney: n => { S.money = Math.max(0, n | 0); save(); return S.money; },
+    openBank: tab => openBank(tab),   // BANK_AND_HOMES: the account sheet (?debug=1 only, like every hook here)
+    setMoney: n => { moneyDelta('debug', Math.max(0, n | 0) - (S.money | 0)); save(); return S.money; },
     // ?debug=1: switch arcade/modern and the joystick without the Settings rows (those ids hide the functions).
     applyCtl: (mode, joy) => {
       const m = mode === 'arcade' ? 'arcade' : 'modern';
@@ -19821,7 +20981,19 @@ function boot(){
     clearEvoMoves: () => { const p = pet(); if (!p) return; p.evoMoves = []; save(); },
     setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; },
     spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
-    clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
+    clearWild: () => { wbAbort(); wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
+    // WALK_BESIDE E12 (D1979), inert without ?debug=1: end the current wait (it starts) or look (it completes) at once; the wait
+    // still needs its R1/R2 conditions and a wild in range. Returns what happened. wbTurnOf is the pure §6.3 table.
+    wbSkip: () => {
+      const w = wild.list.find(o => o.beside);
+      if (w && w.beside.phase === 'look') { wbComplete(w); return 'look'; }
+      if (w) return null;
+      const c = wild.clock, cand = wbCanWait() && wild.list.filter(o => !o.guide && !o.to && (o.shyUntil || 0) <= c && wild.chase !== o.id && wbDist(o, S.world) <= WB.near)
+        .sort((a, b) => wbDist(a, S.world) - wbDist(b, S.world) || a.id - b.id)[0];
+      if (!cand) return null;
+      wbStart(cand); return 'wait';
+    },
+    wbTurnOf: (flags, near) => wbTurnOf(flags, near),
     exitIntent: (x, y) => {   // MAP_EDGE_TAPS P1 debug read. Inert without ?debug=1. Does not move the holder.
       if (!DEBUG || !S || !Number.isFinite(+x) || !Number.isFinite(+y)) return undefined;
       const hit = exitIntent(+x, +y);
@@ -19860,6 +21032,9 @@ function boot(){
       const c = document.createElement('canvas'); c.width = W; c.height = H;
       c.wet = BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode || 'day', wf ? 1 : 0), layer); return c; },
     battleSceneIds: () => DEBUG && window.BattleBG ? Object.keys(BattleBG.scenes) : null,
+    // SPRITE_ANIM (D2070-D2089): debug only. Draw the open battle once at time t (returns battle.view.frames); the Effects mode.
+    drawBattleAt: t => { if (!DEBUG || !battle.on) return null; drawBattle(t, 0); return battle.view ? battle.view.frames : null; },
+    auraMode: () => DEBUG ? auraMode() : null,
     debugToast: msg => { if (!DEBUG) return null; toast(msg); const t = $('#toast'); return t ? t.textContent : ''; },
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
@@ -19951,6 +21126,7 @@ function boot(){
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk, auditTaps: () => auditTapReport(),
     care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
+    viewTiles: () => { const c = $('#mapCanvas'); return c ? { x: walk.cam.x / TS, y: walk.cam.y / TS, w: c.width / TS, h: c.height / TS } : null; },   // BRIGHTGATE_LAYOUT §3.5: the arrival frame, read-only
     tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab floor keeps its old tile name.
       const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
       const sk = CUR.skin && SKINS[CUR.skin];
@@ -19973,7 +21149,7 @@ function boot(){
     band: (() => { const c = $('#mapCanvas'), b = c && c.height ? outdoorViewBand(c.height) : null; return b && { topPad: b.topPad, hudPad: b.hudPad, VHe: b.VHe, mid: b.mid, head: b.head, padL: b.padL, padR: b.padR }; })(),
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
-    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });
+    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom', music: scene.musicCue || null }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows
@@ -20019,6 +21195,8 @@ function boot(){
   api.standingStill = () => DEBUG ? standingStill() : undefined;
   api.lanternRestFlag = () => DEBUG && scene && scene.view ? (scene.view.flags['lantern.rest'] || null) : undefined;
   api.holderDrawn = () => DEBUG ? (((shownLook() || {}).accessory) || 'none') : undefined;
+  Object.defineProperty(api, 'enrolChoice', { enumerable: true, get(){ return DEBUG ? ENROL_CHOICE : null; } });   // D1562
+  Object.defineProperty(api, 'toasts', { enumerable: true, get(){ return DEBUG ? toastLog.slice() : null; } });
   api.talkTo = id => { if (!DEBUG) return undefined; const o = objById(id); if (!o || scene) return false; interact(o); return true; };
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
@@ -20032,6 +21210,7 @@ function boot(){
   api.fleetState = () => DEBUG && window.PPFleet ? PPFleet.state() : null;
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.holdLine = (id, flags) => holdLine(id, flags);   // ACT1_KEEPER_JOIN §7: the hold line the chip and map show (read only)
+  api.feedHolds = () => DEBUG ? feedHolds() : undefined;   // PHONE_FEED (D2172): the holds the NEWS and RIBBIT gates read (read only)
   api.sway = node => S ? swayOf(node) : null;           // ACT1_KEEPER_JOIN §5: a contested town's sway, -3..3 (read only)
   api.hall2 = () => HALL2_ON;   // TRIAL_HALL_FERNBROOK_MAP: is the flagged contested Hall laid over fb_hall_in this load? (read only)
   api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
@@ -20148,6 +21327,7 @@ function boot(){
   };
   api.musicIds = () => PPSound.musicIds();
   api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
+  api.trainerFaction = id => trainerFaction(id);   // debug/tests: the battle faction table's side for a holder (D1437: Hall Masters are 'none')
   api.wildTracks = () => WILD_TRACKS.slice();
   api.npcLine = id => id === 'amos' ? lanternGreet('Keeper Amos') : (objById(id) ? linesFor(objById(id)) : null);
   api.loyaltyLine = id => loyaltyBagLine(id);
@@ -20181,6 +21361,19 @@ function boot(){
   api.weekKey = ms => weekKey(ms);
   api.charityCheck = () => highCharityDevCheck();
   // HIGH_CHARITY_LAYOUT phase 1 (debug only): is the city on, its chunks and counts, its check, and the PLACEHOLDER art list.
+  // HC_PARADE probe (debug only): who is on the map right now, tanks in view, hidden bodies, the last street-battle pick.
+  // hcParadeRng(seq) replaces the pick's Math.random with a fixed list (tests); hcParadeRng() restores it.
+  api.hcParade = () => {
+    if (!DEBUG || !CUR) return null;
+    const c = $('#mapCanvas'), vx0 = walk.cam.x / TS, vy0 = walk.cam.y / TS, vx1 = vx0 + c.width / TS, vy1 = vy0 + c.height / TS;
+    const live = CUR.objs.filter(o => present(o));
+    const inView = o => { const q = objPos(o), x = q.fx != null ? q.fx : q.x, y = q.fy != null ? q.fy : q.y; return x + 2 >= vx0 && x - 2 <= vx1 && y + 1 >= vy0 && y <= vy1 + 1; };
+    return { map: CUR.id, scene: scene ? scene.id : null, battle: !!battle.on, battleId: battle.id, cam: cutRT.cam, camLog: scene && scene.camLog ? scene.camLog.slice() : [], people: live.filter(o => o.kind === 'npc' || o.kind === 'trainer').length,
+      tanksInView: live.filter(o => o.kind === 'prop' && /tank_(cmd_)?[rl]$|^hc_tank/.test(o.sprite || '') && inView(o)).length,
+      hidden: CUR.objs.filter(o => o._cutHide).length, cast: live.filter(o => o.cast).map(o => { const q = objPos(o); return { id: o.id, x: q.fx != null ? q.fx : q.x, y: q.fy != null ? q.fy : q.y, sprite: o.sprite || null, fly: !!o.fly }; }),
+      last: scene && scene.hcLast ? JSON.parse(JSON.stringify(scene.hcLast)) : null, used: scene && scene.hcUsed ? [...scene.hcUsed] : [] };
+  };
+  api.hcParadeRng = seq => { if (!DEBUG) return; if (!Array.isArray(seq)) { hcRng = Math.random; return; } let i = 0; hcRng = () => seq[i++ % seq.length]; };
   api.hcCity = () => DEBUG ? { on: HC_V2_ON, preview: HC_PREVIEW, ship: HC_CITY_V2, chunks: HC_V2_ON ? HC_CHUNKS.map(id => ({ id, w: WORLD[id].w, h: WORLD[id].h,
     objs: WORLD[id].objs.length, people: WORLD[id].objs.filter(o => o.kind === 'npc').length,
     tanks: WORLD[id].objs.filter(o => /^hc_tank/.test(o.sprite || '')).length, cars: WORLD[id].objs.filter(o => /^hc_car/.test(o.sprite || '')).length })) : [],
@@ -20317,7 +21510,7 @@ function boot(){
   window.setAura = setAura;
   window.ownsLook = ownsLook;
   window.lookChoices = lookChoices;
-  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; window.WORLD = WORLD; }
+  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; window.WORLD = WORLD; window.WART = WART; }   // WART: BRIGHTGATE_LAYOUT's no-mint sprite test (debug only)
   window.fillWalklingExtras = fillWalklingExtras;
 }
 // P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()

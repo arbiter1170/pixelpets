@@ -8,11 +8,14 @@ trackErrors(test, expect);
 // Every map where a battle can start in normal play: wild spawns, holders, story and boss encounters, group battles.
 const BATTLE_MAPS = ['route1', 'hearthmoor', 'fernbrook', 'proto', 'route2', 'route2_glen', 'cobble_quarry', 'hw_rim', 'hw_cut',
   'hw_falls', 'route3', 'brinewick', 'cc_hall_in', 'fb_hall_in', 'bw_hall_in', 'hc_arena_in', 'rx_f1', 'rx_f2', 'rx_f3', 'rx_f4',
-  'sm_yard', 'sm_hold', 'sm_den', 'r3_sanctuary', 'r3_ledger', 'r3_relay', 'bw_depot_in'];
+  'sm_yard', 'sm_hold', 'sm_den', 'r3_sanctuary', 'r3_ledger', 'r3_relay', 'bw_depot_in',
+  'route4', 'route4_reeds', 'route4_withy',   // ROUTE_TO_GOVERNOR §9.1 (D1875)
+  'km_road', 'kilnmouth', 'km_hall_in'];   // KILNMOUTH §11.1: the road, the yard holder and the B4 crew, Hall 5
 
 async function boot(page, search = '?debug=1') {
   const s = starterSave();
   s.settings.tips = false;
+  s.settings.controls = 'modern';   // Vincent (Nov 4): QA plays in Modern controls; helpers.js still seeds arcade
   s.flags['story.tutorial_done'] = true;
   s.flags['story.phone_got'] = true;
   await installSave(page.context(), s, { quietDay: true });
@@ -106,8 +109,9 @@ test('every map has a scene: PAL only, each one different, landmarks clear of th
     const pal = new Set(Object.values(PAL).map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',')));
     const out = { missing: world.filter((id) => !ids.includes(id)), missingBattle: battleMaps.filter((id) => !ids.includes(id)),
       offPal: [], clear: [], dupes: [], count: ids.length };
-    // the real canvas sizes (fitBattle) at 320 / 375 / 390, plus a short and a tall extreme
-    for (const [W, H] of [[61, 100], [60, 83], [63, 83], [56, 70], [70, 110]]) for (const mode of ['day', 'night', 'day-dull']) {
+    // canvas sizes (fitBattle) at 320 / 375 / 390 on tall phones, the live sizes at the test viewports (61x45 at 320x568, 60x54
+    // at 375x667; Nov 4: four scenes drew deco into the partner's box there), plus a short and a tall extreme
+    for (const [W, H] of [[61, 100], [60, 83], [63, 83], [61, 45], [60, 54], [56, 70], [70, 110]]) for (const mode of ['day', 'night', 'day-dull']) {
       const seen = new Map();
       for (const id of ids) {
         const c = PixelPets.battleSceneArt(id, W, H, mode), d = c.getContext('2d').getImageData(0, 0, W, H).data;
@@ -138,6 +142,9 @@ test('every map has a scene: PAL only, each one different, landmarks clear of th
 });
 
 test('water moves in FULL motion and holds still with reduced motion', async ({ page }) => {
+  // Midday, fixed: the dawn and dusk washes (drawWeather) step with the wall-clock minute, so near 5-7 am or 6-8 pm a
+  // minute ticking between two samples shifted every pixel by 1 (seen Nov 4, 2026). Timers and frames still run.
+  await page.clock.setFixedTime(new Date('2026-11-04T12:00:00'));
   await boot(page);
   await page.evaluate(() => PixelPets.setBattleBg(true));
   const size = async () => page.evaluate(() => { const c = document.getElementById('battleCanvas'); return { W: c.width, H: c.height }; });
@@ -171,4 +178,57 @@ test('the save is unchanged: no new fields, v stays 2', async ({ page }) => {
   expect(after.keys).toEqual(before.keys);
   expect(after.save).toEqual(before.save);
   expect(after.v).toBe(2);
+});
+
+// Nov 4: scenes for the maps built Nov 3. Hushwater Cut shows the Weir Hut (WEIR_HUT, #301) from the map's own roofs entry;
+// Fernbrook's old pond is the plaza fountain (FERNBROOK_PLAZA, #266) in the square's paving. Wickerglen's east edge (#301),
+// the plaza post, the orchard and the lamp shifts (ACT1_KEEPER_JOIN) battle on these maps and route2_glen, already covered above.
+// Each tuned scene opens in a real battle at this project's width (320, 375, 390) under reduced motion: it draws its landmark,
+// every pixel is an opaque PAL colour by day and by night, the landmarks stay out of both sprite boxes, and it holds still.
+// Each entry: what the scene must draw ('a|b': a, or its built fallback b where the bigger one has no clear spot at this size).
+const TUNED = { hw_cut: ['house:weir_hut', 'art:stone_marker', 'art:weir_net_crate'], fernbrook: ['art:lm_well|art:apple_crate', 'art:stone_urn'] };
+test('the Nov 4 scenes: the Weir Hut on the Cut and the plaza fountain in Fernbrook, at this width with reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await boot(page);
+  await page.evaluate(() => PixelPets.setBattleBg(true));
+  for (const [map, want] of Object.entries(TUNED)) {
+    await openWildOn(page, map);
+    const r = await page.evaluate((map) => {
+      const sc = PixelPets.battleScene, c = document.getElementById('battleCanvas'), W = c.width, H = c.height;
+      const pal = new Set(Object.values(PAL).map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',')));
+      const out = { id: sc.id, room: sc.room, W, H, bad: [], hit: [], drew: {} };
+      for (const mode of ['day', 'night', 'day-dull']) {
+        const d = PixelPets.battleSceneArt(map, W, H, mode).getContext('2d').getImageData(0, 0, W, H).data;
+        out.drew[mode] = BattleBG.last.drew;
+        let bad = 0;
+        for (let i = 0; i < d.length; i += 4) if (d[i + 3] !== 255 || !pal.has(d[i] + ',' + d[i + 1] + ',' + d[i + 2])) bad++;
+        if (bad) out.bad.push(mode + ': ' + bad);
+        const dd = PixelPets.battleSceneArt(map, W, H, mode, 'deco').getContext('2d').getImageData(0, 0, W, H).data;
+        for (const [bx, by, bw, bh] of BattleBG.boxes(W, H, false)) {
+          let hit = 0;
+          for (let y = Math.max(0, by); y < Math.min(H, by + bh); y++) for (let x = Math.max(0, bx); x < Math.min(W, bx + bw); x++) if (dd[(y * W + x) * 4 + 3]) hit++;
+          if (hit) out.hit.push(mode + ' box ' + [bx, by, bw, bh].join(',') + ': ' + hit + ' px');
+        }
+      }
+      return out;
+    }, map);
+    expect(r.id, map).toBe(map);
+    expect(r.room, map + ' is outdoors').toBe(false);
+    expect(r.bad, map + ' pixels outside PAL (or not opaque) at ' + r.W + 'x' + r.H).toEqual([]);
+    expect(r.hit, map + ' landmark pixels inside a sprite box at ' + r.W + 'x' + r.H).toEqual([]);
+    for (const mode of Object.keys(r.drew)) for (const w of want) {
+      expect(w.split('|').some((x) => r.drew[mode].includes(x)), map + ' ' + mode + ' at ' + r.W + 'x' + r.H + ' draws ' + w + ' (drew ' + r.drew[mode].join(', ') + ')').toBe(true);
+    }
+    // reduced motion: the live scene holds still (the Cut's river and the fountain keep their first water frame). The patch is
+    // sprite-free: right of the partner's box and below the foe's, down to the bottom edge.
+    const [[, fy, , fh], [px, , pw]] = await page.evaluate(({ W, H }) => BattleBG.boxes(W, H, false), r);   // foe, partner
+    // The battle's time-of-day tint can drift a step between samples, so a pixel only counts as moved past 12 per channel. The first
+    // sample waits out the battle's opening (its entrance settles after CHOOSE on a slow run).
+    await page.waitForTimeout(600);
+    const x0 = px + pw, y0 = fy + fh, a = (await patch(page, x0, y0, r.W - x0, r.H - y0)).split(',').map(Number);
+    await page.waitForTimeout(700);
+    const b = (await patch(page, x0, y0, r.W - x0, r.H - y0)).split(',').map(Number);
+    expect(a.filter((v, i) => Math.abs(v - b[i]) > 12).length, map + ' holds still with reduced motion').toBe(0);
+    await closeBattle(page);
+  }
 });

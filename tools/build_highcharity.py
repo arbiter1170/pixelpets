@@ -231,7 +231,9 @@ add({'kind': 'npc', 'id': 'hc_baker', 'name': 'Baker Cole', 'look': 'cole', 'x':
      'lines': {'story.side=glimmer': 'Same buns for guests. Sit if you like.',
                'else': 'The glaze is amber, same as the wild.'},
      'chatter': {'else': 'Warm buns. Mind the glaze.'}})
-add({'kind': 'npc', 'id': 'hc_kite', 'name': 'Kit', 'look': 'kit', 'x': 38, 'y': 23, 'facing': 'left',
+# NAMES_PASS G9 (D1766; Vincent, Wed Nov 4, 2026): the kite seller is Mabry, under her own key. The id and look stay;
+# the Heights Kit (fb_heights ht_kit) keeps 'Kit'. save.js folds an old 'Kit' contact to 'Mabry' once (SPLIT_KEYS).
+add({'kind': 'npc', 'id': 'hc_kite', 'name': 'Mabry', 'look': 'kit', 'x': 38, 'y': 23, 'facing': 'left',
      'lines': {'else': "Wind's kind today. The kites behave."},
      'chatter': {'else': 'Kites for the plaza. String included.'}})
 add({'kind': 'prop', 'id': 'hc_airship', 'x': 8, 'y': 3, 'sprite': 'airship',
@@ -253,7 +255,7 @@ SIGNS = {
     'hc_marina': 'CANAL MARINA · Tie up gently. The buoys mark the deep water. Wave if you need a hand.',
     'hc_mall': 'TWO-FLOOR MALL · Coats upstairs, crumbs downstairs. Walk your Walkling between the benches.',
     'hc_apt': 'KEEPER APARTMENTS · Rooms for holders new to the city. The landlord keeps the spare keys.',
-    'hc_gym': 'DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome.',
+    'hc_gym': 'DOJO · Practice before the Hall next door. Stones, tides, and blooms are all welcome.',
     'hc_lantern': 'LANTERN HOUSE · Rest and recover. 5 Acorns, or what you have.',
     'hc_hall': 'EVENT HALL · Five booths, one evening. Play kindly. The prizes are small on purpose.',
 }
@@ -330,7 +332,7 @@ rooms['hc_airport_in'] = room('hc_airport_in', 'Airship Field', 9, 7, 'charity',
      'lines': {'else': 'The boarding board. Dusk, if the wind stays kind.'}},
 ])
 rooms['hc_command_in'] = room('hc_command_in', 'Sky-Dock Command', 9, 7, 'charity', 'hc_command', [
-    {'kind': 'npc', 'id': 'hc_lumen', 'name': 'Captain Lumen', 'look': 'petra', 'x': 2, 'y': 3, 'facing': 'down',
+    {'kind': 'npc', 'id': 'hc_lumen', 'name': 'Captain Lumen', 'look': 'captain', 'x': 2, 'y': 3, 'facing': 'down',
      'lines': {
          'story.hc_council_done': 'The coast road is lit. Ships still fly.',
          'story.cobble_end&!story.side=glimmer': '@hc_council',
@@ -372,7 +374,7 @@ rooms['hc_bank_in'] = room('hc_bank_in', 'Civic Bank', 9, 7, 'charity', 'hc_bank
 ])
 rooms['hc_gym_in'] = room('hc_gym_in', 'Dojo', 9, 7, 'charity', 'hc_gym', [
     {'kind': 'npc', 'id': 'hc_sol', 'name': 'Floor Keeper Sol', 'look': 'sol', 'x': 4, 'y': 3, 'facing': 'down',
-     'lines': line_pair('No Seal here. Hall Masters keep those.', 'No trial today. The floor is just clean.')},
+     'lines': line_pair("No Seal here. The Hall next door's been shut since the war.", 'No trial today. The floor is just clean.')},
     {'kind': 'sign', 'id': 'hc_gym_note', 'x': 2, 'y': 4, 'text': 'Practice floor. No Seals. Wipe your boots.'},
 ])
 rooms['hc_lantern_in'] = room('hc_lantern_in', 'Lantern House', 9, 7, 'charity', 'hc_lantern', [
@@ -418,7 +420,7 @@ rooms['hc_hall_in'] = room('hc_hall_in', 'Event Hall', 11, 11, 'arcade', 'hc_hal
     {'kind': 'prop', 'id': 'hc_booth_d', 'x': 8, 'y': 5, 'sprite': 'hall_booth',
      'lines': {'else': 'PLAZA DASH · Mind the puddles. The plaza is for everyone.'}},
     {'kind': 'sign', 'id': 'hc_hall_note', 'x': 2, 'y': 8,
-     'text': 'EVENT HALL · Solo booths up top. Games for two with Brin.'},
+     'text': 'EVENT HALL · Solo booths up top. Games for two with Tove.'},
 ])
 
 rooms['hc_arena_in'] = room('hc_arena_in', 'Charity Arena', 11, 9, 'charity', 'hc_arena', [
@@ -571,14 +573,15 @@ looks = {
     'nessa': {'skin': '2', 'hair': 'bun', 'hairCol': 'y', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'r'},
     'bram': {'skin': '3', 'hair': 'short', 'hairCol': 'd', 'outfit': 'coat', 'outfitCol': 'b', 'accent': 'w'},
     'sorrel': {'skin': '5', 'hair': 'short', 'hairCol': 'n', 'outfit': 'coat', 'outfitCol': 't', 'accent': 'o'},
-    'petra': {'skin': '4', 'hair': 'long', 'hairCol': 'p', 'outfit': 'coat', 'outfitCol': 'm', 'accent': 'c'},
+    'petra': {'skin': '4', 'hair': 'long', 'hairCol': 'p', 'outfit': 'coat', 'outfitCol': 'm', 'accent': 'c'},   # unworn since LOOK_LOCK F6 (Captain Lumen wears `captain`); kept, never removed
     'oren': {'skin': '4', 'hair': 'short', 'hairCol': 'o', 'outfit': 'hoodie', 'outfitCol': 'm', 'accent': 'y'},
     'willa': {'skin': '1', 'hair': 'spiky', 'hairCol': 'r', 'outfit': 'hoodie', 'outfitCol': 'p', 'accent': 'c'},
     'brin': {'skin': '2', 'hair': 'long', 'hairCol': 'n', 'outfit': 'tunic', 'outfitCol': 'b', 'accent': 'c'},
     'nim': {'skin': '1', 'hair': 'long', 'hairCol': 'y', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'o'},
     'otto': {'skin': '5', 'hair': 'short', 'hairCol': 'd', 'outfit': 'hoodie', 'outfitCol': 'b', 'accent': 'c'},
     'bramble': {'skin': '3', 'hair': 'bun', 'hairCol': 'o', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'l'},
-    'moss': {'skin': '4', 'hair': 'short', 'hairCol': 'd', 'outfit': 'coat', 'outfitCol': 'm', 'accent': 'y'},
+    'moss': {   # LOOK_LOCK F6 (WARDROBE_SHOP 4a): Keeper green top
+     'skin': '4', 'hair': 'short', 'hairCol': 'd', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y'},
     'mira': {'skin': '2', 'hair': 'long', 'hairCol': 'y', 'outfit': 'tunic', 'outfitCol': 'r', 'accent': 'y'},
     'cole': {'skin': '3', 'hair': 'bun', 'hairCol': 'r', 'outfit': 'tunic', 'outfitCol': 'o', 'accent': 'y'},
     'kit': {'skin': '5', 'hair': 'spiky', 'hairCol': 'y', 'outfit': 'hoodie', 'outfitCol': 'c', 'accent': 'w'},
@@ -586,7 +589,8 @@ looks = {
     'ness': {'skin': '2', 'hair': 'bun', 'hairCol': 'o', 'outfit': 'tunic', 'outfitCol': 'b', 'accent': 'c'},
     'teller': {'skin': '6', 'hair': 'short', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'n', 'accent': 'w'},
     'sol': {'skin': '4', 'hair': 'short', 'hairCol': 'd', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'l'},
-    'nia': {'skin': '1', 'hair': 'spiky', 'hairCol': 'o', 'outfit': 'hoodie', 'outfitCol': 'r', 'accent': 'y'},
+    'nia': {   # LOOK_LOCK D2277: red hair, so she does not read as Rook
+     'skin': '1', 'hair': 'spiky', 'hairCol': 'r', 'outfit': 'hoodie', 'outfitCol': 'r', 'accent': 'y'},
     'tess': {'skin': '1', 'hair': 'bun', 'hairCol': 'r', 'outfit': 'tunic', 'outfitCol': 'p', 'accent': 'c'},
 }
 # outfitCol 'o' is NOT in keeper.js outfitCol list. Cole uses outfitCol o. Fix to a legal colour.
@@ -601,9 +605,9 @@ speakers = {
     'Keeper Moss': 'moss',
     'Mira': 'mira',
     'Baker Cole': 'cole',
-    'Kit': 'kit',
+    'Mabry': 'kit',
     'Porter Quin': 'quin',
-    'Captain Lumen': 'petra',
+    'Captain Lumen': 'captain',   # WARDROBE_SHOP 4a Captain Lumen row (LOOK_LOCK F6): the Keeper House captain's coat; `petra` stays defined, unworn
     'Keeper Rowan': 'sorrel',
     'Dockhand Ness': 'ness',
     'Teacher Mae': 'nessa',
@@ -623,11 +627,15 @@ speakers = {
     'Porter Bram': 'bram',
 }
 
-# Hearthmoor coach: one path tile south of the east-west road, beside the Lodge.
+# Hearthmoor coach: one path tile south of the east-west road, in the grass nook above the Lantern House roof.
+# It was at column 12, but data/civic.json puts the Keeper House roof on row 9 columns 10-13, so the coach tile, Porter Bram
+# and the coach sign sat on roof tiles and the coach could not be boarded. Column 16 is open grass with the roof below it,
+# so only the road (16,8) steps onto it. hc_south still lands on the road at (12,8) (D122).
+COACH_X = 16
 ms = json.loads((root / 'data' / 'maps_slice.json').read_text())
 old = ms['maps']['hearthmoor']['grid'][9]
-assert len(old) == 24 and old[12] == 'g', old
-coach_row = old[:12] + 'p' + old[13:]
+assert len(old) == 24 and old[COACH_X - 1:COACH_X + 2] == 'ggg', old
+coach_row = old[:COACH_X] + 'p' + old[COACH_X + 1:]
 
 TOKEN = {'pet': 10, 'name': 10, 'player': 10, 'species': 9, 'type': 5, 'suggest': 9, 'rival': 9, 'rivalType': 5}
 
@@ -699,16 +707,16 @@ doc = {
             'hearthmoor': {
                 'gridRows': {'9': coach_row},
                 'addObjs': [
-                    {'kind': 'warp', 'id': 'hm_to_hc', 'x': 12, 'y': 9, 'to': 'highcharity', 'tx': 32, 'ty': 37,
+                    {'kind': 'warp', 'id': 'hm_to_hc', 'x': COACH_X, 'y': 9, 'to': 'highcharity', 'tx': 32, 'ty': 37,
                      'facing': 'up', 'when': ['story.side_pick_done'], 'need': 'story.side_pick_done',
                      'setFlag': 'story.hc_arrived'},
-                    {'kind': 'npc', 'id': 'hm_bram', 'name': 'Porter Bram', 'look': 'bram', 'x': 11, 'y': 9, 'facing': 'right',
+                    {'kind': 'npc', 'id': 'hm_bram', 'name': 'Porter Bram', 'look': 'bram', 'x': COACH_X - 1, 'y': 9, 'facing': 'right',
                      'when': ['story.side_pick_done'],
                      'lines': {
                          '!story.hc_invite': "Ilse has a letter inside. The city is open, but the hall booths are not.",
                          'else': "Step on the lantern mark. I'll have you at the south gate.",
                      }},
-                    {'kind': 'sign', 'id': 'hm_sign_coach', 'x': 13, 'y': 9, 'when': ['story.side_pick_done'],
+                    {'kind': 'sign', 'id': 'hm_sign_coach', 'x': COACH_X + 1, 'y': 9, 'when': ['story.side_pick_done'],
                      'text': 'LANTERN COACH · High Charity. Step on the mark.'},
                 ],
             },

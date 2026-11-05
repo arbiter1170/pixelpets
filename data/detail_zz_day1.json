@@ -2,7 +2,7 @@
  "spec": "DAY1_TRIAL1_FLOW v0.4 (handoff/specs/DAY1_TRIAL1_FLOW.md; Vincent, Nov 2, 2026; D1166-D1171, D1175) on FACTION_PICK_TIMING v0.2.4 Part A (design ffada0b; June's lines from story/drafts AFTER_TRIAL_PICK_ARC_SKETCH, PICK_ARC_OVERHAUL beats 0-13, AFTER_TRIAL_STORY_PASS).",
  "_about": "Ours, not a design copy. Day 1 in Fernbrook (crates, Two Lights, Fen at dusk), Fen's go-home talk, Mom's ask, Lizzy's class, the three Trial Hall holders, the contested signs. objPatch edits existing objects by id after every overlay (game.js applyObjPatch); sceneTails and lineSwaps adjust built scenes without touching the design JSON. Save stays pixelpets.save.v2: every flag is a new story.* key, read only, nothing written at load.",
  "_placeholders": {
-  "note": "PLACEHOLDER copy (Story to replace; OPEN_DECISIONS row D1186). June's approved lines are kept as written where FPT has them (crate replies, Fen with Russet, Two Lights beats 1-13, Fen at dusk, Hall door deny for !story.crates_seen).",
+  "note": "PLACEHOLDER copy (Story to replace; OPEN_DECISIONS row D1186). June's approved lines are kept as written where FPT has them (crate replies, Fen with Russet, Two Lights beats 1-13, Fen at dusk, Hall door deny for !story.crates_seen). Story's lines (STORY_LINES Nov 4, 2026): sceneTails.seal1, Fen's crackdown line, is final (D2135), and so is the orchard@glimmer packing narration in lineSwaps (D2134).",
   "paths": [
    "scenes.crates_fen[2]",
    "scenes.tl_choice[0]",
@@ -10,7 +10,6 @@
    "scenes.fen_home",
    "scenes.mom_class",
    "scenes.lizzy_class",
-   "sceneTails.seal1",
    "lineSwaps",
    "lines",
    "trainers",
@@ -36,7 +35,7 @@
   "story.fen_sent_home": "A7 (D1166): Fen's potential and go-home talk; she leaves for the Keeper authorities",
   "story.class_sent": "Mom's ask (D1167), or Fen's variant for a save that already finished Mahopac (R8)",
   "story.lizzy_class": "Lizzy's class (D1168). Opens the Hall door (D1169) and brings Fen back to the Hall",
-  "story.post_trial_done": "D1175: the post-Trial quest slot. For now Fen's PLACEHOLDER line after the Seal sets it"
+  "story.post_trial_done": "D1175: the post-Trial quest slot. Set at the end of the crackdown night (detail_zz_crackdown.json crackdown_lantern)"
  },
  "lines": {
   "fenCrew": "Three holders wait on the path first, {name}. Win all three, then come up to me."
@@ -368,7 +367,7 @@
    [
     "say",
     "Keeper Amos",
-    "Wynne's stall has wicks. 8 Acorns. I'd go myself, but I can't leave the cot."
+    "Brisa's stall has wicks. 8 Acorns. I'd go myself, but I can't leave the cot."
    ],
    [
     "setFlag",
@@ -414,7 +413,7 @@
    [
     "say",
     "",
-    "Juniper's lantern glows on the counter. Keeper Amos looks at it for a long moment."
+    "Juniper's lantern glows on the counter. Host Amos looks at it for a long moment."
    ],
    [
     "say",
@@ -489,7 +488,7 @@
        [
         "say",
         "Associate Juniper",
-        "Yay! See, Keeper Amos? A bright light is kind too. Have a bright night, little thorn-paw!"
+        "Yay! See, Host Amos? A bright light is kind too. Have a bright night, little thorn-paw!"
        ],
        [
         "run",
@@ -517,7 +516,7 @@
        [
         "say",
         "Keeper Amos",
-        "Wynne's stall, east end of the square. I'll keep the cot warm."
+        "Brisa's stall, east end of the square. I'll keep the cot warm."
        ]
       ],
       null,
@@ -667,7 +666,7 @@
    [
     "say",
     "",
-    "Lizzy's class is in full swing. Pip and Wren sit at their desks. You slip in at the back."
+    "Lizzy's class is in full swing. Pip and Tilly sit at their desks. You slip in at the back."
    ],
    [
     "say",
@@ -729,12 +728,7 @@
    [
     "say",
     "Master Fen",
-    "When you're ready, {name}, come to the orchard gate. Fernbrook has a question for you."
-   ],
-   [
-    "setFlag",
-    "story.post_trial_done",
-    true
+    "Go on out, {name}. Let Fernbrook see that Seal. I'll put the roots to bed and follow you."
    ]
   ]
  },
@@ -795,7 +789,7 @@
     [
      "say",
      "Master Fen",
-     "Go on, then. You won my Seal fairly. I can't say you're wrong."
+     "Go on, then. You won my Seal fairly. After last night, I can't say you're wrong."
     ]
    ]
   },
@@ -807,7 +801,7 @@
     [
      "say",
      "",
-     "Fen walks back to the Hall without looking back. The cart rolls off toward the pavilion."
+     "Fen turns back to her trees without a word. The cart rolls off toward the east road."
     ]
    ]
   },

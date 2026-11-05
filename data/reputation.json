@@ -79,8 +79,10 @@
     },
     {
       "name": "Brin",
+      "label": "Tove",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Cadet Orrin",
@@ -92,7 +94,8 @@
     {
       "name": "Cal",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "The Mahopac dream's Cal (data/mahopac.json npc cal). The RegenX floor tech who shared this key is Jory now, under his own key (NAMES_PASS G8, D1766)."
     },
     {
       "name": "Captain Lumen",
@@ -114,9 +117,11 @@
     },
     {
       "name": "Clerk Nia",
+      "label": "Clerk Elda",
       "faction": "keepers",
       "base": 50,
-      "rankFlag": "D1160"
+      "rankFlag": "D1160",
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Clerk Penn",
@@ -146,7 +151,8 @@
       "faction": "keepers",
       "base": 50,
       "rank": "Constable",
-      "given": "Rue"
+      "given": "Thale",
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Cook Hesper",
@@ -176,8 +182,10 @@
     },
     {
       "name": "Dockhand Ness",
+      "label": "Dockhand Garrick",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Dorian Pell",
@@ -188,8 +196,10 @@
     },
     {
       "name": "Dr. Ivo",
+      "label": "Dr. Weller",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Fenna",
@@ -198,9 +208,11 @@
     },
     {
       "name": "Floor Keeper Sol",
+      "label": "Floor Keeper Anselm",
       "faction": "keepers",
       "base": 50,
-      "rankFlag": "D1160"
+      "rankFlag": "D1160",
+      "note": "Shown name: NAMES_PASS (D1767). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Guide Tess",
@@ -242,9 +254,11 @@
     },
     {
       "name": "Host Ines",
+      "label": "Host Maudie",
       "faction": "none",
       "base": 50,
-      "civilian": "host"
+      "civilian": "host",
+      "note": "Shown name: NAMES_PASS (D1767). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Imogen",
@@ -257,16 +271,26 @@
       "base": 50
     },
     {
+      "name": "Jory",
+      "faction": "none",
+      "base": 50,
+      "note": "NAMES_PASS G8 (D1766; Vincent, Wed Nov 4, 2026: own key). The RegenX floor tech and lab ally: npc id rx_cal, scene rx_cal, ally id rx_cal_ally and flag story.met_cal are unchanged. Was raw name Cal, shared with the Mahopac dream's Cal; save.js SPLIT_KEYS copies an old Cal contact here once."
+    },
+    {
       "name": "Keeper Amos",
+      "label": "Host Amos",
       "faction": "keepers",
       "base": 50,
-      "civilian": "host"
+      "civilian": "host",
+      "note": "Shown name: NAMES_PASS (D1732). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Keeper Marigold",
+      "label": "Tailor Marigold",
       "faction": "keepers",
       "base": 50,
-      "civilian": "shop"
+      "civilian": "shop",
+      "note": "Shown name: NAMES_PASS (D1733). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Keeper Moss",
@@ -280,19 +304,24 @@
       "faction": "keepers",
       "base": 50,
       "rank": "Sergeant",
-      "given": "Rowan"
+      "given": "Hume",
+      "note": "Shown name: NAMES_PASS (D1737). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Keeper Quill",
+      "label": "Grocer Quill",
       "faction": "keepers",
       "base": 50,
-      "civilian": "shop"
+      "civilian": "shop",
+      "note": "Shown name: NAMES_PASS (D1734). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Keeper Teague",
+      "label": "Grocer Teague",
       "faction": "keepers",
       "base": 50,
-      "civilian": "shop"
+      "civilian": "shop",
+      "note": "Shown name: NAMES_PASS (D1734). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Keeper Scout",
@@ -327,7 +356,14 @@
     {
       "name": "Kit",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "The Heights stock-up Kit (data/heights.json ht_kit). High Charity's kite seller who shared this key is Mabry now, under her own key (NAMES_PASS G9, D1766)."
+    },
+    {
+      "name": "Mabry",
+      "faction": "none",
+      "base": 50,
+      "note": "NAMES_PASS G9 (D1766; Vincent, Wed Nov 4, 2026: own key). High Charity's kite seller, npc id hc_kite (unchanged). Was raw name Kit, shared with the Heights Kit; save.js SPLIT_KEYS copies an old Kit contact here once."
     },
     {
       "name": "Lab Pair",
@@ -518,15 +554,19 @@
     },
     {
       "name": "Porter Bram",
+      "label": "Porter Dunmore",
       "faction": "keepers",
       "base": 50,
-      "rankFlag": "D1160"
+      "rankFlag": "D1160",
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Porter Quin",
+      "label": "Porter Aldous",
       "faction": "keepers",
       "base": 50,
-      "rankFlag": "D1160"
+      "rankFlag": "D1160",
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Quinn",
@@ -576,7 +616,8 @@
       "faction": "keepers",
       "base": 50,
       "rank": "Sergeant",
-      "given": "Bram"
+      "given": "Drummond",
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Shopkeeper Dottie",
@@ -604,8 +645,10 @@
     },
     {
       "name": "Teller Ivo",
+      "label": "Teller Bodin",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Teo",
@@ -646,14 +689,18 @@
     },
     {
       "name": "Wren",
+      "label": "Tilly",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "Shown name: NAMES_PASS (D1767). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Keeper Halvard",
+      "label": "Pedlar Halvard",
       "faction": "keepers",
       "base": 50,
-      "civilian": "shop"
+      "civilian": "shop",
+      "note": "Shown name: NAMES_PASS (D1735). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Farmer Tibbet",
@@ -662,15 +709,19 @@
     },
     {
       "name": "Wynne",
+      "label": "Brisa",
       "faction": "none",
       "base": 50,
-      "civilian": "shop"
+      "civilian": "shop",
+      "note": "Shown name: NAMES_PASS (D1766). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Watch Saffie",
+      "label": "Trader Saffie",
       "faction": "keepers",
       "base": 50,
-      "civilian": "shop"
+      "civilian": "shop",
+      "note": "Shown name: NAMES_PASS (D1736). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Weaver Ilka",
@@ -688,8 +739,10 @@
       "name": "Warden Teodor",
       "faction": "keepers",
       "base": 50,
-      "rank": "Warden",
-      "given": "Teodor"
+      "rank": "Sergeant",
+      "given": "Teodor",
+      "duty": "Quartermaster",
+      "note": "Shown name: NAMES_PASS (D1731). Display only (D1768): the key, S.rep and the phone book keep the raw name. Was rank Warden; duty Quartermaster on the card."
     },
     {
       "name": "Officer Vale",
@@ -714,8 +767,10 @@
     },
     {
       "name": "Grete Ash",
+      "label": "Grete Lindqvist",
       "faction": "none",
-      "base": 50
+      "base": 50,
+      "note": "Shown name: NAMES_PASS (D1767). Display only (D1768): the key, S.rep and the phone book keep the raw name."
     },
     {
       "name": "Joss Merrin",
@@ -735,32 +790,50 @@
     {
       "name": "Constable",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Constable",
+      "given": "Tarn",
+      "note": "Shown name: NAMES_PASS (D1738). Display only (D1768): the key, S.rep and the phone book keep the raw name. Was a rank-only placeholder (D1245)."
     },
     {
       "name": "Sergeant",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Sergeant",
+      "given": "Coyle",
+      "note": "Shown name: NAMES_PASS (D1738). Display only (D1768): the key, S.rep and the phone book keep the raw name. Was a rank-only placeholder (D1245)."
     },
     {
       "name": "Cadet",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Cadet",
+      "given": "Ewan",
+      "note": "Shown name: NAMES_PASS (D1738). Display only (D1768): the key, S.rep and the phone book keep the raw name. Was a rank-only placeholder (D1245)."
     },
     {
       "name": "Associate",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rank": "Associate",
+      "given": "Sabeth",
+      "note": "Shown name: NAMES_PASS (D1738). Display only (D1768): the key, S.rep and the phone book keep the raw name. Was a rank-only placeholder (D1245)."
     },
     {
       "name": "Bright Lead",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rank": "Bright Lead",
+      "given": "Avery",
+      "note": "Shown name: NAMES_PASS (D1738). Display only (D1768): the key, S.rep and the phone book keep the raw name. Was a rank-only placeholder (D1245)."
     },
     {
       "name": "Junior Bright",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rank": "Junior Bright",
+      "given": "Kip",
+      "note": "Shown name: NAMES_PASS (D1738). Display only (D1768): the key, S.rep and the phone book keep the raw name. Was a rank-only placeholder (D1245)."
     },
     {
       "name": "Orchard Hand",
@@ -864,9 +937,196 @@
       "given": "Imogen"
     },
     {
-      "name": "Vincent Chi",
+      "name": "Commander",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Officer",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Resident",
       "faction": "none",
       "base": 50
+    },
+    {
+      "name": "Keeper Constable",
+      "faction": "keepers",
+      "base": 50,
+      "rank": "Constable",
+      "given": "Dunn",
+      "note": "Shown name: NAMES_PASS (D1741), the Wickerglen slip Constable. Display only (D1768): the key, S.rep and the phone book keep the raw name."
+    },
+    {
+      "name": "Vincent Chi",
+      "label": "Jacob Chi",
+      "faction": "none",
+      "base": 50,
+      "note": "Shown name: NAMES_PASS (D1730). Display only (D1768): the key, S.rep and the phone book keep the raw name."
+    },
+    {
+      "name": "Road Keeper",
+      "faction": "keepers",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.2 (D1857, D1860): the Keeper post at the fold on Route 4. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Lock Keeper",
+      "faction": "keepers",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.3: the towpath lock on the river road. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Gate Keeper",
+      "faction": "keepers",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.3: the Charter Hill gate on the river road. Role name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER A",
+      "faction": "none",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.5 (D1857, D1870): the Rambler on Route 4. Name PLACEHOLDER until Vincent names it."
+    },
+    {
+      "name": "PLACEHOLDER B",
+      "faction": "none",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.5: the Reed Watcher on the river road. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER C",
+      "faction": "none",
+      "base": 50,
+      "note": "ROUTE_TO_GOVERNOR §5.5: the Basket Weaver in the withy beds. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER D",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2 (D1838): the Clay Digger on Claybank Road. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER E",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2: the Ford Walker on Claybank Road. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER F",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2: the Hill Carter on Claybank Road. Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER G",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2: the Kiln Hand walking home in the rain (B10). Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER H",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §4.2: the Night Fisher (B10). Name PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER I",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 (D1838, D1986): the optional kiln-yard holder. Name and team PLACEHOLDER."
+    },
+    {
+      "name": "PLACEHOLDER J",
+      "faction": "glimmer",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 (B4): the Tower Crew holder at the fence gate. Name PLACEHOLDER."
+    },
+    {
+      "name": "Foreman Dray",
+      "faction": "glimmer",
+      "base": 50,
+      "note": "CAB §3.2 (NAMES_PASS D1751): the works foreman, a wine work vest; K3 pitch."
+    },
+    {
+      "name": "Edwin Garth",
+      "faction": "keepers",
+      "base": 50,
+      "note": "CAB §3.2 (NAMES_PASS D1750): the Commander's nominee, a retired Keeper, no rank shown; K3 pitch."
+    },
+    {
+      "name": "Reeve Agna",
+      "faction": "none",
+      "base": 50,
+      "note": "CAB §3.2 (NAMES_PASS D1748): the Reeve of Kilnmouth; K1, K7."
+    },
+    {
+      "name": "Bathkeeper Orla",
+      "faction": "none",
+      "base": 50,
+      "note": "CAB §3.2 (NAMES_PASS D1749): keeps the springs' bathhouse; the town's name."
+    },
+    {
+      "name": "Bryony",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH D1830: the springs regular (name PLACEHOLDER until the name check); K2."
+    },
+    {
+      "name": "Kiln Hand",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 K2: the kiln-yard asker. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Market Seller",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 K2: the market asker. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Kilnmouth Kid",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 B4: the kids in coats. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Tower Crew",
+      "faction": "glimmer",
+      "base": 50,
+      "note": "KILNMOUTH §5.3 B4: the crew at the fence gate (the battle is PLACEHOLDER J). Role name PLACEHOLDER."
+    },
+    {
+      "name": "Works Hand",
+      "faction": "glimmer",
+      "base": 50,
+      "note": "KILNMOUTH §5.5: the split hold, a wine vest at the works gate. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Keeper Patrol",
+      "faction": "keepers",
+      "base": 50,
+      "note": "KILNMOUTH §5.5: the curfew pair on Gate Street and the Keeper hold. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Shopkeeper",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §6 (D1825): Kiln Row Provisions. Role name PLACEHOLDER."
+    },
+    {
+      "name": "Kiln Crew",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §6: Hall 5 crew bodies (their battles wait on the Hall 5 build). Role name PLACEHOLDER."
+    },
+    {
+      "name": "Master Tobias Hearn",
+      "faction": "none",
+      "base": 50,
+      "note": "KILNMOUTH §6 (NAMES_PASS D1746): Hall 5 Master, neutral; the battle waits on the Hall 5 build."
     }
   ],
   "tiers": [
@@ -1098,44 +1358,20 @@
     "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays",
     "masters": "D1437: Hall Masters (Fen, Hale, Marisol) are neutral: faction none, off the Keeper ladder. Master is their Hall title, still shown first (Master Fen).",
     "pending": {
-      "Constable": {
-        "propose": "Constable",
+      "Commander": {
+        "propose": "Commander",
         "given": null,
-        "decision": "D1245",
-        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+        "decision": "D1198",
+        "note": "POST_TRIAL_CRACKDOWN: the Commander stays unnamed (D1198, settled Nov 3: names stay placeholders); rank-only label until Story names him"
       },
-      "Sergeant": {
-        "propose": "Sergeant",
+      "Officer": {
+        "propose": "Officer",
         "given": null,
-        "decision": "D1245",
-        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
-      },
-      "Cadet": {
-        "propose": "Cadet",
-        "given": null,
-        "decision": "D1245",
-        "note": "FERNBROOK_PLAZA placeholder (Keeper): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
-      },
-      "Associate": {
-        "propose": "Associate",
-        "given": null,
-        "decision": "D1245",
-        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
-      },
-      "Bright Lead": {
-        "propose": "Bright Lead",
-        "given": null,
-        "decision": "D1245",
-        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
-      },
-      "Junior Bright": {
-        "propose": "Junior Bright",
-        "given": null,
-        "decision": "D1245",
-        "note": "FERNBROOK_PLAZA placeholder (Glimmerwell): rank-only label until Design gives a name (D1245; Vincent, Nov 3: option A)"
+        "decision": "D1198",
+        "note": "POST_TRIAL_CRACKDOWN: the escort officers and the curfew posts; rank-only label, like the plaza's (D1245)"
       }
     },
-    "pendingNote": "pending: only the six FERNBROOK_PLAZA placeholders (decision D1245) are left: rank-only labels that wait for Design's names, not for a rank. Every sworn Keeper on the ladder (KEEPER_RANKS D893) has a rank (D1159); hosts and shopkeepers are civilians (below). rankCheck counts a name listed here as pending, not missing",
+    "pendingNote": "pending: only POST_TRIAL_CRACKDOWN's unnamed Commander and Officer (D1198) are left: rank-only labels until their names are built (NAMES_PASS D1740, D1744). NAMES_PASS (D1738) named the six FERNBROOK_PLAZA rank-only placeholders (D1245); every sworn Keeper on the ladder (KEEPER_RANKS D893) has a rank (D1159); hosts and shopkeepers are civilians (below). rankCheck counts a name listed here as pending, not missing",
     "civilians": "civilian: \"host\" (Lantern House hosts) or \"shop\" (anyone who runs a shop counter). Civilians are aligned to a faction (their faction field is unchanged) but are not sworn, so they get no rank and show their name as before (cleared task, Nov 3, 2026; settles the hosts part of D1160)"
   }
 }

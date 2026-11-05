@@ -1,6 +1,6 @@
 /* Walkling sheet (WALKLINGS tab). Players never load this file. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -59,8 +59,8 @@ test('walkling sheet opens from the collection, heals, renames, reorders moves, 
   expect(api.hp).toBeLessThan(30);
   expect(api.snacks).toBe(1);
 
-  await page.locator('#tabs button[data-tab="col"]').click();
-  await expect(page.locator('#dexCount')).toContainText('Out there 57');
+  await showScreen(page, 'col');
+  await expect(page.locator('#dexCount')).toContainText('Out there 69');
   await page.locator('#partyBoard .slot-main').first().click();
   await expect(page.locator('#ovWalkling')).toBeVisible();
   await expect(page.locator('#ovStats')).toBeHidden();
@@ -122,7 +122,7 @@ test('walkling sheet opens from the collection, heals, renames, reorders moves, 
   await page.keyboard.press('Escape');
   await expect(page.locator('#ovJournal')).toBeHidden();
 
-  await page.locator('#tabs button[data-tab="pet"]').click();
+  await showScreen(page, 'pet');
   await page.locator('#petStatsBtn').click();
   await expect(page.locator('#ovStats')).toBeVisible();
   await expect(page.locator('#ovWalkling')).toBeHidden();

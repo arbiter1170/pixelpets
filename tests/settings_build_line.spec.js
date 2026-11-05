@@ -1,7 +1,7 @@
 /* Settings build line stays one line tall and unclipped (D380, PLAYTEST_FIX_1020).
    Widths come from the Playwright projects. The 390 project is opened at 390x664. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -15,7 +15,7 @@ test('settings build line is 14 px and the close button stays in the panel', asy
   });
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#ovSettings')).toBeVisible();
   await expect(page.locator('#setBuild')).toBeVisible();
   await expect(page.locator('#setReload')).toBeVisible();

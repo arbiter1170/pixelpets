@@ -19,6 +19,8 @@ const MAIN_SPEC_FNV = { town: 'ae1a7a77', route: '5acf6566', battle: 'e0248118',
   harbour: 'e10c15be', route3: '28044496', lab: '588d4f16', dream: 'ca939dc8', arbiter_test: '17c46c8c', episode_end: 'e755ae15',
   starter_pick: '7ec8e5d3' };
 const LITERAL_FNV = { anthem_march: '781ed03a', anthem_dark: '3ccbbc3a', anthem_hall: 'bcc90cb2' };
+// SCENE_MUSIC's scene loops (checked against their own literal in tests/scene_music.spec.js T1), left out of T3's main list
+const SCENE_MUSIC_IDS = ['curfew', 'president', 'ledger', 'dawn', 'hearth', 'sweet', 'storm', 'hush'];
 // The shared KIT, as on main (T3: unchanged).
 const KIT_SRC = "const KIT = {\n    k: ['lowpass', 260, 90, 0.30],\n    s: ['highpass', 1500, 110, 0.10],\n    h: ['highpass', 6500, 30, 0.04],\n  };";
 const SHEET = '[PLACEHOLDER] A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem.';
@@ -159,14 +161,14 @@ test.describe('KEEPER_ANTHEM', () => {
       const fnv = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return ('0000000' + h.toString(16)).slice(-8); };
       const out = { hash: {}, extra: [] };
       for (const id of PPSound.musicIds()) {
-        if (anthem.includes(id)) continue;
+        if (anthem.includes(id) || id === 'weir') continue;   // weir: SCENE_MUSIC's Weir Hut loop, checked in tests/scene_music.spec.js T1
         const t = PPSound.musicSpec(id); out.hash[id] = fnv(JSON.stringify(t));
         if (t.swell || ['lead', 'bass'].some(v => t[v].double != null || t[v].gate != null)) out.extra.push(id);
       }
       const src = await (await fetch('sfx.js', { cache: 'no-store' })).text();
       out.kit = (src.match(/const KIT = \{[\s\S]*?\n  \};/) || [''])[0];
       return out;
-    }, [IDS]);
+    }, [IDS.concat(SCENE_MUSIC_IDS)]);
     expect(r.hash).toEqual(MAIN_SPEC_FNV);
     expect(r.extra).toEqual([]);
     expect(r.kit).toBe(KIT_SRC);

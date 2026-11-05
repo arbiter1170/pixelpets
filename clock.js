@@ -24,7 +24,15 @@ const PPClock = (() => {
   let virtual = null;
   let onChange = null;
 
+  // Perf (BRIGHTGATE_LAYOUT §6.4, measured): phase conditions call now() several times per object per frame, and each call
+  // parsed the URL and read sessionStorage. The answer changes only when debug is toggled, so it is held for 500 ms.
+  let debugMemo = null, debugMemoAt = 0;
   function debugOn(){
+    const t = Date.now();
+    if (debugMemo !== null && t - debugMemoAt < 500) return debugMemo;
+    debugMemoAt = t; return (debugMemo = debugOnRead());
+  }
+  function debugOnRead(){
     try {
       if (typeof location !== 'undefined') {
         const d = new URLSearchParams(location.search).get('debug');
@@ -139,8 +147,11 @@ const PPClock = (() => {
   function match(term){
     if (typeof term !== 'string') return null;
     const t = term.trim();
-    const r = now();
     if (t.indexOf('wx:') === 0) return false;
+    // KILNMOUTH perf (K-T11): cond() asks this of every term; read the clock only for a clock term (same answers, no clock read
+    // for story flags; a town with many state objects was spending seconds per path search here).
+    if (!/^(day|win|phase|time):/.test(t)) return null;
+    const r = now();
     if (t.indexOf('day:') === 0) return dayOk(t.slice(4), DAYS.indexOf(r.day));
     if (t.indexOf('win:') === 0) return r.windows.indexOf(t.slice(4)) >= 0;
     if (t.indexOf('phase:') === 0) return r.phase === t.slice(6);

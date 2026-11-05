@@ -188,7 +188,7 @@ test('the cracked handset stays green with a wine and crimson ring and honey kic
 test('style.css changes only the ring, the kicker and the names against the merge base', async () => {
   // #243's own diff (main just before it, to its merge) touches only the ring, the kicker and the names. Later
   // style.css work (e.g. the Nov 2 phone trim) can't break this half.
-  const diff = gitOut(['diff', PRE_D1100, D1100_MERGE, '--', 'style.css']).split('\n');
+  const diff = gitOut(['diff', PRE_D1100, D1100_MERGE, '--', 'style.css']).split(/\r?\n/);
   const removed = diff.filter((l) => l.startsWith('-') && !l.startsWith('---')).map((l) => l.slice(1));
   const added = diff.filter((l) => l.startsWith('+') && !l.startsWith('+++')).map((l) => l.slice(1));
   expect(removed).toEqual(D1100_OLD);
@@ -196,7 +196,7 @@ test('style.css changes only the ring, the kicker and the names against the merg
   // Today's style.css still carries the three accents, with the crimson ring as the only use of #c81818. The PAL
   // custom-property line (`--Q:#c81818`, added by #241 with V and N) is a definition, not a use, so it isn't counted.
   const cur = fs.readFileSync(path.resolve(__dirname, '..', 'style.css'), 'utf8');
-  const lines = cur.split('\n');
+  const lines = cur.split(/\r?\n/);   // CRLF-tolerant (Windows core.autocrlf=true)
   for (const l of D1100_NEW) expect(lines, l).toContain(l);
   const uses = cur.replace(/--Q:\s*#c81818/gi, '');
   expect((uses.match(/#c81818/gi) || []).length).toBe(1);

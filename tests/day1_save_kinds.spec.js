@@ -23,12 +23,14 @@ const KINDS = Object.assign({}, K.KINDS, {
 const WANT = {
   a1: { quest: 'heights', door: false, deny: 'latched', pick: false, tally: false, battle: true, fenOrchard: true, hold: 'split', contest: true },
   // a1 after the Heights still points at the orchard (Tobin's battle): no new row may count as done on an old save.
-  a1_after_heights: { quest: 'orchard', door: false, deny: 'latched', pick: false, tally: false, battle: true, fenOrchard: true, hold: 'split', contest: true },
+  // ACT1_KEEPER_JOIN §6: `orchard` is re-keyed to the Pack lean, so an old-order save's pointer is `orchard_old`.
+  a1_after_heights: { quest: 'orchard_old', door: false, deny: 'latched', pick: false, tally: false, battle: true, fenOrchard: true, hold: 'split', contest: true },
   a2: { quest: 'heights', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
   b: { quest: 'teaser', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
   "b'": { quest: 'hall1_holders', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'split', contest: true },
-  c: { quest: 'teaser', door: true, pick: false, tally: false, battle: true, fenOrchard: false, hold: 'keepers', contest: false },
-  c_glimmer: { quest: 'teaser', door: true, pick: false, tally: false, battle: false, fenOrchard: false, hold: 'glimmer', contest: false },
+  // D1432: Seal 1 and the pick are both in, so the Hall is shut (both paths) and Fen is not inside.
+  c: { quest: 'teaser', door: false, deny: 'shut', pick: false, tally: false, battle: true, fenOrchard: false, fenHall: false, hold: 'keepers', contest: false },
+  c_glimmer: { quest: 'teaser', door: false, deny: 'shut', pick: false, tally: false, battle: false, fenOrchard: false, fenHall: false, hold: 'glimmer', contest: false },
   p: { quest: 'crates', door: false, deny: 'latched', pick: false, tally: true, battle: false, fenOrchard: true, hold: 'split', contest: true },
   n: { quest: 'rival1', door: false, deny: 'latched', pick: false, tally: true, battle: false, fenOrchard: true, hold: 'split', contest: true },
   mahopac_done: { quest: 'crates', door: false, deny: 'latched', pick: false, tally: true, battle: false, fenOrchard: true, hold: 'split', contest: true },
@@ -38,7 +40,7 @@ const WANT = {
   class_done: { quest: 'hall1_holders', door: true, pick: false, tally: true, battle: false, fenOrchard: false, fenHall: true, hold: 'split', contest: true },
   seal_new: { quest: 'pick', door: true, pick: true, tally: true, battle: false, fenOrchard: false, fenHall: true, hold: 'split', contest: true },
 };
-const LINES = { latched: 'The Hall is shut for now. Tobin could use a hand with his crates first.', away: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" };
+const LINES = { shut: "Shut by order of High Charity. Master Fen's Hall stays closed for now.", latched: 'The Hall is shut for now. Tobin could use a hand with his crates first.', away: "The Hall is shut. A note on the door: 'Gone to see the Keepers. Back soon. Mind the roots. — Fen'" };
 
 function kindSave(kind) {
   const fx = KINDS[kind], s = starterSave();
@@ -106,7 +108,14 @@ for (const kind of ['p', 'mahopac_done', 'fen_away', 'seal_new', 'c']) {
     await seedRaw(context, raw);
     await gotoGame(page);
     await page.waitForFunction(() => window.ppAtBoot !== undefined);
-    expect(await page.evaluate(() => window.ppAtBoot)).toBe(raw);
+    const atBoot = await page.evaluate(() => window.ppAtBoot);
+    if (!s.flags['story.side_pick_done']) expect(atBoot).toBe(raw);
+    else {   // ACT1_KEEPER_JOIN §9.1 (D1546 B): a picked save is moved once at load, additive keys only
+      const moved = JSON.parse(atBoot);
+      for (const k of Object.keys(s.flags)) if (k !== 'story.side') expect(moved.flags[k], k).toEqual(s.flags[k]);
+      expect(moved.flags['story.keeper_cadet']).toBe(true);
+      expect(moved.flags['story.ilse_call_old']).toBe(true);
+    }
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')).v)).toBe(2);
   });
 }

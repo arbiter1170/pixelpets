@@ -151,6 +151,7 @@ built roof kit for now. The President's look is a PLACEHOLDER NPC look (LH-2 is 
   32,26, with wide steps (A14 PLACEHOLDER decals `hc_court_steps_w`/`hc_court_steps`/`hc_court_steps_e`) on rows 26-27 facing
   Muster Road; the old corner 2,38-14,44 is grass and the tool places nothing there (`VACANT`); the flag row reads its row from
   the layout's `flag_row` landmark. Test: `tests/hc_court_move.spec.js`. Shots: `handoff/shots/hc_court_move/`.
+- **HC_PARADE (branch `claude/hc-parade`)** stages on this Court (door 32,26, steps rows 26-27); see `handoff/maps/HC_PARADE.md`.
 
 ## Open, for the Chief of Staff
 
@@ -159,3 +160,31 @@ built roof kit for now. The President's look is a PLACEHOLDER NPC look (LH-2 is 
 - At ship time: flip `HC_CITY_V2`, drop the save hold, and add the city's map sizes to `save.js` MAP_SIZE.
 - The Hearthmoor coach tile (12,9) is a roof tile on main (both modes); the coach can't be stepped on today. For QA.
 - The Dojo line fix (D1304) is a separate copy PR, as the layout says.
+
+## v0.4 build (Wed Nov 4, 2026; branch `claude/high-charity-v04`, lands after #315)
+
+Built from design `specs/HIGH_CHARITY_LAYOUT.md` v0.4.2 (design `master` 5809141). Still a preview: `HC_CITY_V2 = false`.
+
+- **Roads are clear (§4.1):** the tool refuses a blocker on `C` or `Z`. Five props that phase 1's placement search had nudged onto
+  carriageways now stand on sidewalk or grass.
+- **HC_PARADE's stands are kept clear** (`PARADE_STANDS`, copied from #296's beat sheet): no car in Muster Road's cordon bays, no
+  lamp or sign on a stand; the Court's sign is at 35,26. The parade scene itself stays #286/#296's.
+- **§8.2 scheduled townsfolk:** nine bodies on schedule rows. Spec tiles that are solid or on a road are nudged: Child 14,25 to
+  17,25; Parent 15,25 to 17,26; Student A's dusk 16,27 to 17,27; the shopper's Store Row 33,33 (a carriageway) to 36,33.
+- **HB14** sealed sea gate at Lantern Quay 21,38 (`HC_SPIRE_ROAD_HOOK`, D1279). **P1 reuse props** on the Square and College Green.
+- **Battle scenes:** each chunk draws its own (BATTLE_BACKDROPS_ACT2 §4).
+- **Checks:** `tests/high_charity_v04.spec.js` runs the layout checker's rules over the merged game WORLD (§13.1).
+- **Shots:** `handoff/shots/high_charity/` (before = `claude/route4`, after = this branch; 390 and 320, Modern, 11:00).
+
+### Rule 9: rooms held (never built), with the previews Vincent needs to see
+
+| Room | Packet | Why held |
+|---|---|---|
+| `hc_gov_2` Cabinet Room (twelve chairs, the charter under glass, the seating board, the map of towns) | layout §7.3; CABINET_AND_COUNCILS §4.1; WALK_BESIDE §2.1 | no grid in any packet; no inspiration pass; no preview |
+| `hc_lantern_up` gallery | layout §7.1 | grid given; no inspiration pass; no preview |
+| `hc_college_in` College Great Hall | layout §7.4 | no grid; no preview |
+| `hc_trial_in` Muster Hall, `hc_trial_stone` Hall Stone room | layout §7.5 | blockouts only; also waits on the Hall 8 build (`HC_TRIAL_HALL`) |
+| `hc_library_in`, the Dojo expansion | layout §7.4 (phase 3) | no grid; no preview |
+
+Each needs, in order: the rule 9 inspiration pass (sub-agent or Gemini), Design's grid (the Cabinet Room has none), 390 before and
+after previews, and Vincent's yes. Until then floor 1's stair goes straight to floor 3 (D1372).

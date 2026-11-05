@@ -17,7 +17,7 @@ const PPSave = (() => {
   // HUSHWATER B2 (D347, D357): skink, otter, owl, snail are appended. Save stays pixelpets.save.v2, v: 2.
   // ARBITER_UNITS (D837-D847): tallybat, dimlamp, filecrow, cordhound, humwisp are appended (25 lines, 75 form ids). They are
   // boss lines, kept out of the journal grid with the npcOnly line, so the journal still counts 57.
-  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch', 'skink', 'otter', 'owl', 'snail', 'tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
+  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch', 'skink', 'otter', 'owl', 'snail', 'tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp', 'adder', 'heron', 'dipper', 'jugwasp']);   // + ROUTE_TO_GOVERNOR / KILNMOUTH (Act 2)
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
   // MAPS_SLICE §10 / INTERIORS §5 / ACT1_ROUTE2 §0.2 / COBBLECREST mapdata: ids and sizes from data/mapdata.js.
@@ -259,6 +259,60 @@ const PPSave = (() => {
     return s;
   }
 
+  // BANK_AND_HOMES §12 (D2246): the Acorn Account (S.bank), homes (S.home) and the garden (S.garden). Additive, v stays 2, S.money
+  // (the bag) is untouched. Missing or wrong-typed fields get their defaults; bad entries are dropped and numbers clamped. Goal and
+  // prop ids are checked against BANK_GOALS / PROP_LIBRARY_ART when those catalogues are loaded (BANK_GOALS lands with the jars).
+  const BANK_SRC_ANY = /^[a-z_]{1,8}$/;
+  const isDayKey = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+  const isBankRef = r => typeof r === 'string' && r.length >= 1 && r.length <= 24;
+  function normalizeBank(s){
+    const srcOk = x => typeof x === 'string' && (typeof PPBank === 'object' && PPBank ? PPBank.SRC.indexOf(x) >= 0 : BANK_SRC_ANY.test(x));
+    const goals = typeof BANK_GOALS === 'object' && BANK_GOALS ? BANK_GOALS : null;
+    const props = typeof PROP_LIBRARY_ART === 'object' && PROP_LIBRARY_ART ? PROP_LIBRARY_ART : null;
+    const propOk = id => typeof id === 'string' && id !== '' && id.length <= 40 && (!props || has(props, id));
+    const intMin0 = x => (Number.isInteger(x) && x >= 0 ? x : 0);
+    if (!isObj(s.bank)) s.bank = {};
+    const b = s.bank;
+    if (!Array.isArray(b.led)) b.led = [];
+    b.led = b.led.filter(r => Array.isArray(r) && isDayKey(r[0]) && srcOk(r[1]) && Number.isInteger(r[2]) && (r.length < 4 || r[3] == null || isBankRef(r[3])))
+      .map(r => (isBankRef(r[3]) ? [r[0], r[1], r[2], r[3]] : [r[0], r[1], r[2]]));
+    if (b.led.length > 60) b.led = b.led.slice(b.led.length - 60);
+    if (!Array.isArray(b.fold)) b.fold = [];
+    b.fold = b.fold.filter(r => Array.isArray(r) && typeof r[0] === 'string' && /^\d{4}-\d{2}$/.test(r[0]) && fin(r[1]) && fin(r[2]))
+      .map(r => [r[0], Math.max(0, Math.floor(r[1])), Math.max(0, Math.floor(r[2]))]);
+    if (b.fold.length > 12) b.fold = b.fold.slice(b.fold.length - 12);
+    if (!Array.isArray(b.jars)) b.jars = [];
+    { const seen = new Set(), out = [];
+      for (const j of b.jars) {
+        if (!isObj(j) || typeof j.id !== 'string' || !/^j[1-9]$/.test(j.id) || seen.has(j.id) || out.length >= 4) continue;
+        seen.add(j.id);
+        let goal = typeof j.goal === 'string' ? j.goal : '';
+        if (goal && (goals ? !has(goals, goal) : !/^[a-z0-9_]{1,24}$/.test(goal))) goal = '';
+        let saved = fin(j.saved) ? Math.max(0, Math.floor(j.saved)) : 0;
+        const price = goal && goals && goals[goal] && Number.isInteger(goals[goal].price) ? goals[goal].price : null;
+        if (price != null) saved = Math.min(saved, price);
+        out.push(Object.assign({}, j, { id: j.id, goal, saved }));
+      }
+      b.jars = out; }
+    if (!isObj(b.shares)) b.shares = {};
+    for (const k of Object.keys(b.shares)) b.shares[k] = clamp(intMin0(b.shares[k]), 0, 10);
+    if (!isObj(s.home)) s.home = {};
+    const h = s.home;
+    if (!Array.isArray(h.stored)) h.stored = [];
+    h.stored = h.stored.filter(propOk);
+    if (!Array.isArray(h.hc_apt)) h.hc_apt = [];
+    h.hc_apt = h.hc_apt.slice(0, 8).map(id => {
+      if (id === '' || propOk(id)) return id;
+      if (typeof id === 'string' && id && !props) return id;
+      return '';
+    });
+    if (s.flags && s.flags['story.home_hc_apt'] && h.hc_apt.length !== 8) while (h.hc_apt.length < 8) h.hc_apt.push('');
+    if (!Array.isArray(h.mail)) h.mail = [];
+    h.mail = h.mail.filter(x => typeof x === 'string' && /^[a-z0-9_]{1,24}$/.test(x)).slice(0, 3);
+    if (!Array.isArray(s.garden)) s.garden = [];
+    s.garden = s.garden.slice(0, 4).map(g => (isObj(g) && typeof g.seed === 'string' && g.seed && isDayKey(g.d) ? { seed: g.seed, d: g.d } : null));
+  }
+
   // §6: runs on every load. Mutates in place, idempotent, never drops unknown keys.
   function normalizeV2(s, now = Date.now()){
     const d = defaultStateV2(now);
@@ -290,6 +344,7 @@ const PPSave = (() => {
     // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
     for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];
     fill(s, 'money', x => Number.isInteger(x) && x >= 0, 0);
+    normalizeBank(s);
     // GLIMMER_PATH v0.2 BS: per-faction Standing {keepers, glimmer}, integers within STANDING_CFG.min..max (additive, no version
     // bump). Missing or not an object -> both 0; a bad or out-of-range number is clamped; unknown keys inside survive.
     fill(s, 'standing', isObj, {});
@@ -358,6 +413,24 @@ const PPSave = (() => {
         if (!foldDue(from)) continue;
         if (ownKey(s.rep, from) && !ownKey(s.rep, to) && !fixedKeys.has(to)) s.rep[to] = s.rep[from];
         if (ownKey(s.rep, from) || ownKey(s.phoneBook.met, from) || ownKey(s.phoneBook.fav, from)) s.flags['fold.' + from] = true;
+      }
+      // NAMES_PASS G8, G9 (D1766; Vincent, Wed Nov 4, 2026): two people who shared one raw name now have their own keys.
+      // The RegenX floor tech is Jory (was Cal, shared with the Mahopac dream's Cal); High Charity's kite seller is Mabry
+      // (was Kit, shared with the Heights Kit). The old key stays with the person who keeps the name. Unlike FOLD_KEYS it
+      // is not one person, so a mark under the old key copies to the new key only when this save reached the renamed
+      // person (Jory: his own story.met_cal; Mabry: High Charity reached). Once per name, by the same flags['fold.<old>']
+      // rule as above. Copy only: the old key stays, nothing is renamed or removed, v stays 2.
+      const reached = { Cal: () => !!s.flags['story.met_cal'],
+        Kit: () => !!s.flags['story.hc_arrived'] || (isObj(s.mapSeen) && !!s.mapSeen.highcharity) };
+      const SPLIT_KEYS = { Cal: 'Jory', Kit: 'Mabry' };
+      for (const [from, to] of Object.entries(SPLIT_KEYS)) {
+        if (!foldDue(from)) continue;
+        if (!(ownKey(s.rep, from) || ownKey(s.phoneBook.met, from) || ownKey(s.phoneBook.fav, from))) continue;
+        if (reached[from]()) {
+          copyIfAbsent(s.phoneBook.met, from, to); copyIfAbsent(s.phoneBook.fav, from, to);
+          if (ownKey(s.rep, from) && !ownKey(s.rep, to) && !fixedKeys.has(to)) s.rep[to] = s.rep[from];
+        }
+        s.flags['fold.' + from] = true;
       }
     }
     fill(s, 'repJoins', x => Number.isInteger(x) && x >= 0, 0);
