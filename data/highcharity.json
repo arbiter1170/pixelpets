@@ -536,7 +536,7 @@
           "id": "hc_sign_gym",
           "x": 23,
           "y": 14,
-          "text": "DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome."
+          "text": "DOJO · Practice before the Hall next door. Stones, tides, and blooms are all welcome."
         },
         {
           "kind": "sign",
@@ -973,7 +973,7 @@
           "facing": "down",
           "lines": {
             "story.side=glimmer": "No trial today. The floor is just clean.",
-            "else": "No Seal here. Hall Masters keep those."
+            "else": "No Seal here. The Hall next door's been shut since the war."
           }
         },
         {
