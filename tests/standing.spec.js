@@ -57,7 +57,9 @@ test('a saved standing is clamped to the range; a non-object becomes 0/0', async
 });
 
 test('thresholds and tier-up toasts come from the config, once per tier @w1', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  // Arcade opt-in: the toast checks read each toast the moment it is raised; Modern queues toasts (modern_hud_dock covers that).
+  const s = starterSave(); s.settings.controls = 'arcade';
+  await installSave(page.context(), s, { quietDay: true });
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   const T = cfg.thresholds;   // 0/10/25/45/70 by default
@@ -394,7 +396,17 @@ const COPY = {
   gov_walk: ['Walk the coach road north from Hearthmoor. The fork is past the downs.', 'Route 4'],   // ROUTE_TO_GOVERNOR §6 (D1854)
   gov_walk2: ['Take the west fork and the river road to the Charter Hill gate.', 'Route 4, river road'],
   gov_meet: ["Report to Governor Merriden at the Governor's House on Charter Hill, High Charity.", "Governor's House"],
+  km_walk: ['Take the east fork from Route 4 and walk Claybank Road up to Kilnmouth.', 'Route 4, the fork'],   // KILNMOUTH (PLACEHOLDER copy)
+  km_reeve: ['Find Reeve Agna at the council house in Kilnmouth.', 'Kilnmouth council house'],
+  km_listen: ['Listen to the town: the springs, the market and the kiln yard.', 'Kilnmouth, the springs'],
+  km_permit: ["The tower crew holds the fence gate. Get past them and read the tower's permit.", 'Kilnmouth, the common'],
   a2_hold: ['Await your next orders.', 'The Amberwild'],
+  // CABINET_AND_COUNCILS 1a/1b: the report-back, Lumen's lead-in, the stair to the twelfth chair, the council (Keepers path; OPEN_DECISIONS D1608-copy)
+  km_report: ["Tell Governor Merriden about the tower's permit. He's at the Governor's House in High Charity.", "Governor's House"],
+  cab_lead: ["Captain Lumen is waiting in the lobby of the Governor's House.", "Governor's House"],
+  cab_seat: ["Take the stair in the Governor's House up to the Cabinet Room. A chair is set for you.", 'Cabinet Room'],
+  km_council: ["Take the Governor's letter to Reeve Agna at Kilnmouth's council house. The council can sit.", 'Kilnmouth council house'],
+  wb_cut: ['Archivist Mo is waiting at the Lodge.', 'Hearthmoor, the Lodge'],   // WALK_BESIDE §3.3 (D1961)
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -431,7 +443,7 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
   let overrides = 0;
   // ACT1_KEEPER_JOIN rows key on story states this one-flag walk cannot build (a lean value, a face, an old-save move);
   // their copy is checked as written, and tests/act1_keeper_join.spec.js checks where each one shows.
-  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge', 'gov_post', 'gov_walk', 'gov_walk2', 'gov_meet', 'a2_hold']);
+  const COPY_ONLY = new Set(['chi_meet', 'chi_shifts', 'chi_report', 'orchard', 'orchard_old', 'pick', 'tobin_crates', 'enrol', 'enrol_lanyard', 'teaser', 'recall', 'cadet_report', 'rpt_lodge', 'gov_post', 'gov_walk', 'gov_walk2', 'gov_meet', 'km_walk', 'km_reeve', 'km_listen', 'km_permit', 'a2_hold', 'km_report', 'cab_lead', 'cab_seat', 'km_council', 'wb_cut']);   // ACT2 rows, Kilnmouth's, CABINET's and WALK_BESIDE's wb_cut need states this walk cannot build
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
     if (COPY_ONLY.has(id)) {
@@ -501,7 +513,8 @@ const ICON_BAG = ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'r
 const PAL_HEX = { y: '#ffcd75', o: '#ef7d57', w: '#f4f4f4', h: '#94b0c2', r: '#b13e53', p: '#5d275d' };
 
 test('the quest icon is the delivered signpost and the other d-pad icons are unchanged', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  const s = starterSave(); s.settings.controls = 'arcade';   // Arcade opt-in: the 8x8 icons on the Arcade d-pad row
+  await installSave(page.context(), s, { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => { const b = document.querySelector('#questBtn'); return b && !b.hidden; });

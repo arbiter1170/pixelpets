@@ -9,7 +9,8 @@ trackErrors(test, expect);
 const BATTLE_MAPS = ['route1', 'hearthmoor', 'fernbrook', 'proto', 'route2', 'route2_glen', 'cobble_quarry', 'hw_rim', 'hw_cut',
   'hw_falls', 'route3', 'brinewick', 'cc_hall_in', 'fb_hall_in', 'bw_hall_in', 'hc_arena_in', 'rx_f1', 'rx_f2', 'rx_f3', 'rx_f4',
   'sm_yard', 'sm_hold', 'sm_den', 'r3_sanctuary', 'r3_ledger', 'r3_relay', 'bw_depot_in',
-  'route4', 'route4_reeds', 'route4_withy'];   // ROUTE_TO_GOVERNOR §9.1 (D1875)
+  'route4', 'route4_reeds', 'route4_withy',   // ROUTE_TO_GOVERNOR §9.1 (D1875)
+  'km_road', 'kilnmouth', 'km_hall_in'];   // KILNMOUTH §11.1: the road, the yard holder and the B4 crew, Hall 5
 
 async function boot(page, search = '?debug=1') {
   const s = starterSave();
@@ -141,6 +142,9 @@ test('every map has a scene: PAL only, each one different, landmarks clear of th
 });
 
 test('water moves in FULL motion and holds still with reduced motion', async ({ page }) => {
+  // Midday, fixed: the dawn and dusk washes (drawWeather) step with the wall-clock minute, so near 5-7 am or 6-8 pm a
+  // minute ticking between two samples shifted every pixel by 1 (seen Nov 4, 2026). Timers and frames still run.
+  await page.clock.setFixedTime(new Date('2026-11-04T12:00:00'));
   await boot(page);
   await page.evaluate(() => PixelPets.setBattleBg(true));
   const size = async () => page.evaluate(() => { const c = document.getElementById('battleCanvas'); return { W: c.width, H: c.height }; });

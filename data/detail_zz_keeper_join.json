@@ -2,7 +2,7 @@
  "spec": "ACT1_KEEPER_JOIN v0.1.1 (design repo, private): the Wickerglen investigation, the orchard lean and the Keeper join",
  "_about": "Ours, not a design copy. After the crackdown's dawn release Ilse sends the holder to Vincent Chi (the debrief's last lines live in detail_zz_crackdown.json). Route 2 opens on story.warden_met (D1551) so the holder can reach Wickerglen; Imogen's battle and the lit lamps wait for the enrolment (r2_lead is hidden on a crackdown save until story.keeper_cadet). An old save (no crackdown) reads every gate as before. Save stays pixelpets.save.v2; every flag here is a new additive story.* key.",
  "_placeholders": {
-  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Every line in this file is a placeholder, including the Constable's name. 'Eleven' Walklings is a PLACEHOLDER number; Vincent Chi's name check is pending (D1524); the jar line and his lean line (story.lean_keep) are the engineer's draft. D1562: the enrolment's lanyard line (no question) and the post-recall Lantern Council lines are the engineer's draft until §4.7 and §4.9 are rewritten. v0.1.6: 9e (the last line of recall, cadet_sendoff and rpt_old) is the packet's re-voiced PLACEHOLDER.",
+  "note": "PLACEHOLDER copy (Story/June to replace; OPEN_DECISIONS rows D1545-D1560). Lines not named below are still placeholders. Story's lines (STORY_LINES Nov 4, 2026) are final: the Wickerglen lamp slips and Constable Dunn (D2137), Ilse's calls, Lodge reminders, the enrolment's lanyard line and reports, 9e included (D2139, D2140; narration says Host Amos, D2146), and Jacob Chi's lines, six missing Walklings, one per jar (D2141, D2142). The post-recall Lantern Council lines are still the engineer's draft until §4.9 is rewritten.",
   "paths": [
    "scenes",
    "looks.chi",
@@ -75,7 +75,7 @@
        "!story.glen_cleared"
       ],
       "lines": {
-       "else": "Orders came down. A review. Don't ask me how long."
+       "else": "Orders came down. The lamps are under review. Don't ask me how long."
       },
       "_note": "ACT1_KEEPER_JOIN §7 (D1555): Wickerglen's slip is data only. Shown as Constable Dunn (NAMES_PASS D1741, cast rank + given; the key stays); the built officer look."
      },
@@ -134,22 +134,22 @@
   "glen_lamp_w": {
    "linesFirst": {
     "story.met_lead & !story.shift_g & !story.shift_lamp_w & story.chi_met": "@shift_lamp_w",
-    "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
+    "story.heights_done": "The slip is gone. Fresh paint, and a brass plate: BY PERMIT OF HIGH CHARITY.",
     "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
    }
   },
   "glen_lamp_n": {
    "linesFirst": {
     "story.met_lead & !story.shift_g & !story.shift_lamp_n & story.chi_met": "@shift_lamp_n",
-    "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
-    "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
+    "story.heights_done": "The slip is gone. Fresh paint, and a brass plate: BY PERMIT OF HIGH CHARITY.",
+    "story.ilse_call2": "The same Keeper slip: CLOSED FOR REVIEW. Someone has wiped the lens anyway."
    }
   },
   "glen_lamp_e": {
    "linesFirst": {
     "story.met_lead & !story.shift_g & !story.shift_lamp_e & story.chi_met": "@shift_lamp_e",
-    "story.heights_done": "Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.",
-    "story.ilse_call2": "A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums."
+    "story.heights_done": "The slip is gone. Fresh paint, and a brass plate: BY PERMIT OF HIGH CHARITY.",
+    "story.ilse_call2": "A Keeper slip, already curling at the corners: CLOSED FOR REVIEW."
    }
   },
   "chi_hut": {
@@ -189,9 +189,9 @@
     "story.keeper_cadet & story.ep1_end & !story.rpt_3 & !story.cover=glimmer & !story.switched_a3 & !story.warden_cut": "@cadet_sendoff",
     "story.ilse_call2 & !story.keeper_cadet": "@enrol",
     "story.cover=glimmer & !story.side_pick_done": "Juniper's offer still stands. Take it. Smile. Remember your home.",
-    "story.orchard_lean & !story.keeper_cadet & !story.ilse_call2": "Fen's crates first. I'll call when it's time.",
+    "story.orchard_lean & !story.keeper_cadet & !story.ilse_call2": "Not yet. Mind the orchard, and I'll send for you when it's time.",
     "story.chi_done & !story.side_pick_done": "Go home by the orchard first. Then come to me.",
-    "story.chi_met & !story.side_pick_done": "Jacob Chi will want both shifts. Go and look."
+    "story.chi_met & !story.side_pick_done": "Jacob Chi will want both shifts: the day crew and the dusk watch. Go and look."
    }
   },
   "juniper_east": {
@@ -260,12 +260,12 @@
    [
     "say",
     "",
-    "He drops a pressed leaf into a glass jar on the sill. One jar of six."
+    "Six glass jars on the sill. He drops a pressed leaf into the first one."
    ],
    [
     "say",
     "Vincent Chi",
-    "Wickerglen's lost eleven Walklings this month. Nobody's looking. So I am."
+    "Six Walklings gone from Wickerglen this month. A jar for each. I fill one when I can prove it."
    ],
    [
     "say",
@@ -291,7 +291,7 @@
    [
     "say",
     "Vincent Chi",
-    "Well? Tell me what you saw. All of it."
+    "Well? Tell me what you saw. All of it. I'll log it."
    ],
    [
     "run",
@@ -388,14 +388,14 @@
          [
           "say",
           "Vincent Chi",
-          "You watch more than you work. Good. Write it all down."
+          "You kept your hands steady and your eyes open. That's the whole job."
          ]
         ],
         [
          [
           "say",
           "Vincent Chi",
-          "You keep your hands busy. Fine. Keep your eyes busy too."
+          "You asked where they didn't want you asking. That's the whole job."
          ]
         ]
        ],
@@ -703,7 +703,7 @@
      [
       "say",
       "",
-      "Keeper Amos hurries up from the Lantern House, out of breath."
+      "Host Amos hurries up from the Lantern House, out of breath."
      ],
      [
       "say",
@@ -767,6 +767,10 @@
     ]
    ],
    [
+    "music",
+    "anthem_hall"
+   ],
+   [
     "if",
     "enrol:ask",
     [
@@ -827,7 +831,7 @@
      [
       "say",
       "Warden Ilse",
-      "So. You'll wear their lanyard, and you'll tell me what they do."
+      "So. You'll wear their lanyard where everyone can see it, and you'll tell me what they do."
      ],
      [
       "setFlag",
@@ -902,7 +906,7 @@
    [
     "say",
     "",
-    "Ilse's letter asks one thing: what did you see? Nothing else."
+    "Ilse's letter asks one thing, in her small, exact hand: what did you see?"
    ],
    [
     "if",
@@ -979,7 +983,7 @@
    [
     "say",
     "",
-    "Ilse's letter asks one thing: what did you see? Nothing else."
+    "Ilse's letter asks one thing, in her small, exact hand: what did you see?"
    ],
    [
     "if",
@@ -1083,7 +1087,7 @@
      [
       "say",
       "",
-      "A Lantern House runner finds you with a folded note. COME HOME. I."
+      "A Lantern House runner finds you with a folded note. Two words: COME HOME. And an I."
      ],
      [
       "setFlag",
@@ -1099,6 +1103,10 @@
    ]
   ],
   "recall": [
+   [
+    "music",
+    "ledger"
+   ],
    [
     "say",
     "Warden Ilse",

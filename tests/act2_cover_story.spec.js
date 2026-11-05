@@ -173,7 +173,8 @@ test.describe('ACT2_COVER_STORY C-M: Mom\'s Supper (D1682, D1696)', () => {
 
   test('T2: told gets one heal_snack a day at home; the day roll opens the next; cover and quiet never get one', async ({ page }) => {
     test.setTimeout(120000);
-    await boot(page, save(Object.assign({}, POSTED, { 'story.cv_mom': 'told', 'story.cv_mom_walk': true }), { map: 'hm_home_in', x: 5, y: 6, facing: 'up' }));
+    // BANK_AND_HOMES beat 1: Mom's passbook sits before her repeat; this save already has it (tests/bank_slice_1.spec.js plays it).
+    await boot(page, save(Object.assign({}, POSTED, { 'story.cv_mom': 'told', 'story.cv_mom_walk': true, 'story.bank_book': true }), { map: 'hm_home_in', x: 5, y: 6, facing: 'up' }));
     const bag = () => page.evaluate(() => PixelPets.state.bag.heal_snack | 0);
     const n0 = await bag();
     await page.evaluate(() => PixelPets.talkTo('mom'));
@@ -215,6 +216,7 @@ test.describe('ACT2_COVER_STORY old saves (D1695) and Juniper (D1688)', () => {
     const f = await flags(page);
     expect([f['story.cv_mom'], f['story.cv_mom_walk']]).toEqual(['quiet', undefined]);
     await goto(page, 'hm_home_in', 5, 6, 'up');
+    await page.evaluate(() => PixelPets.setFlag('story.bank_book', true));   // BANK_AND_HOMES beat 1 already given (its own spec plays it)
     await page.evaluate(() => PixelPets.talkTo('mom'));
     expect(says(await drive(page, ['Not now']))[0]).toBe("Ilse says you're hers. That'll do me.");   // her built tips offer may follow
     // Juniper keys on a lanyard past too: no point for this save.

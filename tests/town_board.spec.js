@@ -1,7 +1,7 @@
 /* TB-1 town boards. Behavior runs on the 320 project. 375 and 390 skip.
    PixelPets.townBoard is read-only. Save v stays 2. See TOWN_BOARD.md. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, tapFacing } = require('./helpers');
 
 const EMPTY_SLIPS = 'No slips are pinned up.';
 const EMPTY_BOUNTIES = 'No creature is named today.';
@@ -130,7 +130,7 @@ test.describe('town board', () => {
       const tb = document.querySelector('#talkBtn');
       return !!(tb && tb.classList.contains('ready'));
     })).toBe(true);
-    await page.locator('#talkBtn').click();
+    await tapFacing(page);   // Modern: tap the board to read it
     await expect.poll(async () => visibleBoardText(page)).toContain(LANTERN);
     const text = await visibleBoardText(page);
     await shot(page, 'town-board-physical');

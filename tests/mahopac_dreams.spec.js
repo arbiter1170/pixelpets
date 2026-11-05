@@ -193,7 +193,8 @@ const LOOK = {
 const REPEAT = { told: 'Thank you for the lens, love.', held: 'That lens. I keep thinking about it.' };
 // The built daily snack (ACT2_COVER_STORY D1696) plays before the offer when due; these runs mark today's as given.
 const TODAY = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
-const FED = { 'story.cv_mom_day': TODAY };
+// BANK_AND_HOMES beat 1: Mom's passbook sits before her repeat; these saves already have it (tests/bank_slice_1.spec.js plays it).
+const FED = { 'story.cv_mom_day': TODAY, 'story.bank_book': true };
 const noOverflow = page => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 async function noraBark(page) {
   await goto(page, 'mahopac', 9, 12, 'up');
@@ -271,7 +272,9 @@ test.describe("MD-2: Mom's walk north (D1944, D1945)", () => {
       const ch = look.find(l => l[0] === '>');
       expect(ch[2]).toEqual(['The drive-through', 'Nothing much']);
       expect(ch[3]).toBe('What does it show you?');
-      expect(hush).toEqual({ cue: 'hush', want: null });   // T4: the music falls silent on MV9
+      // T4: the music falls silent on MV9. SCENE_MUSIC (#320) ships a real `hush` loop (one bar of rests), and a real loop wins
+      // over MAHOPAC's fallback, so the cue plays `hush` instead of stopping the track.
+      expect(hush).toEqual({ cue: 'hush', want: 'hush' });
       expect(await page.evaluate(() => PPSound.musicWant)).toBe('town');   // the room's loop after the scene
       const f = await flags(page);
       expect(f['story.mom_mahopac']).toBe(LOOK[pick][0]);
@@ -487,7 +490,7 @@ test.describe('MD-3: the lens moment (D1940-D1943, D1950)', () => {
     expect(r.a).toEqual([LM1, LM2.study, LM3]);
     expect(r.b).toEqual([LM4, LM5].concat(MOMENT.kept));
     expect(r.c).toEqual([LM5b, LM6.paper, LM7, LM8, LM9]);
-    expect(r.hush).toEqual({ cue: 'hush', want: null });
+    expect(r.hush).toEqual({ cue: 'hush', want: 'hush' });   // SCENE_MUSIC's real `hush` loop (#320) wins over the fallback
     const st = await stored(page);
     expect(st.v).toBe(2);
     expect(st.flags['story.lens_seen']).toBe('kept');

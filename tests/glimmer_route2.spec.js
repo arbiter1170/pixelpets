@@ -40,7 +40,7 @@ test('the quiet Census log gives Rook one bond and opens the glen @w1', async ({
 test('Wickerglen still gives three treats and the same gates @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.runScene('glen_cleared'))).toBe(true);
-  await playScene(page, []);
+  await playScene(page, ["Imogen says they're fine."]);   // D2144: the unease choice after Rook's "looked... empty"
   const after = await page.evaluate(() => ({
     glen: PixelPets.state.flags['story.glen_cleared'],
     lamps: PixelPets.state.flags['story.rook_saw_lamps'],

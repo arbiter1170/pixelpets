@@ -2,7 +2,7 @@
    An old save keeps them. Each source grants once. Save stays v2. */
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -73,7 +73,7 @@ test('a brand-new save owns none of the five', async ({ page }) => {
 
 test('the ADORN picker lists only owned looks, and an old save keeps the five', async ({ page }) => {
   await boot(page, kitSave());
-  await page.locator('#tabs button[data-tab="pet"]').click();
+  await showScreen(page, 'pet');
   await page.locator('#petKitBtn').click();
   await expect(page.locator('#ovWalkling')).toBeVisible();
   await expect(page.locator('#ovWalkling [data-acc]')).toHaveText(['None']);

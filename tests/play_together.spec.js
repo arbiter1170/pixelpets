@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const http = require('http');
-const { starterSave, installSave, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, gotoGame, artifactsDir, openSettings } = require('./helpers');
 const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
@@ -113,7 +113,7 @@ async function bootNew(browser, save, w){
   return page;
 }
 async function enterCode(page, code){
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setRoomCode').click();
   await page.locator('#roomCodeInput').fill(code || 'AMB-4RQ');
   await page.locator('#roomJoin').click();
@@ -193,7 +193,7 @@ test.describe('Play together', () => {
     const socks = [];
     page.on('websocket', ws => { if (ws.url().includes(':' + EMU_PORTS.database)) socks.push(ws.url()); });
     await boot(page, saveFor('nocode1', 'Tester'));
-    await page.locator('#settingsBtn').click();
+    await openSettings(page);
     await expect(page.locator('#playTogether')).toBeVisible();
     await expect(page.locator('#setRoomCode .set-val')).toHaveText(/ENTER/);
     await page.locator('#setRoomCode').click();
@@ -563,7 +563,7 @@ test.describe('Play together', () => {
     await tapUid(b, aUid);
     await b.locator('#holderCard button', { hasText: 'BLOCK' }).click();
     await b.locator('#holderCard').waitFor({ state: 'hidden' });
-    await b.locator('#settingsBtn').click();
+    await openSettings(b);
     await b.locator('#setBlocked').click();
     await b.locator('#blockedList button', { hasText: 'UNBLOCK' }).click();
     await b.locator('#blockedOv button', { hasText: 'CLOSE' }).click();
@@ -588,7 +588,7 @@ test.describe('Play together', () => {
     const cUid = await c.evaluate(() => window.PixelPets.net.uid);
     await rootSet('friends/' + aUid + '/' + bUid, true);
     await rootSet('friends/' + bUid + '/' + aUid, true);
-    await b.locator('#settingsBtn').click();
+    await openSettings(b);
     await b.locator('.net-pill', { hasText: 'SOLO' }).click();
     await expect.poll(async () => rootGet('rooms/AMB4RQ/hearthmoor'), { timeout: 1000 }).not.toBeNull();
     await expect.poll(async () => {
@@ -600,7 +600,7 @@ test.describe('Play together', () => {
     await b.locator('.net-pill', { hasText: 'ON' }).click();
     await closeSettings(b);
     await a.waitForFunction(sees, bUid, { timeout: 3000 });
-    await b.locator('#settingsBtn').click();
+    await openSettings(b);
     await b.locator('.net-pill', { hasText: 'FRIENDS' }).click();
     await closeSettings(b);
     await b.waitForFunction(sees, aUid, { timeout: 3000 });
@@ -710,7 +710,7 @@ test.describe('Play together', () => {
     await page.waitForFunction(() => getComputedStyle(document.querySelector('#toast')).opacity === '0');
     await rootSet('config/net', { on: false });
     await page.waitForFunction(() => window.PixelPets.net && window.PixelPets.net.status === 'fail', null, { timeout: 8000 });
-    await page.locator('#settingsBtn').click();
+    await openSettings(page);
     await expect(page.locator('.net-status')).toHaveText('Solo for now');
     expect(await page.evaluate(() => window.PixelPets.net.nextRetryMs)).toBe(30000);
     expect(await page.evaluate(() => window.PixelPets.net.retryMs.join(','))).toBe('30000,120000,600000');
@@ -796,7 +796,7 @@ test.describe('Play together', () => {
       const cardBtns = await page.locator('#holderCard button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
       cardBtns.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
       await page.locator('#holderCard button', { hasText: 'CLOSE' }).click();
-      await page.locator('#settingsBtn').click();
+      await openSettings(page);
       if (w === 390) await expect(page.locator('.net-status')).toHaveText(/^Room \d+ · \d+ here$/);
       const rows = await page.locator('#playTogether button').evaluateAll(els => els.map(e => e.getBoundingClientRect().height));
       rows.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
@@ -859,7 +859,7 @@ test.describe('Play together', () => {
     expect(text.toLowerCase()).not.toContain('keeper');
     expect(text.toLowerCase()).not.toContain('trainer');
     await page.keyboard.press('Escape');
-    const set = await page.locator('#settingsBtn').click().then(() => page.locator('#playTogether').innerText());
+    const set = await openSettings(page).then(() => page.locator('#playTogether').innerText());
     expect(set.toLowerCase()).not.toContain('keeper');
     expect(set.toLowerCase()).not.toContain('trainer');
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
@@ -881,7 +881,7 @@ test.describe('Play together', () => {
     test.skip(info.project.name !== '390', '390 project runs 320, 375 and 390');
     for (const w of [320, 375, 390]) {
       const page = await bootNew(browser, saveFor('lay' + w, 'Tester'), w);
-      await page.locator('#settingsBtn').click();
+      await openSettings(page);
       await expect(page.locator('#playTogether')).toBeVisible();
       const g = await page.evaluate(() => {
         const box = document.querySelector('#playTogether'), kids = [...box.children];

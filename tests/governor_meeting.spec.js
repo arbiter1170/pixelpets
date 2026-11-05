@@ -9,6 +9,8 @@ const path = require('path');
 const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
 
 trackErrors(test, expect);
+// KILNMOUTH lands on this branch when its maps are in the data: the chain then points at Claybank Road after the meeting.
+const KILN = /"km_road":\{/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'data', 'mapdata.js'), 'utf8'));
 
 const ROOT = path.join(__dirname, '..');
 const OPENER = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'detail_zzz_act2_opener.json'), 'utf8'));
@@ -141,7 +143,7 @@ const MEETING_HEAD = [
   "I've work for you. Kilnmouth's springs have gone cold this season. Nobody there can tell me why.",
   'A Calm Tower went up there the same season. Its permit is in order. I checked it myself.',
   "And their council has an empty seat. Everyone has a name for it. I'd like the town's.",
-  'Go and look. Listen more than you talk. Then come back and tell me what you found.',
+  'Go and look. Listen more than you talk. Then come back and tell me what you found, in plain words.',   // D2138
 ];
 // Into the office: the posted Cadet walks through the House door and stands at governor_front (12,5), facing up.
 async function toOffice(page) {
@@ -257,8 +259,9 @@ test.describe('GOVERNOR_MEETING Part 2: the meeting, hc_gov_meet (D1471, D1472)'
     expect(f['story.hc_cabinet_seat']).toBeUndefined();
     expect(f['story.thr_chip_rumour']).toBeUndefined();
     expect(f['story.cab_seat']).toBeUndefined();
-    expect((await quest(page)).id).toBe('a2_hold');
-    expect((await quest(page)).text).toBe('Await your next orders.');
+    // KILNMOUTH (X19): once the town is built, its first row takes the holding row's place.
+    expect((await quest(page)).id).toBe(KILN ? 'km_walk' : 'a2_hold');
+    expect((await quest(page)).text).toBe(KILN ? 'Take the east fork from Route 4 and walk Claybank Road up to Kilnmouth.' : 'Await your next orders.');
     await goto(page, 'hc_gov_1', 12, 5, 'up');
     expect(await page.evaluate(() => PixelPets.talkTo('hc_governor'))).toBe(true);
     expect(says(await drive(page))).toEqual(["Kilnmouth's springs, and the empty seat. Come back when you know more."]);
@@ -384,7 +387,7 @@ test.describe('GOVERNOR_MEETING Part 3, one scene for every holder, old saves (D
     const MET = Object.assign({}, RECALLED, { 'story.gov_posted': true, 'story.hc_gov_met': true, 'story.km_assigned': true });
     await boot(page, a2Save(MET, { map: 'hm_lodge_in', x: 5, y: 5, facing: 'up' }));
     // Skipping it blocks nothing: the main chain is already past the meeting; the report is a side pointer.
-    expect((await quest(page)).id).toBe('a2_hold');
+    expect((await quest(page)).id).toBe(KILN ? 'km_walk' : 'a2_hold');
     expect(await page.evaluate(() => PixelPets.sideActive.some(a => a.id === 'gov_report'))).toBe(true);
     const ends = {};
     for (const told of ['told', 'kept', null]) {
@@ -407,7 +410,7 @@ test.describe('GOVERNOR_MEETING Part 3, one scene for every holder, old saves (D
     expect(await sceneId(page)).not.toBe('a2_report_gov');
     await drive(page);
     expect(await page.evaluate(() => PixelPets.sideActive.some(a => a.id === 'gov_report'))).toBe(false);
-    expect((await quest(page)).id).toBe('a2_hold');
+    expect((await quest(page)).id).toBe(KILN ? 'km_walk' : 'a2_hold');
   });
 
   test('T10: data: no @glimmer variant, every line fits, no banned word, no new save field; debug places only with ?debug=1 @w1', async ({ page }) => {
