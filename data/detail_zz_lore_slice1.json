@@ -10,47 +10,12 @@
   ]
  },
  "_revisit": {
-  "note": "Lines to re-read when the history questions (D2320-D2331) are ruled; each stands on any answer today (D2295).",
+  "note": "D2320-D2331 and D2333-D2339 are settled (Wed Nov 4, 2026); every line here was re-read against them and stands, so their markers are cleared. D2332 waits on a rework: re-read these two scenes when it lands (D2295).",
   "scenes.lz_war": [
-   "D2321",
-   "D2322",
-   "D2324",
-   "D2325",
-   "D2327",
-   "D2328"
+   "D2332"
   ],
   "scenes.lz_war_home": [
-   "D2322",
-   "D2324",
-   "D2325",
-   "D2327",
-   "D2328"
-  ],
-  "scenes.lz_war_end": [
-   "D2329"
-  ],
-  "scenes.mo_shelf_menu": [
-   "D2323",
-   "D2326",
-   "D2331"
-  ],
-  "objPatch.school_board": [
-   "D2327"
-  ],
-  "objPatch.school_kid_a": [
-   "D2322"
-  ],
-  "objPatch.court_pip": [
-   "D2322"
-  ],
-  "objPatch.hm_lantern_host": [
-   "D2329"
-  ],
-  "journalNotes": [
-   "D2322",
-   "D2323",
-   "D2325",
-   "D2328"
+   "D2332"
   ]
  },
  "flags": {

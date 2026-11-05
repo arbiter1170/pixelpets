@@ -46,12 +46,12 @@ async function talk(page, id) {
   expect(await page.evaluate(i => PixelPets.talkTo(i), id), id).toBe(true);
 }
 // Plays the open scene to its end; choices take the first label in `picks` that is offered. Returns [speaker, text] per line
-// and ['>', label] per pick, and checks every choice button is 44 px tall or more at this width.
+// (plus the name shown in the box) and ['>', label] per pick, and checks every choice button is 44 px tall or more at this width.
 async function drive(page, picks = [], ms = 60000) {
   const until = Date.now() + ms, lines = [];
   let last = null;
   while (Date.now() < until) {
-    const sc = await page.evaluate(() => PixelPets.scene && { mode: PixelPets.scene.mode, full: PixelPets.scene.full, waiting: PixelPets.scene.waiting, text: PixelPets.scene.text, who: PixelPets.scene.who });
+    const sc = await page.evaluate(() => PixelPets.scene && { mode: PixelPets.scene.mode, full: PixelPets.scene.full, waiting: PixelPets.scene.waiting, text: PixelPets.scene.text, who: PixelPets.scene.who, shown: document.getElementById('sbWho').textContent });
     if (!sc) { await page.waitForTimeout(120); if (!(await page.evaluate(() => !!PixelPets.scene))) return lines; continue; }
     if (sc.mode === 'choice') {
       if (!sc.full) { await page.keyboard.press('Space'); continue; }
@@ -73,7 +73,7 @@ async function drive(page, picks = [], ms = 60000) {
     if (sc.mode === 'say' && sc.waiting) {
       if (!sc.full) { await page.waitForTimeout(30); continue; }
       const key = sc.who + '|' + sc.text;
-      if (key !== last) { lines.push([sc.who || '', sc.text]); last = key; }
+      if (key !== last) { lines.push([sc.who || '', sc.text, sc.shown]); last = key; }
       await page.keyboard.press('Space'); await page.waitForTimeout(30); continue;
     }
     await page.waitForTimeout(40);
@@ -101,8 +101,12 @@ test.describe('LORE_DISCOVERY slice 1: Lizzy\'s war lesson (D2280-D2283, D2287)'
     expect(t[t.length - 1]).toBe("Homework. Read the plaque in the plaza, then tell me who the next holder is. No, Buddy doesn't count.");
     expect(lines.filter(l => l[0] === '>')).toEqual([['>', 'Read the old books']]);
     expect(lines.find(l => l[0] === '?')[1]).toBe("Where's the part nobody wrote?");
-    expect(lines.find(l => /partnership started/.test(l[1]))[0]).toBe('Wren');
-    expect(await page.evaluate(() => PixelPets.shownName('Wren'))).toBe('Tilly');   // the pupil Wren is shown as Tilly (D1767)
+    // The pupil speaks as Tilly (D1767): the box shows Tilly. The raw speaker key stays Wren, so her desk body and the phone
+    // book still match it (a rename is display only, D1768).
+    const pupil = lines.find(l => /partnership started/.test(l[1]));
+    expect(pupil[0]).toBe('Wren');
+    expect(pupil[2]).toBe('Tilly');
+    expect(await page.evaluate(() => PixelPets.shownName('Wren'))).toBe('Tilly');
     expect(texts(lines).length).toBeLessThanOrEqual(9);
     const f = await flags(page);
     expect(f['story.lizzy_war']).toBe('read');
