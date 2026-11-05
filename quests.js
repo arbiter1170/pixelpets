@@ -376,6 +376,13 @@
     // The hold stays for a save that read the permit without the twin lead (both are set by the same scene).
     { id: 'a2_hold', when: ['story.km_permit_seen'], done: ['story.reached_brightgate'],
       text: 'Await your next orders.', place: 'The Amberwild' },
+    // H4 to B6 (D2091, D2106): after Hall 4, the shuttle home lands beside the Lantern Coach that B6 rides; the first drop at
+    // Hearthmoor ends it (story.bg_shuttle_hm is only ever set after a first visit, so it implies the rows above).
+    { id: 'bg_home', when: ['story.seal4'], done: ['story.bg_shuttle_hm'],
+      text: 'Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', place: 'Brightgate shuttle stop',
+      target: { map: 'brightgate', x: 32, y: 38 } },
+    // Order matters: bg_home sits ahead of km_report so that after Hall 4 the shuttle home (B6) is shown before the report-back to
+    // the Governor (B7, K6); once the first drop at Hearthmoor is made, km_report follows.
     // CABINET_AND_COUNCILS v0.2.2 (1a, 1b; ACT2_BEAT_SHEET B7, B11): the report-back to the Governor (K6, story.km_reported), Lumen's
     // lead-in in the Governor's House lobby, the stair to the Cabinet Room and the twelfth chair (S1 plays there once K2a has,
     // story.pres_cabinet_first; K2a waits on the parade), then Kilnmouth's council sits (K7). Keepers path only. Row text is the
@@ -395,11 +402,6 @@
       npc: 'Reeve Agna', npcIds: ['km_reeve'],
       text: "Take the Governor's letter to Reeve Agna at Kilnmouth's council house. The council can sit.", place: 'Kilnmouth council house',
       target: { map: 'km_council_in', x: 11, y: 3 } },
-    // H4 to B6 (D2091, D2106): after Hall 4, the shuttle home lands beside the Lantern Coach that B6 rides; the first drop at
-    // Hearthmoor ends it (story.bg_shuttle_hm is only ever set after a first visit, so it implies the rows above).
-    { id: 'bg_home', when: ['story.seal4'], done: ['story.bg_shuttle_hm'],
-      text: 'Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', place: 'Brightgate shuttle stop',
-      target: { map: 'brightgate', x: 32, y: 38 } },
     // WALK_BESIDE §3.3 (D1961): Archivist Mo waits at the Lodge steps from the first sitting (CABINET S1 sets story.cab_seat; not
     // built, so this row is inert today) until the cut is shown. Never for a switcher or the company's face.
     { id: 'wb_cut', when: ['story.cab_seat', '!story.switched_a3', '!story.side=glimmer'], done: ['story.wb_cut'], noImply: true,

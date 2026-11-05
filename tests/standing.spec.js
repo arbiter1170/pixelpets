@@ -402,12 +402,12 @@ const COPY = {
   km_permit: ["The tower crew holds the fence gate. Get past them and read the tower's permit.", 'Kilnmouth, the common'],
   bg_ride: ['Ride the company shuttle from the Kilnmouth works yard to Brightgate.', 'Kilnmouth works yard'],   // BRIGHT_SHUTTLE (D2106, PLACEHOLDER)
   a2_hold: ['Await your next orders.', 'The Amberwild'],
+  bg_home: ['Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', 'Brightgate shuttle stop'],
   // CABINET_AND_COUNCILS 1a/1b: the report-back, Lumen's lead-in, the stair to the twelfth chair, the council (Keepers path; OPEN_DECISIONS D1608-copy)
   km_report: ["Tell Governor Merriden about the tower's permit. He's at the Governor's House in High Charity.", "Governor's House"],
   cab_lead: ["Captain Lumen is waiting in the lobby of the Governor's House.", "Governor's House"],
   cab_seat: ["Take the stair in the Governor's House up to the Cabinet Room. A chair is set for you.", 'Cabinet Room'],
   km_council: ["Take the Governor's letter to Reeve Agna at Kilnmouth's council house. The council can sit.", 'Kilnmouth council house'],
-  bg_home: ['Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', 'Brightgate shuttle stop'],
   wb_cut: ['Archivist Mo is waiting at the Lodge.', 'Hearthmoor, the Lodge'],   // WALK_BESIDE §3.3 (D1961)
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
