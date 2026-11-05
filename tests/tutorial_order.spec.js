@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -391,7 +391,7 @@ test('T-O9 C4e rings REST and T3 drops the old energy line', async ({ page }) =>
   await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'C5');
   await page.locator('#ctClose').click();
-  await page.locator('#gearFloat').click().catch(async () => { await page.locator('#settingsBtn').click(); });
+  await page.locator('#gearFloat').click().catch(async () => { await openSettings(page); });
   await page.locator('#setTutorial').click();
   await page.locator('#shList .sh-item', { hasText: 'Opening tour' }).click();
   for (let i = 0; i < 12; i++) {
@@ -568,7 +568,7 @@ test('T-O14 SKIP ends befriending only, and Settings arms it again', async ({ pa
   expect(mid.moves).toBe('p1');
   await page.evaluate(() => PixelPets.battle.close());
   await page.waitForFunction(() => !PixelPets.battle.on);
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setTutorial').click();
   await expect(page.locator('#shList .sh-item', { hasText: 'Befriending' })).toBeVisible();
   await page.locator('#shList .sh-item', { hasText: 'Befriending' }).click();

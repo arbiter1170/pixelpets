@@ -13,6 +13,10 @@ function modernSave(extra = {}) {
   return s;
 }
 
+// starterSave() is Modern (Vincent, Nov 4, 2026). A test here that is about Arcade (the pad, TALK, tabs, switching from Arcade)
+// opts in with this save.
+function arcadeSave() { const s = starterSave(); s.settings.controls = 'arcade'; return s; }
+
 test('a save with no settings.controls loads as modern (ARCADE_GRIPS default) @w1', async ({ page }) => {
   const s = starterSave(); delete s.settings.controls;
   await installSave(page.context(), s, { quietDay: true });
@@ -26,7 +30,7 @@ test('a save with no settings.controls loads as modern (ARCADE_GRIPS default) @w
 });
 
 test('a save that picked arcade keeps the pad @w1', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await expect(page.locator('#dpad')).toBeVisible();
@@ -81,7 +85,7 @@ test('modern fills the screen and every floating button works', async ({ page })
 });
 
 test('Settings switches both ways, survives a reload, and puts nodes home @w1', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.locator('#settingsBtn').click();
@@ -123,7 +127,7 @@ test('the joystick walks like a held arrow and ignores a tap', async ({ page }) 
 });
 
 test('Space advances every line of Ness\'s phone_grant, the last one too, and does not re-press a focused button', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });   // Arcade: the focused button is TALK
   await gotoGame(page, '?debug=1');
   await page.locator('#tabs button[data-tab="walk"]').click();
   expect(await page.evaluate(() => PixelPets.runScene('phone_grant'))).toBe(true);
@@ -243,7 +247,7 @@ test('modern gear: locked look and no action during a scene once you have a part
 
 for (const controls of ['arcade', 'modern']) {
   test(`the area badge is a 44 px tap target (${controls})`, async ({ page }) => {
-    await installSave(page.context(), controls === 'modern' ? modernSave() : starterSave(), { quietDay: true });
+    await installSave(page.context(), controls === 'modern' ? modernSave() : arcadeSave(), { quietDay: true });
     await gotoGame(page);
     await page.evaluate(() => PixelPets.showTab('walk'));
     const b = await page.locator('#thChip').boundingBox();
@@ -297,7 +301,7 @@ test('the real Route 1 walk tip grows to two lines instead of an ellipsis (moder
 test('DEBUG SAVE shows in Settings straight after a ?debug=1 load', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page, '?debug=1');
-  await page.locator('#settingsBtn').click();
+  await page.locator('#gearFloat').click();   // Modern: the dock's gear opens Settings
   await expect(page.locator('#setBuild')).toContainText('DEBUG SAVE', { timeout: 500 });
 });
 
@@ -380,7 +384,7 @@ test('D70 first-walk prompt: approved question, ARCADE / MODERN with sub-lines, 
 const GREEN = ['Arcade controls. Pad and Talk button.', 'Modern controls. Tap to walk or talk.', 'Joystick on.', 'Joystick off.',
   'Keep walking. Wild Walklings hide in the grass.', 'Pipkit missed you! Welcome back.', 'Pipkit likes the new name!', 'Pipkit is back to its own name.', 'Pick a name first.'];
 test('green copy: the Settings rows toast the approved lines', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });   // Arcade: the first switch goes to Modern
   await gotoGame(page);
   await page.locator('#settingsBtn').click();
   await page.locator('#setControls').click();
@@ -498,7 +502,7 @@ test('modern quest button marks a main step in gold and a side quest in blue', a
 });
 
 test('arcade quest button keeps the signpost and still names an open quest', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  await installSave(page.context(), arcadeSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'main side');

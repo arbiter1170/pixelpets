@@ -8,7 +8,9 @@
     "hall_slot_1": "Tour. Vincent, Oct 13, 2026: slot 1 stays the stated default (Bright Pavilion Tour). The Audit battle is optional stop 4.",
     "hall_slot_2": "Sacrifice stub (Build 5). Quota is the free floor: three names spoken aloud. Setting a snack down is narrative only (the item stays in the bag, so the review cannot soft-lock). The Tuning, Pick another and the quota give the Bright Tier 2 tag and story.seal2, not the Seal. Face Hale for the Seal battles hall2_hale (merged row, seal_cobblecrest) and onWin runs seal2; after a tag close Hale offers the match again until it is won (D1324, D1325, D1328). Real cost is still D24 (partly superseded by D1325, D1328).",
     "rook_r5": "Built (Build 6). Keepers brinewick_hook sets story.rook_end ally. Glimmerwell brinewick_hook@glimmer sets stays. Both set story.cobble_end. Not bond-gated. Tone confirmation is still D25.",
-    "d1448_rook_signup": "D1448: Partner Day is only the Keepers' starter day. Rook's teaser@glimmer line says \"Sign-up day\": stand-in copy until Story replaces it (OPEN_DECISIONS row B-7 (copy))."
+    "d1448_rook_signup": "D1448: Partner Day is only the Keepers' starter day. Rook's teaser@glimmer line is Story's (STORY_LINES D2136): late on Partner Day, the jingle, the wine sticker, matching his Keepers-side teaser.",
+    "d2134_fen_after": "STORY_LINES D2134: Fen's Open-lean nudge (60 characters) is a talk line on fen_after itself (slicePatch, the 110 rule). The lines.fen_after bag, which repeated the same three keys and is held to the 40-character ambient rule, is gone; applyGlimmerLines leaves fen_after's own lines as they were.",
+    "d2144_unease": "STORY_LINES D2144 (Vincent, Nov 4, 2026): glen_cleared@glimmer asks the holder to answer Rook's \"looked... empty\". \"They did look empty.\" adds one story.tour_unease point, capped at 2; \"Imogen says they're fine.\" adds nothing. The Testing threshold in hale_trial@glimmer stays 2 (D26), so a new save that agrees with Rook hears Quinn's softer line and Rook's aside (D2145)."
   },
   "slicePatch": {
     "maps": {
@@ -94,7 +96,7 @@
               "story.orchard_cleared | story.fen_sent_home & story.seal1 & story.side_pick_done"
             ],
             "lines": {
-              "!story.orchard_cleared": "Tobin won't listen to me. Try him.",
+              "!story.orchard_cleared": "Tobin's by the cart. Show him what a strong team looks like.",
               "story.side=glimmer": "The trees still know your step.",
               "!story.side=glimmer": "Thank you. The blossoms remember."
             },
@@ -459,7 +461,7 @@
       [
         "say",
         "Rook",
-        "Yeah, I'm in too. Since spring. Sign-up day, the jingle, the sticker: all them."
+        "Yeah, I'm in too. Since spring. Late on Partner Day, the jingle, the wine sticker: that was all them."
       ],
       [
         "say",
@@ -815,6 +817,42 @@
         "Proud. They looked... empty, Imogen."
       ],
       [
+        "choice",
+        "Rook looks at you.",
+        [
+          [
+            "They did look empty.",
+            [
+              [
+                "say",
+                "Rook",
+                "...Yeah. Empty. Okay. So it's not just me."
+              ],
+              [
+                "if",
+                "story.tour_unease<2",
+                [
+                  [
+                    "inc",
+                    "story.tour_unease"
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "Imogen says they're fine.",
+            [
+              [
+                "say",
+                "Rook",
+                "Right. Imogen knows lamps. ...Sure she does."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
         "say",
         "Rook",
         "They gave me treats to calm the units. You take them. You will use them."
@@ -1131,12 +1169,12 @@
                       [
                         "say",
                         "Associate Quinn",
-                        "Some holders feel a flutter. We call it increasing the bond. Nothing sharp. Nothing cold."
+                        "You look worried, sweetie. Some holders feel a flutter after. That's the bond. Nothing sharp. Nothing cold."
                       ],
                       [
                         "say",
                         "Rook",
-                        "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."
+                        "Nothing sharp? Who said anything about sharp? ...It's fine. They'll get stronger. I want that. I do."
                       ]
                     ],
                     [
@@ -1422,11 +1460,6 @@
     "amos": {
       "story.side=glimmer": "Beds are beds. Rest up, wine-vest.",
       "!story.side=glimmer": "Rest well, holder. Roots need sleep."
-    },
-    "fen_after": {
-      "!story.orchard_cleared": "Tobin won't listen to me. Try him.",
-      "story.side=glimmer": "The trees still know your step.",
-      "!story.side=glimmer": "Thank you. The blossoms remember."
     }
   },
   "walkAway": [
