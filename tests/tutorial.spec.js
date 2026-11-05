@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir, openSettings, showScreen } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -79,7 +79,8 @@ function expectLayout(box) {
 
 test('a first run walks the tour and the care buttons are real', async ({ page }) => {
   test.setTimeout(60000);
-  await openTour(page, tourSave());
+  const s = tourSave(); s.settings.controls = 'arcade';   // Arcade opt-in: walks the Arcade tour's copy (pad, d-pad row, tabs)
+  await openTour(page, s);
   await expect(page.locator('#tutLine')).toHaveText('Pipkit is your partner now! Want a quick tour of how to look after them?');
   const where = await page.evaluate(() => ({ map: PixelPets.state.world.map, steps: PixelPets.state.steps, v: PixelPets.state.v }));
   expect(where).toEqual({ map: 'hm_lodge_in', steps: 0, v: 2 });
@@ -100,7 +101,7 @@ test('a first run walks the tour and the care buttons are real', async ({ page }
   await shot390(page, 'tutorial-t12r');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
-  await page.locator('#tabs button[data-tab="pet"]').click();
+  await showScreen(page, 'pet');
   await expect(page.locator('#tutLine')).toContainText('FOOD drops slowly');
   expectLayout(await layout(page));
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
@@ -132,7 +133,7 @@ test('a first run walks the tour and the care buttons are real', async ({ page }
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
 
   await expect(page.locator('#tutLine')).toContainText('Tap WALK');
-  await page.locator('#tabs button[data-tab="walk"]').click();
+  await showScreen(page, 'walk');
   await expect(page.locator('#tutLine')).toContainText("That's the tour!");
   await expect(page.locator('#tutSkip')).toBeHidden();
   expectLayout(await layout(page));
@@ -229,10 +230,11 @@ test('Settings replay highlights care and does not spend it', async ({ page }) =
   save.party[0].happy = 80;
   save.party[0].energy = 90;
   delete save.party[0].cd;
+  save.settings.controls = 'arcade';   // Arcade opt-in: the replay walks the Arcade tour's copy (pad, d-pad row, tabs)
   await installSave(page.context(), save, { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#setTutorial .set-lab')).toHaveText('Tutorial');
   await expect(page.locator('#setTutorial .set-val')).toHaveText('REPLAY');
   await page.locator('#setTutorial').scrollIntoViewIfNeeded();
@@ -249,7 +251,7 @@ test('Settings replay highlights care and does not spend it', async ({ page }) =
   await expect(page.locator('#tutLine')).not.toContainText('Want a quick tour');
   for (let i = 0; i < 4; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
-  await page.locator('#tabs button[data-tab="pet"]').click();
+  await showScreen(page, 'pet');
   for (let i = 0; i < 3; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('Tap FEED');
   await expect(page.locator('#tutActs button', { hasText: 'NEXT' })).toBeVisible();
@@ -258,7 +260,7 @@ test('Settings replay highlights care and does not spend it', async ({ page }) =
   for (let n = 0; n < 14 && await page.locator('#tutLayer').isVisible(); n++) {
     const text = await page.locator('#tutLine').textContent();
     if (text && text.indexOf('Tap WALK') >= 0) {
-      await page.locator('#tabs button[data-tab="walk"]').click();
+      await showScreen(page, 'walk');
       continue;
     }
     const label = await page.locator('#tutActs button').first().textContent();

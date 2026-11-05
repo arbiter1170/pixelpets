@@ -25,6 +25,7 @@ const KEPT = {
   },
   'data/act1_route2.json': { glimmer2: 'verbatim; re-voiced by lineSwaps', lead_intro: 'verbatim; re-voiced by lineSwaps', teaser: 'verbatim; re-voiced by lineSwaps' },
   'data/detail_zz_no_mint.json': { _swapText: 'the old verbatim line each lineSwap matches' },
+  'data/look_lock.json': { fen: "Master Fen's own look note (her tunic's trim), not player text and not Glimmerwell" },
 };
 const JS_KEPT = { 'ribbit.js': ['mintcup'] };   // the Orchard hand's handle: a cup of mint tea, not the colour
 

@@ -1,6 +1,6 @@
 /* Mom's upstairs tasks, the look picker, and the Mahopac dream. See tests/README.md. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -39,7 +39,7 @@ test('look picker offers more hair, clothes, and accessories @w1', async ({ page
   expect(counts.migrated).toBe(true);
   expect(counts.gridsOk).toBe(true);
 
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setLook').click();
   await page.waitForSelector('#ovLook:not([hidden])');
   const buttons = await page.evaluate(() => ({

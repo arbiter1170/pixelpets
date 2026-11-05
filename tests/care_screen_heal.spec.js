@@ -54,7 +54,8 @@ async function measure(page) {
 test('the block order, equal bars, a hidden strip, and no scroll at the measured size', async ({ page }) => {
   const w = page.viewportSize().width;
   if (w === 390) await page.setViewportSize({ width: 390, height: 664 });
-  await boot(page, { hunger: 55, happy: 57, energy: 29, xp: 119, hpNow: 6 });
+  // Arcade opt-in: the last check is the Arcade walk-screen stat strip, and the sizes were measured in Arcade.
+  await boot(page, { hunger: 55, happy: 57, energy: 29, xp: 119, hpNow: 6 }, null, '', { controls: 'arcade' });
   const m = await measure(page);
   expect(m.v).toBe(2);
   expect(m.labels).toEqual(['HP', 'FOOD', 'JOY', 'NRG', 'GROW']);

@@ -166,7 +166,7 @@ test('T6 D813: the Acorn chips show the new total after the win, with no toast',
   const total = await page.evaluate(() => PixelPets.state.money | 0);
   const labels = await page.evaluate(() => ['hdrAcorns', 'fcAcorns'].map(id => { const e = document.getElementById(id); return e ? e.getAttribute('aria-label') : null; }).filter(Boolean));
   expect(labels.length).toBeGreaterThan(0);
-  for (const l of labels) expect(l).toBe(total + ' Acorns');
+  for (const l of labels) expect(l.replace('. Open your book.', '')).toBe(total + ' Acorns');   // BANK_AND_HOMES D2220: the chip's button label
   const toast = await page.evaluate(() => { const t = document.querySelector('#toast'); return t && t.classList.contains('show') ? t.textContent : ''; });
   expect(toast).not.toMatch(/Acorn/);
 });

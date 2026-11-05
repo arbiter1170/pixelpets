@@ -1,0 +1,7708 @@
+{
+ "spec": "BRIGHTGATE_LAYOUT v0.2 (design specs/BRIGHTGATE_LAYOUT.md; D1478-D1499, D2000-D2009 settled; rule 9 previews approved)",
+ "_about": "Ours, built by tools/build_brightgate.py from the packet json (read, never copied whole). Named zzzzz so it applies after every other overlay. No warp outside the city leads in yet; ?debug=1 places only. All player text is PLACEHOLDER until Story signs it (§11). Art is PLACEHOLDER until Pia's pass (§10).",
+ "tiles": {
+  "I": {
+   "name": "panel paving",
+   "walk": true
+  },
+  "L": {
+   "name": "glide lane",
+   "walk": true
+  },
+  "x": {
+   "name": "glide crossing",
+   "walk": true
+  },
+  "J": {
+   "name": "planter kerb",
+   "walk": false
+  },
+  "b": {
+   "name": "Cruiser stand bay",
+   "walk": false
+  },
+  "o": {
+   "name": "cobbles",
+   "walk": true
+  },
+  "d": {
+   "name": "setts",
+   "walk": true
+  },
+  "O": {
+   "name": "rail on setts",
+   "walk": true
+  },
+  "G": {
+   "name": "company fence",
+   "walk": false
+  },
+  "V": {
+   "name": "Concierge pad",
+   "walk": true
+  },
+  "N": {
+   "name": "clipped hedge",
+   "walk": false
+  },
+  "&": {
+   "name": "flowerbed",
+   "walk": true
+  }
+ },
+ "maps": {
+  "brightgate": {
+   "name": "Brightgate",
+   "district": "GATE PLAZA",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 64,
+   "h": 40,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 32,
+    "y": 37
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "lantern": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 22,
+     "y0": 26,
+     "x1": 29,
+     "y1": 31,
+     "porch": [
+      "bg_lantern_sign"
+     ]
+    },
+    "store": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_white",
+     "door": "door_gw_glass",
+     "win": "bg_awning",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 35,
+     "y0": 29,
+     "x1": 44,
+     "y1": 31,
+     "porch": [
+      "bg_store_board"
+     ]
+    },
+    "flats_a": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 4,
+     "x1": 25,
+     "y1": 9
+    },
+    "flats_b": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 44,
+     "y0": 2,
+     "x1": 60,
+     "y1": 9
+    },
+    "welcome": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 12,
+     "y0": 28,
+     "x1": 19,
+     "y1": 31
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNILLLINNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+    "NlllllllllllllllllllllllllllIIILLLIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIILLLIIIlllllllRRRRRRRRRRRRRRRRRllN",
+    "NlllllllllllllllllllllllllllIIILLLIIIlllllllRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&&&&&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&lll&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&lll&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&lll&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&lll&lRRRRRRRRRRRRRRRRRllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRllIIJLLLJIIl&&&&&lRRRRRRRRRRRRRRRRRllN",
+    "NllHHHHHHHHHHHHHHHHHHHHHHHllIIxxxxxIIlllllllHHHHHHHHHHHHHHHHHllN",
+    "NllHHHHHHHHHHHHHHHHHHHHHHHllIIxxxxxIIlllllllHHHHHHHHHHHHHHHHHllN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIIIIIIIllN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIIIIIIIllN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIIIIIIIllN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIIIIIIIllN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "IIIIJJJJJJJJxxJJJJJJJJJJJJJJLLLLLLLLLJJJJJJJJJJJJJJJxxJJbbbJIIII",
+    "LLLLLLLLLLLLxxLLLLLLLLLLLLLLLLLwwwLLLLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "LLLLLLLLLLLLxxLLLLLLLLLLLLLLLLLwwwLLLLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "LLLLLLLLLLLLxxLLLLLLLLLLLLLLLLLwwwLLLLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "IIIIJbbbJJJJxxJJJJJJJJJJJJJJLLLLLLLLLJJJJJJJJJJJJJJJxxJJJJJJIIII",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NllIIIIIIIIIIIIIIIIIIIRRRRRRRRILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "Nll&&&&&&&&lllllllllllRRRRRRRRILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "Nll&llllll&lRRRRRRRRllRRRRRRRRILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "Nll&llllll&lRRRRRRRRllRRRRRRRRILLLIRRRRRRRRRRIIIIIIIIIIIIIIIIIIN",
+    "Nll&llllll&lRRRRRRRRllRRRRRRRRILLLIRRRRRRRRRRIIIIIIIIIIIIIIIIIII",
+    "Nll&llllll&lRRRRRRRRllRRRRRRRRILLLIRRRRRRRRRRLLLLLLLLLLLLLLLLLLL",
+    "Nll&&&&&&&&lHHHHHHHHllHHHHHHHHILLLIHHHHHHHHHHLLLLLLLLLLLLLLLLLLL",
+    "NlllllllllllHHHHHHHHllHHHHHHHHILLLIHHHHHHHHHHLLLLLLLLLLLLLLLLLLL",
+    "NllIIIIIIIIIIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+    "NlllllllllllIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIlllllllllllllN",
+    "NlllllllllllIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIbbbIIIlllllllllllllN",
+    "NlllllllllllIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIlllllllllllllN",
+    "NlllllllllllIIIIIIIIIIIIIIIIIIILLLIIIIIIIIIIIIIIIIlllllllllllllN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_lantern",
+     "x": 29,
+     "y": 34,
+     "to": "bg_lantern_in",
+     "tx": 6,
+     "ty": 12,
+     "facing": "up"
+    },
+    {
+     "kind": "door",
+     "id": "bg_store",
+     "x": 35,
+     "y": 34,
+     "to": "bg_store_in",
+     "tx": 5,
+     "ty": 7,
+     "facing": "up"
+    },
+    {
+     "kind": "door",
+     "id": "bg_flats_a",
+     "x": 9,
+     "y": 12,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_flats_b",
+     "x": 55,
+     "y": 12,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_welcome",
+     "x": 15,
+     "y": 34,
+     "need": "story.bg_no_room",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_0",
+     "x": 30,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 30,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_1",
+     "x": 31,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 31,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_2",
+     "x": 32,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 32,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_3",
+     "x": 33,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 33,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_n_4",
+     "x": 34,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 34,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_0",
+     "x": 0,
+     "y": 18,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 18,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_1",
+     "x": 0,
+     "y": 19,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 19,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_2",
+     "x": 0,
+     "y": 20,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 20,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_3",
+     "x": 0,
+     "y": 21,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 21,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_w_4",
+     "x": 0,
+     "y": 22,
+     "to": "bg_oldtown",
+     "tx": 62,
+     "ty": 22,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_0",
+     "x": 63,
+     "y": 18,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 18,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_1",
+     "x": 63,
+     "y": 19,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 19,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_2",
+     "x": 63,
+     "y": 20,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 20,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_3",
+     "x": 63,
+     "y": 21,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 21,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_e_4",
+     "x": 63,
+     "y": 22,
+     "to": "bg_works",
+     "tx": 1,
+     "ty": 22,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_0",
+     "x": 63,
+     "y": 30,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 30,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_1",
+     "x": 63,
+     "y": 31,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 31,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_2",
+     "x": 63,
+     "y": 32,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 32,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_3",
+     "x": 63,
+     "y": 33,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 33,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg0_se_4",
+     "x": 63,
+     "y": 34,
+     "to": "bg_partner",
+     "tx": 1,
+     "ty": 34,
+     "facing": "right"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_south",
+     "x": 32,
+     "y": 38,
+     "sprite": "road_bar",
+     "name": "the shuttle bar",
+     "lines": {
+      "else": "[PLACEHOLDER] The shuttle stop. No shuttle runs from here yet."
+     },
+     "when": [
+      "!story.bg_shuttle_live"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_sign",
+     "x": 28,
+     "y": 33,
+     "sprite": "heal_lantern"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_board",
+     "x": 36,
+     "y": 33,
+     "sprite": "acorn_board"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_sign_town",
+     "x": 27,
+     "y": 36,
+     "sprite": "signpost",
+     "text": "BRIGHTGATE. Lit by Glimmerwell since the day the old wicks went out."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg0_n",
+     "x": 35,
+     "y": 1,
+     "sprite": "signpost",
+     "text": "GATE PLAZA · This way: THE CAMPUS."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg0_w",
+     "x": 1,
+     "y": 23,
+     "sprite": "signpost",
+     "text": "GATE PLAZA · This way: OLD WICK."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg0_e",
+     "x": 62,
+     "y": 23,
+     "sprite": "signpost",
+     "text": "GATE PLAZA · This way: THE LAMP WORKS."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg0_se",
+     "x": 62,
+     "y": 35,
+     "sprite": "signpost",
+     "text": "GATE PLAZA · This way: PARTNER ROW."
+    },
+    {
+     "kind": "prop",
+     "id": "bg_cs_bg0_line_w",
+     "x": 6,
+     "y": 22,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "name": "a Courtesy Cruiser",
+     "lines": {
+      "else": "A Courtesy Cruiser. No wheels. It hums a hand above the road."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_cs_bg0_line_e",
+     "x": 57,
+     "y": 18,
+     "sprite": "bg_cruiser_l",
+     "oy": 6,
+     "name": "a Courtesy Cruiser",
+     "lines": {
+      "else": "A Courtesy Cruiser. No wheels. It hums a hand above the road."
+     }
+    },
+    {
+     "kind": "glide",
+     "id": "bg_cr_bg0_line",
+     "x": 4,
+     "y": 20,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "glide": {
+      "x0": 4,
+      "x1": 26,
+      "speed": 3.2,
+      "pause": 1.4
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg0_walk_a",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 28,
+     "y": 2,
+     "facing": "down",
+     "patrol": [
+      [
+       28,
+       2
+      ],
+      [
+       36,
+       2
+      ],
+      [
+       36,
+       11
+      ],
+      [
+       28,
+       11
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg0_walk_b",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 36,
+     "y": 11,
+     "facing": "down",
+     "patrol": [
+      [
+       28,
+       2
+      ],
+      [
+       36,
+       2
+      ],
+      [
+       36,
+       11
+      ],
+      [
+       28,
+       11
+      ]
+     ],
+     "patrolStart": 2,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg0_line_a",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 12,
+     "y": 16,
+     "facing": "down",
+     "patrol": [
+      [
+       12,
+       16
+      ],
+      [
+       53,
+       16
+      ],
+      [
+       53,
+       24
+      ],
+      [
+       12,
+       24
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg0_line_b",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 53,
+     "y": 24,
+     "facing": "down",
+     "patrol": [
+      [
+       12,
+       16
+      ],
+      [
+       53,
+       16
+      ],
+      [
+       53,
+       24
+      ],
+      [
+       12,
+       24
+      ]
+     ],
+     "patrolStart": 2,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg0_board_a",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 45,
+     "y": 25,
+     "facing": "down",
+     "patrol": [
+      [
+       45,
+       25
+      ],
+      [
+       61,
+       25
+      ],
+      [
+       61,
+       28
+      ],
+      [
+       45,
+       28
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     },
+     "when": [
+      "phase:dusk|phase:night"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_swap_clerk",
+     "name": "Swap Clerk",
+     "look": "bg_swap_clerk",
+     "x": 58,
+     "y": 27,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Bring me any old oil lamp and walk off with a Glimmer lantern. Free! Why? Partnership!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_shuttle_greeter",
+     "name": "Courtesy greeter",
+     "look": "bg_courtesy",
+     "x": 30,
+     "y": 36,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Welcome to Brightgate! Have a bright day!"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_shelter",
+     "x": 35,
+     "y": 36,
+     "sprite": "bg_shelter",
+     "lines": {
+      "story.km_council": "BRIGHT SHUTTLE. Hearthmoor and Kilnmouth Works: every hour, free. Have a bright day!",
+      "else": "BRIGHT SHUTTLE. Hearthmoor: every hour, free. Kilnmouth Works: no runs today. Have a bright day!"
+     },
+     "name": "the shuttle shelter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_flame_lantern_1",
+     "x": 30,
+     "y": 25,
+     "sprite": "bg_flame_lantern",
+     "name": "an old flame lantern"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bright_board",
+     "x": 40,
+     "y": 26,
+     "sprite": "bg_bright_board",
+     "lines": {
+      "else": "BRIGHT BOARD. Top partners this quarter. Targets up 10%!"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_swap_stall",
+     "x": 57,
+     "y": 27,
+     "ox": -8,
+     "sprite": "bg_swap_stall",
+     "name": "Bright Swap",
+     "lines": {
+      "else": "BRIGHT SWAP. Old oil lamps in, Glimmer lanterns out. Free! It's a partnership!"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_swap_stall_56_26",
+     "x": 56,
+     "y": 26,
+     "sprite": "bg_none"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_swap_stall_57_26",
+     "x": 57,
+     "y": 26,
+     "sprite": "bg_none"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_swap_stall_56_27",
+     "x": 56,
+     "y": 27,
+     "sprite": "bg_none"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_relay_mast_c0",
+     "x": 48,
+     "y": 37,
+     "sprite": "bg_relay_mast",
+     "lines": {
+      "else": "A slim mast with a wine ring and honey studs. It hums."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_census_kiosk",
+     "x": 6,
+     "y": 26,
+     "sprite": "census_tent"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_switchover",
+     "x": 3,
+     "y": 15,
+     "sprite": "bg_switch_board",
+     "lines": {
+      "else": "SWITCHOVER BOARD. Old Wick, lane by lane. Brighter by nature."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_crates",
+     "x": 43,
+     "y": 34,
+     "sprite": "bg_lantern_crate"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_0__ring",
+     "x": 30,
+     "y": 6,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_0_pulse",
+     "x": 30,
+     "y": 6,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_1__ring",
+     "x": 34,
+     "y": 6,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_1_pulse",
+     "x": 34,
+     "y": 6,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_2__ring",
+     "x": 30,
+     "y": 12,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_2_pulse",
+     "x": 30,
+     "y": 12,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_3__ring",
+     "x": 34,
+     "y": 12,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_3_pulse",
+     "x": 34,
+     "y": 12,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_4__ring",
+     "x": 6,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_4_pulse",
+     "x": 6,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_5__ring",
+     "x": 18,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_5_pulse",
+     "x": 18,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_6__ring",
+     "x": 24,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_6_pulse",
+     "x": 24,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_7__ring",
+     "x": 42,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_7_pulse",
+     "x": 42,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_8__ring",
+     "x": 48,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_8_pulse",
+     "x": 48,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_9__ring",
+     "x": 54,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_9_pulse",
+     "x": 54,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_10__ring",
+     "x": 59,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_10_pulse",
+     "x": 59,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_11__ring",
+     "x": 18,
+     "y": 22,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_11_pulse",
+     "x": 18,
+     "y": 22,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_12__ring",
+     "x": 24,
+     "y": 22,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_12_pulse",
+     "x": 24,
+     "y": 22,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_13__ring",
+     "x": 42,
+     "y": 22,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_13_pulse",
+     "x": 42,
+     "y": 22,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_14__ring",
+     "x": 48,
+     "y": 22,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_14_pulse",
+     "x": 48,
+     "y": 22,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_15__ring",
+     "x": 54,
+     "y": 22,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_brightgate_15_pulse",
+     "x": 54,
+     "y": 22,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_0_0",
+     "name": "Staff commuter",
+     "look": "bg_courtesy",
+     "x": 34,
+     "y": 35,
+     "facing": "up",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true,
+     "schedule": [
+      {
+       "when": "phase:dawn",
+       "map": "brightgate",
+       "x": 34,
+       "y": 35,
+       "facing": "up",
+       "place": "the shuttle stop"
+      },
+      {
+       "when": "phase:day",
+       "map": "bg_campus",
+       "x": 29,
+       "y": 20,
+       "facing": "up",
+       "place": "the HQ Forecourt"
+      },
+      {
+       "when": "phase:dusk",
+       "map": "brightgate",
+       "x": 26,
+       "y": 17,
+       "facing": "right",
+       "place": "the Bright Circle"
+      },
+      {
+       "map": null,
+       "x": 0,
+       "y": 0,
+       "place": "home (off the map)"
+      }
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_1_0",
+     "name": "Supporter A",
+     "look": "bg_supporter",
+     "x": 42,
+     "y": 27,
+     "facing": "up",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true,
+     "schedule": [
+      {
+       "when": "phase:day",
+       "map": "brightgate",
+       "x": 42,
+       "y": 27,
+       "facing": "up",
+       "place": "the Bright Board"
+      },
+      {
+       "when": "phase:dusk",
+       "map": "bg_campus",
+       "x": 8,
+       "y": 36,
+       "facing": "down",
+       "place": "Founders' Lawn"
+      },
+      {
+       "map": null,
+       "x": 0,
+       "y": 0,
+       "place": "home (off the map)"
+      }
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_2_0",
+     "name": "Supporter B",
+     "look": "bg_supporter",
+     "x": 43,
+     "y": 27,
+     "facing": "up",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true,
+     "schedule": [
+      {
+       "when": "phase:day",
+       "map": "brightgate",
+       "x": 43,
+       "y": 27,
+       "facing": "up",
+       "place": "the Bright Board"
+      },
+      {
+       "when": "phase:dusk",
+       "map": "bg_campus",
+       "x": 9,
+       "y": 36,
+       "facing": "down",
+       "place": "Founders' Lawn"
+      },
+      {
+       "map": null,
+       "x": 0,
+       "y": 0,
+       "place": "home (off the map)"
+      }
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_3_1",
+     "name": "Parent",
+     "look": "bg_local",
+     "x": 24,
+     "y": 35,
+     "facing": "down",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_4_1",
+     "name": "Child",
+     "look": "bg_child",
+     "x": 25,
+     "y": 35,
+     "facing": "down",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_5_0",
+     "name": "Census taker",
+     "look": "bg_swapcrew",
+     "x": 7,
+     "y": 25,
+     "facing": "down",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true,
+     "schedule": [
+      {
+       "when": "phase:day",
+       "map": "brightgate",
+       "x": 7,
+       "y": 25,
+       "facing": "down",
+       "place": "the Census kiosk"
+      },
+      {
+       "when": "phase:dusk",
+       "map": "bg_partner",
+       "x": 18,
+       "y": 21,
+       "facing": "up",
+       "place": "the Partner Row kiosk"
+      },
+      {
+       "map": null,
+       "x": 0,
+       "y": 0,
+       "place": "home (off the map)"
+      }
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_7_1",
+     "name": "Works hand",
+     "look": "bg_swapcrew",
+     "x": 46,
+     "y": 26,
+     "facing": "left",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true
+    },
+    {
+     "kind": "trainer",
+     "id": "bg_h_board",
+     "x": 50,
+     "y": 27,
+     "look": "bg_local"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_welcome_bowl",
+     "x": 13,
+     "y": 34,
+     "sprite": "bg_lantern_crate",
+     "lines": {
+      "else": "A bowl of Glimmer lanterns, free to every visitor. The card says the Pavilion opens soon."
+     },
+     "name": "a bowl of lanterns"
+    },
+    {
+     "kind": "warp",
+     "id": "bs_gate_home",
+     "x": 32,
+     "y": 38,
+     "to": "hearthmoor",
+     "tx": 18,
+     "ty": 8,
+     "facing": "up",
+     "when": [
+      "story.bg_shuttle_live",
+      "story.reached_brightgate"
+     ]
+    },
+    {
+     "kind": "trigger",
+     "id": "bs_first_ride",
+     "x": 32,
+     "y": 37,
+     "r": 0,
+     "when": [
+      "story.bg_shuttle_live",
+      "!story.bg_shuttle"
+     ],
+     "scene": "bs_first_ride"
+    }
+   ]
+  },
+  "bg_campus": {
+   "name": "Brightgate",
+   "district": "THE CAMPUS",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 64,
+   "h": 48,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 32,
+    "y": 46
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "hq": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_glass",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat+mast",
+     "x0": 20,
+     "y0": 3,
+     "x1": 44,
+     "y1": 14
+    },
+    "gala": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 8,
+     "x1": 14,
+     "y1": 14
+    },
+    "glowcare": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 50,
+     "y0": 16,
+     "x1": 55,
+     "y1": 17
+    },
+    "annex_a": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 6,
+     "y0": 39,
+     "x1": 16,
+     "y1": 42
+    },
+    "annex_b": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_gw_panel",
+     "door": "door_gw_glass",
+     "win": "win_strip_gw",
+     "trim": "V",
+     "shape": "flat",
+     "x0": 46,
+     "y0": 39,
+     "x1": 58,
+     "y1": 42
+    },
+    "block_0": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 49,
+     "y0": 9,
+     "x1": 61,
+     "y1": 15
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+    "NllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllN",
+    "NllllllllllllllllGlllllllllllllllllllllllllllllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGllllllVVVVVVVllN",
+    "NllllllllllllllllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlllllllllllllllN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlllllllllllllllN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllRRRRRRRRRRRRllGllRRRRRRRRRRRRRRRRRRRRRRRRRllGlRRRRRRRRRRRRRlN",
+    "NllHHHHHHHHHHHHllGllHHHHHHHHHHHHHHHHHHHHHHHHHllGlRRRRRRRRRRRRRlN",
+    "NllHHHHHHHHHHHHllGllHHHHHHHHHHHHHHHHHHHHHHHHHllGllRRRRRRlllllllN",
+    "NlIIIIIIIIIIIIIIIGllHHHHHHHHHHHHHHHHHHHHHHHHHllGllRRRRRRlllllllN",
+    "NlIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIHHHHHHIIIIIIlN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "IIIIJJJJJJxxJJJJJJJJJJJJJbbbxxxxxxxxxbbbJJJJJJJJJJJJxxJJbbbJIIII",
+    "LLLLLLLLLLxxLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "LLLLLLLLLLxxLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "LLLLLLLLLLxxLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLxxLLLLLLLLLL",
+    "IIIIJJJJJJxxJJJJJJJJJJJJJJJJxxxxxxxxxJJJJJJJJJJJJJJJxxJJJJJJIIII",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIN",
+    "NlllllllllllllllllllllllllllIIIIIIIIIllllllllllllllllllllllllllN",
+    "Nlll&&&&&&&&&&&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&lllllllll&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&lllllllll&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&lllllllll&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&lllllllll&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "Nlll&&&&&&&&&&&lllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllllllllllllllllllllllllIIIwwwIIIllllllllllllllllllllllllllN",
+    "NlllllRRRRRRRRRRRlllllllllllIIIwwwIIIlllllllllRRRRRRRRRRRRRllllN",
+    "NlllllRRRRRRRRRRRlllllllllllIIIwwwIIIlllllllllRRRRRRRRRRRRRllllN",
+    "NlllllRRRRRRRRRRRlllllllllllIIIwwwIIIlllllllllRRRRRRRRRRRRRllllN",
+    "NlllllRRRRRRRRRRRlllllllllllIIIwwwIIIlllllllllRRRRRRRRRRRRRllllN",
+    "NlllllHHHHHHHHHHHlllllllllllIIIwwwIIIlllllllllHHHHHHHHHHHHHllllN",
+    "NlllllHHHHHHHHHHHlllllllllllIIIIIIIIIlllllllllHHHHHHHHHHHHHllllN",
+    "NlIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIlN",
+    "NlIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIlN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNIIIIINNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_hq",
+     "x": 32,
+     "y": 18,
+     "to": "bg_hq_lobby",
+     "tx": 7,
+     "ty": 14,
+     "facing": "up"
+    },
+    {
+     "kind": "door",
+     "id": "bg_gala",
+     "x": 9,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Closed for an event. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_glowcare",
+     "x": 52,
+     "y": 19,
+     "need": "story.bg_no_room",
+     "deny": "By appointment. We'll call you."
+    },
+    {
+     "kind": "door",
+     "id": "bg_annex_a",
+     "x": 11,
+     "y": 45,
+     "need": "story.bg_no_room",
+     "deny": "Staff only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_annex_b",
+     "x": 52,
+     "y": 45,
+     "need": "story.bg_no_room",
+     "deny": "Staff only. Have a bright day!"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_0",
+     "x": 30,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 30,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_1",
+     "x": 31,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 31,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_2",
+     "x": 32,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 32,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_3",
+     "x": 33,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 33,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_s_4",
+     "x": 34,
+     "y": 47,
+     "to": "brightgate",
+     "tx": 34,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_0",
+     "x": 0,
+     "y": 21,
+     "to": "bg_oldtown",
+     "tx": 50,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_1",
+     "x": 0,
+     "y": 22,
+     "to": "bg_oldtown",
+     "tx": 51,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_2",
+     "x": 0,
+     "y": 23,
+     "to": "bg_oldtown",
+     "tx": 52,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_3",
+     "x": 0,
+     "y": 24,
+     "to": "bg_oldtown",
+     "tx": 53,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_w_4",
+     "x": 0,
+     "y": 25,
+     "to": "bg_oldtown",
+     "tx": 54,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_0",
+     "x": 63,
+     "y": 21,
+     "to": "bg_works",
+     "tx": 30,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_1",
+     "x": 63,
+     "y": 22,
+     "to": "bg_works",
+     "tx": 31,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_2",
+     "x": 63,
+     "y": 23,
+     "to": "bg_works",
+     "tx": 32,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_3",
+     "x": 63,
+     "y": 24,
+     "to": "bg_works",
+     "tx": 33,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg1_e_4",
+     "x": 63,
+     "y": 25,
+     "to": "bg_works",
+     "tx": 34,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg1_s",
+     "x": 35,
+     "y": 46,
+     "sprite": "signpost",
+     "text": "THE CAMPUS · This way: GATE PLAZA."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg1_w",
+     "x": 1,
+     "y": 26,
+     "sprite": "signpost",
+     "text": "THE CAMPUS · This way: OLD WICK."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg1_e",
+     "x": 62,
+     "y": 26,
+     "sprite": "signpost",
+     "text": "THE CAMPUS · This way: THE LAMP WORKS."
+    },
+    {
+     "kind": "prop",
+     "id": "bg_cs_bg1_hq_w",
+     "x": 26,
+     "y": 21,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "name": "a Courtesy Cruiser",
+     "lines": {
+      "else": "A Courtesy Cruiser. No wheels. It hums a hand above the road."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_cs_bg1_hq_e",
+     "x": 38,
+     "y": 21,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "name": "a Courtesy Cruiser",
+     "lines": {
+      "else": "A Courtesy Cruiser. No wheels. It hums a hand above the road."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_cs_bg1_glow",
+     "x": 57,
+     "y": 21,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "name": "a Courtesy Cruiser",
+     "lines": {
+      "else": "A Courtesy Cruiser. No wheels. It hums a hand above the road."
+     }
+    },
+    {
+     "kind": "glide",
+     "id": "bg_cr_bg1_row",
+     "x": 4,
+     "y": 23,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "glide": {
+      "x0": 4,
+      "x1": 59,
+      "speed": 3.2,
+      "pause": 1.4
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_concierge_parked",
+     "x": 57,
+     "y": 4,
+     "sprite": "bg_concierge",
+     "name": "a Sky Concierge",
+     "lines": {
+      "else": "[PLACEHOLDER] A Sky Concierge, parked on its pad."
+     }
+    },
+    {
+     "kind": "glide",
+     "id": "bg_concierge_fly",
+     "x": 2,
+     "y": 12,
+     "sprite": "bg_concierge_fly",
+     "oy": -24,
+     "glide": {
+      "x0": 2,
+      "x1": 61,
+      "speed": 19.666666666666668,
+      "pause": 1.5
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg1_court_a",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 18,
+     "y": 19,
+     "facing": "down",
+     "patrol": [
+      [
+       18,
+       19
+      ],
+      [
+       46,
+       19
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg1_court_b",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 46,
+     "y": 19,
+     "facing": "down",
+     "patrol": [
+      [
+       18,
+       19
+      ],
+      [
+       46,
+       19
+      ]
+     ],
+     "patrolStart": 1,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg1_row_a",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 28,
+     "y": 28,
+     "facing": "down",
+     "patrol": [
+      [
+       28,
+       28
+      ],
+      [
+       36,
+       28
+      ],
+      [
+       36,
+       44
+      ],
+      [
+       28,
+       44
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     },
+     "when": [
+      "phase:day|phase:dusk"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_mast_tech",
+     "name": "Mast Tech",
+     "look": "bg_mast_tech",
+     "x": 59,
+     "y": 18,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Don't mind the hum. It's normal. Totally normal."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_glowcare_rec",
+     "name": "Glow Care Receptionist",
+     "look": "bg_receptionist",
+     "x": 55,
+     "y": 19,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Glow Care is by appointment. We'll call you when it's your Walkling's turn!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_waiting_local",
+     "name": "Waiting Local",
+     "look": "bg_local",
+     "x": 53,
+     "y": 20,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Booked through next season."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_swap_foreman",
+     "name": "Swap-crew foreman",
+     "look": "bg_swapcrew",
+     "x": 15,
+     "y": 17,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "[PLACEHOLDER] The Dimlamp trail's lines are its own build's."
+     },
+     "when": [
+      "phase:dusk"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "bg_flame_lantern_3",
+     "x": 16,
+     "y": 16,
+     "sprite": "bg_flame_lantern",
+     "name": "an old flame lantern"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_hq_plaque",
+     "x": 30,
+     "y": 18,
+     "sprite": "bg_insign_plaque",
+     "lines": {
+      "!story.bg_insign": "@bg_hq_plaque",
+      "else": "Founded as INSIGN. Brighter by nature."
+     }
+    },
+    {
+     "kind": "decal",
+     "id": "bg_hq_badge",
+     "x": 34,
+     "y": 18,
+     "sprite": "bg_badge"
+    },
+    {
+     "kind": "decal",
+     "id": "bg_glowcare_badge",
+     "x": 51,
+     "y": 19,
+     "sprite": "bg_badge"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_glowcare_sign",
+     "x": 54,
+     "y": 19,
+     "sprite": "gw_sign",
+     "text": "GLOW CARE. A Glimmerwell partner clinic. Members by appointment. Brighter by nature."
+    },
+    {
+     "kind": "prop",
+     "id": "bg_relay_mast_c1",
+     "x": 58,
+     "y": 18,
+     "sprite": "bg_relay_mast",
+     "lines": {
+      "else": "A slim mast with a wine ring and honey studs. It hums."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_city_relay",
+     "x": 22,
+     "y": 42,
+     "sprite": "bg_relay_mast",
+     "lines": {
+      "else": "A slim mast with a wine ring and honey studs. It hums."
+     }
+    },
+    {
+     "kind": "sign",
+     "id": "bg_pad_sign",
+     "x": 52,
+     "y": 7,
+     "sprite": "gw_sign",
+     "text": "[PLACEHOLDER] SKY CONCIERGE PAD."
+    },
+    {
+     "kind": "decal",
+     "id": "bg_pool_ring",
+     "x": 32,
+     "y": 36,
+     "sprite": "bg_pool_ring"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_0__ring",
+     "x": 6,
+     "y": 21,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_0_pulse",
+     "x": 6,
+     "y": 21,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_1__ring",
+     "x": 12,
+     "y": 21,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_1_pulse",
+     "x": 12,
+     "y": 21,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_2__ring",
+     "x": 18,
+     "y": 21,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_2_pulse",
+     "x": 18,
+     "y": 21,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_3__ring",
+     "x": 24,
+     "y": 21,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_3_pulse",
+     "x": 24,
+     "y": 21,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_4__ring",
+     "x": 42,
+     "y": 21,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_4_pulse",
+     "x": 42,
+     "y": 21,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_5__ring",
+     "x": 48,
+     "y": 21,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_5_pulse",
+     "x": 48,
+     "y": 21,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_6__ring",
+     "x": 54,
+     "y": 21,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_6_pulse",
+     "x": 54,
+     "y": 21,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_7__ring",
+     "x": 6,
+     "y": 25,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_7_pulse",
+     "x": 6,
+     "y": 25,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_8__ring",
+     "x": 12,
+     "y": 25,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_8_pulse",
+     "x": 12,
+     "y": 25,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_9__ring",
+     "x": 18,
+     "y": 25,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_9_pulse",
+     "x": 18,
+     "y": 25,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_10__ring",
+     "x": 24,
+     "y": 25,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_10_pulse",
+     "x": 24,
+     "y": 25,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_11__ring",
+     "x": 42,
+     "y": 25,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_11_pulse",
+     "x": 42,
+     "y": 25,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_12__ring",
+     "x": 48,
+     "y": 25,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_12_pulse",
+     "x": 48,
+     "y": 25,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_13__ring",
+     "x": 54,
+     "y": 25,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_13_pulse",
+     "x": 54,
+     "y": 25,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_14__ring",
+     "x": 30,
+     "y": 30,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_14_pulse",
+     "x": 30,
+     "y": 30,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_15__ring",
+     "x": 34,
+     "y": 32,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_15_pulse",
+     "x": 34,
+     "y": 32,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_16__ring",
+     "x": 30,
+     "y": 36,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_16_pulse",
+     "x": 30,
+     "y": 36,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_17__ring",
+     "x": 34,
+     "y": 38,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_17_pulse",
+     "x": 34,
+     "y": 38,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_18__ring",
+     "x": 30,
+     "y": 42,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_campus_18_pulse",
+     "x": 30,
+     "y": 42,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_0_1",
+     "name": "Staff commuter",
+     "look": "bg_courtesy",
+     "x": 29,
+     "y": 20,
+     "facing": "up",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_1_1",
+     "name": "Supporter A",
+     "look": "bg_supporter",
+     "x": 8,
+     "y": 36,
+     "facing": "down",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_2_1",
+     "name": "Supporter B",
+     "look": "bg_supporter",
+     "x": 9,
+     "y": 36,
+     "facing": "down",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true
+    }
+   ]
+  },
+  "bg_works": {
+   "name": "Brightgate",
+   "district": "THE LAMP WORKS",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 64,
+   "h": 48,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 2,
+    "y": 20
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "lampworks": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "door": "door_sliding",
+     "win": "win_band",
+     "trim": "y",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 3,
+     "x1": 25,
+     "y1": 11
+    },
+    "fleetbay": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "door": "door_sliding",
+     "win": "win_band",
+     "trim": "y",
+     "shape": "flat",
+     "x0": 40,
+     "y0": 10,
+     "x1": 46,
+     "y1": 11
+    },
+    "census": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "door": "door_sliding",
+     "win": "win_band",
+     "trim": "y",
+     "shape": "flat",
+     "x0": 37,
+     "y0": 27,
+     "x1": 44,
+     "y1": 30
+    },
+    "block_0": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_panel_m",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 52,
+     "y0": 38,
+     "x1": 54,
+     "y1": 40
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNdddddNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+    "NllllllllllllllllllllllllllldddddddddllllllllllllllllllllllllllN",
+    "NllllllllllllllllllllllllllldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllldddddddddddddN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddllllllllllllllllllllllllllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddlllRRRRRRRllllllllllllllllN",
+    "NllRRRRRRRRRRRRRRRRRRRRRRRlldddddddddlllRRRRRRRllllllllllllllllN",
+    "NllHHHHHHHHHHHHHHHHHHHHHHHlldddddddddlllHHHHHHHddddddllllllllllN",
+    "NllHHHHHHHHHHHHHHHHHHHHHHHlldddddddddlllHHHHHHHdbbbddllllllllllN",
+    "NlddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddlN",
+    "NlddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddlN",
+    "NddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "NddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLLLLLLLLLLLLN",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLLLLLLLLLLLLN",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLxxxxxxxxxLLLLLLLLLLLLLLLLLLLLLLLLLLN",
+    "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddbbbddddN",
+    "NddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "NddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddddddddddddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddddddddddddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddRRRRRRRRddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddRRRRRRRRddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddRRRRRRRRddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddRRRRRRRRddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddHHHHHHHHddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddHHHHHHHHddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddddddddddddddddddddddddddddN",
+    "NdddddddddddddddddddddddddddddddddOddlllllllllGGGGGGGGGGGGGGGGlN",
+    "NdOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOddlllllllllGllllllllllllllGlN",
+    "NDDDDDDDDDDDDDDDDDDDDDDDDDDldddddddddlllllllllGllllllllllllllGlN",
+    "NDDDDDDDDDDDDDDDDDDDDDDDDDDldddddddddlllllllllGllllllllllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGlllllRRRllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGlllllRRRllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGlllllRRRllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGllllllllllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGllllllllllllllGlN",
+    "NwwwwwwwwwDDDwwwwwwwwwwwwwwldddddddddlllllllllGllllllllllllllGlN",
+    "NwwwwwwwwwwwwwwwwwwwwwwwwwwldddddddddlllllllllGGGGGGGGGGGGGGGGlN",
+    "NwwwwwwwwwwwwwwwwwwwwwwwwwwldddddddddllllllllllllllllllllllllllN",
+    "NwwwwwwwwwwwwwwwwwwwwwwwwwwldddddddddllllllllllllllllllllllllllN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNdddddNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_lampworks",
+     "x": 14,
+     "y": 14,
+     "need": "story.bg_no_room",
+     "deny": "Day shift only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_fleetbay",
+     "x": 43,
+     "y": 14,
+     "need": "story.bg_no_room",
+     "deny": "Fleet staff only."
+    },
+    {
+     "kind": "door",
+     "id": "bg_census",
+     "x": 40,
+     "y": 33,
+     "need": "story.bg_no_room",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_0",
+     "x": 0,
+     "y": 18,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 18,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_1",
+     "x": 0,
+     "y": 19,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 19,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_2",
+     "x": 0,
+     "y": 20,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 20,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_3",
+     "x": 0,
+     "y": 21,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 21,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_w_4",
+     "x": 0,
+     "y": 22,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 22,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_0",
+     "x": 30,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 21,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_1",
+     "x": 31,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 22,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_2",
+     "x": 32,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 23,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_3",
+     "x": 33,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 24,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_n_4",
+     "x": 34,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 62,
+     "ty": 25,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_0",
+     "x": 30,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 21,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_1",
+     "x": 31,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 22,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_2",
+     "x": 32,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 23,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_3",
+     "x": 33,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 24,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg2_s_4",
+     "x": 34,
+     "y": 47,
+     "to": "bg_partner",
+     "tx": 25,
+     "ty": 1,
+     "facing": "down"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg2_w",
+     "x": 1,
+     "y": 23,
+     "sprite": "signpost",
+     "text": "THE LAMP WORKS · This way: GATE PLAZA."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg2_n",
+     "x": 35,
+     "y": 1,
+     "sprite": "signpost",
+     "text": "THE LAMP WORKS · This way: THE CAMPUS."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg2_s",
+     "x": 35,
+     "y": 46,
+     "sprite": "signpost",
+     "text": "THE LAMP WORKS · This way: PARTNER ROW."
+    },
+    {
+     "kind": "prop",
+     "id": "bg_cs_bg2_bay",
+     "x": 49,
+     "y": 13,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "name": "a Courtesy Cruiser",
+     "lines": {
+      "else": "A Courtesy Cruiser. No wheels. It hums a hand above the road."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_cs_bg2_way",
+     "x": 57,
+     "y": 22,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "name": "a Courtesy Cruiser",
+     "lines": {
+      "else": "A Courtesy Cruiser. No wheels. It hums a hand above the road."
+     }
+    },
+    {
+     "kind": "glide",
+     "id": "bg_cr_bg2_way",
+     "x": 4,
+     "y": 20,
+     "sprite": "bg_cruiser",
+     "oy": 6,
+     "glide": {
+      "x0": 4,
+      "x1": 26,
+      "speed": 3.2,
+      "pause": 1.4
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg2_yard_a",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 29,
+     "y": 3,
+     "facing": "down",
+     "patrol": [
+      [
+       29,
+       3
+      ],
+      [
+       35,
+       3
+      ],
+      [
+       35,
+       44
+      ],
+      [
+       29,
+       44
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg2_yard_b",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 35,
+     "y": 44,
+     "facing": "down",
+     "patrol": [
+      [
+       29,
+       3
+      ],
+      [
+       35,
+       3
+      ],
+      [
+       35,
+       44
+      ],
+      [
+       29,
+       44
+      ]
+     ],
+     "patrolStart": 2,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg2_crates_a",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 3,
+     "y": 26,
+     "facing": "down",
+     "patrol": [
+      [
+       3,
+       26
+      ],
+      [
+       26,
+       26
+      ],
+      [
+       26,
+       33
+      ],
+      [
+       3,
+       33
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     },
+     "when": [
+      "phase:dawn|phase:day"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_bay_attendant",
+     "name": "Bay Attendant",
+     "look": "bg_bay_attendant",
+     "x": 47,
+     "y": 15,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "The Cruisers come out when a town needs reassuring. Today, that is here."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_tower_crew",
+     "name": "Calm Tower crew",
+     "look": "bg_swapcrew",
+     "x": 53,
+     "y": 33,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Hard hats only past the fence."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_calm_crate",
+     "x": 8,
+     "y": 30,
+     "sprite": "crate_stack",
+     "lines": {
+      "!story.bg_crate": "@bg_calm_crate",
+      "else": "A crate stamped CALM TOWER, BRIGHTGATE 2."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_crates_b",
+     "x": 9,
+     "y": 30,
+     "sprite": "crate_stack"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_crates_c",
+     "x": 13,
+     "y": 28,
+     "sprite": "crate_stack"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_crates_d",
+     "x": 20,
+     "y": 31,
+     "sprite": "crate_stack"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_relay_yard_a",
+     "x": 55,
+     "y": 4,
+     "sprite": "bg_relay_mast",
+     "lines": {
+      "else": "A slim mast with a wine ring and honey studs. It hums."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_relay_yard_b",
+     "x": 59,
+     "y": 4,
+     "sprite": "bg_relay_mast",
+     "lines": {
+      "else": "A slim mast with a wine ring and honey studs. It hums."
+     }
+    },
+    {
+     "kind": "decal",
+     "id": "bg_fleet_badge",
+     "x": 45,
+     "y": 14,
+     "sprite": "bg_badge"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_rail_wagon",
+     "x": 6,
+     "y": 35,
+     "sprite": "bg_wagon",
+     "ox": 8
+    },
+    {
+     "kind": "prop",
+     "id": "bg_retired",
+     "x": 17,
+     "y": 14,
+     "sprite": "bg_baskets",
+     "lines": {
+      "else": "A basket of old wick lamps. The tag says: Retired with thanks."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_calm_tower_beacon",
+     "x": 53,
+     "y": 39,
+     "sprite": "bg_none"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_works_0__ring",
+     "x": 51,
+     "y": 33,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_works_0_pulse",
+     "x": 51,
+     "y": 33,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_works_1__ring",
+     "x": 57,
+     "y": 33,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_works_1_pulse",
+     "x": 57,
+     "y": 33,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_7_0",
+     "name": "Works hand",
+     "look": "bg_swapcrew",
+     "x": 15,
+     "y": 28,
+     "facing": "left",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true,
+     "schedule": [
+      {
+       "when": "phase:dawn|phase:day",
+       "map": "bg_works",
+       "x": 15,
+       "y": 28,
+       "facing": "left",
+       "place": "the crate yard"
+      },
+      {
+       "when": "phase:dusk",
+       "map": "brightgate",
+       "x": 46,
+       "y": 26,
+       "facing": "left",
+       "place": "the Bright Board plaza"
+      },
+      {
+       "map": null,
+       "x": 0,
+       "y": 0,
+       "place": "home (off the map)"
+      }
+     ]
+    },
+    {
+     "kind": "trainer",
+     "id": "bg_h_quay",
+     "x": 20,
+     "y": 36,
+     "look": "bg_local"
+    }
+   ]
+  },
+  "bg_oldtown": {
+   "name": "Brightgate",
+   "district": "OLD WICK",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 64,
+   "h": 40,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 62,
+    "y": 20
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "hall": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_heavy",
+     "win": "win_slit",
+     "trim": "y",
+     "shape": "steep+vane",
+     "x0": 22,
+     "y0": 4,
+     "x1": 42,
+     "y1": 11
+    },
+    "old_a": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 5,
+     "y0": 6,
+     "x1": 13,
+     "y1": 10
+    },
+    "old_b": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 56,
+     "y0": 6,
+     "x1": 61,
+     "y1": 10
+    },
+    "odell": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 6,
+     "y0": 25,
+     "x1": 14,
+     "y1": 28
+    },
+    "wickshop": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 42,
+     "y0": 25,
+     "x1": 50,
+     "y1": 28
+    },
+    "block_0": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 43,
+     "y0": 1,
+     "x1": 48,
+     "y1": 2
+    },
+    "block_1": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 55,
+     "y0": 1,
+     "x1": 61,
+     "y1": 3
+    },
+    "block_2": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 2,
+     "y0": 2,
+     "x1": 3,
+     "y1": 3
+    },
+    "block_3": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 15,
+     "y0": 3,
+     "x1": 20,
+     "y1": 7
+    },
+    "block_4": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 2,
+     "y0": 16,
+     "x1": 8,
+     "y1": 19
+    },
+    "block_5": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 10,
+     "y0": 16,
+     "x1": 15,
+     "y1": 19
+    },
+    "block_6": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 2,
+     "y0": 23,
+     "x1": 4,
+     "y1": 27
+    },
+    "block_7": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 20,
+     "y0": 23,
+     "x1": 26,
+     "y1": 25
+    },
+    "block_8": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 38,
+     "y0": 23,
+     "x1": 41,
+     "y1": 26
+    },
+    "block_9": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 51,
+     "y0": 23,
+     "x1": 54,
+     "y1": 26
+    },
+    "block_10": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 58,
+     "y0": 23,
+     "x1": 62,
+     "y1": 27
+    },
+    "block_11": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 21,
+     "y0": 34,
+     "x1": 27,
+     "y1": 36
+    },
+    "block_12": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 38,
+     "y0": 34,
+     "x1": 45,
+     "y1": 36
+    },
+    "block_13": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 48,
+     "y0": 34,
+     "x1": 54,
+     "y1": 36
+    },
+    "block_14": {
+     "roof": "roof_bg_terracotta",
+     "wall": "wall_bg_cream",
+     "door": "door_step_warm",
+     "win": "win_lamp",
+     "trim": "G",
+     "shape": "steep",
+     "x0": 57,
+     "y0": 34,
+     "x1": 62,
+     "y1": 36
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNoooooNNNNNNNNN",
+    "NllllllllllllllllllllllllllllllllllllllllllRRRRRRloooooRRRRRRRlN",
+    "NlRRlllllllllllllllllllllllllllllllllllllllRRRRRRloooooRRRRRRRlN",
+    "NlRRlllllllllllRRRRRRllllllllllllllllllllllHHHHHHloooooRRRRRRRlN",
+    "NlHHlllllllllllRRRRRRlRRRRRRRRRRRRRRRRRRRRRllllllloooooHHHHHHHlN",
+    "NllllllllllllllRRRRRRlRRRRRRRRRRRRRRRRRRRRRllllooooooolllllllllN",
+    "NllllRRRRRRRRRlRRRRRRlRRRRRRRRRRRRRRRRRRRRRllllooooooollRRRRRRlN",
+    "NllllRRRRRRRRRlRRRRRRlRRRRRRRRRRRRRRRRRRRRRllllooooooollRRRRRRlN",
+    "NllllRRRRRRRRRlHHHHHHlRRRRRRRRRRRRRRRRRRRRRllllooooooollRRRRRRlN",
+    "NllllRRRRRRRRRlHHHHHHlRRRRRRRRRRRRRRRRRRRRRloooooollllllRRRRRRlN",
+    "NllllRRRRRRRRRllllllllRRRRRRRRRRRRRRRRRRRRRloooooollllllRRRRRRlN",
+    "NllllHHHHHHHHHllllllllRRRRRRRRRRRRRRRRRRRRRloooooollllllHHHHHHlN",
+    "NllllHHHHHHHHHllllllllHHHHHHHHHHHHHHHHHHHHHloooooollllllHHHHHHlN",
+    "NlloooooooooooooooooooHHHHHHHHHHHHHHHHHHHHHloooooolllllooooooooN",
+    "NlloooooooooooooooooooHHHHHHHHHHHHHHHHHHHHHloooooolllllooooooooN",
+    "NllooooooooooooooooooooooooooooooooooooooooooooooolllllooooooooN",
+    "NlRRRRRRRlRRRRRRoooooooooooooooooooooooooooooooooolllllooooooooN",
+    "NlRRRRRRRlRRRRRRoooooooooooooooooooooooooooooooooolllllooooooooN",
+    "NlRRRRRRRlRRRRRRlooolllooooooooooooooooooooooooooooooooooooooooo",
+    "NlRRRRRRRlRRRRRRlooolllooooooooooooooooooooooooooooooooooooooooo",
+    "NlHHHHHHHlHHHHHHlooolllooooooooooooooooooooooooooooooooooooooooo",
+    "NlHHHHHHHlHHHHHHlooolllooooooooooooooooooooooooooooooooooooooooo",
+    "Nllllllllllllllllooolllooooooooooooooooooooooooooooooooooooooooo",
+    "NlRRRlllllllllllloooRRRRRRRoooooooooooRRRRlllllllllRRRRoooRRRRRN",
+    "NlRRRlllllllllllloooRRRRRRRoooooooooooRRRRlllllllllRRRRoooRRRRRN",
+    "NlRRRlRRRRRRRRRlloooRRRRRRRoooooooooooRRRRRRRRRRRRRRRRRoooRRRRRN",
+    "NlRRRlRRRRRRRRRlloooHHHHHHHoooooooooooRRRRRRRRRRRRRRRRRoooRRRRRN",
+    "NlRRRlRRRRRRRRRlloooooooooooooooooooooHHHHRRRRRRRRRHHHHoooRRRRRN",
+    "NlHHHlRRRRRRRRRlloooooooooooooooooooooHHHHRRRRRRRRRHHHHoooHHHHHN",
+    "NlHHHlHHHHHHHHHllooooooooooooooooooooollllHHHHHHHHHlllloooHHHHHN",
+    "NlllllHHHHHHHHHllooolllllllooooooooooollllHHHHHHHHHllllooolllllN",
+    "NllloooooooooooooooolllllllllloooooooooooooooooooooooooooolllllN",
+    "NllloooooooooooooooolllllllllloooooooooooooooooooooooooooolllllN",
+    "NllloooooooooooooooolllllllllloooooooooooooooooooooooooooolllllN",
+    "NllllllllwwwwwwwwllllRRRRRRRl&&&&&&&llRRRRRRRRllRRRRRRRllRRRRRRN",
+    "NllllllllwwwwwwwwllllRRRRRRRl&&&&&&&llRRRRRRRRllRRRRRRRllRRRRRRN",
+    "NllllllllwwwwwwwwllllRRRRRRRl&&&&&&&llRRRRRRRRllRRRRRRRllRRRRRRN",
+    "NllllllllwwwwwwwwllllHHHHHHHl&&&&&&&llHHHHHHHHllHHHHHHHllHHHHHHN",
+    "NllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_hall",
+     "x": 32,
+     "y": 15,
+     "to": "bg_hall_in",
+     "tx": 7,
+     "ty": 22,
+     "facing": "up",
+     "need": "story.act>=2",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "door",
+     "id": "bg_old_a",
+     "x": 9,
+     "y": 13,
+     "need": "story.bg_no_room"
+    },
+    {
+     "kind": "door",
+     "id": "bg_old_b",
+     "x": 59,
+     "y": 13,
+     "need": "story.bg_no_room"
+    },
+    {
+     "kind": "door",
+     "id": "bg_odell",
+     "x": 10,
+     "y": 31,
+     "need": "story.bg_no_room",
+     "deny": "Closed for now."
+    },
+    {
+     "kind": "door",
+     "id": "bg_wickshop",
+     "x": 46,
+     "y": 31,
+     "need": "story.bg_no_room",
+     "deny": "Closed. Lanterns are free at the Plaza now."
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_0",
+     "x": 63,
+     "y": 18,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 18,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_1",
+     "x": 63,
+     "y": 19,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 19,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_2",
+     "x": 63,
+     "y": 20,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 20,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_3",
+     "x": 63,
+     "y": 21,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 21,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_e_4",
+     "x": 63,
+     "y": 22,
+     "to": "brightgate",
+     "tx": 1,
+     "ty": 22,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_0",
+     "x": 50,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 21,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_1",
+     "x": 51,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 22,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_2",
+     "x": 52,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 23,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_3",
+     "x": 53,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 24,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg3_n_4",
+     "x": 54,
+     "y": 0,
+     "to": "bg_campus",
+     "tx": 1,
+     "ty": 25,
+     "facing": "right"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg3_e",
+     "x": 62,
+     "y": 22,
+     "sprite": "signpost",
+     "text": "OLD WICK · This way: GATE PLAZA."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg3_n",
+     "x": 54,
+     "y": 1,
+     "sprite": "signpost",
+     "text": "OLD WICK · This way: THE CAMPUS."
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg3_swap_a",
+     "name": "Swap crew",
+     "look": "bg_swapcrew",
+     "x": 23,
+     "y": 19,
+     "facing": "down",
+     "patrol": [
+      [
+       23,
+       19
+      ],
+      [
+       60,
+       19
+      ],
+      [
+       60,
+       21
+      ],
+      [
+       23,
+       21
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "[PLACEHOLDER] The Dimlamp trail's lines are its own build's."
+     },
+     "when": [
+      "phase:dusk"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_lamplighter",
+     "name": "Lamplighter Odell",
+     "look": "bg_odell",
+     "x": 34,
+     "y": 28,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Forty years lighting wicks. Now I hand out free ones."
+     },
+     "when": [
+      "phase:dawn|phase:day"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "bg_flame_lantern_2",
+     "x": 32,
+     "y": 27,
+     "sprite": "bg_flame_lantern",
+     "name": "an old flame lantern"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_hall_sign",
+     "x": 29,
+     "y": 16,
+     "sprite": "signpost",
+     "text": "BRIGHTGATE TRIAL HALL. Built for storms. Now the sky stays calm."
+    },
+    {
+     "kind": "decal",
+     "id": "bg_dead_vane",
+     "x": 32,
+     "y": 4,
+     "sprite": "bg_vane"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_vane_read",
+     "x": 33,
+     "y": 16,
+     "sprite": "none",
+     "lines": {
+      "!story.bg_vane": "@bg_vane_read",
+      "else": "The weather vane points north. It hasn't moved in years."
+     },
+     "name": "the weather vane"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_seam_post",
+     "x": 54,
+     "y": 18,
+     "sprite": "bg_seam_post",
+     "lines": {
+      "else": "Half a lamp post. The old flame head sits in a crate. The new ring hums."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_seam_scaffold",
+     "x": 55,
+     "y": 22,
+     "sprite": "bg_scaffold"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_seam_crate",
+     "x": 56,
+     "y": 22,
+     "sprite": "crate_stack"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_washing_a",
+     "x": 17,
+     "y": 11,
+     "sprite": "bg_washing"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_washing_b",
+     "x": 9,
+     "y": 23,
+     "sprite": "bg_washing"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_steps_a",
+     "x": 46,
+     "y": 9,
+     "sprite": "stair_flight"
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_6_0",
+     "name": "Old Wick elder",
+     "look": "bg_elder",
+     "x": 30,
+     "y": 30,
+     "facing": "up",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true,
+     "schedule": [
+      {
+       "when": "phase:day",
+       "map": "bg_oldtown",
+       "x": 30,
+       "y": 30,
+       "facing": "up",
+       "place": "the Old Square"
+      },
+      {
+       "when": "phase:dusk",
+       "map": "bg_oldtown",
+       "x": 13,
+       "y": 32,
+       "facing": "up",
+       "place": "Odell's step"
+      },
+      {
+       "map": null,
+       "x": 0,
+       "y": 0,
+       "place": "home (off the map)"
+      }
+     ]
+    },
+    {
+     "kind": "trainer",
+     "id": "bg_h_potter",
+     "x": 40,
+     "y": 32,
+     "look": "bg_local"
+    },
+    {
+     "kind": "wild",
+     "id": "bg_wild_dipper",
+     "x": 17,
+     "y": 35,
+     "form": "dipper/1",
+     "level": 32,
+     "when": [
+      "!story.bg_dipper"
+     ],
+     "scene": "bg_dipper"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_pond_sign",
+     "x": 18,
+     "y": 35,
+     "sprite": "signpost",
+     "text": "MILL POND. Something small hunches at the water's edge. Nothing mows here."
+    }
+   ]
+  },
+  "bg_partner": {
+   "name": "Brightgate",
+   "district": "PARTNER ROW",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 48,
+   "h": 48,
+   "spawns": null,
+   "respawn": null,
+   "respawnIn": {
+    "map": "bg_lantern_in",
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   },
+   "safe": {
+    "x": 1,
+    "y": 32
+   },
+   "zones": [],
+   "variants": false,
+   "roofs": {
+    "home_a": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 3,
+     "x1": 9,
+     "y1": 5
+    },
+    "home_b": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 12,
+     "x1": 9,
+     "y1": 14
+    },
+    "home_c": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 3,
+     "y0": 21,
+     "x1": 9,
+     "y1": 23
+    },
+    "home_d": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 11,
+     "y0": 3,
+     "x1": 17,
+     "y1": 5
+    },
+    "home_e": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 11,
+     "y0": 12,
+     "x1": 17,
+     "y1": 14
+    },
+    "home_f": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 11,
+     "y0": 21,
+     "x1": 17,
+     "y1": 23
+    },
+    "home_g": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 30,
+     "y0": 3,
+     "x1": 36,
+     "y1": 5
+    },
+    "home_h": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 30,
+     "y0": 12,
+     "x1": 36,
+     "y1": 14
+    },
+    "home_i": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 38,
+     "y0": 3,
+     "x1": 44,
+     "y1": 5
+    },
+    "home_j": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 38,
+     "y0": 12,
+     "x1": 44,
+     "y1": 14
+    },
+    "academy": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 29,
+     "y0": 23,
+     "x1": 44,
+     "y1": 26
+    },
+    "showhome": {
+     "roof": "roof_gw_panel",
+     "wall": "wall_concrete",
+     "door": "door_gw_glass",
+     "win": "win_square",
+     "trim": "N",
+     "shape": "flat",
+     "x0": 31,
+     "y0": 37,
+     "x1": 43,
+     "y1": 41
+    }
+   },
+   "grid": [
+    "NNNNNNNNNNNNNNNNNNNNNILLLINNNNNNNNNNNNNNNNNNNNNN",
+    "NllllllllllllllllllIIILLLIIIlllllllllllllllllllN",
+    "NllllllllllllllllllIIILLLIIIlllllllllllllllllllN",
+    "NllRRRRRRRlRRRRRRRlIIILLLIIIllRRRRRRRlRRRRRRRllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIllHHHHHHHlHHHHHHHllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIllHHHHHHHlHHHHHHHllN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NllllllllllllllllllIIJLLLJIIlllllllllllllllllllN",
+    "NllllllllllllllllllIIJLLLJIIlllllllllllllllllllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIllRRRRRRRlRRRRRRRllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIllHHHHHHHlHHHHHHHllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIllHHHHHHHlHHHHHHHllN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NllllllllllllllllllIIJLLLJIIlllllllllllllllllllN",
+    "NllllllllllllllllllIIJLLLJIIlllllllllllllllllllN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "NllRRRRRRRlRRRRRRRlIIJLLLJIIlRRRRRRRRRRRRRRRRllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIlRRRRRRRRRRRRRRRRllN",
+    "NllHHHHHHHlHHHHHHHlIIJLLLJIIlRRRRRRRRRRRRRRRRllN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIlRRRRRRRRRRRRRRRRllN",
+    "NlIIIIIIIIIIIIIIIIIIIJLLLJIIlHHHHHHHHHHHHHHHHllN",
+    "NllllllllllllllllllIIJLLLJIIlHHHHHHHHHHHHHHHHllN",
+    "NllllllllllllllllllIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "IIIIIIIIIIIIIIIIIIIIIJLLLJIIIIIIIIIIIIIIIIIIIIlN",
+    "LLLLLLLLLLLLLLLLLLLIIJLLLJIIIIlllllllllllllllllN",
+    "LLLLLLLLLLLLLLLLLLLIIJLLLJIIIIlllllllllllllllllN",
+    "LLLLLLLLLLLLLLLLLLLIIJLLLJIIIIlllllllllllllllllN",
+    "IIIIIIIIIIIIIIIIIIIIIJLLLJIIIIlllllllllllllllllN",
+    "NlIIIIIIIIIIIIIIIIlIIJLLLJIIIIlllllllllllllllllN",
+    "NllllllllllllllllllIIJLLLJIIIIlllllllllllllllllN",
+    "NllllllllllllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NllllllllllllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlRRRRRRRRRRRRRlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlHHHHHHHHHHHHHlllN",
+    "NlllwwwwwwlllllllllIIJLLLJIIIIlHHHHHHHHHHHHHlllN",
+    "NllllllllllllllllllIIILLLIIIIIIIIIIIIIIIIIIIIIlN",
+    "NllllllllllllllllllIIILLLIIIIIIIIIIIIIIIIIIIIIlN",
+    "NllllllllllllllllllIIILLLIIIlllllllllllllllllllN",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+   ],
+   "objs": [
+    {
+     "kind": "door",
+     "id": "bg_home_a",
+     "x": 6,
+     "y": 8,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_b",
+     "x": 6,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_c",
+     "x": 6,
+     "y": 26,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_d",
+     "x": 14,
+     "y": 8,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_e",
+     "x": 14,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_f",
+     "x": 14,
+     "y": 26,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_g",
+     "x": 33,
+     "y": 8,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_h",
+     "x": 33,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_i",
+     "x": 41,
+     "y": 8,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_home_j",
+     "x": 41,
+     "y": 17,
+     "need": "story.bg_no_room",
+     "deny": "Residents only. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_academy",
+     "x": 36,
+     "y": 29,
+     "need": "story.bg_no_room",
+     "deny": "Term starts soon. Have a bright day!"
+    },
+    {
+     "kind": "door",
+     "id": "bg_showhome",
+     "x": 37,
+     "y": 44,
+     "need": "story.bg_no_room"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_0",
+     "x": 0,
+     "y": 30,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 30,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_1",
+     "x": 0,
+     "y": 31,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 31,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_2",
+     "x": 0,
+     "y": 32,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 32,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_3",
+     "x": 0,
+     "y": 33,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 33,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_w_4",
+     "x": 0,
+     "y": 34,
+     "to": "brightgate",
+     "tx": 62,
+     "ty": 34,
+     "facing": "left"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_0",
+     "x": 21,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 30,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_1",
+     "x": 22,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 31,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_2",
+     "x": 23,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 32,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_3",
+     "x": 24,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 33,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "m_bg4_n_4",
+     "x": 25,
+     "y": 0,
+     "to": "bg_works",
+     "tx": 34,
+     "ty": 46,
+     "facing": "up"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg4_w",
+     "x": 1,
+     "y": 35,
+     "sprite": "signpost",
+     "text": "PARTNER ROW · This way: GATE PLAZA."
+    },
+    {
+     "kind": "sign",
+     "id": "bg_post_m_bg4_n",
+     "x": 26,
+     "y": 1,
+     "sprite": "signpost",
+     "text": "PARTNER ROW · This way: THE LAMP WORKS."
+    },
+    {
+     "kind": "npc",
+     "id": "bg_pt_bg4_walk_a",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 20,
+     "y": 3,
+     "facing": "down",
+     "patrol": [
+      [
+       20,
+       3
+      ],
+      [
+       26,
+       3
+      ],
+      [
+       26,
+       44
+      ],
+      [
+       20,
+       44
+      ]
+     ],
+     "patrolStart": 0,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     },
+     "when": [
+      "phase:day|phase:dusk"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "bg_comfort_a",
+     "x": 11,
+     "y": 38,
+     "sprite": "bg_comfort_lamp",
+     "lines": {
+      "else": "The lamp pulses like a slow heartbeat."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_comfort_b",
+     "x": 14,
+     "y": 42,
+     "sprite": "bg_comfort_lamp",
+     "lines": {
+      "else": "The lamp pulses like a slow heartbeat."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_census_kiosk_c4",
+     "x": 18,
+     "y": 20,
+     "sprite": "census_tent"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_0__ring",
+     "x": 21,
+     "y": 6,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_0_pulse",
+     "x": 21,
+     "y": 6,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_1__ring",
+     "x": 25,
+     "y": 6,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_1_pulse",
+     "x": 25,
+     "y": 6,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_2__ring",
+     "x": 21,
+     "y": 12,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_2_pulse",
+     "x": 21,
+     "y": 12,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_3__ring",
+     "x": 25,
+     "y": 12,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_3_pulse",
+     "x": 25,
+     "y": 12,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_4__ring",
+     "x": 21,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_4_pulse",
+     "x": 21,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_5__ring",
+     "x": 25,
+     "y": 18,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_5_pulse",
+     "x": 25,
+     "y": 18,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_6__ring",
+     "x": 21,
+     "y": 24,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_6_pulse",
+     "x": 21,
+     "y": 24,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_7__ring",
+     "x": 25,
+     "y": 24,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_7_pulse",
+     "x": 25,
+     "y": 24,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_8__ring",
+     "x": 21,
+     "y": 30,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_8_pulse",
+     "x": 21,
+     "y": 30,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_9__ring",
+     "x": 25,
+     "y": 30,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_9_pulse",
+     "x": 25,
+     "y": 30,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_10__ring",
+     "x": 21,
+     "y": 36,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_10_pulse",
+     "x": 21,
+     "y": 36,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_11__ring",
+     "x": 25,
+     "y": 36,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_11_pulse",
+     "x": 25,
+     "y": 36,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_12__ring",
+     "x": 21,
+     "y": 42,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_12_pulse",
+     "x": 21,
+     "y": 42,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_13__ring",
+     "x": 25,
+     "y": 42,
+     "sprite": "bg_lamp_ring",
+     "when": [
+      "!phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lamp_bg_partner_13_pulse",
+     "x": 25,
+     "y": 42,
+     "sprite": "bg_lamp_ring_pulse",
+     "when": [
+      "phase:night"
+     ],
+     "hum": true,
+     "name": "a lamp post",
+     "lines": {
+      "else": "A wine ring hums at the top of the lamp. The hum is normal."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_3_0",
+     "name": "Parent",
+     "look": "bg_local",
+     "x": 12,
+     "y": 36,
+     "facing": "down",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true,
+     "schedule": [
+      {
+       "when": "phase:day",
+       "map": "bg_partner",
+       "x": 12,
+       "y": 36,
+       "facing": "down",
+       "place": "Comfort Park"
+      },
+      {
+       "when": "phase:dusk",
+       "map": "brightgate",
+       "x": 24,
+       "y": 35,
+       "facing": "down",
+       "place": "the Lantern House step"
+      },
+      {
+       "map": null,
+       "x": 0,
+       "y": 0,
+       "place": "home (off the map)"
+      }
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_4_0",
+     "name": "Child",
+     "look": "bg_child",
+     "x": 13,
+     "y": 36,
+     "facing": "down",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true,
+     "schedule": [
+      {
+       "when": "phase:day",
+       "map": "bg_partner",
+       "x": 13,
+       "y": 36,
+       "facing": "down",
+       "place": "Comfort Park"
+      },
+      {
+       "when": "phase:dusk",
+       "map": "brightgate",
+       "x": 25,
+       "y": 35,
+       "facing": "down",
+       "place": "the Lantern House step"
+      },
+      {
+       "map": null,
+       "x": 0,
+       "y": 0,
+       "place": "home (off the map)"
+      }
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "bg_sched_5_1",
+     "name": "Census taker",
+     "look": "bg_swapcrew",
+     "x": 18,
+     "y": 21,
+     "facing": "up",
+     "lines": {
+      "else": "[PLACEHOLDER] Have a bright day!"
+     },
+     "still": true
+    },
+    {
+     "kind": "trainer",
+     "id": "bg_h_partner",
+     "x": 15,
+     "y": 39,
+     "look": "bg_local"
+    }
+   ]
+  },
+  "bg_lantern_in": {
+   "name": "Brightgate Lantern House",
+   "kind": "interior",
+   "outdoor": "brightgate",
+   "door": "bg_lantern",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 14,
+   "h": 14,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 6,
+    "y": 12
+   },
+   "skin": "bg_lantern",
+   "variants": true,
+   "grid": [
+    "#WWW#WWWW#WWW#",
+    "#...#....#...#",
+    "#...#....#...#",
+    "#...#....#...#",
+    "#...#....#...#",
+    "#...#....#...#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "######m#######"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_lantern_mat",
+     "x": 6,
+     "y": 13,
+     "to": "brightgate",
+     "tx": 29,
+     "ty": 34,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_a",
+     "x": 1,
+     "y": 2,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_b",
+     "x": 3,
+     "y": 2,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_c",
+     "x": 10,
+     "y": 2,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_d",
+     "x": 12,
+     "y": 2,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_e",
+     "x": 1,
+     "y": 4,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_f",
+     "x": 3,
+     "y": 4,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_g",
+     "x": 10,
+     "y": 4,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_h",
+     "x": 12,
+     "y": 4,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_i",
+     "x": 1,
+     "y": 6,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_j",
+     "x": 3,
+     "y": 6,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_k",
+     "x": 10,
+     "y": 6,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_bed_l",
+     "x": 12,
+     "y": 6,
+     "sprite": "rest_bed",
+     "lines": {
+      "else": "@lantern_rest"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_lantern_host",
+     "name": "Lantern Host",
+     "look": "bg_lantern_host",
+     "x": 4,
+     "y": 6,
+     "facing": "down",
+     "still": true
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_clock",
+     "x": 6,
+     "y": 1,
+     "sprite": "clock_face",
+     "name": "a wall clock",
+     "lines": {
+      "talked": "Tick. Tick. Everything else here hums.",
+      "else": "A wall clock that ticks. The only one in Brightgate that does."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_bench_9",
+     "x": 11,
+     "y": 9,
+     "sprite": "bench_long",
+     "name": "a bench"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_bench_10",
+     "x": 11,
+     "y": 10,
+     "sprite": "bench_long",
+     "name": "a bench"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lantern_lamp",
+     "x": 2,
+     "y": 11,
+     "sprite": "bg_comfort_lamp",
+     "name": "a Comfort Lamp",
+     "lines": {
+      "else": "The lamp pulses like a slow heartbeat."
+     }
+    },
+    {
+     "kind": "sign",
+     "id": "bg_lantern_note",
+     "x": 1,
+     "y": 12,
+     "sprite": "none",
+     "text": ""
+    }
+   ],
+   "respawnSpot": {
+    "x": 6,
+    "y": 11,
+    "facing": "up"
+   }
+  },
+  "bg_store_in": {
+   "name": "Bright Mart",
+   "kind": "interior",
+   "outdoor": "brightgate",
+   "door": "bg_store",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 11,
+   "h": 9,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 5,
+    "y": 7
+   },
+   "skin": "bg_store",
+   "variants": true,
+   "grid": [
+    "###########",
+    "#WWWWWWWWW#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#####m#####"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_store_mat",
+     "x": 5,
+     "y": 8,
+     "to": "brightgate",
+     "tx": 35,
+     "ty": 34,
+     "facing": "down"
+    },
+    {
+     "kind": "npc",
+     "id": "bg_store_clerk",
+     "name": "Bright Mart clerk",
+     "look": "bg_store_clerk",
+     "x": 5,
+     "y": 2,
+     "facing": "down",
+     "still": true,
+     "shopTitle": "BRIGHT MART",
+     "lines": {
+      "story.switched_a3": "Oh, you're staff now! Same prices, bigger smile. Have a bright day!",
+      "talked": "Back again? Bright choice!",
+      "else": "Welcome to Bright Mart! Every shelf labelled, every price fair. Have a bright day!"
+     },
+     "shop": [
+      "heal_snack",
+      "hearty_snack",
+      "wake_tonic",
+      "befriend_treat",
+      "energy_sip",
+      "joy_crumb"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_counter_l",
+     "x": 4,
+     "y": 3,
+     "sprite": "stall_counter",
+     "name": "the counter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_counter_r",
+     "x": 6,
+     "y": 3,
+     "sprite": "stall_counter",
+     "name": "the counter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_acorn",
+     "x": 3,
+     "y": 1,
+     "sprite": "acorn_board",
+     "name": "the price board"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_crate_a",
+     "x": 1,
+     "y": 3,
+     "sprite": "bg_lantern_crate",
+     "name": "a crate of lanterns"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_crate_b",
+     "x": 9,
+     "y": 3,
+     "sprite": "bg_lantern_crate",
+     "name": "a crate of lanterns"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_shelf_a",
+     "x": 1,
+     "y": 6,
+     "sprite": "crate_stack",
+     "name": "a shelf"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_store_shelf_b",
+     "x": 9,
+     "y": 6,
+     "sprite": "crate_stack",
+     "name": "a shelf"
+    }
+   ],
+   "wall": {
+    "windows": [
+     2,
+     8
+    ]
+   }
+  },
+  "bg_hq_lobby": {
+   "name": "Brightgate HQ",
+   "kind": "interior",
+   "outdoor": "bg_campus",
+   "door": "bg_hq",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 16,
+   "h": 16,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 7,
+    "y": 14
+   },
+   "skin": "bg_lobby",
+   "variants": true,
+   "grid": [
+    "#WWWWWWWWWWWWWW#",
+    "#..E........E..#",
+    "#..............#",
+    "#..............#",
+    "#######..#######",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_hq_lobby_mat",
+     "x": 7,
+     "y": 15,
+     "to": "bg_campus",
+     "tx": 32,
+     "ty": 18,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "bg_lift_w",
+     "x": 3,
+     "y": 1,
+     "to": "bg_review_in",
+     "tx": 7,
+     "ty": 12,
+     "facing": "up"
+    },
+    {
+     "kind": "sign",
+     "id": "bg_lift_e",
+     "x": 12,
+     "y": 1,
+     "sprite": "none",
+     "text": "Out of service."
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lanyard_gate_7",
+     "x": 7,
+     "y": 4,
+     "sprite": "bg_lanyard_gate",
+     "name": "the lanyard gate",
+     "when": [
+      "!story.switched_a3",
+      "!story.a3_offer | story.solvane_met"
+     ],
+     "lines": {
+      "seal:seal_glim_1 | seal:seal_glim_2 | seal:seal_glim_3": "Your name isn't on today's list.",
+      "else": "Visitors' hours end at five. It's five."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lanyard_gate_8",
+     "x": 8,
+     "y": 4,
+     "sprite": "bg_lanyard_gate",
+     "name": "the lanyard gate",
+     "when": [
+      "!story.switched_a3",
+      "!story.a3_offer | story.solvane_met"
+     ],
+     "lines": {
+      "seal:seal_glim_1 | seal:seal_glim_2 | seal:seal_glim_3": "Your name isn't on today's list.",
+      "else": "Visitors' hours end at five. It's five."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_k_1_5",
+     "x": 1,
+     "y": 5,
+     "sprite": "bg_lanyard_rack",
+     "name": "the lanyard rack",
+     "lines": {
+      "else": "A lanyard rack. One hook is empty. The card under it has your name."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_k_1_6",
+     "x": 1,
+     "y": 6,
+     "sprite": "bg_lanyard_rack",
+     "name": "the lanyard rack",
+     "lines": {
+      "else": "A lanyard rack. One hook is empty. The card under it has your name."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_D_10_7",
+     "x": 10,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "the front desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_D_11_7",
+     "x": 11,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "the front desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_D_12_7",
+     "x": 12,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "the front desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_3_10",
+     "x": 3,
+     "y": 10,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_4_10",
+     "x": 4,
+     "y": 10,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_11_10",
+     "x": 11,
+     "y": 10,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_12_10",
+     "x": 12,
+     "y": 10,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_3_11",
+     "x": 3,
+     "y": 11,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_4_11",
+     "x": 4,
+     "y": 11,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_11_11",
+     "x": 11,
+     "y": 11,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_s_12_11",
+     "x": 12,
+     "y": 11,
+     "sprite": "keep_bench",
+     "name": "a visitor sofa"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_1_3",
+     "x": 1,
+     "y": 3,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_2_3",
+     "x": 2,
+     "y": 3,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_13_3",
+     "x": 13,
+     "y": 3,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_14_3",
+     "x": 14,
+     "y": 3,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_lobby_planter_14_8",
+     "x": 14,
+     "y": 8,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_insign_plaque",
+     "x": 1,
+     "y": 8,
+     "sprite": "bg_insign_plaque",
+     "name": "the INSIGN plaque",
+     "lines": {
+      "else": "Founded as INSIGN. Brighter by nature."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_receptionist",
+     "name": "Receptionist",
+     "look": "bg_receptionist",
+     "x": 11,
+     "y": 6,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "story.switched_a3": "Have a bright day!",
+      "seal:seal_glim_1 | seal:seal_glim_2 | seal:seal_glim_3": "Your name isn't on today's list.",
+      "else": "Visitors' hours end at five. It's five."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_juniper_desk",
+     "name": "Associate Juniper",
+     "look": "juniper",
+     "x": 12,
+     "y": 6,
+     "facing": "down",
+     "still": true,
+     "when": [
+      "story.a3_offer",
+      "!story.switched_a3"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] ACT3_SWITCH's lines go here."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_lobby_guard",
+     "name": "Courtesy staff",
+     "look": "bg_courtesy",
+     "x": 5,
+     "y": 2,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "Lost? Everything's this way. Have a bright day!"
+     }
+    }
+   ],
+   "wall": {
+    "windows": []
+   }
+  },
+  "bg_review_in": {
+   "name": "Brightgate HQ, floor 2",
+   "kind": "interior",
+   "outdoor": "bg_campus",
+   "door": "bg_hq",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 16,
+   "h": 14,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 7,
+    "y": 12
+   },
+   "skin": "bg_review",
+   "variants": true,
+   "grid": [
+    "#WWWWWWWWWWWWWW#",
+    "#............E.#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_review_mat",
+     "x": 7,
+     "y": 13,
+     "to": "bg_hq_lobby",
+     "tx": 3,
+     "ty": 2,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_stair",
+     "x": 13,
+     "y": 1,
+     "sprite": "bg_none",
+     "name": "the stair",
+     "lines": {
+      "story.switched_a3": "Wing staff only. Your lanyard doesn't open this one yet.",
+      "else": "The stair is roped off. A card on the rope: Staff only. Have a bright day!"
+     }
+    },
+    {
+     "kind": "trigger",
+     "id": "bg_f2_arrive",
+     "x": 7,
+     "y": 11,
+     "r": 0,
+     "when": [
+      "!story.switched_a3",
+      "!story.bg_f2_guest"
+     ],
+     "scene": "bg_f2_arrive"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_outcomes_board_0",
+     "x": 6,
+     "y": 0,
+     "sprite": "bg_outcomes_board",
+     "name": "the Outcomes Board",
+     "lines": {
+      "story.switched_a3": "[PLACEHOLDER] The Outcomes Board. Its cards are GLIMMER_DECISIONS' to build.",
+      "else": "The Outcomes Board. Every card is turned face down. Guests see the backs."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_outcomes_board_1",
+     "x": 7,
+     "y": 0,
+     "sprite": "bg_outcomes_board",
+     "name": "the Outcomes Board",
+     "lines": {
+      "story.switched_a3": "[PLACEHOLDER] The Outcomes Board. Its cards are GLIMMER_DECISIONS' to build.",
+      "else": "The Outcomes Board. Every card is turned face down. Guests see the backs."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_wire_3",
+     "x": 3,
+     "y": 1,
+     "sprite": "tv_set",
+     "name": "a wire set",
+     "lines": {
+      "!story.switched_a3": "A wire set, its cord clipped to the desk. Nobody's wearing it."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_wire_4",
+     "x": 4,
+     "y": 1,
+     "sprite": "tv_set",
+     "name": "a wire set",
+     "lines": {
+      "!story.switched_a3": "A wire set, its cord clipped to the desk. Nobody's wearing it."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_wire_9",
+     "x": 9,
+     "y": 1,
+     "sprite": "tv_set",
+     "name": "a wire set",
+     "lines": {
+      "!story.switched_a3": "A wire set, its cord clipped to the desk. Nobody's wearing it."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_wire_10",
+     "x": 10,
+     "y": 1,
+     "sprite": "tv_set",
+     "name": "a wire set",
+     "lines": {
+      "!story.switched_a3": "A wire set, its cord clipped to the desk. Nobody's wearing it."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_4_3",
+     "x": 4,
+     "y": 3,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_5_3",
+     "x": 5,
+     "y": 3,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_6_3",
+     "x": 6,
+     "y": 3,
+     "sprite": "keep_desk",
+     "name": "the one desk",
+     "lines": {
+      "!story.switched_a3": "An empty desk in the front row. The chair is pushed in, as if it's waiting."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_7_3",
+     "x": 7,
+     "y": 3,
+     "sprite": "keep_desk",
+     "name": "the one desk",
+     "lines": {
+      "!story.switched_a3": "An empty desk in the front row. The chair is pushed in, as if it's waiting."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_2_5",
+     "x": 2,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_3_5",
+     "x": 3,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_5_5",
+     "x": 5,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_6_5",
+     "x": 6,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_9_5",
+     "x": 9,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_10_5",
+     "x": 10,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_12_5",
+     "x": 12,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_13_5",
+     "x": 13,
+     "y": 5,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_2_7",
+     "x": 2,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_3_7",
+     "x": 3,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_5_7",
+     "x": 5,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_6_7",
+     "x": 6,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_9_7",
+     "x": 9,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_10_7",
+     "x": 10,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_12_7",
+     "x": 12,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_13_7",
+     "x": 13,
+     "y": 7,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_planter_2_9",
+     "x": 2,
+     "y": 9,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_planter_3_9",
+     "x": 3,
+     "y": 9,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_11_9",
+     "x": 11,
+     "y": 9,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_desk_12_9",
+     "x": 12,
+     "y": 9,
+     "sprite": "keep_desk",
+     "name": "a desk"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_planter_2_12",
+     "x": 2,
+     "y": 12,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_review_planter_13_12",
+     "x": 13,
+     "y": 12,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "npc",
+     "id": "bg_rook_review",
+     "name": "Rook",
+     "look": "rook",
+     "x": 5,
+     "y": 2,
+     "facing": "down",
+     "still": true,
+     "when": [
+      "story.switched_a3 | story.a3_offer"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] ACT3_SWITCH's lines go here."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_dorian_review",
+     "name": "Dorian Pell",
+     "look": "dorian",
+     "x": 11,
+     "y": 8,
+     "facing": "down",
+     "still": true,
+     "when": [
+      "story.switched_a3 | story.a3_offer"
+     ],
+     "lines": {
+      "story.switched_a3": "[PLACEHOLDER] GLIMMER_DECISIONS' lines go here.",
+      "else": "Rook's guest. Lovely. Look all you like. Touching is for staff."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "bg_quinn_review",
+     "name": "Associate Quinn",
+     "look": "quinn",
+     "x": 2,
+     "y": 1,
+     "facing": "right",
+     "still": true,
+     "when": [
+      "story.switched_a3 | story.a3_offer"
+     ],
+     "lines": {
+      "story.switched_a3": "[PLACEHOLDER] ACT3_SWITCH's lines go here.",
+      "else": "Visitors don't get a wire set. Policy, not personal. Have a bright day!"
+     }
+    }
+   ],
+   "wall": {
+    "windows": []
+   }
+  },
+  "bg_gala_in": {
+   "name": "Gala Hall",
+   "kind": "interior",
+   "outdoor": "bg_campus",
+   "door": "bg_gala",
+   "backdrop": "town",
+   "music": "sweet",
+   "w": 16,
+   "h": 18,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 7,
+    "y": 16
+   },
+   "skin": "bg_gala",
+   "variants": true,
+   "grid": [
+    "#WWWWWWWWWWWWWW#",
+    "#....======....#",
+    "#....======....#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_gala_mat",
+     "x": 7,
+     "y": 17,
+     "to": "bg_campus",
+     "tx": 9,
+     "ty": 17,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_2_4",
+     "x": 2,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_3_4",
+     "x": 3,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_6_4",
+     "x": 6,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_7_4",
+     "x": 7,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_10_4",
+     "x": 10,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_11_4",
+     "x": 11,
+     "y": 4,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_2_7",
+     "x": 2,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_3_7",
+     "x": 3,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_6_7",
+     "x": 6,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_7_7",
+     "x": 7,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_10_7",
+     "x": 10,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_11_7",
+     "x": 11,
+     "y": 7,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_2_10",
+     "x": 2,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_3_10",
+     "x": 3,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_6_10",
+     "x": 6,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_7_10",
+     "x": 7,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_10_10",
+     "x": 10,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_t_11_10",
+     "x": 11,
+     "y": 10,
+     "sprite": "cafe_table",
+     "name": "a round table"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_p_1_12",
+     "x": 1,
+     "y": 12,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_gala_p_14_12",
+     "x": 14,
+     "y": 12,
+     "sprite": "bg_hedge_planter",
+     "name": "a planter"
+    },
+    {
+     "kind": "npc",
+     "id": "bg_gala_host",
+     "name": "Gala host",
+     "look": "bg_courtesy",
+     "x": 7,
+     "y": 3,
+     "facing": "down",
+     "still": true,
+     "lines": {
+      "else": "[PLACEHOLDER] The gala is Story's scene (G1)."
+     }
+    }
+   ],
+   "wall": {
+    "windows": []
+   }
+  },
+  "bg_hall_in": {
+   "name": "Brightgate Trial Hall",
+   "kind": "interior",
+   "outdoor": "bg_oldtown",
+   "door": "bg_hall",
+   "backdrop": "town",
+   "music": "hall",
+   "w": 16,
+   "h": 24,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 7,
+    "y": 22
+   },
+   "skin": "bg_hall",
+   "variants": true,
+   "grid": [
+    "######WWWW######",
+    "######....######",
+    "#####.====.#####",
+    "####..====..####",
+    "###..........###",
+    "##............##",
+    "##............##",
+    "#......==......#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..=........=..#",
+    "#.==........==.#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "##............##",
+    "##............##",
+    "###..........###",
+    "###..........###",
+    "####........####",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bg_hall_mat",
+     "x": 7,
+     "y": 23,
+     "to": "bg_oldtown",
+     "tx": 32,
+     "ty": 15,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_dead_rod_7",
+     "x": 7,
+     "y": 1,
+     "sprite": "bg_rod",
+     "name": "the sky's rod",
+     "lines": {
+      "else": "[PLACEHOLDER] The sky's rod. It has not lit in years."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_dead_rod_8",
+     "x": 8,
+     "y": 1,
+     "sprite": "bg_rod",
+     "name": "the sky's rod",
+     "lines": {
+      "else": "[PLACEHOLDER] The sky's rod. It has not lit in years."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_rod_h4_crew_c",
+     "x": 7,
+     "y": 6,
+     "sprite": "bg_rod",
+     "name": "a rod plinth",
+     "when": [
+      "!trainer.h4_crew_c"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] A lightning rod on its plinth. Unlit."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_rod_lit_h4_crew_c",
+     "x": 7,
+     "y": 6,
+     "sprite": "bg_rod_lit",
+     "name": "a lit rod",
+     "when": [
+      "trainer.h4_crew_c"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] The rod is lit. A honey spark sits at its tip."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_rod_top_8_6",
+     "x": 8,
+     "y": 6,
+     "sprite": "bg_rod",
+     "name": "a rod"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_6_11",
+     "x": 6,
+     "y": 11,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_7_11",
+     "x": 7,
+     "y": 11,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_8_11",
+     "x": 8,
+     "y": 11,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_9_11",
+     "x": 9,
+     "y": 11,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_rod_h4_crew_a",
+     "x": 2,
+     "y": 12,
+     "sprite": "bg_rod",
+     "name": "a rod plinth",
+     "when": [
+      "!trainer.h4_crew_a"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] A lightning rod on its plinth. Unlit."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_rod_lit_h4_crew_a",
+     "x": 2,
+     "y": 12,
+     "sprite": "bg_rod_lit",
+     "name": "a lit rod",
+     "when": [
+      "trainer.h4_crew_a"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] The rod is lit. A honey spark sits at its tip."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_6_12",
+     "x": 6,
+     "y": 12,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_7_12",
+     "x": 7,
+     "y": 12,
+     "sprite": "bg_coil",
+     "name": "the idle coil"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_8_12",
+     "x": 8,
+     "y": 12,
+     "sprite": "bg_coil",
+     "name": "the idle coil"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_9_12",
+     "x": 9,
+     "y": 12,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_rod_h4_crew_b",
+     "x": 13,
+     "y": 12,
+     "sprite": "bg_rod",
+     "name": "a rod plinth",
+     "when": [
+      "!trainer.h4_crew_b"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] A lightning rod on its plinth. Unlit."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_rod_lit_h4_crew_b",
+     "x": 13,
+     "y": 12,
+     "sprite": "bg_rod_lit",
+     "name": "a lit rod",
+     "when": [
+      "trainer.h4_crew_b"
+     ],
+     "lines": {
+      "else": "[PLACEHOLDER] The rod is lit. A honey spark sits at its tip."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_6_13",
+     "x": 6,
+     "y": 13,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_7_13",
+     "x": 7,
+     "y": 13,
+     "sprite": "bg_coil",
+     "name": "the idle coil"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_8_13",
+     "x": 8,
+     "y": 13,
+     "sprite": "bg_coil",
+     "name": "the idle coil"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_9_13",
+     "x": 9,
+     "y": 13,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_6_14",
+     "x": 6,
+     "y": 14,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_7_14",
+     "x": 7,
+     "y": 14,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_8_14",
+     "x": 8,
+     "y": 14,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_coil_9_14",
+     "x": 9,
+     "y": 14,
+     "sprite": "bg_coil",
+     "name": "the idle coil",
+     "lines": {
+      "else": "[PLACEHOLDER] A great coil, idle and cold."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_vane_stand_4",
+     "x": 4,
+     "y": 21,
+     "sprite": "bg_vane",
+     "name": "the old vane"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_vane_stand_11",
+     "x": 11,
+     "y": 21,
+     "sprite": "bg_vane",
+     "name": "the old vane"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_hall_bench_4",
+     "x": 4,
+     "y": 22,
+     "sprite": "keep_bench",
+     "name": "a bench"
+    },
+    {
+     "kind": "prop",
+     "id": "bg_hall_bench_5",
+     "x": 5,
+     "y": 22,
+     "sprite": "keep_bench",
+     "name": "a bench",
+     "lines": {
+      "else": "@bg_bench_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_hall_bench_10",
+     "x": 10,
+     "y": 22,
+     "sprite": "keep_bench",
+     "name": "a bench",
+     "lines": {
+      "else": "@bg_bench_rest"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "bg_hall_bench_11",
+     "x": 11,
+     "y": 22,
+     "sprite": "keep_bench",
+     "name": "a bench"
+    },
+    {
+     "kind": "trainer",
+     "id": "h4_crew_a",
+     "x": 3,
+     "y": 12,
+     "look": "bg_hallcrew"
+    },
+    {
+     "kind": "trainer",
+     "id": "h4_crew_b",
+     "x": 12,
+     "y": 12,
+     "look": "bg_hallcrew"
+    },
+    {
+     "kind": "trainer",
+     "id": "h4_crew_c",
+     "x": 7,
+     "y": 7,
+     "look": "bg_hallcrew"
+    },
+    {
+     "kind": "trainer",
+     "id": "hall4_master",
+     "x": 7,
+     "y": 2,
+     "look": "bg_ada"
+    }
+   ],
+   "wall": {
+    "windows": []
+   }
+  }
+ },
+ "looks": {
+  "bg_lantern_host": {
+   "skin": "3",
+   "hair": "bun",
+   "hairCol": "d",
+   "outfit": "jacket",
+   "outfitCol": "w",
+   "accent": "N"
+  },
+  "bg_store_clerk": {
+   "skin": "2",
+   "hair": "short",
+   "hairCol": "k",
+   "outfit": "apron",
+   "outfitCol": "V",
+   "accent": "w"
+  },
+  "bg_receptionist": {
+   "skin": "2",
+   "hair": "bob",
+   "hairCol": "k",
+   "outfit": "jacket",
+   "outfitCol": "w",
+   "accent": "N"
+  },
+  "bg_courtesy": {
+   "skin": "4",
+   "hair": "short",
+   "hairCol": "d",
+   "outfit": "jacket",
+   "outfitCol": "w",
+   "accent": "V"
+  },
+  "bg_swap_clerk": {
+   "skin": "5",
+   "hair": "short",
+   "hairCol": "o",
+   "outfit": "apron",
+   "outfitCol": "V",
+   "accent": "w"
+  },
+  "bg_mast_tech": {
+   "skin": "3",
+   "hair": "buzz",
+   "hairCol": "n",
+   "outfit": "overalls",
+   "outfitCol": "h",
+   "accent": "N",
+   "accessory": "goggles"
+  },
+  "bg_bay_attendant": {
+   "skin": "1",
+   "hair": "pony",
+   "hairCol": "y",
+   "outfit": "vest",
+   "outfitCol": "w",
+   "accent": "s"
+  },
+  "bg_swapcrew": {
+   "skin": "6",
+   "hair": "buzz",
+   "hairCol": "k",
+   "outfit": "overalls",
+   "outfitCol": "N",
+   "accent": "y"
+  },
+  "bg_supporter": {
+   "skin": "2",
+   "hair": "curls",
+   "hairCol": "o",
+   "outfit": "vest",
+   "outfitCol": "V",
+   "accent": "w"
+  },
+  "bg_local": {
+   "skin": "3",
+   "hair": "bob",
+   "hairCol": "d",
+   "outfit": "cardigan",
+   "outfitCol": "h",
+   "accent": "w"
+  },
+  "bg_child": {
+   "skin": "3",
+   "hair": "pony",
+   "hairCol": "d",
+   "outfit": "overalls",
+   "outfitCol": "b",
+   "accent": "y"
+  },
+  "bg_elder": {
+   "skin": "4",
+   "hair": "bun",
+   "hairCol": "w",
+   "outfit": "cardigan",
+   "outfitCol": "G",
+   "accent": "o"
+  },
+  "bg_ada": {
+   "skin": "4",
+   "hair": "bun",
+   "hairCol": "h",
+   "outfit": "coat",
+   "outfitCol": "n",
+   "accent": "y"
+  },
+  "bg_hallcrew": {
+   "skin": "2",
+   "hair": "short",
+   "hairCol": "d",
+   "outfit": "vest",
+   "outfitCol": "n",
+   "accent": "y"
+  },
+  "bg_odell": {
+   "skin": "5",
+   "hair": "short",
+   "hairCol": "h",
+   "outfit": "coat",
+   "outfitCol": "F",
+   "accent": "o"
+  }
+ },
+ "speakers": {
+  "Master Ada Coil": "bg_ada"
+ },
+ "cast": [
+  {
+   "name": "Lantern Host",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Waiting Local",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Lamplighter Odell",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Parent",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Child",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Old Wick elder",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Ada Coil",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Master Ada Coil",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Rod Tender",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Line Runner",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Sky Watcher",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Quarter Chaser",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Quay Hand",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Jug Maker",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Model Partner",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Shuttle attendant",
+   "faction": "none",
+   "base": 50
+  },
+  {
+   "name": "Bright Mart clerk",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Receptionist",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Courtesy staff",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Gala host",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Courtesy greeter",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Swap Clerk",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Mast Tech",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Glow Care Receptionist",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Bay Attendant",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Calm Tower crew",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Swap crew",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Swap-crew foreman",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Staff commuter",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Supporter A",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Supporter B",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Census taker",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  },
+  {
+   "name": "Works hand",
+   "faction": "glimmer",
+   "base": 50,
+   "rankFlag": "BRIGHTGATE_LAYOUT: city cast, ranks PLACEHOLDER until Story"
+  }
+ ],
+ "scenes": {
+  "bg_hq_plaque": [
+   [
+    "say",
+    "",
+    "Founded as INSIGN. Brighter by nature."
+   ],
+   [
+    "setFlag",
+    "story.bg_insign",
+    true
+   ]
+  ],
+  "bg_calm_crate": [
+   [
+    "say",
+    "",
+    "A crate stamped CALM TOWER, BRIGHTGATE 2."
+   ],
+   [
+    "setFlag",
+    "story.bg_crate",
+    true
+   ]
+  ],
+  "bg_vane_read": [
+   [
+    "say",
+    "",
+    "The weather vane points north. It hasn't moved in years."
+   ],
+   [
+    "setFlag",
+    "story.bg_vane",
+    true
+   ]
+  ],
+  "bg_dipper": [
+   [
+    "encounter",
+    "bg_wild_dipper"
+   ],
+   [
+    "setFlag",
+    "story.bg_dipper",
+    true
+   ]
+  ],
+  "bs_first_ride": [
+   [
+    "say",
+    "",
+    "The shuttle hums to a stop. Nobody asks for a ticket. Nobody asks your name, either."
+   ],
+   [
+    "setFlag",
+    "story.bg_shuttle",
+    true
+   ]
+  ],
+  "hs_first_drop": [
+   [
+    "say",
+    "",
+    "The shuttle sets you down beside the Lantern Coach. Its driver waves at the porter. He doesn't wave back."
+   ],
+   [
+    "setFlag",
+    "story.bg_shuttle_hm",
+    true
+   ]
+  ],
+  "bg_f2_arrive": [
+   [
+    "say",
+    "",
+    "Floor two. Rows of desks face one board. Every chair is pushed in."
+   ],
+   [
+    "setFlag",
+    "story.bg_f2_guest",
+    true
+   ]
+  ],
+  "bg_bench_rest": [
+   [
+    "say",
+    "",
+    "You sit on the bench by the door. {pet} leans on your boots and gets its breath back."
+   ],
+   [
+    "rest"
+   ]
+  ],
+  "seal4": [
+   [
+    "say",
+    "Master Ada Coil",
+    "Storms aren't stopped, Cadet. They're moved."
+   ],
+   [
+    "setFlag",
+    "story.ada_sky",
+    true
+   ],
+   [
+    "setFlag",
+    "story.seal4",
+    true
+   ]
+  ]
+ },
+ "trainers": {
+  "h4_crew_a": {
+   "name": "Rod Tender",
+   "title": "Storm Crew",
+   "map": "bg_hall_in",
+   "x": 3,
+   "y": 12,
+   "facing": "right",
+   "sight": 8,
+   "ai": "basic",
+   "money": null,
+   "team": [
+    {
+     "form": "byte/1",
+     "level": 32,
+     "moves": [
+      "ping_pulse",
+      "circuit_hum",
+      "hover_hum",
+      "bit_burst"
+     ],
+     "opener": "circuit_hum"
+    },
+    {
+     "form": "volt/1",
+     "level": 33,
+     "moves": [
+      "neon_zip",
+      "fizz_jolt",
+      "arc_bolt",
+      "whisker_spark"
+     ]
+    }
+   ],
+   "lines": {
+    "intro": "Volt rule one: go first or get hit first. Pick.",
+    "win": "You went first. That's the whole lesson.",
+    "lose": "Hit first, lost first. Rest, then pick again."
+   }
+  },
+  "h4_crew_b": {
+   "name": "Line Runner",
+   "title": "Storm Crew",
+   "map": "bg_hall_in",
+   "x": 12,
+   "y": 12,
+   "facing": "left",
+   "sight": 8,
+   "ai": "basic",
+   "money": null,
+   "team": [
+    {
+     "form": "moth/1",
+     "level": 32,
+     "moves": [
+      "wick_flutter",
+      "neon_flash",
+      "lantern_waltz",
+      "arc_bolt"
+     ]
+    },
+    {
+     "form": "adder/1",
+     "level": 33,
+     "moves": [
+      "zigzag_strike",
+      "neon_flash",
+      "dusk_fang",
+      "whisker_spark"
+     ]
+    }
+   ],
+   "lines": {
+    "intro": "Losing the race? Swap out. A fresh start is still a start.",
+    "win": "You swapped at the right time. Good read.",
+    "lose": "Stayed in too long. Rest, and trade sooner."
+   }
+  },
+  "h4_crew_c": {
+   "name": "Sky Watcher",
+   "title": "Storm Crew",
+   "map": "bg_hall_in",
+   "x": 7,
+   "y": 7,
+   "facing": "down",
+   "sight": 8,
+   "ai": "basic",
+   "money": null,
+   "team": [
+    {
+     "form": "volt/1",
+     "level": 32,
+     "moves": [
+      "puff_shot",
+      "circuit_hum",
+      "neon_burst",
+      "whisker_spark"
+     ]
+    },
+    {
+     "form": "moth/1",
+     "level": 33,
+     "moves": [
+      "gale_slice",
+      "fizz_jolt",
+      "neon_burst",
+      "lantern_waltz"
+     ]
+    }
+   ],
+   "lines": {
+    "intro": "Behind? A good type edge wins from behind. Show me.",
+    "win": "From behind, too. Told you a type edge holds.",
+    "lose": "No edge, no comeback. Rest, and bring one."
+   }
+  },
+  "hall4_master": {
+   "name": "Ada Coil",
+   "title": "Trial Master",
+   "map": "bg_hall_in",
+   "x": 7,
+   "y": 2,
+   "facing": "down",
+   "sight": 0,
+   "ai": "leader",
+   "hall": true,
+   "seal": "seal_brightgate",
+   "items": {
+    "heal_snack": 1
+   },
+   "onWin": "seal4",
+   "money": null,
+   "crew": [
+    "h4_crew_a",
+    "h4_crew_b",
+    "h4_crew_c"
+   ],
+   "team": [
+    {
+     "form": "volt/1",
+     "level": 33,
+     "moves": [
+      "fizz_jolt",
+      "arc_bolt",
+      "dusk_fang",
+      "whisker_spark"
+     ],
+     "opener": "fizz_jolt"
+    },
+    {
+     "form": "adder/2",
+     "level": 34,
+     "moves": [
+      "zigzag_strike",
+      "neon_flash",
+      "full_tilt",
+      "static_lunge"
+     ]
+    },
+    {
+     "form": "volt/2",
+     "level": 35,
+     "moves": [
+      "circuit_hum",
+      "neon_burst",
+      "full_tilt",
+      "static_lunge"
+     ],
+     "opener": "circuit_hum"
+    }
+   ],
+   "lines": {
+    "intro": "This Hall was built for storms. Now I make my own weather. Show me yours, Cadet.",
+    "win": "Clean strike, {player}. Nearest thing to real lightning I've seen in years.",
+    "lose": "A beat too slow. Storms don't wait. Rest, and come back charged.",
+    "crew": "[PLACEHOLDER] Light the three rods first."
+   }
+  },
+  "bg_h_board": {
+   "name": "Quarter Chaser",
+   "title": "Brightgate holder",
+   "map": "brightgate",
+   "x": 50,
+   "y": 27,
+   "facing": "left",
+   "sight": 0,
+   "ai": "basic",
+   "money": null,
+   "team": [
+    {
+     "form": "byte/1",
+     "level": 31,
+     "moves": [
+      "ping_pulse",
+      "hover_hum",
+      "updraft",
+      "bit_burst"
+     ]
+    },
+    {
+     "form": "moth/1",
+     "level": 32,
+     "moves": [
+      "wick_flutter",
+      "mist_veil",
+      "thorn_lash",
+      "lantern_waltz"
+     ]
+    }
+   ],
+   "lines": {
+    "intro": "Top ten this quarter or bust! You'd look great as a number on my chart.",
+    "win": "Down a place. I'll call it growth.",
+    "lose": "Targets up! Rest, then let's go again."
+   }
+  },
+  "bg_h_quay": {
+   "name": "Quay Hand",
+   "title": "Brightgate holder",
+   "map": "bg_works",
+   "x": 20,
+   "y": 36,
+   "facing": "down",
+   "sight": 0,
+   "ai": "basic",
+   "money": null,
+   "team": [
+    {
+     "form": "heron/1",
+     "level": 32,
+     "moves": [
+      "reed_still",
+      "gale_slice",
+      "kite_swoop",
+      "puddle_stomp"
+     ]
+    },
+    {
+     "form": "crab/1",
+     "level": 31,
+     "moves": [
+      "clink_pinch",
+      "stoke_up",
+      "sleet_pelt",
+      "shard_pinch"
+     ]
+    }
+   ],
+   "lines": {
+    "intro": "The quay's been quiet since the barges went electric. A battle'll do.",
+    "win": "Fair water, {player}.",
+    "lose": "Tide's mine today. Rest a while."
+   }
+  },
+  "bg_h_potter": {
+   "name": "Jug Maker",
+   "title": "Brightgate holder",
+   "map": "bg_oldtown",
+   "x": 40,
+   "y": 32,
+   "facing": "up",
+   "sight": 0,
+   "ai": "basic",
+   "money": null,
+   "team": [
+    {
+     "form": "jugwasp/1",
+     "level": 32,
+     "moves": [
+      "jug_toss",
+      "scree_slide",
+      "whetstone",
+      "kite_swoop"
+     ]
+    },
+    {
+     "form": "snail/1",
+     "level": 33,
+     "moves": [
+      "lichen_lob",
+      "mist_veil",
+      "thorn_lash",
+      "boulder_drop"
+     ]
+    }
+   ],
+   "lines": {
+    "intro": "Off to the storm hall? Take clay. A spark won't touch a grounded jug.",
+    "win": "Fired well, {player}. Ada will feel that.",
+    "lose": "Cracked in the kiln. Rest, then try again."
+   }
+  },
+  "bg_h_partner": {
+   "name": "Model Partner",
+   "title": "Brightgate holder",
+   "map": "bg_partner",
+   "x": 15,
+   "y": 39,
+   "facing": "left",
+   "sight": 0,
+   "ai": "basic",
+   "money": null,
+   "team": [
+    {
+     "form": "volt/1",
+     "level": 32,
+     "moves": [
+      "neon_zip",
+      "mist_veil",
+      "undertow",
+      "whisker_spark"
+     ]
+    },
+    {
+     "form": "byte/1",
+     "level": 33,
+     "moves": [
+      "ping_pulse",
+      "hover_hum",
+      "updraft",
+      "bit_burst"
+     ]
+    }
+   ],
+   "lines": {
+    "intro": "Same house, same lamp, same smile. Want to see my company Walklings?",
+    "win": "Bright work. I'll put it in my review.",
+    "lose": "See? Everything runs on time here. Rest up."
+   }
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "hearthmoor": {
+    "addObjs": [
+     {
+      "kind": "warp",
+      "id": "bs_hearthmoor",
+      "x": 18,
+      "y": 9,
+      "to": "brightgate",
+      "tx": 32,
+      "ty": 37,
+      "facing": "up",
+      "when": [
+       "story.bg_shuttle_live",
+       "story.reached_brightgate"
+      ]
+     },
+     {
+      "kind": "trigger",
+      "id": "hs_first_drop",
+      "x": 18,
+      "y": 8,
+      "r": 0,
+      "when": [
+       "story.bg_shuttle_live",
+       "!story.bg_shuttle_hm"
+      ],
+      "scene": "hs_first_drop"
+     }
+    ]
+   }
+  }
+ },
+ "_shuttle": {
+  "state": "inert: D2090 and D2091 wait for Vincent; story.bg_shuttle_live gates every leg",
+  "kilnmouth_stop": {
+   "_note": "BRIGHTGATE_LAYOUT §17.1: for the Kilnmouth build to place on its works yard (objs) and on Gate Plaza (gate_works, once kilnmouth exists); inert behind story.bg_shuttle_live",
+   "gate_works": {
+    "kind": "warp",
+    "id": "bs_gate_works",
+    "x": 33,
+    "y": 38,
+    "to": "kilnmouth",
+    "tx": 52,
+    "ty": 16,
+    "facing": "left",
+    "when": [
+     "story.bg_shuttle_live",
+     "story.km_council"
+    ],
+    "map": "brightgate"
+   },
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "bs_kilnmouth",
+     "x": 53,
+     "y": 16,
+     "to": "brightgate",
+     "tx": 32,
+     "ty": 37,
+     "facing": "up",
+     "when": [
+      "story.bg_shuttle_live",
+      "story.km_twin_lead"
+     ]
+    },
+    {
+     "kind": "sign",
+     "id": "ks_sign",
+     "x": 49,
+     "y": 16,
+     "text": "BRIGHT SHUTTLE · Brightgate. Free for partners and their guests. Step on the mark.",
+     "when": [
+      "story.bg_shuttle_live",
+      "story.km_twin_lead"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "ks_attendant",
+     "name": "Shuttle attendant",
+     "look": "bg_courtesy",
+     "x": 53,
+     "y": 17,
+     "facing": "left",
+     "still": true,
+     "when": [
+      "story.bg_shuttle_live",
+      "story.km_twin_lead"
+     ],
+     "lines": {
+      "!story.reached_brightgate": "The Lamp Works sends a shuttle for the tower crew. Guests ride free, Cadet. Have a bright day!",
+      "else": "One step to Brightgate. Mind the mark!"
+     }
+    }
+   ]
+  }
+ },
+ "flags": {
+  "story.reached_brightgate": "set on the first arrival on Gate Plaza (beat sheet §9; ?debug=1 places in this build)",
+  "story.bg_dipper": "the mill pond dipper, after the encounter (any result)",
+  "story.bg_shuttle": "the first shuttle ride (inert until D2090)",
+  "story.bg_shuttle_hm": "the first shuttle drop at Hearthmoor (inert until D2091)",
+  "story.bg_f2_guest": "floor 2, first arrival as a guest",
+  "story.seal4": "Hall 4 won (Master Ada Coil, onWin seal4)",
+  "story.ada_sky": "H4's quiet tail played (beat sheet v3)",
+  "story.bg_insign": "the HQ plaque, first read (§9)",
+  "story.bg_crate": "the CALM TOWER crate, first read",
+  "story.bg_vane": "the dead vane, first read"
+ }
+}

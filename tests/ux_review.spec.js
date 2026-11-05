@@ -1,6 +1,6 @@
 /* Outside UX review (Oct 15): header acorns, progressbar semantics, canvas labels, and the debug panel kept out of the player DOM. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap, openDebug } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -19,11 +19,14 @@ for (const mode of ['arcade', 'modern']) {
     await expect(page.locator('#hdrAcornN')).toHaveText('99999');
     await expect(page.locator('#hdrAcorns')).toHaveAttribute('aria-label', '99999 Acorns');
     const vw = page.viewportSize().width;
-    const r = { a: await rect(page, '#hdrAcorns'), lv: await rect(page, '#top .lv'), gear: await rect(page, '#settingsBtn'), name: await rect(page, '#hdrName'), tag: await rect(page, '#dbgTag'), env: await rect(page, '#thChip') };
+    // Player header only. #dbgTag (DBG) shows only in a ?debug=1 session, which this test needs for setMoney; players never
+    // see it, and with 99,999 Acorns and a long nickname at 320 it can touch the chip on wider system fonts (Windows QA,
+    // Nov 3, 2026). The debug badge is not part of the player layout, so it is not pinned here.
+    const r = { a: await rect(page, '#hdrAcorns'), lv: await rect(page, '#top .lv'), gear: await rect(page, '#settingsBtn'), name: await rect(page, '#hdrName'), env: await rect(page, '#thChip') };
     expect(r.a).not.toBeNull();
     expect(r.a.x).toBeGreaterThanOrEqual(0); expect(r.a.right).toBeLessThanOrEqual(vw);
     expect(r.a.right).toBeLessThanOrEqual(r.lv.x + 1);            // left of the Lv badge
-    for (const k of ['lv', 'gear', 'name', 'tag', 'env']) if (r[k]) expect(boxesOverlap(r.a, r[k]), k).toBe(false);
+    for (const k of ['lv', 'gear', 'name', 'env']) if (r[k]) expect(boxesOverlap(r.a, r[k]), k).toBe(false);
     const clip = await page.evaluate(() => { const b = document.querySelector('#hdrAcornN'); return b.scrollWidth > b.clientWidth + 1; });
     expect(clip).toBe(false);
     await page.evaluate(() => PixelPets.setMoney(7));
@@ -75,12 +78,12 @@ test('the debug panel is not in the player DOM; it appears only in a debug sessi
   const plain = await page.evaluate(() => ({ ov: !!document.querySelector('#ovDebug'), agent: document.body.innerHTML.includes('Agent tools'), ids: document.querySelectorAll('[id^="dbg"]').length, tag: document.querySelector('#dbgTag').hidden }));
   expect(plain.ov).toBe(false); expect(plain.agent).toBe(false); expect(plain.tag).toBe(true);
   expect(plain.ids).toBeLessThanOrEqual(5);   // only the Settings gate (gate, password, unlock, message) and the hidden DBG tag
-  const html = await (await page.request.get('/index.html')).text();
+  const html = await (await page.request.get('./index.html')).text();
   expect(html).not.toContain('Agent tools'); expect(html).not.toContain('id="ovDebug"');
   // a debug session builds it on demand
   await boot(page, starterSave(), '?debug=1');
   expect(await page.evaluate(() => !!document.querySelector('#ovDebug'))).toBe(false);   // not until it opens
-  await page.locator('#dbgTag').click();
+  await openDebug(page);
   await expect(page.locator('#ovDebug')).toBeVisible();
   await expect(page.locator('#dbgAgent summary')).toHaveText('Agent tools');
   await page.locator('#dbgLock').click();
@@ -94,7 +97,7 @@ test('modern walk acorn chip: badge row in the dock, 44 tall, left of the gear, 
   await boot(page, s, '?debug=1');
   await page.evaluate(() => PixelPets.showTab('walk'));
   await expect(page.locator('#fcAcornN')).toHaveText('99999');
-  await expect(page.locator('#fcAcorns')).toHaveAttribute('aria-label', '99999 Acorns');
+  await expect(page.locator('#fcAcorns')).toHaveAttribute('aria-label', '99999 Acorns. Open your book.');   // BANK_AND_HOMES D2220
   await page.waitForTimeout(300);
   const vw = page.viewportSize().width;
   const c = await rect(page, '#fcAcorns'), gear = await rect(page, '#gearFloat'), env = await rect(page, '#thChip');
@@ -103,8 +106,9 @@ test('modern walk acorn chip: badge row in the dock, 44 tall, left of the gear, 
   expect(c.right).toBeLessThanOrEqual(gear.x + 0.5); expect(gear.x - c.right).toBeLessThanOrEqual(8);   // immediately left of the gear
   expect(c.right).toBeLessThanOrEqual(vw);
   expect(boxesOverlap(c, env)).toBe(false);
-  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#fcAcorns')).pointerEvents)).toBe('none');
-  expect(await page.evaluate(() => document.querySelector('#fcAcorns').tagName)).toBe('DIV');
+  // BANK_AND_HOMES D2220 (Vincent, Nov 4, 2026): the chip is now a button that opens the book (tests/bank_slice_1.spec.js).
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#fcAcorns')).pointerEvents)).toBe('auto');
+  expect(await page.evaluate(() => document.querySelector('#fcAcorns').tagName)).toBe('BUTTON');
   const icon = await page.evaluate(() => { const b = document.querySelector('#fcAcornN'), h = document.querySelector('#hdrAcornN'); return [getComputedStyle(b).color === getComputedStyle(h).color, getComputedStyle(b).fontSize === getComputedStyle(h).fontSize, b.scrollWidth <= b.clientWidth + 1]; });
   expect(icon).toEqual([true, true, true]);
   // a long area name: the badge text clamps, the chip stays whole
