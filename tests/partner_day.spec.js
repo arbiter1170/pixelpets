@@ -7,7 +7,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, tapFacing } = require('./helpers');
 
 trackErrors(test, expect);
 test.use({ serviceWorkers: 'block' });   // the read hook below must reach game.js on every load
@@ -36,7 +36,7 @@ const flags = (page) => page.evaluate(() => PixelPets.state.flags);
 const objIds = (page) => page.evaluate(() => PixelPets.mapInfo.objs.map(o => o.id));
 async function talk(page) {
   await expect.poll(() => page.evaluate(() => document.querySelector('#talkBtn').classList.contains('ready'))).toBe(true);
-  await page.locator('#talkBtn').click();
+  await tapFacing(page);   // Modern: tap the person you face
 }
 async function stepTo(page, map, x, y, facing, dir) {
   await page.evaluate(([m, x, y, f]) => PixelPets.goto(m, x, y, f), [map, x, y, facing]);

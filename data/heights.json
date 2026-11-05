@@ -538,7 +538,7 @@
         {
           "kind": "npc",
           "id": "rx_cal",
-          "name": "Cal",
+          "name": "Jory",
           "x": 4,
           "y": 10,
           "look": "rx_cal",
@@ -2607,7 +2607,7 @@
       "ally": "rx_cal_ally"
     },
     "rx_cal_ally": {
-      "name": "Cal",
+      "name": "Jory",
       "title": "Floor tech",
       "ai": "basic",
       "sight": 0,
@@ -2959,27 +2959,27 @@
     "rx_cal": [
       [
         "say",
-        "Cal",
-        "You again. I'm Cal. Floor tech. I drop things. Keys, mostly..."
+        "Jory",
+        "You again. I'm Jory. Floor tech. I drop things. Keys, mostly..."
       ],
       [
         "say",
-        "Cal",
+        "Jory",
         "Atten does what the label says. Focus. Bright eyes. RegenX believes that."
       ],
       [
         "say",
-        "Cal",
+        "Jory",
         "Dr. Weller will say it slower, and mean it more. The label is honest."
       ],
       [
         "say",
-        "Cal",
+        "Jory",
         "Up top, a tiny monitor floats. Cursor eyes. No feet. We let the glitch be."
       ],
       [
         "say",
-        "Cal",
+        "Jory",
         "Take a tonic. If the bay gets loud, my Walkling knows the way."
       ],
       [
@@ -3480,7 +3480,8 @@
   },
   "speakers": {
     "Nia": "rx_nia",
-    "Cal": "rx_cal",
+    "Jory": "rx_cal",
+    "Kit": "stockup_kit",
     "Quinn": "quinn",
     "Associate Quinn": "quinn",
     "Dr. Ivo": "rx_ivo"

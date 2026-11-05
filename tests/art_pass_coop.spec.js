@@ -3,7 +3,7 @@
    checked on the hopping phone. The remote copy is the same one-write +2 a hop publishes. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
-const { starterSave, installSave, gotoGame } = require('./helpers');
+const { starterSave, installSave, gotoGame, openSettings } = require('./helpers');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 
@@ -36,7 +36,7 @@ async function boot(page, s){
   await page.evaluate(() => { PixelPets.showTab('walk'); if (PixelPets.clearWild) PixelPets.clearWild(); });
 }
 async function join(page){
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setRoomCode').click();
   await page.locator('#roomCodeInput').fill('AMB-4RQ');
   await page.locator('#roomJoin').click();

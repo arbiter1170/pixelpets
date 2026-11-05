@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-"""HIGH_CHARITY_LAYOUT v0.3, phase 1 ("the capital, day one"): writes data/hc_city_v2.json.
+"""HIGH_CHARITY_LAYOUT v0.4.2 (phase 1, "the capital, day one", plus the phase 2 rows that need no new room): writes
+data/hc_city_v2.json.
 v0.3 (D1354): the Keeper High Court stands on the Parade's south half, its front and wide steps facing Muster Road.
+v0.4 (D1426): the Governor's House floors 1-2 open in Act 2; the President's rooms keep Act 5. v0.4.1-v0.4.2: names and text
+only. Rooms that still wait for Vincent's rule 9 previews are listed in RULE9_HELD and are never built here.
 
 Run from the repo root: python3 tools/build_hc_city.py [--layout design/specs/high_charity_layout.json]
 The layout JSON lives in the private design repo (gitignored `design/` checkout); it is read, never copied in whole.
@@ -20,7 +23,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'hc_city_v2.json')
 WALK = set('gPCZADsf')
 SOLID = set('TRHUMwF')
-RWALK = set('.=m')          # room floor, rug, mat
+ROAD = set('CZ')            # carriageway and crosswalk: walk tiles nothing may stand on (layout §4.1)
+RWALK = set('.=m-+*')       # room floor, rug, mat; - + * are the Cabinet Room's runner (CABINET 1b)
 fails, notes = [], []
 
 def fail(msg): fails.append(msg)
@@ -71,14 +75,14 @@ TXT = {
     'hb15_door_seven': "Chained. Ask the duty Keeper.",
     'hb15_keeper': "Shut since the war, holder. Come back with seven on the roll.",
     'gov_door': "By appointment.",
-    'gov_line': "[PLACEHOLDER: Governor Merriden's Act 2 lines are Story's.]",
-    # GOVERNOR_MEETING v0.2.1 §5 (D1471, D1472, D1473), all PLACEHOLDER until Story signs them
+    'gov_line': "Without an appointment? I'm afraid even I need one of those, most days.",
+    # GOVERNOR_MEETING v0.2.1 §5 (D1471, D1472, D1473); signed by Story, STORY_LINES D2138 (gov_line and gov_m6 re-voiced)
     'gov_desk': "The Governor will see you, Cadet. Go on through.",
     'gov_m2': "Warden Ilse's new Cadet. Don't sit. You won't be here long enough to need a chair.",
     'gov_m3': "I've work for you. Kilnmouth's springs have gone cold this season. Nobody there can tell me why.",
     'gov_m4': "A Calm Tower went up there the same season. Its permit is in order. I checked it myself.",
     'gov_m5': "And their council has an empty seat. Everyone has a name for it. I'd like the town's.",
-    'gov_m6': "Go and look. Listen more than you talk. Then come back and tell me what you found.",
+    'gov_m6': "Go and look. Listen more than you talk. Then come back and tell me what you found, in plain words.",
     'gov_m7a': "You know where Fernbrook's Seals went.",
     'gov_tell': "Tell him about the ledger",
     'gov_keep': "Keep it to myself",
@@ -93,7 +97,36 @@ TXT = {
     'boarded': "Boarded up.",                                   # PLACEHOLDER (Store Row d, the Glimmerwell named slot)
     'fish': "The stalls are packed away for now.",              # PLACEHOLDER
     'gallery': "[PLACEHOLDER] The gallery stair is roped off for now.",
+    'hb14_gate': "Sealed. The tide decides.",                  # §11 HB14, Design's stub for Story (PLACEHOLDER)
+    'news_bill': 'A Block News bill. BLOCK NEWS · Who. Where. What changed.',
     'apt_b': None,                                              # kept text
+    # CABINET_AND_COUNCILS v0.2.2 phase 1b. thr_cabinet_lead is CHIP_HINTS' four SIGNED lines (D1470: unchanged). The rest is the
+    # packet's v0.1 words, which Story's CABINET_LINES keeps as written (D2152; settled by Vincent, Wed Nov 4, 2026, all defaults).
+    'lead_1': "Sit a moment, {name}. A new report on the lamps came in this morning. Half of it was gone by noon.",
+    'lead_2': "People tell us their Walklings come home quiet. A week later, the same people won't say a word.",
+    'lead_3': "The Governor wants you at the cabinet table in High Charity. Take the seat. Keep your ears open.",
+    'lead_4': "Every case on those lamps reaches the Court empty. Ask yourself who empties them.",
+    'cab_deny': "Cabinet in session. Members only.",               # L1
+    'cab_plate': "A brass plate: FOR A HOLDER OF THE ROLL.",        # L2
+    'cab_board_6': "KILNMOUTH: 6 OF 7",                             # B1 (CABINET §4.1 T2)
+    'cab_board_7': "KILNMOUTH: 7 OF 7",                             # B2
+    's1_ask': "First matter. Kilnmouth's empty seat. Our Cadet went and listened. Cadet, whose name?",
+    's1_town': "The Bathkeeper", 's1_cmdr': "The Commander's pick", 's1_co': "The works foreman", 's1_wait': "Not yet",
+    's1_3a': "The town's own name. Well. Order will follow, I'm sure.",
+    's1_3b': "A Keeper's man. Good. Order first.",
+    's1_3c': "A sensible name. Kilnmouth will be warm by spring.",
+    's1_3d': "Then go back and listen. The matter waits for you.",
+    's1_4': "Then it's confirmed. Take the letter to the Reeve, Cadet.",
+    # CABINET §3.5 K6, the report-back (CABINET_LINES K6.1-K6.3, KEEP; settled by Vincent Wed Nov 4 with the rest of that file)
+    'k6_1': "In default of the council? I stamped that. It was in order. It was also a tie.",
+    'k6_2': "Two names were on my desk before you left. One came down from upstairs.",
+    'k6_3': "A seat is confirmed at the cabinet, Cadet, not in an office. Bring the name to the table.",
+    # §8.2 scheduled townsfolk: the layout gives roles, not lines; Story writes them (PLACEHOLDER)
+    'sch_student': "[PLACEHOLDER: a College student's line; Story writes it.]",
+    'sch_clerk': "[PLACEHOLDER: the Exchange clerk's line; Story writes it.]",
+    'sch_dockhand': "[PLACEHOLDER: the pier dockhand's line; Story writes it.]",
+    'sch_shopper': "[PLACEHOLDER: the shopper's line; Story writes it.]",
+    'sch_office': "[PLACEHOLDER: the office worker's line; Story writes it.]",
 }
 # District signposts one tile inside each mouth (names are placeholders until Story's name check, D1277).
 DISTRICT = {'highcharity': 'LANTERN SQUARE', 'hc_civic': 'CHARTER HILL', 'hc_exchange': 'EXCHANGE QUARTER',
@@ -111,11 +144,17 @@ LOOKS = {
     'hc_governor':  {'skin': '4', 'hair': 'short', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y'},
     'hc_president': {'skin': '3', 'hair': 'short', 'hairCol': 'w', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y', 'accessory': 'sash'},   # RETIRED (LOOK_LOCK D2275): nobody wears it; the President is `president`. Kept, never removed
     'hc_aide':      {'skin': '2', 'hair': 'bun', 'hairCol': 'd', 'outfit': 'jacket', 'outfitCol': 'g', 'accent': 'w'},
+    # §8.2 scheduled townsfolk (PLACEHOLDER looks from the kit's parts)
+    'hc_student_a': {'skin': '3', 'hair': 'curls', 'hairCol': 'd', 'outfit': 'sweater', 'outfitCol': 'r', 'accent': 'w', 'accessory': 'glasses'},
+    'hc_student_b': {'skin': '5', 'hair': 'pony', 'hairCol': 'k', 'outfit': 'cardigan', 'outfitCol': 'b', 'accent': 'y'},
+    'hc_clerk_x':   {'skin': '1', 'hair': 'short', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'm', 'accent': 'w'},
+    'hc_shopper':   {'skin': '6', 'hair': 'bob', 'hairCol': 'd', 'outfit': 'raincoat', 'outfitCol': 't', 'accent': 'y'},
+    'hc_officeworker': {'skin': '2', 'hair': 'short', 'hairCol': 'h', 'outfit': 'jacket', 'outfitCol': 'm', 'accent': 'w'},
 }
 SPEAKERS = {'Child': 'hc_child', 'Parent': 'hc_parent', 'Old holder': 'hc_oldholder', 'Dockhand': 'hc_dockhand',
             'Editor': 'hc_editor', 'Keeper reader': 'clerk', 'The President': 'president', 'Aide': 'hc_aide',
             'Commander': 'captain', 'Duty Keeper': 'officer', 'Governor Merriden': 'hc_governor', 'Visitor': 'hc_visitor',
-            'Resident': 'hc_resident'}
+            'Resident': 'hc_resident', 'Captain Lumen': 'captain'}
 
 # ---------- helpers ----------
 def nbrs(x, y, w, h):
@@ -197,7 +236,7 @@ class Chunk:
 
     def safe_block(self, x, y):
         """True if a blocker on (x, y) keeps every target reachable."""
-        if not self.free(x, y): return False
+        if not self.free(x, y) or self.ch(x, y) in ROAD: return False
         b = frozenset(self.block) | {(x, y)}
         seen = reach(self.grid, self.arrival, b)
         return all(p in seen for p in self.targets.values())
@@ -370,6 +409,27 @@ for cid, c in CHUNKS.items():
             if p in [t for k, t in c.targets.items()]: fail(f"{cid}: patrol {pt['id']} stands on a door or mouth {p}")
         c.reserved.update(cells)
 
+# ---------- HC_PARADE v0.3.1 stands (design specs/HC_PARADE.md §2-§3; the scene is #286/#296's tools/hc_parade.py) ----------
+# The tiles the parade's crowd, cordon, guards, officers, car and crowd strips stand on. The city never dresses them (no lamp,
+# sign, planter, bench or parked car), so the scene draws on clear ground; the roads themselves are clear by ROAD (layout §4.1).
+# Copied from the beat sheet on claude/b1-parade-lore (#296) so the two builds agree; the scene stays that PR's.
+PARADE_STANDS = {
+    'highcharity': [(21, 23), (21, 24)] + [(x, 23) for x in range(17, 26)] + [(x, 24) for x in range(17, 26)]   # SPOT, P1_CROWD
+                   + [(x, 22) for x in range(17, 27)],                                                         # P1_CORDON bays
+    'hc_civic': [(28, 30), (28, 34), (24, 30), (25, 30), (26, 30), (24, 31), (25, 31), (26, 31), (27, 31), (24, 33), (25, 33),
+                 (26, 33), (27, 33), (23, 33)]                                                                  # HILL_SPOT, CIV2
+                + [(29, 28), (30, 28), (34, 28), (35, 28)]                                                      # LINE2
+                + [(x, 29) for x in range(26, 37)]                                                              # CORDON2 bays
+                + [(30, 26), (31, 26), (33, 26), (34, 26), (26, 28), (37, 28), (32, 31), (32, 30), (32, 29), (32, 28)]   # CLOSE2, OFF2, the car
+                + [(21, 30), (21, 31), (21, 33), (21, 34), (24, 34), (37, 33), (41, 33), (37, 34), (41, 34), (25, 36), (29, 36),
+                   (33, 36), (37, 36), (45, 33), (21, 28), (17, 28), (41, 28), (45, 28), (17, 30), (17, 31), (17, 33), (17, 34),
+                   (21, 36), (41, 36), (45, 36), (45, 34), (38, 30), (42, 30), (46, 30), (38, 31), (42, 31), (46, 31)],   # STRIPS2
+}
+for cid, cells in PARADE_STANDS.items():
+    for p in cells:
+        if CHUNKS[cid].ch(*p) not in WALK | {'U'}: fail(f'{cid}: parade stand {p} is not a walk tile or a kerb bay')
+    CHUNKS[cid].reserved.update(cells)
+
 # ---------- kept people and props on Lantern Square (§3.3 and §8.1) ----------
 def keep_at(oid, cid, x, y, search=0, **kw):
     c = CHUNKS[cid]
@@ -486,6 +546,7 @@ for cid, c in CHUNKS.items():
     for (x, y) in order:
         if n >= want: break
         if cid == 'hc_exchange' and (x, y) == (56, 44) or (x + 1, y) == (56, 44): continue   # veh_slot_glim_c2 stays empty
+        if {(x, y), (x + 1, y)} & set(PARADE_STANDS.get(cid, [])): continue                    # the parade's cordon bays stay empty
         col = COLOURS[(x * 7 + y * 3) % len(COLOURS)]
         c.add({'kind': 'prop', 'id': f'hc2_car_{cid[3:] if cid != "highcharity" else "sq"}_{n}', 'x': x, 'y': y, 'ox': 8,
                'sprite': 'hc_car_' + col, 'name': 'parked car'}, blocks=False)
@@ -539,9 +600,61 @@ prop('highcharity', 'hc_trial_notice', 14, 29, 'slab_sign', r=0, lines={'else': 
 SC['hc2_board'] = [['say', '', TXT['hb3_board']], ['setFlag', 'story.hc_board', True]]
 prop('highcharity', 'hc_kindness', 21, 26, 'hc_kindness_board', r=0, scene='hc2_board', lines={'else': TXT['hb3_board']}, name='the Kindness Board')
 SC['hc2_noon'] = [['say', 'Child', TXT['hb1_child']], ['say', 'Parent', TXT['hb1_parent']], ['setFlag', 'story.hc_noon', True]]
-npc('highcharity', 'hc_child', 'Child', 'hc_child', 14, 25, facing='up', scene='hc2_noon', lines={'else': TXT['hb1_child']}, still=True)
-c0 = CHUNKS['highcharity']; ch_ = [o for o in c0.objs if o['id'] == 'hc_child'][0]
-npc('highcharity', 'hc_parent', 'Parent', 'hc_parent', ch_['x'] + 1, ch_['y'], facing='up', r=2, scene='hc2_noon', lines={'else': TXT['hb1_parent']}, still=True)
+# §8.2 scheduled townsfolk (phase 2): schedule rows {when, map, x, y, facing, state, place}, first match wins, the last row
+# (map null) is the fallback, so a body is off the map at home outside its rows. Each row's tile is checked like any blocker
+# (never a door, mouth, patrol leg, parade stand, road or anchor; place_near nudges a spec tile that is solid or taken, and the
+# build notes it). The row's map holds one body per map (same name; the first carries the rows; game.js wireSchedules joins
+# them by name). Names are the layout's placeholder roles (D1277: Story names people); the key stays unique and the shown label
+# drops the letter (NAMES_PASS D1744's rule). Lines without a §11 sample are marked PLACEHOLDER.
+SCHED_LABEL = {}
+def sched(oid, name, look, rows, label=None, **kw):
+    out, bodies = [], {}
+    for r in rows:
+        if r[1] is None: out.append({'map': None, 'x': 0, 'y': 0, 'state': 'home', 'place': 'home (off the map)'}); continue
+        when, mid, x, y, facing, state, place = r
+        c = CHUNKS[mid]; spot = c.place_near(x, y, r=4, need_tap=True)
+        if not spot: fail(f'{mid}: no tile for {oid} near {(x, y)}'); continue
+        if spot != (x, y): note(f'{mid}: {oid} ({place}) wanted {(x, y)}, stands at {spot}')
+        c.block[spot] = oid
+        out.append({'when': when, 'map': mid, 'x': spot[0], 'y': spot[1], 'facing': facing, 'state': state, 'place': place})
+        bodies.setdefault(mid, (spot, facing))
+    if out[-1]['map'] is not None: fail(f'{oid}: schedule has no fallback row')
+    for i, (mid, (spot, facing)) in enumerate(bodies.items()):
+        o = dict({'kind': 'npc', 'id': oid if i == 0 else f'{oid}_{mid.replace("hc_", "")}', 'name': name, 'look': look,
+                  'x': spot[0], 'y': spot[1], 'facing': facing, 'still': True}, **kw)
+        if i == 0: o['schedule'] = out
+        CHUNKS[mid].add(o, blocks=False)
+    if label: SCHED_LABEL[name] = label
+
+SQ, CO, EX, WF_, CV = 'highcharity', 'hc_college', 'hc_exchange', 'hc_waterfront', 'hc_civic'
+HOME = (None, None)
+sched('hc_child', 'Child', 'hc_child', [('phase:day', SQ, 14, 25, 'up', 'idle', 'under the noon lanterns'),
+                                        ('phase:dusk', CO, 30, 35, 'down', 'play', 'the kite field'), HOME],
+      scene='hc2_noon', lines={'else': TXT['hb1_child']})
+sched('hc_parent', 'Parent', 'hc_parent', [('phase:day', SQ, 15, 25, 'up', 'idle', 'under the noon lanterns'),
+                                           ('phase:dusk', CO, 31, 35, 'down', 'play', 'the kite field'), HOME],
+      scene='hc2_noon', lines={'else': TXT['hb1_parent']})
+sched('hc_oldholder', 'Old holder', 'hc_oldholder', [('phase:day', CO, 16, 40, 'right', 'idle', 'Charity Park bench'),
+                                                      ('phase:dusk|phase:night', SQ, 24, 14, 'down', 'idle', 'the Lantern Steps'), HOME],
+      scene='hc2_gran', lines={'else': TXT['hb8_gran']})
+sched('hc_student_a', 'Student A', 'hc_student_a', [('phase:day', CO, 34, 20, 'down', 'study', 'the Quad'),
+                                                     ('phase:dusk', SQ, 16, 27, 'right', 'idle', 'Lantern Square'), HOME],
+      label='Student', lines={'else': TXT['sch_student']})
+sched('hc_student_b', 'Student B', 'hc_student_b', [('phase:day', CO, 30, 12, 'up', 'study', 'College steps'),
+                                                     ('phase:dusk', CO, 36, 37, 'down', 'idle', 'the bandstand'), HOME],
+      label='Student', lines={'else': TXT['sch_student']})
+sched('hc_clerk_x', 'Exchange Clerk', 'hc_clerk_x', [('phase:dawn', SQ, 36, 36, 'up', 'walk', 'the coach stop'),
+                                                      ('phase:day', EX, 27, 14, 'down', 'work', 'the Exchange steps'),
+                                                      ('phase:dusk', SQ, 20, 25, 'down', 'idle', 'Lantern Square bench'), HOME],
+      label='Clerk', lines={'else': TXT['sch_clerk']})
+sched('hc_dockhand_b', 'Dockhand B', 'hc_dockhand', [('phase:dawn|phase:day', WF_, 12, 28, 'left', 'work', 'the middle pier'),
+                                                      ('phase:dusk', WF_, 33, 33, 'up', 'idle', 'the fish market'), HOME],
+      label='Dockhand', lines={'else': TXT['sch_dockhand']})
+sched('hc_shopper', 'Shopper', 'hc_shopper', [('phase:day', EX, 33, 33, 'down', 'shop', 'Store Row'),
+                                              ('phase:dusk', SQ, 46, 28, 'up', 'shop', 'Lantern Market'), HOME],
+      lines={'else': TXT['sch_shopper']})
+sched('hc_officeworker', 'Office worker', 'hc_officeworker', [('phase:day', CV, 26, 17, 'down', 'work', "the Governor's steps"), HOME],
+      lines={'else': TXT['sch_office']})
 npc('highcharity', 'hc_resident', 'Resident', 'hc_resident', 44, 29, facing='down', lines={'else': TXT['hb4_poor']}, still=True)
 prop('highcharity', 'hc2_statue', 52, 25, 'lm_statue')
 prop('highcharity', 'hc2_fountain', 24, 30, 'fountain_small')
@@ -573,7 +686,7 @@ for i, (x, y) in enumerate([(14, 22), (50, 30), (28, 40), (40, 40)]): prop('hc_c
 prop('hc_exchange', 'hc2_counting_statue', 32, 40, 'lm_statue', r=4)
 for i, x in enumerate((24, 30, 36)): prop('hc_exchange', f'hc2_cafe_{i}', x, 33, 'cafe_table', r=2)
 prop('hc_exchange', 'hc2_bike', 15, 34, 'bike', r=2)
-prop('hc_exchange', 'hc2_news_poster', 50, 16, 'poster_stand', r=3, lines={'else': 'A Block News bill. BLOCK NEWS · Who. Where. What changed.'})
+prop('hc_exchange', 'hc2_news_poster', 50, 16, 'poster_stand', r=3, lines={'else': TXT['news_bill']})
 
 # Lantern Quay: rope coils and nets on the piers, the moored ferry spot noted for phase 2.
 for i, (x, y) in enumerate([(12, 26), (12, 30), (12, 34)]): prop('hc_waterfront', f'hc2_rope_{i}', x, y, 'rope_coil', r=5)
@@ -582,9 +695,22 @@ SC['hc2_gran'] = [['say', 'Old holder', TXT['hb8_gran']], ['setFlag', 'story.hc_
 
 # College Green: the Quad clock statue, the park, the old holder's bench (HB8, day tile as a fixed anchor in phase 1).
 prop('hc_college', 'hc2_college_clock', 36, 24, 'lm_statue', r=2)
-npc('hc_college', 'hc_oldholder', 'Old holder', 'hc_oldholder', 16, 40, facing='right', scene='hc2_gran', lines={'else': TXT['hb8_gran']}, still=True)
 for i, (x, y) in enumerate([(15, 40), (30, 36), (38, 30)]): prop('hc_college', f'hc2_park_bench_{i}', x, y, 'bench_long', r=2)
 for i, (x, y) in enumerate([(5, 26), (20, 30), (42, 42), (6, 44)]): prop('hc_college', f'hc2_park_tree_{i}', x, y, 'lm_big_tree', r=3)
+
+# Phase 2, the hooks and P1 props that need no new room (layout §10, §11, §12):
+# HB14 the capital road (D1279, yellow at its default, behind HC_SPIRE_ROAD_HOOK): a sealed sea gate at the Quay's south end,
+# 21,38 (the layout's hook_spire_road), tap only, no flag, no content. A52's art is P1 (Pia); the built weir sluice stands in.
+HC_SPIRE_ROAD_HOOK = True
+if HC_SPIRE_ROAD_HOOK:
+    hook = next(h for h in CH['hc_waterfront']['hooks'] if h['id'] == 'hook_spire_road')
+    o = prop('hc_waterfront', 'hc_sea_gate', hook['x'], hook['y'], 'weir_sluice', r=0, name='a sealed sea gate',
+             lines={'else': TXT['hb14_gate']})
+    if not o or (o['x'], o['y']) != (hook['x'], hook['y']): fail('hc_waterfront: the sea gate must stand on its hook tile 21,38')
+# A46-A48 (P1, reuse): cafe tables by the Lantern Market, a Block News bill on the Square, bikes by the College steps.
+for i, (x, y) in enumerate([(44, 30), (50, 30)]): prop('highcharity', f'hc2_sq_cafe_{i}', x, y, 'cafe_table', r=2)
+prop('highcharity', 'hc2_sq_news_poster', 37, 30, 'poster_stand', r=3, lines={'else': TXT['news_bill']})
+for i, x in enumerate((17, 29)): prop('hc_college', f'hc2_college_bike_{i}', x, 12, 'bike', r=2)
 
 # Parks are spotless: clipped hedges and flowerbeds on open grass, a few per chunk, never on a way through.
 # The Court's old corner (v0.3, D1354; the layout's §7.6) stays plain grass: nothing is placed there.
@@ -645,6 +771,9 @@ LOOKS.update(PARADE['looks'])
 
 # ---------- the final outdoor checks ----------
 for cid, c in CHUNKS.items():
+    for (x, y), who in c.block.items():
+        if c.ch(x, y) in ROAD: fail(f'{cid}: {who} stands on the road at {(x, y)} (layout §4.1: nothing on a road stops a holder)')
+        if (x, y) in PARADE_STANDS.get(cid, ()) and who != 'hc_court_steps': fail(f'{cid}: {who} stands on a parade stand {(x, y)}')
     blocked = frozenset(c.block)
     seen = reach(c.grid, c.arrival, blocked)
     for k, p in c.targets.items():
@@ -696,9 +825,10 @@ def room_check(rid, r, arrival, targets):
 def P(oid, x, y, sprite, **kw): return dict({'kind': 'prop', 'id': oid, 'x': x, 'y': y, 'sprite': sprite}, **kw)
 def D(oid, x, y, sprite, **kw): return dict({'kind': 'decal', 'id': oid, 'x': x, 'y': y, 'sprite': sprite}, **kw)
 def N(oid, name, look, x, y, facing='down', **kw): return dict({'kind': 'npc', 'id': oid, 'name': name, 'look': look, 'x': x, 'y': y, 'facing': facing, 'still': True}, **kw)
-def S_(oid, x, y, text, sprite=None):
+def S_(oid, x, y, text, sprite=None, **kw):
     o = {'kind': 'sign', 'id': oid, 'x': x, 'y': y, 'text': text}
     if sprite: o['sprite'] = sprite
+    o.update(kw)
     return o
 
 ROOMS = {}
@@ -762,18 +892,30 @@ objs.append(N('hc_reader', 'Keeper reader', 'clerk', 1, 6, 'right', lines={'else
 ROOMS['hc_news_2'] = room('hc_news_2', 'Block News House', 'hc_news', 'hc_exchange', g, 'hc_news_2', objs, (11, 12))
 
 # hc_gov_1, lobby and the Governor's office, 16x16 (§7.3 floor 1). Keepers path, Act 2 on (D1426, D1439, layout v0.4
-# §5.3): the door, Governor Merriden and the ORDERS DOWN chute (HB12) open with GOV1. The stair goes to floor 3 in phase 1
-# (the Cabinet Room, floor 2, is phase 2 and follows GOV1 when built); the President's rooms stay Keepers path, Act 5, after
-# meeting the Governor (story.hc_gov_met, PLACEHOLDER flag).
+# §5.3): the door, Governor Merriden and the ORDERS DOWN chute (HB12) open with GOV1. CABINET_AND_COUNCILS 1b: the stair goes to
+# the Cabinet Room (floor 2), open on the seat's key (CAB, §4.3, D1465 moved there) or on GOV3, so an Act 5 save from before the
+# cabinet still reaches the President's rooms (floor 3) through it. A blocked stair says its deny on the bump.
 part = lambda: '#' + '.' * 8 + '#' + '.' * 5 + '#'
 g = ['#' * 16, '#' + 'W' * 14 + '#'] + [part() for _ in range(3)] + ['#' + '.' * 14 + '#'] * 2 + [part() for _ in range(8)] + ['#######m########']
 GOV3 = '!story.side=glimmer & story.act>=5 & story.hc_gov_met'
+CAB = '!story.side=glimmer & story.thr_chip_rumour & story.hc_parade_seen'     # CABINET §4.3: the room opens
+STAIR2 = CAB + ' | ' + GOV3
+LEAD = ['!story.side=glimmer', 'story.km_reported', '!story.thr_chip_rumour']   # CABINET §4.3: the lead-in's key
+SIT1 = ['!story.side=glimmer', 'story.pres_cabinet_first', '!story.km_seat_pick']   # S1's key (K2a's flag; K2a waits on the parade)
 objs = [{'kind': 'warp', 'id': 'hc_gov_1_mat', 'x': 7, 'y': 15, 'to': 'hc_civic', 'tx': 32, 'ty': 16, 'facing': 'down'},
-        {'kind': 'warp', 'id': 'hc_gov_up', 'x': 1, 'y': 2, 'to': 'hc_gov_3', 'tx': 2, 'ty': 12, 'facing': 'up', 'need': GOV3},
+        {'kind': 'warp', 'id': 'hc_gov_up', 'x': 1, 'y': 2, 'to': 'hc_gov_2', 'tx': 1, 'ty': 3, 'facing': 'down', 'need': STAIR2,
+         'deny': TXT['cab_deny']},
         D('hc2_gov_stair_1', 1, 2, 'stair_flight')]
 objs += [P(f'hc2_lobbydesk_{x}', x, 9, 'keep_desk', name='the Keeper desk') for x in (2, 3, 4)]
 objs.append(N('hc_gov_keeper_a', 'Keeper', 'officer', 3, 8, 'down', lines={'story.gov_posted & !story.hc_gov_met': TXT['gov_desk'], 'else': 'Welcome to the Governor\'s House, holder.'}))
-objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+objs.append(N('hc_gov_keeper_b', 'Keeper', 'officer', 2, 3, 'down', lines={STAIR2: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+# CABINET §4.3 (D1470 = A): Lumen's lead-in, four SIGNED lines, on a Captain Lumen body in the lobby (default staging), keyed after
+# the Kilnmouth report-back. It is the only setter of story.thr_chip_rumour; the body leaves once it is set. Keyed on a story flag,
+# not `else`, so the High Charity letter's lines (D174, spliced in front of everyday chatter) stay behind it.
+LUMEN = 'Captain Lumen'
+SC['thr_cabinet_lead'] = [['say', LUMEN, TXT['lead_1']], ['say', LUMEN, TXT['lead_2']], ['say', LUMEN, TXT['lead_3']],
+                          ['say', LUMEN, TXT['lead_4']], ['setFlag', 'story.thr_chip_rumour', True]]
+objs.append(N('cab_lumen_lobby', LUMEN, 'captain', 4, 3, 'down', when=LEAD, lines={'story.km_reported': '@thr_cabinet_lead'}))
 objs += [P(f'hc2_govdesk_{x}', x, 4, 'keep_desk', name="the Governor's desk") for x in (11, 12)]
 SC['hc2_chute'] = [['say', '', TXT['hb12_chute']], ['setFlag', 'story.hc_chute', True]]
 objs.append(P('hc_chute_mouth', 13, 4, 'hc_chute_mouth', name='the ORDERS DOWN chute', scene='hc2_chute', lines={'else': TXT['hb12_chute']}))
@@ -793,14 +935,77 @@ SC['hc_gov_meet'] = [
     ['say', GM, TXT['gov_m8']],
     ['setFlag', 'story.km_assigned', True], ['setFlag', 'story.hc_gov_met', True],
 ]
+# CABINET §3.5 K6 (1a): the Kilnmouth report-back replaces his repeat once the fence permit is read; it opens the lead-in (§4.3).
+SC['km_report'] = [['say', GM, TXT['k6_1']], ['say', GM, TXT['k6_2']], ['say', GM, TXT['k6_3']], ['setFlag', 'story.km_reported', True]]
 objs.append(N('hc_governor', GM, 'hc_governor', 12, 3, 'down', when=['story.act>=2'],
-              lines={'story.gov_posted & !story.hc_gov_met': '@hc_gov_meet', 'story.km_assigned': TXT['gov_after'], 'else': TXT['gov_line']}))
+              lines={'story.gov_posted & !story.hc_gov_met': '@hc_gov_meet', 'story.km_permit_seen & !story.km_reported': '@km_report',
+                     'story.km_assigned': TXT['gov_after'], 'else': TXT['gov_line']}))
 objs += [P('hc2_gov_flag_w', 10, 2, 'banner_keeper'), P('hc2_gov_flag_e', 14, 2, 'banner_keeper')]
 ROOMS['hc_gov_1'] = room('hc_gov_1', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_1', objs, (7, 14))
 
+# hc_gov_2, the Cabinet Room, 14x12 (§7.3 floor 2; CABINET_AND_COUNCILS v0.2.2 §4.1-§4.3, phase 1b). Rule 9: Vincent approved the
+# previews (Wed Nov 4, 2026: 14x12, the seat tells as drawn, a third floor tile); the placements are the layout draft's (§3-§5).
+# Reached by stairs only: down to floor 1 (1,2), up to floor 3 (1,10, GOV3). The long table (3x5 slices) with twelve chairs, even
+# seats west at the Governor's right hand; the twelfth is a walkable decal and S1's trigger. Tells as drawn: the Treasury's folder
+# with its `r` ribbon (table slice 2), Roads and Coaches' newer chair (seat 4). The members sit as bodies only at a sitting.
+g = ['#' * 14, '#' + 'W' * 12 + '#', '#' + '.' * 12 + '#'] + ['#..=' + '.' * 9 + '#' for _ in range(5)] + \
+    ['#..+--*......#', '#' + '.' * 12 + '#', '#' + '.' * 12 + '#', '#' * 14]
+objs = [{'kind': 'warp', 'id': 'hc_gov2_down', 'x': 1, 'y': 2, 'to': 'hc_gov_1', 'tx': 2, 'ty': 2, 'facing': 'right'},
+        {'kind': 'warp', 'id': 'hc_gov2_up', 'x': 1, 'y': 10, 'to': 'hc_gov_3', 'tx': 2, 'ty': 12, 'facing': 'up', 'need': GOV3},
+        D('hc2_gov_stair_2', 1, 2, 'stair_flight'), D('hc2_gov_stair_2up', 1, 10, 'stair_flight')]
+# the wall face (row 1): the order paper, the seating board (B1, B2), the towns map, the chute pipe, the OUT slot, a clock
+objs += [D('cab_order_paper', 3, 1, 'pa_notice_pins'),
+         D('cab_seat_board', 4, 1, 'cab_seat_board', when=['!story.km_seat_filled']),
+         D('cab_seat_board_full', 4, 1, 'cab_seat_board_full', when=['story.km_seat_filled']),
+         S_('cab_board_6', 4, 1, TXT['cab_board_6'], 'none', when=['!story.km_seat_filled']),
+         S_('cab_board_7', 4, 1, TXT['cab_board_7'], 'none', when=['story.km_seat_filled'])]
+objs += [D(f'cab_towns_map_{i}', 5 + i, 1, f'cab_towns_map_{i}') for i in range(3)]
+objs += [D('cab_chute_pipe', 8, 1, 'cab_chute_pipe'), D('cab_out_slot', 9, 1, 'cab_out_slot'), D('cab_clock', 11, 1, 'pa_clock_round')]
+# the floor: the charter case, records, the flag, the gallery and its ends, the sideboard, the minutes desk, the tall clock
+objs += [P('cab_charter', 2, 2, 'cab_charter_case', name="the Keepers' charter"), P('cab_records', 1, 6, 'pc_records', name='records'),
+         P('cab_flag_w', 1, 8, 'pc_flag_stand', name='a flag'), P('cab_plant', 12, 2, 'pv_fern', name='a fern'),
+         P('cab_ballot', 12, 8, 'pc_ballot_box', name='a ballot box'), P('cab_clock_tall', 12, 10, 'pn_clock_tall', name='a tall clock'),
+         P('cab_sideboard_0', 5, 10, 'cab_sideboard_0', name='a sideboard'), P('cab_sideboard_1', 6, 10, 'cab_sideboard_1', name='a sideboard'),
+         P('cab_minutes_desk_0', 9, 10, 'pc_clerk_desk_0', name='the minutes desk'), P('cab_minutes_desk_1', 10, 10, 'pc_clerk_desk_1', name='the minutes desk')]
+objs += [P(f'cab_rail_{y}', 11, y, 'pc_rail', name='the gallery rail') for y in (3, 4, 6, 7, 8)]
+objs.append(D('cab_rail_gate', 11, 5, 'pc_rail_gate'))
+objs += [P(f'cab_gallery_{y}', 12, y, 'cab_gallery_chair', name='a gallery chair') for y in (3, 4, 6, 7)]
+# the table (x 5-7, y 3-7); slice 13 is the twelfth place, set: its tap reads the twelfth chair's plate (L2)
+for i in range(15):
+    x, y = 5 + i % 3, 3 + i // 3
+    kw = {'name': 'the twelfth place', 'lines': {'else': TXT['cab_plate']}} if i == 13 else {'name': 'the cabinet table'}
+    objs.append(P(f'cab_table_{i}', x, y, f'cab_table_{i}', **kw))
+CAB_SEATS = {1: (6, 2), 2: (4, 3), 3: (8, 3), 4: (4, 4), 5: (8, 4), 6: (4, 5), 7: (8, 5), 8: (4, 6), 9: (8, 6), 10: (4, 7), 11: (8, 7), 12: (6, 8)}
+for n, (x, y) in CAB_SEATS.items():
+    if n == 1: objs.append(P('cab_chair_1', x, y, 'cab_chair_head', name="the Governor's chair"))
+    elif n == 12: objs.append(D('cab_chair_12', x, y, 'cab_chair_up'))
+    else: objs.append(P(f'cab_chair_{n}', x, y, 'cab_chair_r_new' if n == 4 else 'cab_chair_r' if x == 4 else 'cab_chair_l', name='a cabinet chair'))
+# S1 (§4.5, v0.1 settled): K2a sets story.pres_cabinet_first and plays on entering; K2a waits on the parade (#296), so S1 is built
+# behind its flag. The holder walks the runner to the twelfth chair (10 steps, D1985) and S1 plays there. Flags are written at the
+# end of a pick (the packet's "each pick sets"), so "Not yet" and an interrupted sitting write nothing and replay.
+PRES = 'The President'
+def s1_pick(line, pick):
+    return [['say', PRES, line], ['say', GM, TXT['s1_4']], ['setFlag', 'story.cab_seat', True],
+            ['setFlag', 'story.km_seat_pick', pick], ['setFlag', 'story.km_seat_filled', True]]
+SC['cab_s1'] = [
+    ['choice', TXT['s1_ask'], [
+        [TXT['s1_town'], s1_pick(TXT['s1_3a'], 'town'), None, 'story.km_names>=3'],
+        [TXT['s1_cmdr'], s1_pick(TXT['s1_3b'], 'commander')],
+        [TXT['s1_co'], s1_pick(TXT['s1_3c'], 'company')],
+        [TXT['s1_wait'], [['say', GM, TXT['s1_3d']]], None, 'story.km_names<3'],
+    ], GM],
+]
+objs.append({'kind': 'trigger', 'id': 'cab_seat12', 'x': 6, 'y': 8, 'r': 0, 'when': SIT1, 'scene': 'cab_s1'})
+# the sitting's bodies (S1): the Governor at the head, Captain Lumen in the Keepers' chair, the President at the Governor's shoulder
+# (K2a's staging, behind its flag). Lighter C's three company bodies (seats 3, 4, 9) are phase 1c.
+objs += [N('cab_governor', GM, 'hc_governor', 6, 2, 'down', when=SIT1), N('cab_lumen', LUMEN, 'captain', 4, 3, 'right', when=SIT1),
+         N('cab_president', PRES, 'hc_president', 7, 2, 'down', when=SIT1)]
+objs.append(N('hc_gov2_keeper', 'Keeper', 'officer', 2, 10, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
+ROOMS['hc_gov_2'] = room('hc_gov_2', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_2', objs, (1, 3), wall={'windows': [10, 12]})
+
 # hc_gov_3, the President's rooms, 12x14 (§7.3 floor 3). No Summit staging here (X7).
 g = ['#' * 12, '#' + 'W' * 10 + '#'] + ['#' + '.' * 10 + '#' for _ in range(6)] + ['#.=======..#'] + ['#' + '.' * 10 + '#' for _ in range(4)] + ['#' * 12]
-objs = [{'kind': 'warp', 'id': 'hc_gov_down', 'x': 1, 'y': 12, 'to': 'hc_gov_1', 'tx': 2, 'ty': 2, 'facing': 'right'},
+objs = [{'kind': 'warp', 'id': 'hc_gov_down', 'x': 1, 'y': 12, 'to': 'hc_gov_2', 'tx': 1, 'ty': 9, 'facing': 'up'},   # CABINET 1b: via floor 2
         D('hc2_gov_stair_3', 1, 12, 'stair_flight')]
 objs += [D(f'hc2_letters_{x}', x, 1, 'hc_thanks_letters') for x in (1, 3, 7, 9)]
 objs += [P('hc2_pres_desk_w', 6, 3, 'keep_desk', name='the desk'), P('hc2_pres_plate', 7, 3, 'hc_desk_plate', name='THE PRESIDENT', lines={'else': 'A desk plate: THE PRESIDENT.'}),
@@ -821,11 +1026,28 @@ objs.append(N('hc_clerk3', 'Clerk', 'clerk', 9, 7, 'left'))
 objs.append(N('hc_commander3', 'Commander', 'captain', 1, 11, 'down', lines={'else': TXT['hb13_commander']}))
 ROOMS['hc_gov_3'] = room('hc_gov_3', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_3', objs, (2, 12))
 
+# AGENTS rule 9 (room redesigns): a room is built here only after Vincent has seen its 390 previews and said yes. The phase 1
+# rooms above were approved on Tue Nov 3, 2026 (handoff/maps/HC_CITY_V2.md, "Sign-off"). These v0.4 rooms are specced but have
+# no approved preview (and need the rule 9 inspiration pass first), so they are held: never built, listed in the output.
+# hc_gov_2, the Cabinet Room, left this list when Vincent approved its previews (Wed Nov 4, 2026; CABINET_AND_COUNCILS 1b, above).
+RULE9_HELD = {
+    'hc_lantern_up': 'grand Lantern House gallery (layout §7.1): grid in §7.1, no preview',
+    'hc_college_in': 'College Great Hall (layout §7.4): no grid, no preview',
+    'hc_trial_in': 'the Muster Hall, Hall 8 (layout §7.5; also waits on the Hall 8 build and HC_TRIAL_HALL): blockout only',
+    'hc_trial_stone': 'the Hall Stone room (layout §7.5, phase 3): blockout only',
+    'hc_library_in': 'College Library (layout §7.4, phase 3): no grid, no preview',
+    'hc_gym_in (expansion)': 'the Dojo expansion (layout §7.4, phase 3; D1281 keeps the 9x7 room): no grid, no preview',
+}
+for rid in RULE9_HELD:
+    if rid in ROOMS: fail(f'{rid}: held for rule 9 previews, but built')
+
 TARGETS = {
     'hc_lantern_in': ((8, 20), {'mat': (8, 21), 'ines': (7, 15), **{f'bed{i}': (x + 1, y) for i, (x, y) in enumerate(beds)}}),
     'hc_news_1': ((7, 14), {'mat': (7, 15), 'stair': (12, 12), 'editor': (7, 8), 'spike': (11, 8)}),
     'hc_news_2': ((11, 12), {'stair': (12, 12), 'reader': (1, 7), 'tray': (6, 8)}),
-    'hc_gov_1': ((7, 14), {'mat': (7, 15), 'stair': (1, 2), 'governor_front': (12, 5)}),
+    'hc_gov_1': ((7, 14), {'mat': (7, 15), 'stair': (1, 2), 'governor_front': (12, 5), 'lumen_front': (4, 4)}),
+    'hc_gov_2': ((1, 3), {'stair_down': (1, 2), 'stair_up': (1, 10), 'arrive_up': (1, 9), 'seat12': (6, 8), 'governor_side': (5, 2),
+                          'charter_front': (2, 3), 'gallery': (12, 5), 'board_front': (4, 2), 'keeper_front': (2, 9)}),
     'hc_gov_3': ((2, 12), {'stair': (1, 12), 'president_front': (7, 4) if False else (5, 4), 'cups': (3, 10), 'stamp': (10, 11)}),
 }
 # kept room objects count as blockers for the room checks
@@ -870,10 +1092,11 @@ for sid in SC:
 
 # ---------- the reputation cast (every named body needs an entry; only added while the city is on) ----------
 # D1439: the Governor is a civil post, not a Keeper; the cast has no civil value, so he takes 'none' (as civilians do)
-KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk'}
+KEEPER_NAMES = {'Duty Keeper', 'Keeper', 'Keeper reader', 'The President', 'Aide', 'Commander', 'Clerk', 'Captain Lumen'}
 names = sorted({o['name'] for c in CHUNKS.values() for o in c.objs if o['kind'] == 'npc'} |
                {o['name'] for r in ROOMS.values() for o in r['objs'] if o['kind'] == 'npc'})
-CAST = [{'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50} for n in names]
+CAST = [dict({'name': n, 'faction': 'keepers' if n in KEEPER_NAMES else 'none', 'base': 50}, **({'label': SCHED_LABEL[n]} if n in SCHED_LABEL else {}))
+        for n in names]
 CAST += [r for r in PARADE['castRows'] if r['name'] not in names]   # HC_PARADE's generic labels (D1361)
 for e in CAST:   # NPC_RANKS: a Keeper cast entry needs a rank, a pending proposal or a flag; the city's ranks are Story's to set
     if e['faction'] == 'keepers': e['rankFlag'] = 'D1374: city cast, ranks PLACEHOLDER until Story'
@@ -905,7 +1128,9 @@ for cid, c in CHUNKS.items():
                  'grid': c.grid, 'objs': c.objs,
                  'hcSlots': [h for h in c.src['hooks']]}
 out = {
-    'spec': 'HIGH_CHARITY_LAYOUT v0.3 phase 1 (design specs/HIGH_CHARITY_LAYOUT.md); built by tools/build_hc_city.py',
+    'spec': 'HIGH_CHARITY_LAYOUT v0.4.2 (design specs/HIGH_CHARITY_LAYOUT.md); built by tools/build_hc_city.py',
+    'rule9Held': RULE9_HELD,
+    'paradeStands': {cid: [list(p) for p in sorted(set(cells))] for cid, cells in PARADE_STANDS.items()},
     '_about': 'City preview data. Not in MAPDATA. Merged into WORLD only while HC_CITY_V2 or ?debug=1&hccity=2 is on. '
               'All player text is PLACEHOLDER until Story signs it (layout §11). Art keys hc_* are PLACEHOLDER (HC_PLACEHOLDER_ART).',
     'tiles': {'C': {'name': 'carriageway', 'walk': True}, 'Z': {'name': 'crosswalk', 'walk': True},
@@ -924,7 +1149,7 @@ out = {
     'castAt': PARADE['castAt'],
     'notStepFlags': ['story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',
                      'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
-                     'story.gov_told'] + PARADE['notStepFlags'],   # GOVERNOR_MEETING §6.2; story.km_assigned is the gov_meet chain step
+                     'story.gov_told', 'story.cab_seat', 'story.km_seat_filled'] + PARADE['notStepFlags'],   # + CABINET §6 (1b)   # GOVERNOR_MEETING §6.2; story.km_assigned is the gov_meet chain step
 }
 for n in notes: print('note:', n)
 if fails:

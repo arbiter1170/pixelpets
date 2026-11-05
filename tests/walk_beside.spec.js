@@ -669,7 +669,8 @@ test.describe('WALK_BESIDE scenes behind their flags (D1960-D1969, D1978)', () =
     expect(t[1]).toBe('You stop with it. Up the hill the cloud sits flat, and nothing moves.');
     expect((await flags(page))['story.wb_springs']).toBe(true);
     expect(OVERLAY.waits.wb_springs.obj).toEqual({ kind: 'trigger', id: 'km_wb_springs', r: 0, when: ['story.km_storm', '!story.wb_springs'], scene: 'wb_springs' });
-    expect(await page.evaluate(() => !!PixelPets.mapInfo && Object.prototype.hasOwnProperty.call(WORLD, 'kilnmouth'))).toBe(false);   // the map is another branch's
+    // KILNMOUTH (#318) is on main now, so the map exists; the springs trigger still waits for its key (no tile is placed yet).
+    expect(await page.evaluate(() => Object.prototype.hasOwnProperty.call(WORLD, 'kilnmouth'))).toBe(true);
   });
 
   test('WB-T13: the Act 3-5 lines by path: Quinn, the stayer\'s Host letter, L13a, the President, the Spire twins', async ({ page }) => {
@@ -683,7 +684,7 @@ test.describe('WALK_BESIDE scenes behind their flags (D1960-D1969, D1978)', () =
     const hostId = host.find(id => /host|della|lantern/i.test(id)) || host[0];
     expect(await page.evaluate(i => PixelPets.talkTo(i), hostId)).toBe(true);
     let t = sayTexts(await drive(page));
-    expect(t[0]).toBe("A letter for you, sealed with the Warden's lantern.");
+    expect(t[0]).toBe("A letter for you, sealed with the Warden's lantern. No reply wanted, this time.");   // D2143
     expect(t.slice(1)).toEqual(['A letter from Warden Ilse, in her small, exact hand.', 'Word travels along the lanterns. They say the company offered you a desk.', "Steering is walking ahead with a lamp. I'd sooner walk beside in the dark."]);
     expect((await flags(page))['story.wb_ilse_letter']).toBe(true);
     expect(await page.evaluate(i => PixelPets.talkTo(i), hostId)).toBe(true);

@@ -231,7 +231,9 @@ add({'kind': 'npc', 'id': 'hc_baker', 'name': 'Baker Cole', 'look': 'cole', 'x':
      'lines': {'story.side=glimmer': 'Same buns for guests. Sit if you like.',
                'else': 'The glaze is amber, same as the wild.'},
      'chatter': {'else': 'Warm buns. Mind the glaze.'}})
-add({'kind': 'npc', 'id': 'hc_kite', 'name': 'Kit', 'look': 'kit', 'x': 38, 'y': 23, 'facing': 'left',
+# NAMES_PASS G9 (D1766; Vincent, Wed Nov 4, 2026): the kite seller is Mabry, under her own key. The id and look stay;
+# the Heights Kit (fb_heights ht_kit) keeps 'Kit'. save.js folds an old 'Kit' contact to 'Mabry' once (SPLIT_KEYS).
+add({'kind': 'npc', 'id': 'hc_kite', 'name': 'Mabry', 'look': 'kit', 'x': 38, 'y': 23, 'facing': 'left',
      'lines': {'else': "Wind's kind today. The kites behave."},
      'chatter': {'else': 'Kites for the plaza. String included.'}})
 add({'kind': 'prop', 'id': 'hc_airship', 'x': 8, 'y': 3, 'sprite': 'airship',
@@ -603,7 +605,7 @@ speakers = {
     'Keeper Moss': 'moss',
     'Mira': 'mira',
     'Baker Cole': 'cole',
-    'Kit': 'kit',
+    'Mabry': 'kit',
     'Porter Quin': 'quin',
     'Captain Lumen': 'captain',   # WARDROBE_SHOP 4a Captain Lumen row (LOOK_LOCK F6): the Keeper House captain's coat; `petra` stays defined, unworn
     'Keeper Rowan': 'sorrel',

@@ -753,5 +753,48 @@
   "petra": "WARDROBE_SHOP 4a Captain Lumen row (F6): hc_lumen wears `captain`",
   "holder_glimmer_set": "D2278: a reference look for the palette devCheck, never worn; the Junior Bright wears `junior_bright`"
  },
- "exceptions": []
+ "exceptions": [
+  {
+   "check": "lookalike",
+   "clash": "juniper|lookalike|km_foreman",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "Kilnmouth's foreman look `km_foreman` shares Juniper's short dark hair and wine top; change the foreman's hair or top."
+  },
+  {
+   "check": "lookalike",
+   "clash": "hale|lookalike|km_nominee",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "The nominee look `km_nominee` (Edwin Garth) shares Master Hale's short grey hair and coat colour; change one."
+  },
+  {
+   "check": "palette",
+   "clash": "palette|uniform|km_dray",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "Foreman Dray wears Glimmerwell wine and soot with no Glimmerwell role: give him the role, or recolour the vest."
+  },
+  {
+   "check": "palette",
+   "clash": "palette|uniform|km_crew_wait",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "The tower crew wears Glimmerwell wine and soot with no Glimmerwell role: give the crew the role, or recolour `km_crew`."
+  },
+  {
+   "check": "palette",
+   "clash": "palette|uniform|km_crew_aside",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "As km_crew_wait (the same `km_crew` look)."
+  },
+  {
+   "check": "palette",
+   "clash": "palette|uniform|km_split_vest",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "As km_crew_wait (the same `km_crew` look, on a works hand)."
+  },
+  {
+   "check": "lookalike",
+   "clash": "hale|lookalike|hc_officeworker",
+   "todo": "Found when LOOK_LOCK (#328) met HIGH_CHARITY v0.4 (#317) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "The city's office worker look `hc_officeworker` shares Master Hale's short grey hair and coat colour; change one (city preview only while HC_CITY_V2 is false)."
+  }
+ ]
 }
