@@ -1118,7 +1118,7 @@ objs.append({'kind': 'trigger', 'id': 'cab_seat12', 'x': 6, 'y': 8, 'r': 0, 'whe
 # the sitting's bodies (S1): the Governor at the head, Captain Lumen in the Keepers' chair, the President at the Governor's shoulder
 # (K2a's staging, behind its flag). Lighter C's three company bodies (seats 3, 4, 9) are phase 1c.
 objs += [N('cab_governor', GM, 'hc_governor', 6, 2, 'down', when=SIT1), N('cab_lumen', LUMEN, 'captain', 4, 3, 'right', when=SIT1),
-         N('cab_president', PRES, 'hc_president', 7, 2, 'down', when=SIT1)]
+         N('cab_president', PRES, 'president', 7, 2, 'down', when=SIT1)]
 objs.append(N('hc_gov2_keeper', 'Keeper', 'officer', 2, 10, 'down', lines={GOV3: 'Go on up, holder.', 'else': TXT['gov_stair']}))
 ROOMS['hc_gov_2'] = room('hc_gov_2', "Governor's House", 'hc_gov', 'hc_civic', g, 'hc_gov_2', objs, (1, 3), wall={'windows': [10, 12]})
 

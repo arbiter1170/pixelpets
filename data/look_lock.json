@@ -756,12 +756,6 @@
  "exceptions": [
   {
    "check": "lookalike",
-   "clash": "juniper|lookalike|km_foreman",
-   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
-   "fix": "Kilnmouth's foreman look `km_foreman` shares Juniper's short dark hair and wine top; change the foreman's hair or top."
-  },
-  {
-   "check": "lookalike",
    "clash": "hale|lookalike|km_nominee",
    "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
    "fix": "The nominee look `km_nominee` (Edwin Garth) shares Master Hale's short grey hair and coat colour; change one."
