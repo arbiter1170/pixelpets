@@ -8,7 +8,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - `g4_seals.spec.js` is PACKET §8 step 1: in three files the gate ran 245 s, over its 240 s budget.
   - Two places differ from the packet text, both under Open questions in the PR: `settings.effects` is pinned `calm` under reduced motion and `full` with motion (the game's own default, P3a D424; the packet listed only `full`), and the splice is routed on the context, not the page, so the service worker's fetch of `game.js` on reload is spliced too (each load's served copy is checked).
 - Files touched: `tests/playtest_gate/gate_fixtures.js`, `gate_lib.js`, `g1_load.spec.js`, `g2_walk.spec.js`, `g3_harden.spec.js`, `g4_seals.spec.js`, `manual_saves.js` (all new), `tests/README.md`, `CHANGELOG.md`.
-- Commit(s) + build id: cursor/playtest-gate-suite-f366 (on the packet branch, #339); tests only, no build stamp (main's build 20261105-0151).
+- Commit(s) + build id: cursor/playtest-gate-suite-f366 (on the packet branch, #339), merged with main 85a5139 (#333); tests only, no build stamp (main's build 20261105-0252).
 - Tests run and result (widths, checks): `npm run test:agent -- tests/playtest_gate/ --project=320 --project=390`: PASS, 92 passed, 0 failed, 0 flaky, 235 s. Zero console and page errors, no Firebase request. A wrong pinned value and a wrong splice line were each tried once and failed the gate as they should.
 - Decisions made (colour + reasoning): none taken; PACKET Q1-Q11 defaults applied, still with the Chief of Staff for Morgan and Vincent.
 - Anything left unfinished: manual checks M1-M3 (QA, on a real iPhone); the 240 s budget has 5 s of headroom, so §8 step 2 (one command per width) may be needed as the suite grows.
