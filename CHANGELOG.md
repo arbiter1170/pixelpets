@@ -2,6 +2,27 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-05 03:00 ET: Tests: the PLAYTEST_GATE suite, the real-save gate run before every merge (tests only, no build stamp)
+- What changed and why:
+  - New `tests/playtest_gate/` built from `tests/playtest_gate/PACKET.md` @ 2e7fddc: `gate_fixtures.js` (the seven Act 1 kinds imported from `tests/fixtures/or_gate_kinds.js`, the §4 stage fixtures copied verbatim with their source lines, the pinned §3.3 list and the §5.0, §6.1 and §6.3 tables), `gate_lib.js` (the once-per-tab seeder, the settle, the save diff, the error and Firebase guard, the scene driver, the game.js splice), `g1_load`, `g2_walk`, `g3_harden`, `g4_seals` and `manual_saves.js` (QA's M1 saves as JSON).
+  - `g4_seals.spec.js` is PACKET §8 step 1: in three files the gate ran 245 s, over its 240 s budget.
+  - Two places differ from the packet text, both under Open questions in the PR: `settings.effects` is pinned `calm` under reduced motion and `full` with motion (the game's own default, P3a D424; the packet listed only `full`), and the splice is routed on the context, not the page, so the service worker's fetch of `game.js` on reload is spliced too (each load's served copy is checked).
+- Files touched: `tests/playtest_gate/gate_fixtures.js`, `gate_lib.js`, `g1_load.spec.js`, `g2_walk.spec.js`, `g3_harden.spec.js`, `g4_seals.spec.js`, `manual_saves.js` (all new), `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: cursor/playtest-gate-suite-f366 (on the packet branch, #339), merged with main 85a5139 (#333); tests only, no build stamp (main's build 20261105-0252).
+- Tests run and result (widths, checks): `npm run test:agent -- tests/playtest_gate/ --project=320 --project=390`: PASS, 92 passed, 0 failed, 0 flaky, 235 s. Zero console and page errors, no Firebase request. A wrong pinned value and a wrong splice line were each tried once and failed the gate as they should.
+- Decisions made (colour + reasoning): none taken; PACKET Q1-Q11 defaults applied, still with the Chief of Staff for Morgan and Vincent.
+- Anything left unfinished: manual checks M1-M3 (QA, on a real iPhone); the 240 s budget has 5 s of headroom, so §8 step 2 (one command per width) may be needed as the suite grows.
+
+## 2026-11-05 02:30 ET: Docs: PLAYTEST_GATE packet v0.1, the test plan for a real-save gate on every PR
+- What changed and why:
+  - New `tests/playtest_gate/PACKET.md`: a test plan only, for a second agent to build one Playwright suite that says a build is safe for playtesters with real saves. It names the seven Act 1 save kinds (`tests/fixtures/or_gate_kinds.js`) seeded as real old saves, 320 and 390, Modern controls; the load rule (no write before boot except the old-save move, a pinned list of normalizeV2 additions after the settle, zero console and page errors with no allowlist, no Firebase request); the four walk steps (the Keeper join, one town changing hands, the Kilnmouth arrival on a frozen clock, the Cabinet stair in the `hccity=2` preview) with the kinds that skip and why; hardening (two towns flipping at once, sway on old saves, the SEALS kill switch false path by a served-copy splice); manual iPhone steps for frame rate and music; a 240 s runtime budget with a split order; acceptance lines PG-1 to PG-19; eleven open questions.
+  - Every expected value was read on build 20261104-1627 by throwaway probes (deleted, not committed), then the seven kinds' load, settle and reads again after merging `origin/main` ef2af05 (#336, build 20261105-0151).
+- Files touched: `tests/playtest_gate/PACKET.md` (new), `CHANGELOG.md`.
+- Commit(s) + build id: cursor/playtest-gate-packet-8239, merged with main ef2af05 (#336); docs only, no build stamp (main's build 20261105-0151).
+- Tests run and result (widths, checks): no suite added. The probes ran under Playwright at 390 and 320 (once through `node tools/pp_test.js`: PASS, 14 passed, 94 s; after the merge 14 passed at 320); zero console errors throughout.
+- Decisions made (colour + reasoning): none taken; Q1-Q11 in the packet carry a default and a colour for the Chief of Staff. No D or Q ids reserved.
+- Anything left unfinished: the suite itself (the builder's PR); manual checks M1-M3 for QA.
+
 ## 2026-11-04 15:18 ET: Build: Kilnmouth's empty seat folded into the cabinet build: K6, K7, R4 and the repeats (CABINET_AND_COUNCILS v0.2.2 phase 1a)
 - What changed and why:
   - #318 built Kilnmouth and K1-K5; the coordinator cleared folding 1a into claude/cabinet-v02 (PR #332) once it merged. Merged `origin/main` (9e65883) first, with a merge commit.
