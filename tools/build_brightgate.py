@@ -899,7 +899,7 @@ LOOKS = {
     'bg_child': {'skin': '3', 'hair': 'pony', 'hairCol': 'd', 'outfit': 'overalls', 'outfitCol': 'b', 'accent': 'y'},
     'bg_elder': {'skin': '4', 'hair': 'bun', 'hairCol': 'w', 'outfit': 'cardigan', 'outfitCol': 'G', 'accent': 'o'},
     'bg_ada': {'skin': '4', 'hair': 'bun', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'n', 'accent': 'y'},              # B31: neutral (D1437), storm coat
-    'bg_hallcrew': {'skin': '2', 'hair': 'short', 'hairCol': 'd', 'outfit': 'vest', 'outfitCol': 'n', 'accent': 'y'},
+    'bg_hallcrew': {'skin': '2', 'hair': 'short', 'hairCol': 'd', 'outfit': 'vest', 'outfitCol': 't', 'accent': 'y'},   # LOOK_LOCK D2350: teal vest, so the crew no longer read as Dad (short dark hair on navy)
     'bg_odell': {'skin': '5', 'hair': 'short', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'F', 'accent': 'o'},           # B29: civilian, warm shadow, flame
 }
 CAST = [{'name': nm, 'faction': 'none', 'base': 50} for nm in (TXT['host_name'], 'Waiting Local', 'Lamplighter Odell', 'Parent', 'Child', 'Old Wick elder',

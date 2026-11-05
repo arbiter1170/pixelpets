@@ -655,7 +655,7 @@
           "kind": "npc",
           "id": "hc_lumen",
           "name": "Captain Lumen",
-          "look": "petra",
+          "look": "captain",
           "x": 2,
           "y": 3,
           "facing": "down",
@@ -1942,7 +1942,7 @@
       "hair": "short",
       "hairCol": "d",
       "outfit": "coat",
-      "outfitCol": "m",
+      "outfitCol": "g",
       "accent": "y"
     },
     "mira": {
@@ -2004,7 +2004,7 @@
     "nia": {
       "skin": "1",
       "hair": "spiky",
-      "hairCol": "o",
+      "hairCol": "r",
       "outfit": "hoodie",
       "outfitCol": "r",
       "accent": "y"
@@ -2025,7 +2025,7 @@
     "Baker Cole": "cole",
     "Mabry": "kit",
     "Porter Quin": "quin",
-    "Captain Lumen": "petra",
+    "Captain Lumen": "captain",
     "Keeper Rowan": "sorrel",
     "Dockhand Ness": "ness",
     "Teacher Mae": "nessa",

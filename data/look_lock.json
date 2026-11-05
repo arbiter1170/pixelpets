@@ -140,10 +140,9 @@
     "President"
    ],
    "keys": [
-    "president",
-    "hc_president"
+    "president"
    ],
-   "seen_as": "grey short hair and a deep-green cardigan (crackdown scenes); white short hair, Keeper coat and sash (High Charity preview)",
+   "seen_as": "grey short hair and a deep-green cardigan, in the crackdown scenes and the High Charity preview alike (D2275; `hc_president` is retired, kept unworn)",
    "signature": {
     "president": {
      "skin": "3",
@@ -152,20 +151,10 @@
      "outfit": "cardigan",
      "outfitCol": "J",
      "accent": "y"
-    },
-    "hc_president": {
-     "skin": "3",
-     "hair": "short",
-     "hairCol": "w",
-     "outfit": "coat",
-     "outfitCol": "g",
-     "accent": "y",
-     "accessory": "sash"
     }
    },
    "grid": {
-    "president": "d7e36108",
-    "hc_president": "35674f12"
+    "president": "d7e36108"
    },
    "marks": [
     {
@@ -239,21 +228,22 @@
     "Archivist Mo"
    ],
    "keys": [
-    "clerk"
+    "mo"
    ],
-   "seen_as": "grey bun, Keeper-green coat, white trim",
+   "seen_as": "white bob and glasses, Keeper-green coat, white trim (her own key since D2274; the clerk coat stays)",
    "signature": {
-    "clerk": {
+    "mo": {
      "skin": "4",
-     "hair": "bun",
-     "hairCol": "h",
+     "hair": "bob",
+     "hairCol": "w",
      "outfit": "coat",
      "outfitCol": "g",
-     "accent": "w"
+     "accent": "w",
+     "accessory": "glasses"
     }
    },
    "grid": {
-    "clerk": "599e7c38"
+    "mo": "bfcafa20"
    },
    "marks": []
   },
@@ -297,14 +287,14 @@
     "Juniper"
    ],
    "keys": [
-    "associate"
+    "juniper"
    ],
-   "seen_as": "short dark hair, wine coat, soot trim, crimson bag",
+   "seen_as": "long black hair, wine coat, soot trim, crimson bag (her own key since D2273; the Associate coat stays)",
    "signature": {
-    "associate": {
+    "juniper": {
      "skin": "5",
-     "hair": "short",
-     "hairCol": "d",
+     "hair": "long",
+     "hairCol": "k",
      "outfit": "coat",
      "outfitCol": "V",
      "accent": "N",
@@ -314,9 +304,13 @@
     }
    },
    "grid": {
-    "associate": "1391f588"
+    "juniper": "50515b72"
    },
-   "marks": []
+   "marks": [],
+   "shares_outfit": [
+    "associate"
+   ],
+   "shares_outfit_why": "D2273 (Vincent, Wed Nov 4, 2026, defaults): Juniper keeps the Associate coat, soot trim and crimson bag, and Tobin and the plain Associate keep `associate`; her own hair sets her apart, so the hair, pixel and mark checks still run against it."
   },
   {
    "id": "fen",
@@ -328,7 +322,7 @@
    "keys": [
     "fen"
    ],
-   "seen_as": "long white hair, green tunic, mint trim",
+   "seen_as": "long white hair, green tunic, light green trim",
    "signature": {
     "fen": {
      "skin": "4",
@@ -644,6 +638,7 @@
     "diner_bren",
     "fb_constable",
     "glen_watch",
+    "h1_cadet",
     "hc_lumen",
     "hc_moss",
     "hc_rowan",
@@ -671,7 +666,11 @@
     "r1_halvard",
     "r1_ness",
     "r2_saffie",
-    "r2_watch"
+    "r2_watch",
+    "r4_keeper",
+    "r4r_gate_keeper",
+    "r4r_lock_keeper",
+    "sm_ken"
    ],
    "glimmer": [
     "bw_dorian",
@@ -748,235 +747,13 @@
    "holder_glimmer_set"
   ]
  },
+ "retired": {
+  "_note": "Look keys no NPC wears any more. Kept defined (saves and old data may name them); spec (d) fails if one is removed or worn again.",
+  "hc_president": "D2275: the High Charity preview President wears `president`",
+  "petra": "WARDROBE_SHOP 4a Captain Lumen row (F6): hc_lumen wears `captain`",
+  "holder_glimmer_set": "D2278: a reference look for the palette devCheck, never worn; the Junior Bright wears `junior_bright`"
+ },
  "exceptions": [
-  {
-   "check": "lock",
-   "clash": "president|split|president+hc_president",
-   "todo": "LOOK_LOCK follow-up F3 (D2275, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "The President keeps one look: the High Charity preview cast (built by tools/build_hc_city.py) wears `president`, the cardigan the crackdown scenes already show, and `hc_president` is retired."
-  },
-  {
-   "check": "lock",
-   "clash": "dorian|wears|gb_dorian",
-   "todo": "LOOK_LOCK follow-up F4 (D2276, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "The briefing copies wear their own person: gb_dorian and gb_dorian_bay wear `dorian`, gb_imogen_npc wears `imogen` (data only)."
-  },
-  {
-   "check": "lock",
-   "clash": "dorian|wears|gb_dorian_bay",
-   "todo": "LOOK_LOCK follow-up F4 (D2276, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "The briefing copies wear their own person: gb_dorian and gb_dorian_bay wear `dorian`, gb_imogen_npc wears `imogen` (data only)."
-  },
-  {
-   "check": "lock",
-   "clash": "imogen|wears|gb_imogen_npc",
-   "todo": "LOOK_LOCK follow-up F4 (D2276, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "The briefing copies wear their own person: gb_dorian and gb_dorian_bay wear `dorian`, gb_imogen_npc wears `imogen` (data only)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "rook|lookalike|nia",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Clerk Nia: spiky orange hair and a hoodie read as Rook. Change her hair colour (e.g. red `r`) or style."
-  },
-  {
-   "check": "lookalike",
-   "clash": "rook|lookalike|hc_pr_mv_5",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Parade supporter 5: give him another hair style (e.g. a buzz cut) so Rook is not in the march."
-  },
-  {
-   "check": "lookalike",
-   "clash": "lizzy|lookalike|kid_pim",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Pim: dark curls with an orange top read as Lizzy. Change his hoodie colour (e.g. sky `c`)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "ilse|lookalike|fbh_stitcher",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Quilt Stitcher: grey bun with plum reads as Ilse. Change her sweater colour (e.g. teal `t`)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "president|lookalike|keeper_amos",
-   "todo": "LOOK_LOCK follow-up F3 (D2275, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Keeper Amos matches the High Charity preview President only; F3 retires that look, so this clears with it. The President keeps one look: the High Charity preview cast (built by tools/build_hc_city.py) wears `president`, the cardigan the crackdown scenes already show, and `hc_president` is retired."
-  },
-  {
-   "check": "lookalike",
-   "clash": "governor|lookalike|cd_cmdr",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Commander: grey short hair on Keeper green reads as the Governor. Change his hair colour (e.g. black `k`)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "chi|lookalike|rx_ivo",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Dr. Ivo: grey buzz cut with a slate top reads as Jacob Chi. Put Ivo in a white lab coat (`w`)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "mo|lookalike|hmp_pryce",
-   "todo": "LOOK_LOCK follow-up F2 (D2274, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Keeper Pryce matches the shared clerk look; once Mo has her own hair (F2) this clears. Archivist Mo gets her own look key (keep the Keeper clerk coat, green with white trim; add her own hair, e.g. a white bob with glasses). Clerk Wynn, the Cadet, the Keeper reader and the Clerk keep `clerk`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "mo|worn_by|Cadet",
-   "todo": "LOOK_LOCK follow-up F2 (D2274, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Archivist Mo gets her own look key (keep the Keeper clerk coat, green with white trim; add her own hair, e.g. a white bob with glasses). Clerk Wynn, the Cadet, the Keeper reader and the Clerk keep `clerk`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "mo|worn_by|Clerk Wynn",
-   "todo": "LOOK_LOCK follow-up F2 (D2274, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Archivist Mo gets her own look key (keep the Keeper clerk coat, green with white trim; add her own hair, e.g. a white bob with glasses). Clerk Wynn, the Cadet, the Keeper reader and the Clerk keep `clerk`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "mo|worn_by|Keeper reader",
-   "todo": "LOOK_LOCK follow-up F2 (D2274, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Archivist Mo gets her own look key (keep the Keeper clerk coat, green with white trim; add her own hair, e.g. a white bob with glasses). Clerk Wynn, the Cadet, the Keeper reader and the Clerk keep `clerk`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "mo|worn_by|Clerk",
-   "todo": "LOOK_LOCK follow-up F2 (D2274, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Archivist Mo gets her own look key (keep the Keeper clerk coat, green with white trim; add her own hair, e.g. a white bob with glasses). Clerk Wynn, the Cadet, the Keeper reader and the Clerk keep `clerk`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "quinn|lookalike|regenx",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "The spare `regenx` look (no NPC wears it today) has Quinn's ice bun and white coat. Change its hair (e.g. grey `h`) or drop the key."
-  },
-  {
-   "check": "lookalike",
-   "clash": "juniper|lookalike|hc_pr_mv_2",
-   "todo": "LOOK_LOCK follow-up F1 (D2273, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Parade supporter 2 matches the shared Associate look; F1 gives Juniper her own hair, which clears this. Associate Juniper gets her own look key (keep the wine coat, soot trim and crimson bag; a hair style and colour no locked character uses, e.g. a long black cut). Tobin and the plain Associate keep `associate`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "juniper|worn_by|Tobin",
-   "todo": "LOOK_LOCK follow-up F1 (D2273, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Associate Juniper gets her own look key (keep the wine coat, soot trim and crimson bag; a hair style and colour no locked character uses, e.g. a long black cut). Tobin and the plain Associate keep `associate`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "juniper|worn_by|Associate",
-   "todo": "LOOK_LOCK follow-up F1 (D2273, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Associate Juniper gets her own look key (keep the wine coat, soot trim and crimson bag; a hair style and colour no locked character uses, e.g. a long black cut). Tobin and the plain Associate keep `associate`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "juniper|worn_by|Imogen",
-   "todo": "LOOK_LOCK follow-up F4 (D2276, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "The briefing copies wear their own person: gb_dorian and gb_dorian_bay wear `dorian`, gb_imogen_npc wears `imogen` (data only)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "juniper|worn_by|Associate Tobin",
-   "todo": "LOOK_LOCK follow-up F1 (D2273, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Associate Juniper gets her own look key (keep the wine coat, soot trim and crimson bag; a hair style and colour no locked character uses, e.g. a long black cut). Tobin and the plain Associate keep `associate`."
-  },
-  {
-   "check": "lookalike",
-   "clash": "juniper|worn_by|Dorian Pell",
-   "todo": "LOOK_LOCK follow-up F4 (D2276, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "The briefing copies wear their own person: gb_dorian and gb_dorian_bay wear `dorian`, gb_imogen_npc wears `imogen` (data only)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "hale|lookalike|landlord",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Mr. Gristle: grey short hair with a slate coat reads as Master Hale. Change his coat colour (e.g. dark `d`)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "hale|lookalike|q_brannoch",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Toolwright Brannoch: same grey short hair and slate. Change his vest colour (e.g. teal `t`)."
-  },
-  {
-   "check": "lookalike",
-   "clash": "dad|lookalike|hm_diner_regular",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Diner Regular is 91% Dad's pixels (same hair, navy hoodie). Change his hoodie colour (e.g. green `g`) and hair colour."
-  },
-  {
-   "check": "lookalike",
-   "clash": "imogen|lookalike|hc_pr_mv_4",
-   "todo": "LOOK_LOCK follow-up F5 (D2277, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Parade supporter 4: blond bob in wine reads as Imogen. Change her hair colour (e.g. orange `o`)."
-  },
-  {
-   "check": "palette",
-   "clash": "palette|scheme|hc_lumen",
-   "todo": "LOOK_LOCK follow-up F6 (WARDROBE_SHOP 4a, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Captain Lumen row: hc_lumen moves to `captain`. Already a Design fix row in WARDROBE_SHOP section 4a (palette lock); build that row."
-  },
-  {
-   "check": "palette",
-   "clash": "palette|scheme|hc_moss",
-   "todo": "LOOK_LOCK follow-up F6 (WARDROBE_SHOP 4a, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Keeper Moss row: top to Keeper green `g` (through tools/build_highcharity.py). Already a Design fix row in WARDROBE_SHOP section 4a (palette lock); build that row."
-  },
-  {
-   "check": "palette",
-   "clash": "palette|scheme|hm_arlo",
-   "todo": "LOOK_LOCK follow-up F6 (WARDROBE_SHOP 4a, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Cadet Arlo row: top to Keeper green `g`. Already a Design fix row in WARDROBE_SHOP section 4a (palette lock); build that row."
-  },
-  {
-   "check": "palette",
-   "clash": "palette|scheme|hw_teodor",
-   "todo": "LOOK_LOCK follow-up F6 (WARDROBE_SHOP 4a, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Warden Teodor row: trim to white `w`. Already a Design fix row in WARDROBE_SHOP section 4a (palette lock); build that row."
-  },
-  {
-   "check": "palette",
-   "clash": "palette|scheme|r2_saffie",
-   "todo": "LOOK_LOCK follow-up F6 (WARDROBE_SHOP 4a, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Watch Saffie row: top to the watch navy `n`. Already a Design fix row in WARDROBE_SHOP section 4a (palette lock); build that row."
-  },
-  {
-   "check": "palette",
-   "clash": "palette|reference|fbp_junior_bright",
-   "todo": "LOOK_LOCK follow-up F8 (D2278, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Junior Bright gets its own Glimmer-set look (Sprites round 2 has a junior tier look); the reference look stays unworn."
-  },
-  {
-   "check": "palette",
-   "clash": "palette|uniform|sm_ken",
-   "todo": "LOOK_LOCK follow-up F7 (D2278, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Ken wears the Keeper coat (green, gold) with no Keeper title. Design call: add the id to the Keeper on-duty list (then it passes), or recolour the coat. A title change is naming, so red."
-  },
-  {
-   "check": "palette",
-   "clash": "palette|uniform|h1_cadet",
-   "todo": "LOOK_LOCK follow-up F7 (D2278, design specs/LOOK_LOCK.md): no look changes until Vincent says yes",
-   "fix": "Sefton (Fernbrook hall) wears the Keeper coat with no Keeper title. Design call: add the id to the Keeper on-duty list (then it passes), or recolour the coat. A title change is naming, so red."
-  },
-  {
-   "check": "lock",
-   "clash": "juniper|wears|bg_juniper_desk",
-   "todo": "Found when LOOK_LOCK (#328) met BRIGHTGATE (#316) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
-   "fix": "Brightgate's lobby desk copy of Associate Juniper names the look `juniper`, which does not exist; it should wear the locked `associate` look."
-  },
-  {
-   "check": "lookalike",
-   "clash": "dad|lookalike|bg_hallcrew",
-   "todo": "Found when LOOK_LOCK (#328) met BRIGHTGATE (#316) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
-   "fix": "Hall 4's crew look `bg_hallcrew` shares Dad's short dark hair and navy top; give the crew another hair or top colour."
-  },
-  {
-   "check": "lookalike",
-   "clash": "juniper|lookalike|km_foreman",
-   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
-   "fix": "Kilnmouth's foreman look `km_foreman` shares Juniper's short dark hair and wine top; change the foreman's hair or top."
-  },
   {
    "check": "lookalike",
    "clash": "hale|lookalike|km_nominee",

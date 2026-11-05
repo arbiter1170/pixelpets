@@ -2,6 +2,20 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Wed Nov 4, 2026: Vincent settles LOOK_LOCK's fixes (all defaults; recorded by Claude Code with the build, `claude/look-fixes`)
+
+Vincent: "Look lock: all defaults". The rule throughout: recolour the lookalike, never the main character. Design rows in `specs/LOOK_LOCK.md` (design repo); sheets in `handoff/shots/look_fixes/`.
+
+- **D2273 (red, SETTLED):** Associate Juniper wears her own key `juniper`: the Associate coat, soot trim and crimson bag, with long black hair. Tobin, the plain Associate and the others keep `associate`; parade supporter 2 keeps short dark hair.
+- **D2274 (red, SETTLED):** Archivist Mo wears her own key `mo`: the Keeper clerk coat with a white bob and glasses. Clerk Wynn, the Cadet, the Keeper reader and the High Charity clerk keep `clerk`; Keeper Pryce keeps his grey bun.
+- **D2275 (red, SETTLED):** the High Charity preview President wears `president` (the cardigan); `hc_president` is retired, kept defined and unworn.
+- **D2276 (red, SETTLED):** Dorian's two briefing copies wear `dorian`, Imogen's wears `imogen`.
+- **D2277 (red, SETTLED):** the eleven recolours as proposed: Clerk Nia's hair red; parade supporter 5 a buzz cut; Pim's hoodie sky; the Quilt Stitcher's sweater teal; the Commander's hair black; Dr. Ivo in a white lab coat; `regenx` hair grey; Mr. Gristle's coat dark; Brannoch's vest teal; the Diner Regular's hoodie green with a red buzz cut; supporter 4's hair orange.
+- **F6 (WARDROBE_SHOP 4a rows, built):** Captain Lumen in High Charity wears `captain` (`petra` kept, unworn); Keeper Moss and Cadet Arlo in Keeper green; Warden Teodor's trim white; Watch Saffie in the watch navy.
+- **D2278 (yellow, SETTLED):** Ken (`sm_ken`) and Sefton (`h1_cadet`) join the Keeper on-duty list; the Junior Bright wears its own Glimmer-set look `junior_bright`.
+- Also fixed: Route 4's three Keepers named the missing look `keeper_officer` and drew as villagers; they wear `officer` and join the on-duty list.
+- **D2350 (red, SETTLED by Vincent, Thu Nov 5, 2026):** the Hall 4 crew (`bg_hallcrew`: Rod Tender, Line Runner, Sky Watcher) wear a teal `t` vest instead of navy; Dad unchanged. Vincent: "Yes, to both". Built on `claude/look-fixes` on the default (Wed Nov 4); recorded here when Vincent saw the sheet (`handoff/shots/look_fixes/bg_hallcrew_390.png`, `_320.png`).
+
 ## Wed Nov 4, 2026: Vincent approves animated pixel sprites in battle (SPRITE_ANIM, recorded by Claude Code)
 
 Relayed by the coordinator: D2070 yes as previewed, D2071 yes (drawn leans); the yellows settle on their defaults. Built in #321.

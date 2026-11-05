@@ -1375,7 +1375,7 @@
      "lines": {
       "else": "Curfew, Cadet. No gathering after dark."
      },
-     "look": "keeper_officer",
+     "look": "officer",
      "when": [
       "story.km_seat_filled",
       "!story.km_council"
@@ -1505,7 +1505,7 @@
      "lines": {
       "else": "Curfew, Cadet. No gathering after dark."
      },
-     "look": "keeper_officer",
+     "look": "officer",
      "when": [
       "story.km_seat_filled",
       "!story.km_council"
@@ -1755,7 +1755,7 @@
      "lines": {
       "else": "Kilnmouth sits its own seat. The Keepers walk its lanes."
      },
-     "look": "keeper_officer",
+     "look": "officer",
      "when": [
       "story.km_settled",
       "story.sway_kilnmouth>=2"
@@ -1771,7 +1771,7 @@
      "lines": {
       "else": "Kilnmouth sits its own seat. The Keepers walk its lanes."
      },
-     "look": "keeper_officer",
+     "look": "officer",
      "when": [
       "story.km_settled",
       "story.sway_kilnmouth>=2"
@@ -1787,7 +1787,7 @@
      "lines": {
       "else": "Both sides wait at the springs."
      },
-     "look": "keeper_officer",
+     "look": "officer",
      "when": [
       "story.km_settled",
       "story.sway_kilnmouth<2",

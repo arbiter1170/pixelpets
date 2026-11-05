@@ -4498,10 +4498,10 @@ function rookOfferSteps(to){
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
 if (MD.act1_route2 && MD.act1_route2.looks) for (const [k, v] of Object.entries(MD.act1_route2.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
-NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 's', outfit: 'coat', outfitCol: 'w', accent: 'c' };
+NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 'h', outfit: 'coat', outfitCol: 'w', accent: 'c' };   // LOOK_LOCK D2277: grey hair, not Quinn's ice bun
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.mahopac && MD.mahopac.looks) for (const [k, v] of Object.entries(MD.mahopac.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
-const LOOK_OF_NAME = Object.assign({ 'Hattie': 'neighbour_hattie', 'Odile': 'orchard_odile', 'Keeper Amos': 'keeper_amos', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
+const LOOK_OF_NAME = Object.assign({ 'Hattie': 'neighbour_hattie', 'Odile': 'orchard_odile', 'Keeper Amos': 'keeper_amos', 'Associate Juniper': 'juniper', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
 LOOK_OF_NAME.Hattie = 'neighbour_hattie';   // PEOPLE_LOOKS_28: the verbatim interiors speakers still say villager

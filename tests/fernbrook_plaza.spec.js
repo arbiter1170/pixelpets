@@ -115,7 +115,7 @@ test('contested: both sides and their Walklings stand in the plaza, ringed by to
   for (const id of GLIMMER) { expect(by[id].faction, id).toBe('glimmer'); expect(by[id + '_pet'].pet, id).toMatch(/^[a-z]+\/[0-2]$/); }
   for (const id of TOWNSFOLK) expect(by[id].faction, id).toBe('none');
   expect(KEEPERS.map((id) => by[id].look)).toEqual(['officer', 'captain', 'clerk']);
-  expect(GLIMMER.map((id) => by[id].look)).toEqual(['associate', 'glimclerk', 'holder_glimmer_set']);
+  expect(GLIMMER.map((id) => by[id].look)).toEqual(['associate', 'glimclerk', 'junior_bright']);   // LOOK_LOCK D2278: the Junior Bright's own Glimmer-set look, not the reference one
   // Every pet form is a real Walkling, and labels are unique across the game (contacts are keyed by name).
   const names = await page.evaluate((ids) => {
     const objs = MAPDATA.detail_zzz_fernbrook_plaza.slicePatch.maps.fernbrook.addObjs, mine = new Set(ids);
