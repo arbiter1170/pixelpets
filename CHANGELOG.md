@@ -5,10 +5,10 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 ## 2026-11-05 02:30 ET: Docs: PLAYTEST_GATE packet v0.1, the test plan for a real-save gate on every PR
 - What changed and why:
   - New `tests/playtest_gate/PACKET.md`: a test plan only, for a second agent to build one Playwright suite that says a build is safe for playtesters with real saves. It names the seven Act 1 save kinds (`tests/fixtures/or_gate_kinds.js`) seeded as real old saves, 320 and 390, Modern controls; the load rule (no write before boot except the old-save move, a pinned list of normalizeV2 additions after the settle, zero console and page errors with no allowlist, no Firebase request); the four walk steps (the Keeper join, one town changing hands, the Kilnmouth arrival on a frozen clock, the Cabinet stair in the `hccity=2` preview) with the kinds that skip and why; hardening (two towns flipping at once, sway on old saves, the SEALS kill switch false path by a served-copy splice); manual iPhone steps for frame rate and music; a 240 s runtime budget with a split order; acceptance lines PG-1 to PG-19; eleven open questions.
-  - Every expected value was read on build 20261104-1627 by throwaway probes (deleted, not committed).
+  - Every expected value was read on build 20261104-1627 by throwaway probes (deleted, not committed), then the seven kinds' load, settle and reads again after merging `origin/main` ef2af05 (#336, build 20261105-0151).
 - Files touched: `tests/playtest_gate/PACKET.md` (new), `CHANGELOG.md`.
-- Commit(s) + build id: cursor/playtest-gate-packet-8239; docs only, no build stamp (base build 20261104-1627).
-- Tests run and result (widths, checks): no suite added. The probes ran under Playwright at 390 (and the load rows at 320, once through `node tools/pp_test.js`: PASS, 14 passed, 94 s); zero console errors throughout.
+- Commit(s) + build id: cursor/playtest-gate-packet-8239, merged with main ef2af05 (#336); docs only, no build stamp (main's build 20261105-0151).
+- Tests run and result (widths, checks): no suite added. The probes ran under Playwright at 390 and 320 (once through `node tools/pp_test.js`: PASS, 14 passed, 94 s; after the merge 14 passed at 320); zero console errors throughout.
 - Decisions made (colour + reasoning): none taken; Q1-Q11 in the packet carry a default and a colour for the Chief of Staff. No D or Q ids reserved.
 - Anything left unfinished: the suite itself (the builder's PR); manual checks M1-M3 for QA.
 

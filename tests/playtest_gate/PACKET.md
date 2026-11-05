@@ -2,7 +2,9 @@
 
 Status: test plan only. No game code, no tests in this PR. A second agent builds the suite from this file.
 Base: `origin/main` 21892b6 (#332), build `20261104-1627`. Every expected value below was read on that build by a throwaway
-probe (deleted, never committed) at 390, and the load and settle rows again at 320. Where the game and a source spec disagree
+probe (deleted, never committed) at 390, and the load and settle rows again at 320. After merging `origin/main` ef2af05
+(#336, STORY_LINES, build `20261105-0151`; `game.js` unchanged), the seven kinds' load, settle and §5.0 reads were run again
+at 320 and every value below still held. Where the game and a source spec disagree
 with each other or with a design note, the value here is what the build does, and the gap is under **Open questions**.
 
 Rules that win over this packet: `AGENTS.md`, `CLAUDE.md`, `tests/README.md` and the `walklings-*` skills.
