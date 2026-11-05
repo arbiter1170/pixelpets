@@ -8,7 +8,8 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-// looks.json `look` per key (main look; alts are not wired).
+// looks.json `look` per key (main look; alts are not wired). Pim's hoodie is sky `c`, not orange: LOOK_LOCK D2277 (Vincent,
+// Wed Nov 4, 2026) recolours him so dark curls on orange no longer read as Lizzy.
 const LOOKS = {
   kitekid_pia: { id: 'route1_pia', map: 'route1', look: { skin: '1', hair: 'pony', hairCol: 'o', outfit: 'hoodie', outfitCol: 'y', accent: 'r', accessory: 'scarf' } },
   beachcomber_tam: { id: 'route1_tam', map: 'route1', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'vest', outfitCol: 'c', accent: 'o', accessory: 'brimhat' } },
@@ -31,7 +32,7 @@ const LOOKS = {
   neighbour_hattie: { id: 'hattie', map: 'hearthmoor', look: { skin: '4', hair: 'bun', hairCol: 'h', outfit: 'sweater', outfitCol: 'r', accent: 'w', accessory: 'scarf' } },
   orchard_odile: { id: 'odile', map: 'fernbrook', look: { skin: '2', hair: 'curls', hairCol: 'd', outfit: 'dress', outfitCol: 'b', accent: 'y', accessory: 'scarf' } },
   old_miner: { id: 'cc_miner', map: 'cobblecrest', look: { skin: '3', hair: 'short', hairCol: 'w', outfit: 'coat', outfitCol: 'd', accent: 'y' } },
-  kid_pim: { id: 'pim', map: 'cobblecrest', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'hoodie', outfitCol: 'o', accent: 'w' } },
+  kid_pim: { id: 'pim', map: 'cobblecrest', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'hoodie', outfitCol: 'c', accent: 'w' } },
   keeper_amos: { id: 'amos', map: 'fb_lantern_in', look: { skin: '6', hair: 'short', hairCol: 'w', outfit: 'coat', outfitCol: 'g', accent: 'y', accessory: 'glasses' } },
   broker_mara: { id: 'sm_mara', map: 'sm_den', look: { skin: '1', hair: 'bob', hairCol: 'k', outfit: 'coat', outfitCol: 'd', accent: 'r', accessory: 'glasses' } },
   crate_jed: { id: 'sm_jed', map: 'sm_tunnel', look: { skin: '4', hair: 'short', hairCol: 'o', outfit: 'sweater', outfitCol: 'b', accent: 'y' } },

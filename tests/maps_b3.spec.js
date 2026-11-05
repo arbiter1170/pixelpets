@@ -1,6 +1,6 @@
 /* B3 tunnel rooms: rock skin on the same 18x12 grids (D87), seeded floor variants (D88), dressing props. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, tapFacing } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -54,7 +54,7 @@ async function clickTile(page, x, y) {
 }
 async function talk(page) {
   await expect.poll(() => page.evaluate(() => document.querySelector('#talkBtn').classList.contains('ready'))).toBe(true);
-  await page.locator('#talkBtn').click();
+  await tapFacing(page);   // Modern: tap the person you face
   await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.full ? PixelPets.scene.text : null), { timeout: 5000 }).not.toBeNull();
   const t = await page.evaluate(() => PixelPets.scene.text);
   for (let i = 0; i < 8 && await page.evaluate(() => !!PixelPets.scene); i++) { await page.keyboard.press('Space'); await page.waitForTimeout(40); }

@@ -170,10 +170,10 @@ test.describe('ACT1_KEEPER_JOIN: Ilse sends the holder to Vincent Chi (K3)', () 
     expect(await ids(page)).toContain('glen_constable');
     expect(await page.evaluate(() => PixelPets.talkTo('glen_lamp_w'))).toBe(true);
     let lines = await drive(page);
-    expect(lines[0][1]).toBe('A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums.');
+    expect(lines[0][1]).toBe('A Keeper slip on the post: LAMP CLOSED FOR REVIEW. The lamp still hums.');   // glen_lamp_w (D2137 signed)
     expect(await page.evaluate(() => PixelPets.talkTo('glen_constable'))).toBe(true);
     lines = await drive(page);
-    expect(lines[0]).toEqual(['Keeper Constable', "Orders came down. A review. Don't ask me how long."]);
+    expect(lines[0]).toEqual(['Keeper Constable', "Orders came down. The lamps are under review. Don't ask me how long."]);
     // After the enrolment Imogen's battle is back; once the Heights are done the slip is a brass plate and the Constable goes.
     await page.evaluate(() => { PixelPets.setFlag('story.keeper_cadet', true); PixelPets.setFlag('story.heights_done', true); });
     await goto(page, 'route2_glen', 12, 17, 'up');
@@ -183,7 +183,7 @@ test.describe('ACT1_KEEPER_JOIN: Ilse sends the holder to Vincent Chi (K3)', () 
     expect(o).not.toContain('glen_constable');
     expect(await page.evaluate(() => PixelPets.talkTo('glen_lamp_n'))).toBe(true);
     lines = await drive(page);
-    expect(lines[0][1]).toBe('Fresh paint on the post. A brass plate: BY PERMIT OF HIGH CHARITY.');
+    expect(lines[0][1]).toBe('The slip is gone. Fresh paint, and a brass plate: BY PERMIT OF HIGH CHARITY.');   // D2137
     if (holdBefore != null) expect(await page.evaluate(() => PixelPets.mapHold('route2'))).toBe(holdBefore);
   });
 

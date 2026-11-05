@@ -1,6 +1,6 @@
 /* Outside UX review (Oct 15): header acorns, progressbar semantics, canvas labels, and the debug panel kept out of the player DOM. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap, openDebug } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -83,7 +83,7 @@ test('the debug panel is not in the player DOM; it appears only in a debug sessi
   // a debug session builds it on demand
   await boot(page, starterSave(), '?debug=1');
   expect(await page.evaluate(() => !!document.querySelector('#ovDebug'))).toBe(false);   // not until it opens
-  await page.locator('#dbgTag').click();
+  await openDebug(page);
   await expect(page.locator('#ovDebug')).toBeVisible();
   await expect(page.locator('#dbgAgent summary')).toHaveText('Agent tools');
   await page.locator('#dbgLock').click();
@@ -97,7 +97,7 @@ test('modern walk acorn chip: badge row in the dock, 44 tall, left of the gear, 
   await boot(page, s, '?debug=1');
   await page.evaluate(() => PixelPets.showTab('walk'));
   await expect(page.locator('#fcAcornN')).toHaveText('99999');
-  await expect(page.locator('#fcAcorns')).toHaveAttribute('aria-label', '99999 Acorns');
+  await expect(page.locator('#fcAcorns')).toHaveAttribute('aria-label', '99999 Acorns. Open your book.');   // BANK_AND_HOMES D2220
   await page.waitForTimeout(300);
   const vw = page.viewportSize().width;
   const c = await rect(page, '#fcAcorns'), gear = await rect(page, '#gearFloat'), env = await rect(page, '#thChip');
@@ -106,8 +106,9 @@ test('modern walk acorn chip: badge row in the dock, 44 tall, left of the gear, 
   expect(c.right).toBeLessThanOrEqual(gear.x + 0.5); expect(gear.x - c.right).toBeLessThanOrEqual(8);   // immediately left of the gear
   expect(c.right).toBeLessThanOrEqual(vw);
   expect(boxesOverlap(c, env)).toBe(false);
-  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#fcAcorns')).pointerEvents)).toBe('none');
-  expect(await page.evaluate(() => document.querySelector('#fcAcorns').tagName)).toBe('DIV');
+  // BANK_AND_HOMES D2220 (Vincent, Nov 4, 2026): the chip is now a button that opens the book (tests/bank_slice_1.spec.js).
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#fcAcorns')).pointerEvents)).toBe('auto');
+  expect(await page.evaluate(() => document.querySelector('#fcAcorns').tagName)).toBe('BUTTON');
   const icon = await page.evaluate(() => { const b = document.querySelector('#fcAcornN'), h = document.querySelector('#hdrAcornN'); return [getComputedStyle(b).color === getComputedStyle(h).color, getComputedStyle(b).fontSize === getComputedStyle(h).fontSize, b.scrollWidth <= b.clientWidth + 1]; });
   expect(icon).toEqual([true, true, true]);
   // a long area name: the badge text clamps, the chip stays whole

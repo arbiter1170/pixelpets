@@ -10,7 +10,7 @@ const K = require('./fixtures/or_gate_kinds');
 
 trackErrors(test, expect);
 
-const SHUT = "Shut by Keeper order. Master Fen's Hall stays closed for now.";
+const SHUT = "Shut by order of High Charity. Master Fen's Hall stays closed for now.";
 const FB = { 'story.reached_route1': true, 'story.rival1_done': true, 'story.reached_fernbrook': true, 'story.met_glimmerwell': true, 'story.met_fen': true };
 const DAY1 = { 'story.crate_a': true, 'story.crate_b': true, 'story.crate_c': true, 'story.tally_done': true, 'story.tl_amos': true, 'story.tl_juniper': true,
   'story.tl_done': true, 'story.crates_seen': true, 'story.fen_sent_home': true, 'story.dream_woke': true, 'story.class_sent': true, 'story.lizzy_met': true, 'story.lizzy_class': true };
@@ -90,7 +90,7 @@ for (const side of ['keepers', 'glimmer']) {
     await page.waitForFunction(() => !window.PixelPets.fading);
     expect(await page.evaluate(() => PixelPets.talkTo('fen_after'))).toBe(true);
     await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
-    expect(await page.evaluate(() => PixelPets.scene.text)).toBe(side === 'keepers' ? "Tobin won't listen to me. Try him." : 'The trees still know your step.');
+    expect(await page.evaluate(() => PixelPets.scene.text)).toBe(side === 'keepers' ? "Tobin's by the cart. Show him what a strong team looks like." : 'The trees still know your step.');
     await playScene(page, []);
     // No quest row points into the shut Hall.
     const q = await page.evaluate(() => PixelPets.quest && { id: PixelPets.quest.id, map: PixelPets.quest.target && PixelPets.quest.target.map });
@@ -155,7 +155,8 @@ test('D1434: the Glimmerwell banners in the dressing name no colour; the door li
     const objs = MAPDATA.detail_zz_hall_contested.hallPatch.maps.fb_hall_in.addObjs.filter(o => /^banner_glim/.test(o.sprite));
     const door = MAPDATA.fernbrook_rooms.slicePatch.maps.fernbrook.replaceObjs.find(o => o.id === 'fb_hall');
     const fen = MAPDATA.glimmer_path.slicePatch.maps.fernbrook.addObjs.find(o => o.id === 'fen_after');
-    return { n: objs.length, banners: objs.map(o => o.lines.else), deny: Object.values(door.deny), fen: Object.values(fen.lines) };
+    // STORY_LINES D2134: Fen's Open-lean nudge (!story.orchard_cleared) is a talk line under the 110 rule; her side lines stay <= 40.
+    return { n: objs.length, banners: objs.map(o => o.lines.else), deny: Object.values(door.deny), fen: Object.values(fen.lines), side: Object.entries(fen.lines).filter(([k]) => k !== '!story.orchard_cleared').map(([, v]) => v) };
   });
   expect(r.n).toBeGreaterThan(0);
   for (const l of r.banners) expect(l, l).not.toMatch(/\b(black|red|wine|mint|soot|crimson|honey|cyan|teal|green|gold)\b/i);
@@ -164,7 +165,7 @@ test('D1434: the Glimmerwell banners in the dressing name no colour; the door li
     expect(l.length, l).toBeLessThanOrEqual(110);
     expect(l, l).not.toMatch(/\b(trainer|gym|coins?|fainted|evolve|appeared)\b|dex\b|  /i);
   }
-  for (const l of r.fen) expect(l.length, l).toBeLessThanOrEqual(40);   // fen_after's lines double as ambient lines
+  for (const l of r.side) expect(l.length, l).toBeLessThanOrEqual(40);   // fen_after's side lines double as ambient lines
 });
 
 test.describe('reduced motion', () => {

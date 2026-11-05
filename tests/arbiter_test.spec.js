@@ -152,8 +152,8 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
   expect(await page.evaluate(() => PixelPets.scene)).toBeFalsy();
   const speakers = [
     ['Associate Quinn', 'Before the lanyard, one more kindness. A Tuning. Your Walkling hears us a little clearer after.'],
-    ['Associate Quinn', 'Some holders feel a flutter. We call it increasing the bond. Nothing sharp. Nothing cold.'],
-    ['Rook', "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."],
+    ['Associate Quinn', "You look worried, sweetie. Some holders feel a flutter after. That's the bond. Nothing sharp. Nothing cold."],   // D2145
+    ['Rook', "Nothing sharp? Who said anything about sharp? ...It's fine. They'll get stronger. I want that. I do."],   // D2145
     ['', 'A soft click under the fur. The Hall lights dim. Somewhere below, something vast exhales.'],
     ['Associate Quinn', 'There. Tuned. Keep them close, holder. The box is for the others now.'],
     ['Associate Quinn', "Review closed. Tier 2 on your lanyard. Hale still holds your Seal. His floor's open."],   // J9: the Tuning gives the tag, not the Seal
@@ -205,12 +205,13 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
   const refused = await page.evaluate((id) => {
     const dep = PixelPets.depositPet(id);
     const rel = PixelPets.releasePet(id);
-    return { dep, rel, toast: document.querySelector('#toast').textContent, still: PixelPets.state.party.some((p) => p.id === id) };
+    return { dep, rel, still: PixelPets.state.party.some((p) => p.id === id) };
   }, after.id);
   expect(refused.dep).toBe(false);
   expect(refused.rel).toBe(false);
   expect(refused.still).toBe(true);
-  expect(refused.toast).toContain('stays with you now.');
+  // Modern controls queue toasts, so the refusal shows once the New Seal toast has had its turn.
+  await expect(page.locator('#toast')).toContainText('stays with you now.');
 
   await page.evaluate(() => PixelPets.showTab('col'));
   const locked = await page.evaluate(() => {

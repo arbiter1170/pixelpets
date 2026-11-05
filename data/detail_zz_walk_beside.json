@@ -2,7 +2,7 @@
  "spec": "WALK_BESIDE v0.1 (design repo, private): the Keepers' first word, the cut shown on screen, the hold lines and the walk-beside mechanic. Decisions D1960-D1979.",
  "_about": "Ours, not a design copy. Act 1: the Weir Hut lantern's story.chi_done line (objPatch, ahead of the built else) and two one-step runs chained after their settled ACT1_KEEPER_JOIN scenes (sceneTails on chi_report and night_watch). Acts 2-5, the Summit and the endings: every scene is built behind its real flags, so it stays inert in normal play until its beat is built: wb_charter chains after cab_pt1 (a sceneTail that waits for that scene), wb_cut plays at the Hearthmoor Lodge steps on story.cab_seat, Ilse's stayer letter comes through a Lantern House Host (hostNotes), wb_pres chains after pres_cabinet_last. Scenes whose host scene or map is not built yet (the springs stop on Kilnmouth, Quinn's N2k2, the Ledger Night's L13a, the Spire rows, the Summit lines) are here as scenes for that build to run, and `waits` lists each hook. Save stays pixelpets.save.v2, v 2: every flag here is an additive story.* key (NOT_STEPS), nothing is written at load. Every line is PLACEHOLDER until Story signs it (D1960-D1979).",
  "_placeholders": {
-  "note": "PLACEHOLDER copy (Story to sign): every player line in this file. The speaker key 'Vincent Chi' is the raw cast key; it shows as Jacob Chi (NAMES_PASS D1730, display only). hostNotes[0].line is the engineer's draft (the packet gives no Host line for the stayer's letter).",
+  "note": "PLACEHOLDER copy (Story to sign): every player line in this file. The speaker key 'Vincent Chi' is the raw cast key; it shows as Jacob Chi (NAMES_PASS D1730, display only). hostNotes[0].line is Story's (STORY_LINES D2143).",
   "paths": [
    "objPatch",
    "scenes",
@@ -61,7 +61,7 @@
       "kind": "npc",
       "id": "hm_mo_steps",
       "name": "Archivist Mo",
-      "look": "clerk",
+      "look": "mo",
       "x": 14,
       "y": 7,
       "facing": "right",
@@ -150,7 +150,7 @@
     "!story.warden_cut",
     "!story.wb_ilse_letter"
    ],
-   "line": "A letter for you, sealed with the Warden's lantern.",
+   "line": "A letter for you, sealed with the Warden's lantern. No reply wanted, this time.",
    "scene": "wb_ilse_letter"
   }
  ],

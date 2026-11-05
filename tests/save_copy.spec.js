@@ -1,7 +1,7 @@
 /* Build 7: download the v2 save before Start over, wipe, and read the file back. */
 const fs = require('fs');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -27,7 +27,7 @@ async function bootRoundTrip(page) {
 test('a copy survives Start over and comes back as the same game', async ({ page }) => {
   test.setTimeout(60000);
   await bootRoundTrip(page);
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#setCopy')).toBeVisible();
   await expect(page.locator('#setRead')).toBeVisible();
   await expect(page.locator('#setBuild')).toBeInViewport();
@@ -104,7 +104,7 @@ test('a bad file is refused and the current game stays @w1', async ({ page }) =>
   await installSave(page.context(), save, { quietDay: true });
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets.state && window.PixelPets.state.party.length === 1);
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setRead').click();
   await page.locator('#copyFile').setInputFiles({
     name: 'newer.json',

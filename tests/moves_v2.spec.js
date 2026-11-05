@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, openSettings, showScreen } = require('./helpers');
 const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
@@ -512,7 +512,7 @@ test('14 running away leaves an empty queue and the walk view takes the next tap
   const left = await page.evaluate(() => ({ q: PixelPets.battle.q.length, ff: PixelPets.battle.ff }));
   expect(left.q).toBe(0);
   expect(left.ff).toBe(false);
-  await page.locator('#tabs button[data-tab="pet"]').click();
+  await showScreen(page, 'pet');
   await expect(page.locator('#scr-pet')).toBeVisible();
 });
 
@@ -951,7 +951,7 @@ test.describe('22 co-op flash clock', () => {
     b.ppErrors = [];
     await boot(b, (() => { const s = baseSave(); s.uid = 'smoketest0002'; return s; })(), '?cloud=emu&debug=1' + emuQuery());
     async function join(p) {
-      await p.locator('#settingsBtn').click();
+      await openSettings(p);
       await p.locator('#setRoomCode').click();
       await p.locator('#roomCodeInput').fill('AMB-4RQ');
       await p.locator('#roomJoin').click();

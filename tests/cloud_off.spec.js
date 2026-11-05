@@ -4,7 +4,7 @@
    Playwright also maps the Firebase hosts to ~NOTFOUND. Players never load this file. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 const LIVE_HOST = /googleapis\.com|firebaseio\.com|firebaseapp\.com|firebasestorage\.app|gstatic\.com\/firebasejs/;
 
@@ -80,7 +80,7 @@ test('a blocked SDK leaves the game on this device', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page, '?cloud=block');
   await page.waitForFunction(() => typeof PPCloud !== 'undefined' && PPCloud.enabled && PPCloud.info().status === 'unavailable', null, { timeout: 25000 });
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   const row = page.locator('#setCloud');
   await expect(row).toBeVisible();
   await expect(row.locator('.set-sub')).toHaveText('Offline, will back up later');
@@ -123,7 +123,7 @@ test('an offline cloud read keeps the local save', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page, '?cloud=block');
   await page.waitForFunction(() => typeof PPCloud !== 'undefined' && PPCloud.info().status === 'offline');
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   const row = page.locator('#setCloud');
   await expect(row.locator('.set-sub')).toHaveText('Offline, will back up later');
   const box = await row.boundingBox();

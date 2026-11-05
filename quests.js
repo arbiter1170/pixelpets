@@ -41,11 +41,13 @@
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
+    'story.km_lease', 'story.km_springs', 'story.km_hall_lit', 'story.km_settled', 'story.rpt_4',   // CABINET 1a: K7's results and R4
     'story.km_ask_yard', 'story.km_ask_market', 'story.km_ask_springs', 'story.km_pitch_f', 'story.km_pitch_c', 'story.km_crew', 'story.km_permit_to',   // KILNMOUTH §12.1 / CAB K2-K4
     'story.slip_kilnmouth', 'story.pres_hint_default', 'story.km_twin_lead', 'story.wb_springs', 'story.kr_s1_met', 'story.kr_s4_met',   // K4, B4, the hill path (D1990), the placed S1 / S4
     'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
     'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
+    'story.bank_book', 'story.bank_open',   // BANK_AND_HOMES §3.3 (D2233): Mom's passbook and Bodin's open book, optional talks off the chain
     'story.mom_mah_ask', 'story.mom_mahopac', 'story.lens_note',   // MAHOPAC_DREAMS §9: Mom's walk north (the warp), her answer at the lens, Ilse's note
     'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
     'story.reached_brightgate', 'story.bg_insign', 'story.bg_crate', 'story.bg_vane', 'story.seal4', 'story.ada_sky',
@@ -55,6 +57,9 @@
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
     'story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',   // HIGH_CHARITY_LAYOUT §11 hooks
     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
+    'story.cab_seat', 'story.km_seat_filled',   // CABINET_AND_COUNCILS §6 (1b): S1 writes them beside the chain step story.km_seat_pick
+    'story.wm_visited', 'story.wm_card', 'story.wm_trail', 'story.wm_trail_pick', 'story.wm_given', 'story.wm_plaque', 'story.wm_runner',   // WAR_MUSEUM §8:
+    'story.wm_st_lanterns', 'story.wm_st_map', 'story.wm_st_scout', 'story.wm_st_drum', 'story.wm_st_case',   // results and counters (city only); wm_trail_done is the side step
     'story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen',   // HC_PARADE (D1365): beats inside the parade scene (city only); story.hc_greeted stays the step
     'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue',   // High Charity and Mahopac bits; neither is a main-chain step
     // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
@@ -366,6 +371,25 @@
     // Brightgate (B5) is its own build: until a route or coach reaches it, the chain holds here.
     { id: 'a2_hold', when: ['story.km_permit_seen'], done: ['story.reached_brightgate'],
       text: 'Await your next orders.', place: 'The Amberwild' },
+    // CABINET_AND_COUNCILS v0.2.2 (1a, 1b; ACT2_BEAT_SHEET B7, B11): the report-back to the Governor (K6, story.km_reported), Lumen's
+    // lead-in in the Governor's House lobby, the stair to the Cabinet Room and the twelfth chair (S1 plays there once K2a has,
+    // story.pres_cabinet_first; K2a waits on the parade), then Kilnmouth's council sits (K7). Keepers path only. Row text is the
+    // engineer's (no packet wrote it; OPEN_DECISIONS D1608-copy).
+    { id: 'km_report', when: ['story.km_permit_seen', '!story.side=glimmer'], done: ['story.km_reported'],
+      npc: 'Governor Merriden', npcIds: ['hc_governor'],
+      text: "Tell Governor Merriden about the tower's permit. He's at the Governor's House in High Charity.", place: "Governor's House",
+      target: { map: 'hc_gov_1', x: 12, y: 3 } },
+    { id: 'cab_lead', when: ['story.km_reported', '!story.side=glimmer'], done: ['story.thr_chip_rumour'],
+      npc: 'Captain Lumen', npcIds: ['cab_lumen_lobby'],
+      text: "Captain Lumen is waiting in the lobby of the Governor's House.", place: "Governor's House",
+      target: { map: 'hc_gov_1', x: 4, y: 3 } },
+    { id: 'cab_seat', when: ['story.thr_chip_rumour', '!story.side=glimmer'], done: ['story.km_seat_pick'],
+      text: "Take the stair in the Governor's House up to the Cabinet Room. A chair is set for you.", place: 'Cabinet Room',
+      target: { map: 'hc_gov_2', x: 6, y: 8 } },
+    { id: 'km_council', when: ['story.km_seat_filled', '!story.side=glimmer'], done: ['story.km_council'],
+      npc: 'Reeve Agna', npcIds: ['km_reeve'],
+      text: "Take the Governor's letter to Reeve Agna at Kilnmouth's council house. The council can sit.", place: 'Kilnmouth council house',
+      target: { map: 'km_council_in', x: 11, y: 3 } },
     // WALK_BESIDE §3.3 (D1961): Archivist Mo waits at the Lodge steps from the first sitting (CABINET S1 sets story.cab_seat; not
     // built, so this row is inert today) until the cut is shown. Never for a switcher or the company's face.
     { id: 'wb_cut', when: ['story.cab_seat', '!story.switched_a3', '!story.side=glimmer'], done: ['story.wb_cut'], noImply: true,
@@ -545,6 +569,13 @@
       { id: 'lens_moment', label: 'The lens at Mahopac', when: ['story.lens_note', '!story.climb_open'], done: ['story.lens_seen'],
         text: 'Warden Ilse is waiting at the lens in Mahopac.', place: 'Breckenridge Observatory',
         target: { map: 'mahopac_obs', x: 3, y: 2 } },
+    ],
+    // WAR_MUSEUM §2.1 (D2307): the museum's quest, the Stamp Trail (PLACEHOLDER name, D2302). Accepted by talk: the curator hands
+    // over the card (story.wm_card); five stamps, any order; the fifth pays once (story.wm_trail_done). Optional in every act.
+    [
+      { id: 'wm_trail', label: 'The Stamp Trail', when: ['story.wm_card'], done: ['story.wm_trail_done'],
+        text: "Stamp the card at the lantern wall, the map case, the Scout's lamp, the drum, and the empty case.", place: 'Muster Road Museum',
+        target: { map: 'hc_museum_in', x: 6, y: 4 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();

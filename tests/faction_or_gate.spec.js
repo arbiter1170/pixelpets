@@ -316,7 +316,7 @@ test('overlay: restated maps_slice and act1_route2 objects differ only in when; 
     hallNeed: 'story.lizzy_class & !story.seal1 | story.orchard_cleared & !story.seal1 | story.seal1 & !story.side_pick_done & !story.keeper_cadet',
     hallShut: 'story.hall1_shut',
     // June's line while Day 1 is not done (FPT §2.1); Fen's note while she is away (DAY1_TRIAL1_FLOW §7, PLACEHOLDER).
-    hallDeny: { 'story.hall1_shut': 'Shut by order of High Charity. A Keeper cordon blocks the door.', 'story.seal1 & story.side_pick_done | story.seal1 & story.keeper_cadet': "Shut by Keeper order. Master Fen's Hall stays closed for now.", '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Away on Keeper business. Back soon. — Fen'" },
+    hallDeny: { 'story.hall1_shut & !story.side_pick_done': 'Shut by order of High Charity. A Keeper cordon blocks the door.', 'story.hall1_shut': 'Shut by order of High Charity. The notice on the door has started to curl.', 'story.seal1 & story.side_pick_done | story.seal1 & story.keeper_cadet': "Shut by order of High Charity. Master Fen's Hall stays closed for now.", '!story.crates_seen': 'The Hall is shut for now. Tobin could use a hand with his crates first.', else: "The Hall is shut. A note on the door: 'Gone to see the Keepers. Back soon. Mind the roots. — Fen'" },
     count: 7,
     slips: ['The Trial Hall is latched. Tobin is by the orchard gate, counting crates.', 'The Trial Hall is shut. Master Fen is away on Keeper business.', 'The Trial Hall is open. The steps were swept this morning.'],
   });

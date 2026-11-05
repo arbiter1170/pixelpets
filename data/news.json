@@ -1,5 +1,5 @@
 {
- "lore_version": "v0.7.8",
+ "lore_version": "v0.9.8",
  "_placeholders": "Placeholder copy (D1013, flavour rule D1015): engineer drafts from the design lore index, every item citing its lore ids; Design signs or edits it (design specs/NEWS_FEED.md). Skill: walklings-lore-feed.",
  "_about": "Block News for the NEWS app (news.js). stories, voices, notices, polls, you. Gates: when (story.flag, !story.flag, story.side=keepers|glimmer), sky, phase, me. lead: the front page once eligible, highest wins. Tokens: {holder} {partner} {town} {seals} {steps}. lore: ids in the design repo lore/lore_index.json.",
  "stories": [
@@ -644,7 +644,7 @@
    "headline": "Meet the ridge lab of 'decent people'",
    "body": [
     "RegenX, the lab on the ridge, is a lab of 'decent people'. Atten is its brew.",
-    "On the floor: Nia, Cal and Dr. Weller. Out on the ridge: clerk Jed. Wave at all of them."
+    "On the floor: Nia, Jory and Dr. Weller. Out on the ridge: clerk Jed. Wave at all of them."
    ],
    "lore": [
     "faction.regenx",
@@ -3013,13 +3013,13 @@
    "headline": "Staff spotlight: the decent people of RegenX!",
    "body": [
     "Partner spotlight! RegenX on the ridge is a lab of 'decent people', and the partnership adores decent people.",
-    "Say hi to Nia, Cal and Dr. Weller. They brew Atten. We admire Atten. Quarterly, we admire it a great deal."
+    "Say hi to Nia, Jory and Dr. Weller. They brew Atten. We admire Atten. Quarterly, we admire it a great deal."
    ],
    "replies": [
     {
      "name": "Lab visitor",
      "handle": "ridgelab",
-     "text": "Cal held the door. Dr. Weller said hello. The spotlight felt a bit bright for them."
+     "text": "Jory held the door. Dr. Weller said hello. The spotlight felt a bit bright for them."
     }
    ],
    "lore": [
@@ -4919,7 +4919,8 @@
    "region": "fernbrook",
    "when": [
     "story.crackdown",
-    "!story.side_pick_done"
+    "!story.side_pick_done",
+    "story.reached_fernbrook"
    ],
    "lead": 30,
    "headline": "Fernbrook under curfew",
@@ -4940,7 +4941,8 @@
    "region": "fernbrook",
    "when": [
     "story.crackdown",
-    "story.side_pick_done"
+    "story.side_pick_done",
+    "story.reached_fernbrook"
    ],
    "lead": 20,
    "headline": "Curfew lifted in Fernbrook",
@@ -4960,7 +4962,9 @@
    "desk": "block",
    "region": "fernbrook",
    "when": [
-    "story.crackdown"
+    "story.crackdown",
+    "story.reached_fernbrook",
+    "story.seal1"
    ],
    "lead": 25,
    "headline": "No new Seals in Fernbrook until further notice",
@@ -4981,7 +4985,9 @@
    "region": "fernbrook",
    "when": [
     "story.hall1_shut",
-    "!story.side_pick_done"
+    "!story.side_pick_done",
+    "story.reached_fernbrook",
+    "story.met_fen"
    ],
    "headline": "Fernbrook Trial Hall: still shut",
    "body": [
@@ -4992,6 +4998,1400 @@
     "place.bloom_trial_hall",
     "person.master_fen",
     "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-curfewdawn",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "story.warden_called",
+    "story.reached_fernbrook",
+    "story.met_fen"
+   ],
+   "headline": "Dawn in Fernbrook: two walk out free",
+   "body": [
+    "The curfew lifted at dawn. Master Fen and a young holder walked out of the Lantern House together.",
+    "Fen did not stop to talk. The holder was seen on the road home."
+   ],
+   "replies": [
+    {
+     "name": "Orchard hand",
+     "handle": "orchardnap",
+     "text": "Fen looked tired, not beaten. There is a difference."
+    }
+   ],
+   "lore": [
+    "event.crackdown",
+    "place.fernbrook",
+    "person.master_fen"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-wireset",
+   "section": "keepers",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "story.post_trial_done"
+   ],
+   "headline": "The President on the wire set: the words in full",
+   "body": [
+    "Curfew from dusk to dawn. No new Seals in Fernbrook until further notice.",
+    "Also said, and repeated twice: \"A Seal is not for sale.\""
+   ],
+   "lore": [
+    "event.president_broadcast",
+    "person.president"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-tanks",
+   "section": "halls",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "story.hall1_shut",
+    "story.reached_fernbrook"
+   ],
+   "headline": "Tanks leave Fernbrook; the Hall stays shut",
+   "body": [
+    "The tanks rolled out at first light. A Keeper cordon stays at the Trial Hall door.",
+    "The order on the door gives one reason: unvetted holders were tested here."
+   ],
+   "lore": [
+    "event.crackdown",
+    "place.bloom_trial_hall"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-roll",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "when": [
+    "story.crackdown",
+    "story.warden_met"
+   ],
+   "headline": "Every Seal is written down, and always was",
+   "body": [
+    "Every Seal won is written down in High Charity, as it was in the Great War. The Post finds that a comfort.",
+    "Ask at the Lodge if you want to know where yours is written. They will say: High Charity."
+   ],
+   "lore": [
+    "event.seal_roll",
+    "event.great_war",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-disturbances",
+   "section": "roads",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.fen_sent_home",
+    "story.met_fen"
+   ],
+   "headline": "Fen's errand: 'Walklings acting strange'",
+   "body": [
+    "Master Fen left for the Keeper authorities with a worry she would not keep quiet about.",
+    "Her word for it: disturbances, out in the Amberwild. She did not say where."
+   ],
+   "lore": [
+    "event.fen_sent_home",
+    "person.master_fen"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-hill",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.lizzy_class",
+    "story.lizzy_met"
+   ],
+   "headline": "Schoolhouse: 'Always toward the hill'",
+   "body": [
+    "In the middle of a lesson every Walkling in the room turned toward the hill at once.",
+    "Lizzy finished the lesson anyway. Then she looked out of the window for a long time."
+   ],
+   "replies": [
+    {
+     "name": "Porch sitter",
+     "handle": "porchsit",
+     "text": "Mine does that at dusk too. I thought it was the kettle."
+    }
+   ],
+   "lore": [
+    "event.lizzy_class",
+    "person.lizzy"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-lodgecall",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "when": [
+    "story.warden_met"
+   ],
+   "headline": "Lodge lights burn late on the hill",
+   "body": [
+    "The Warden's Lodge kept its lamps lit past supper. A holder came home from Fernbrook and went straight in.",
+    "The Post does not ask what a Warden says behind her own door. It notes she said it for a long time."
+   ],
+   "lore": [
+    "person.warden_ilse",
+    "place.hearthmoor"
+   ]
+  },
+  {
+   "id": "nw-wickerglen-shifts",
+   "section": "roads",
+   "desk": "block",
+   "region": "wickerglen",
+   "when": [
+    "story.shift_g",
+    "story.met_lead",
+    "story.met_census",
+    "story.reached_glen"
+   ],
+   "headline": "Wickerglen lamp crews take on a day hand",
+   "body": [
+    "Field Lead Imogen's crew had help wiping lamp lenses this week. The lenses have never been cleaner.",
+    "Asked about crate paperwork, a crew hand said: \"Ledgers are for the office, sweetie.\""
+   ],
+   "lore": [
+    "person.imogen",
+    "thing.comfort_lamps",
+    "place.wickerglen"
+   ]
+  },
+  {
+   "id": "nw-wickerglen-dusk",
+   "section": "roads",
+   "desk": "block",
+   "region": "wickerglen",
+   "when": [
+    "story.shift_k",
+    "story.met_census"
+   ],
+   "headline": "At dusk, wild Walklings walk toward the lamps",
+   "body": [
+    "A Keeper Scout on the dusk watch reports wild Walklings walking to the lamps' hum on their own.",
+    "Some climbed into the crates by themselves. Nobody pushed them. Nobody stopped them, either."
+   ],
+   "lore": [
+    "event.walk_to_hum",
+    "thing.comfort_lamps"
+   ]
+  },
+  {
+   "id": "nw-wickerglen-ledger",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "wickerglen",
+   "when": [
+    "story.shift_ledger",
+    "story.chi_done",
+    "story.reached_glen",
+    "story.met_glimmerwell"
+   ],
+   "headline": "A crate ledger and the words 'lamp stock'",
+   "body": [
+    "A ledger left on a Wickerglen crate mentions Fernbrook's paused Seals and the words LAMP STOCK.",
+    "The signature line is smudged. The company says the stock is \"for the lamps\", which is true of most stock."
+   ],
+   "lore": [
+    "event.lamp_stock",
+    "place.wickerglen",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "nw-hushwater-weir",
+   "section": "roads",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.chi_met",
+    "story.hw_reached"
+   ],
+   "headline": "No poles at the Old Weir, and one hut",
+   "body": [
+    "Past the fallen trunk at Wickerglen's east edge there is a hut by the Old Weir. No wires reach it.",
+    "Its owner writes down what nobody asks him to. He did not answer our questions, but he wrote them down."
+   ],
+   "lore": [
+    "place.weir_hut",
+    "person.jacob_chi",
+    "place.hushwater"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-cadet",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "when": [
+    "story.keeper_cadet"
+   ],
+   "lead": 127,
+   "headline": "The Lodge enrols a new Keeper Cadet",
+   "body": [
+    "Warden Ilse has enrolled a young holder as a Keeper Cadet, the first rank of the Keepers.",
+    "The Post welcomes every Cadet. Walk beside them, not ahead. Leave a light."
+   ],
+   "replies": [
+    {
+     "name": "Hill Keeper",
+     "handle": "lanternhill",
+     "text": "A Cadet from the hill! The lantern looks taller already."
+    }
+   ],
+   "lore": [
+    "event.keeper_cadet",
+    "person.warden_ilse"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-hold-k",
+   "section": "towns",
+   "desk": "lantern",
+   "region": "fernbrook",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=keepers",
+    "story.reached_fernbrook"
+   ],
+   "headline": "Fernbrook: the Keepers hold the town now",
+   "body": [
+    "The orchard stays rooted. Keepers walk the lanes and the curfew posts come down.",
+    "The Trial Hall is still shut. The Post hopes to print a reopening date one day."
+   ],
+   "lore": [
+    "place.fernbrook",
+    "faction.keepers",
+    "place.bloom_trial_hall"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-hold-g",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "fernbrook",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=glimmer",
+    "story.reached_fernbrook",
+    "story.met_glimmerwell"
+   ],
+   "headline": "Fernbrook goes bright: lanterns on every gate!",
+   "body": [
+    "Glimmerwell holds the town now, and every gate has a lantern. Partnership looks good on an orchard!",
+    "One Keeper post stays in the plaza, which we think is very sweet. Have a bright day!"
+   ],
+   "lore": [
+    "place.fernbrook",
+    "faction.glimmerwell",
+    "thing.glimmer_lanterns"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-hold-s",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=split",
+    "story.reached_fernbrook",
+    "story.met_glimmerwell"
+   ],
+   "headline": "Fernbrook stays split down the middle",
+   "body": [
+    "Keepers walk the lanes. Glimmerwell keeps the gate. Nobody on the council would call it settled.",
+    "The orchard does not take sides. It is busy being an orchard."
+   ],
+   "lore": [
+    "place.fernbrook",
+    "faction.keepers",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "nw-glimmer-cadetlanyard",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.side=glimmer",
+    "story.cover=glimmer",
+    "story.keeper_cadet",
+    "story.side_pick_done",
+    "story.met_glimmerwell",
+    "story.reached_fernbrook"
+   ],
+   "headline": "Trial lanyard clipped; a Seal logged",
+   "body": [
+    "Associate Juniper clipped a trial lanyard on a new holder and logged their Seal for the company.",
+    "Logged where, the copy does not say. The lanyard has a number on the back. So do the crates."
+   ],
+   "lore": [
+    "term.lanyard",
+    "person.juniper",
+    "term.seal"
+   ]
+  },
+  {
+   "id": "nw-glimmer-letters",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.cover=glimmer",
+    "story.rpt_1"
+   ],
+   "headline": "Lantern House post goes out by hand",
+   "body": [
+    "Some letters from Lantern House Hosts never touch the wire. Nobody on the review floor can say where they go.",
+    "Staff are reminded: the company reads its own mail first."
+   ],
+   "lore": [
+    "event.reports_home",
+    "person.lantern_hosts"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-westwatch",
+   "section": "towns",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "when": [
+    "story.plaza_done"
+   ],
+   "headline": "West watch: the plaza lap is walked",
+   "body": [
+    "Officer Vale's lap of the plaza is done. Lamps trimmed, the plaque polished, the chalk admired.",
+    "The Post thanks the holder who walked it. The plaza thanks them too, in its quiet way."
+   ],
+   "lore": [
+    "place.hearthmoor_plaza",
+    "person.keepers_around_town"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-plazasign",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.plaza_sign_done"
+   ],
+   "headline": "Keepers' square gets its sign back up",
+   "body": [
+    "The plaza sign is up and readable again. A holder checked it and reported back to the watch.",
+    "Pigeons have already found the top of it. The sign does not seem to mind."
+   ],
+   "lore": [
+    "place.hearthmoor_plaza"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-plazalamps",
+   "section": "towns",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "when": [
+    "story.lantern_done"
+   ],
+   "phase": [
+    "dusk",
+    "night"
+   ],
+   "headline": "Lantern night lights the hill",
+   "body": [
+    "Keeper Pryce lit the plaza lamps one by one, and the plaza stayed out late to watch.",
+    "Every roof a lantern, as the song goes. Tonight it was true."
+   ],
+   "lore": [
+    "place.hearthmoor_plaza",
+    "person.keepers_around_town"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-gatecount",
+   "section": "roads",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "when": [
+    "story.board_gate_done"
+   ],
+   "headline": "Gate count: the east sign still stands",
+   "body": [
+    "Officer Cald asked, a holder looked, and the east sign is still standing. The count is closed.",
+    "Small jobs keep a town. The Post likes a town that is kept."
+   ],
+   "lore": [
+    "person.officer_cald",
+    "place.hearthmoor"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-twolights",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.tl_done",
+    "story.met_glimmerwell",
+    "story.reached_fernbrook"
+   ],
+   "phase": [
+    "dusk",
+    "night"
+   ],
+   "headline": "Two lights in Fernbrook after dark",
+   "body": [
+    "After dark Fernbrook had two lights: Host Amos at the Lantern House and Juniper's free lantern.",
+    "Most porches picked one. A few, wisely, picked both."
+   ],
+   "lore": [
+    "person.lantern_hosts",
+    "thing.glimmer_lanterns",
+    "place.fernbrook"
+   ]
+  },
+  {
+   "id": "nw-route3-fiveprogress",
+   "section": "roads",
+   "desk": "block",
+   "region": "route3",
+   "when": [
+    "story.ans_tallybat",
+    "story.ans_dimlamp",
+    "story.ans_open",
+    "story.met_mo"
+   ],
+   "headline": "Two of the five answer back",
+   "body": [
+    "Two of the old Walklings on the Brinewick road have been found and befriended. Three still hum alone.",
+    "Archivist Mo is keeping a page for each. The pages on what they answer stay blank."
+   ],
+   "lore": [
+    "creature.answerers",
+    "person.archivist_mo"
+   ]
+  },
+  {
+   "id": "nw-route3-allfive",
+   "section": "roads",
+   "desk": "lantern",
+   "region": "route3",
+   "when": [
+    "story.ans_all",
+    "story.ans_open",
+    "story.met_mo"
+   ],
+   "headline": "All five that answer, found",
+   "body": [
+    "Every one of the five old Walklings on the Brinewick road has been found and reported.",
+    "The Post does not know what they answer. Nor, it turns out, does anyone. That is all right for now."
+   ],
+   "lore": [
+    "creature.answerers",
+    "person.archivist_mo"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-5bfixed",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.leak_fixed",
+    "story.leak5b_seen",
+    "story.lizzy_met"
+   ],
+   "headline": "5B is dry again",
+   "body": [
+    "The leak in flat 5B is fixed. Lizzy says the ceiling no longer drips onto the lesson plans.",
+    "Mr. Gristle has not commented. Buddy has, at length, with his tail."
+   ],
+   "lore": [
+    "event.leak_5b",
+    "person.lizzy_circle",
+    "creature.buddy"
+   ]
+  },
+  {
+   "id": "nw-cover-cadet",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.cover_done",
+    "story.cover=glimmer",
+    "story.reached_brinewick"
+   ],
+   "lead": 130,
+   "headline": "From lanyard to pin: everyone is asking",
+   "body": [
+    "A holder seen in a Glimmerwell lanyard on the Brinewick quay now wears a Keeper Cadet pin.",
+    "The Warden's Lodge declined to comment. The company called it a staffing matter."
+   ],
+   "replies": [
+    {
+     "name": "Porch sitter",
+     "handle": "porchhill",
+     "text": "My cousin changed jobs twice this year. Nobody wrote him up."
+    }
+   ],
+   "lore": [
+    "event.cover_gossip",
+    "person.warden_ilse",
+    "place.brinewick"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-drawer",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "when": [
+    "story.cover_done"
+   ],
+   "headline": "A Cadet comes home to the hill",
+   "body": [
+    "The Lodge welcomed a Cadet home from the coast this week. The Warden walked them to the gate herself.",
+    "Every Cadet opens a new season in public, under a Keeper pin. The Post likes a clean start."
+   ],
+   "lore": [
+    "event.recall",
+    "person.warden_ilse"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-posting",
+   "section": "keepers",
+   "desk": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.gov_posted",
+    "story.hc_gov_met"
+   ],
+   "lead": 135,
+   "headline": "Governor's office asks the Lodge for a Cadet",
+   "body": [
+    "High Charity's Governor's office has asked Hearthmoor's Lodge for a Cadet \"who can listen\".",
+    "The Warden sent one. The posting is civil, the Lodge says, and the Cadet walks north."
+   ],
+   "lore": [
+    "event.posting",
+    "person.warden_ilse",
+    "person.governor_high_charity"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-supper",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.cv_mom"
+   ],
+   "phase": [
+    "dusk",
+    "night"
+   ],
+   "headline": "Supper on the hill: a Cadet home before the road",
+   "body": [
+    "Mom and Maze set the table for one more before the long walk north.",
+    "The kettle stayed warm well after dark. Nothing else from that kitchen is the paper's business."
+   ],
+   "lore": [
+    "event.supper_with_mom",
+    "person.mom"
+   ]
+  },
+  {
+   "id": "nw-fb-stand-gone",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.cv_juniper=told",
+    "story.cv_juniper",
+    "story.met_glimmerwell",
+    "story.reached_fernbrook"
+   ],
+   "headline": "Free lantern stand leaves Fernbrook plaza",
+   "body": [
+    "Associate Juniper's stand was gone by evening. The company gave no reason."
+   ],
+   "lore": [
+    "event.juniper_stand_gone",
+    "person.juniper",
+    "place.fernbrook"
+   ]
+  },
+  {
+   "id": "nw-route4-onfoot",
+   "section": "roads",
+   "desk": "block",
+   "region": "route4",
+   "when": [
+    "story.gov_posted",
+    "story.reached_route4",
+    "story.hc_arrived"
+   ],
+   "headline": "Coach turns one Cadet away: walk it",
+   "body": [
+    "The Lantern Coach would not take a newly posted Cadet north. Orders: walk the coach road.",
+    "From the second trip on, the porters say, the coach runs as normal. Bring good boots for the first."
+   ],
+   "lore": [
+    "event.coach_turns_away",
+    "thing.lantern_coach",
+    "place.route4"
+   ]
+  },
+  {
+   "id": "nw-route4-downs",
+   "section": "roads",
+   "desk": "block",
+   "region": "route4",
+   "when": [
+    "story.reached_route4"
+   ],
+   "headline": "Route 4: walls, wind and the downs",
+   "body": [
+    "Route 4 leaves Hearthmoor's north-east corner and climbs the walled downs to a fork.",
+    "There is a stone trough and a bench under the coach shelter at the fork. The coach does not stop there."
+   ],
+   "replies": [
+    {
+     "name": "Downs rambler",
+     "handle": "slowroad",
+     "text": "Walked it slowly. Everyone does the first time. The walls make you."
+    }
+   ],
+   "lore": [
+    "place.route4"
+   ]
+  },
+  {
+   "id": "nw-route4-adders",
+   "section": "roads",
+   "desk": "block",
+   "region": "route4",
+   "when": [
+    "story.r4_adder_met",
+    "story.reached_route4"
+   ],
+   "sky": [
+    "clear",
+    "cloud"
+   ],
+   "headline": "Adders on the walls, marked like lightning",
+   "body": [
+    "Walkers on Route 4 report grey snakes basking on the dry-stone walls, a yellow zigzag down each back.",
+    "Ramblers say they come out before a storm. Give them the wall and they give you the road."
+   ],
+   "lore": [
+    "creature.wall_adder",
+    "place.route4"
+   ]
+  },
+  {
+   "id": "nw-route4-herons",
+   "section": "roads",
+   "desk": "block",
+   "region": "route4",
+   "when": [
+    "story.r4_heron_met",
+    "story.r4_fork"
+   ],
+   "headline": "River road: some of the reeds are herons",
+   "body": [
+    "On the river road the reeds stand bill-up and very still. Some of them are herons.",
+    "You pass three before you see one. Watchers call this \"normal\" and keep watching."
+   ],
+   "lore": [
+    "creature.reed_heron",
+    "place.river_road"
+   ]
+  },
+  {
+   "id": "nw-route4-withy",
+   "section": "roads",
+   "desk": "block",
+   "region": "route4",
+   "when": [
+    "story.reached_withy",
+    "story.r4_fork"
+   ],
+   "headline": "The withy beds: willow, reeds and a pond",
+   "body": [
+    "Off the river road: cut willow and a pond. A weaver there battles anyone who sits too long.",
+    "There were two reeds by the pond this morning, a regular says. Now there are three."
+   ],
+   "lore": [
+    "place.withy_beds",
+    "place.river_road"
+   ]
+  },
+  {
+   "id": "nw-route4-walked",
+   "section": "roads",
+   "desk": "lantern",
+   "region": "highcharity",
+   "when": [
+    "story.r4_walked",
+    "story.r4_fork",
+    "story.hc_arrived"
+   ],
+   "lead": 138,
+   "headline": "On foot to Charter Hill, as Cadets once did",
+   "body": [
+    "A Cadet walked the coach road north and the river road down to the Charter Hill gate this week.",
+    "The gate Keeper asked them to wipe their boots. The Post asks every holder the same."
+   ],
+   "lore": [
+    "place.river_road",
+    "faction.keepers",
+    "place.high_charity"
+   ]
+  },
+  {
+   "id": "nw-highcharity-governor",
+   "section": "keepers",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.km_assigned",
+    "story.hc_gov_met"
+   ],
+   "lead": 145,
+   "headline": "Governor Merriden posts a Cadet to Kilnmouth",
+   "body": [
+    "Governor Merriden has given a new Cadet a whole town: Kilnmouth, its cold springs and its empty seat.",
+    "Of the Calm Tower on the hill, his office says the permit is in order. He checked it himself."
+   ],
+   "replies": [
+    {
+     "name": "Charter Hill clerk",
+     "handle": "stampdesk",
+     "text": "He signs a hundred permits a week. He reads every one. That is the trouble."
+    }
+   ],
+   "lore": [
+    "event.governor_meeting",
+    "event.kilnmouth_assignment",
+    "person.governor_high_charity"
+   ]
+  },
+  {
+   "id": "nw-highcharity-charterhill",
+   "section": "towns",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_gov_met",
+    "story.hc_arrived"
+   ],
+   "headline": "Charter Hill: the Governor's House is open",
+   "body": [
+    "The Governor's House on Charter Hill sees a Cadet most weeks now. The door Keeper says: \"Go on through.\"",
+    "Upstairs is the President's floor. Visitors report the stairs are polite but firm."
+   ],
+   "lore": [
+    "person.governor_high_charity",
+    "place.high_charity"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-cold",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_assigned"
+   ],
+   "headline": "Kilnmouth's springs: cold, and nobody says why",
+   "body": [
+    "Kilnmouth is known for its warm springs. This season they run cold, and the town's council seat sits empty.",
+    "The capital has sent a Cadet. Kilnmouth has sent no reply."
+   ],
+   "lore": [
+    "event.kilnmouth_assignment"
+   ]
+  },
+  {
+   "id": "nw-mahopac-momwalk",
+   "section": "towns",
+   "desk": "block",
+   "region": "mahopac",
+   "when": [
+    "story.mom_mah_ask",
+    "story.reached_mahopac"
+   ],
+   "headline": "Two walkers on the Mahopac trail",
+   "body": [
+    "A mother and her grown holder walked up to Breckenridge Observatory together this week.",
+    "The lens remembers, as the sign says. What it showed them, they kept to themselves."
+   ],
+   "lore": [
+    "event.mom_walk_north",
+    "place.mahopac",
+    "person.mom"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-arrive",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived",
+    "story.km_assigned"
+   ],
+   "lead": 150,
+   "headline": "Kilnmouth: no steam, and frost on the pool rims",
+   "body": [
+    "No steam in the springs town this season. Frost on the pool rims, children in coats at the bathhouse.",
+    "The spring gauge reads another notch down. Nobody in town needed the gauge to tell them."
+   ],
+   "replies": [
+    {
+     "name": "Kiln hand",
+     "handle": "kilnhand",
+     "text": "Grew up swimming in those pools in winter. Now I wear gloves to look at them."
+    }
+   ],
+   "lore": [
+    "place.kilnmouth_cold",
+    "event.kilnmouth_assignment"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-council",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "headline": "Six chairs, every vote three and three",
+   "body": [
+    "Kilnmouth's council has six of its seven seats filled. Every vote ties, Reeve Agna says.",
+    "When a council ties, the capital signs the rest. The Reeve counts hands for a living. She is tired."
+   ],
+   "lore": [
+    "event.kilnmouth_empty_seat",
+    "person.reeve_agna"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-tower",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "headline": "A grey tower on the hill, and a flat cloud",
+   "body": [
+    "A Calm Tower stands on Kilnmouth's common, on a lease. Above it the cloud sits in one flat band.",
+    "The gutters on the hill path are dry. The council decides whether the tower stays. It cannot decide."
+   ],
+   "lore": [
+    "thing.kilnmouth_calm_tower"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-relocated",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived",
+    "story.met_glimmerwell"
+   ],
+   "headline": "One door on the council row reads RELOCATED",
+   "body": [
+    "The house beside the council house is shut. A card says: RELOCATED, WITH THANKS. Have a bright day!",
+    "Neighbours say its owner had a seat on the council. They say the rest more quietly."
+   ],
+   "lore": [
+    "event.kilnmouth_empty_seat",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-names",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "headline": "Who fills the seventh chair?",
+   "body": [
+    "Two names are going round: Foreman Dray of the tower crew, Kilnmouth-born, and Edwin Garth, a retired Keeper.",
+    "A third name is going round too, the kiln yard says, but only if you stop and listen."
+   ],
+   "lore": [
+    "person.foreman_dray",
+    "person.edwin_garth",
+    "event.kilnmouth_empty_seat"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-storm",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.seal4",
+    "story.km_arrived"
+   ],
+   "headline": "The storm that would not fall",
+   "body": [
+    "A storm rolled in over Kilnmouth's hills. Over the grey tower the cloud went flat. Not a drop fell.",
+    "The kids cheered. The spring gauge did not move. The fence permit says \"Issued in default of the council.\""
+   ],
+   "lore": [
+    "event.kilnmouth_storm_permit",
+    "thing.kilnmouth_calm_tower"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-curfew",
+   "section": "keepers",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council"
+   ],
+   "headline": "Kilnmouth curfew: no gathering after dark",
+   "body": [
+    "A notice went up on the springs gate: BY ORDER. NO GATHERING AFTER DARK.",
+    "Keepers led one regular away from the springs at dusk. The works opened its warm room to her family."
+   ],
+   "lore": [
+    "event.kilnmouth_curfew",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-seventh",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council",
+    "story.km_arrived"
+   ],
+   "lead": 175,
+   "headline": "The council sits seven at last",
+   "body": [
+    "Kilnmouth's council sat seven this morning: the tower's lease, the kiln's fuel and the town's hold.",
+    "Men in wine work vests carried coal up the Hall steps afterwards. Nobody had asked them to."
+   ],
+   "lore": [
+    "event.kilnmouth_council",
+    "person.reeve_agna"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-hold-k",
+   "section": "towns",
+   "desk": "lantern",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council",
+    "hold:kilnmouth=keepers"
+   ],
+   "headline": "Kilnmouth holds with the Keepers",
+   "body": [
+    "The council's vote settled it: the Keepers hold Kilnmouth. The Post wishes the springs a warm spring."
+   ],
+   "lore": [
+    "event.kilnmouth_council",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-hold-g",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council",
+    "hold:kilnmouth=glimmer",
+    "story.met_glimmerwell"
+   ],
+   "headline": "Kilnmouth partners up with the works!",
+   "body": [
+    "The council has spoken: Kilnmouth holds with Glimmerwell. Warm rooms, steady work. Have a bright day!"
+   ],
+   "lore": [
+    "event.kilnmouth_council",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-hold-s",
+   "section": "towns",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council",
+    "hold:kilnmouth=split"
+   ],
+   "headline": "Kilnmouth stays split after the vote",
+   "body": [
+    "Seven chairs and still two sides. Kilnmouth's hold is split; the kiln yard calls it \"honest\"."
+   ],
+   "lore": [
+    "event.kilnmouth_council"
+   ]
+  },
+  {
+   "id": "nw-kilnmouth-hall5",
+   "section": "halls",
+   "desk": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.seal5",
+    "story.reached_fernbrook"
+   ],
+   "lead": 180,
+   "headline": "Hall 5: a fifth Seal at the Kilnmouth kiln",
+   "body": [
+    "Master Tobias Hearn's Trial Hall is lit again, and a holder has earned the Kilnmouth Seal.",
+    "The kiln was lit with company coal. The Master says it burns the same. He did not sound pleased about that."
+   ],
+   "lore": [
+    "event.hall5_kilnmouth",
+    "term.seal"
+   ]
+  },
+  {
+   "id": "nw-brightgate-guest",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "headline": "Brightgate to Keeper guests: free, polite, shut",
+   "body": [
+    "Glimmerwell's home city lets a Keeper Cadet walk anywhere. Everything is free and polite.",
+    "Every real door is \"by appointment\". The lobby's visitors' hours end at five. It is always five."
+   ],
+   "lore": [
+    "place.brightgate_guest",
+    "place.brightgate"
+   ]
+  },
+  {
+   "id": "nw-brightgate-hall4",
+   "section": "halls",
+   "desk": "block",
+   "region": "brightgate",
+   "when": [
+    "story.seal4",
+    "story.reached_fernbrook"
+   ],
+   "lead": 160,
+   "headline": "Hall 4: a Keeper Cadet wins the Brightgate Seal",
+   "body": [
+    "In Old Wick, under a dead lightning rod, Master Ada Coil gave a Keeper Cadet the Brightgate Seal.",
+    "Her Hall was built for storms. She says the sky over Brightgate stays calm now, and she misses the noise."
+   ],
+   "replies": [
+    {
+     "name": "Old Wick neighbour",
+     "handle": "oldwick",
+     "text": "Ada cheers for real lightning. We have not had any in years. She cheered anyway."
+    }
+   ],
+   "lore": [
+    "event.hall4_brightgate",
+    "place.old_wick",
+    "term.seal"
+   ]
+  },
+  {
+   "id": "nw-brightgate-idletower",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "headline": "The first Calm Tower stands idle",
+   "body": [
+    "Behind a fence in the Lamp Works stands a grey tower with dark lamps. Above it, the sky still moves.",
+    "Kilnmouth's tower was fitted at the Lamp Works too. Nobody here will say why that one was switched on."
+   ],
+   "lore": [
+    "place.brightgate_guest",
+    "event.kilnmouth_storm_permit"
+   ]
+  },
+  {
+   "id": "nw-brightgate-oldwick",
+   "section": "towns",
+   "desk": "lantern",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "phase": [
+    "dusk",
+    "night"
+   ],
+   "headline": "Old Wick still burns three flame lanterns",
+   "body": [
+    "In Brightgate's old quarter three flame lanterns still burn, trimmed by a lamplighter every dusk.",
+    "The Post salutes any town that keeps an old light. Even this one."
+   ],
+   "lore": [
+    "place.old_wick"
+   ]
+  },
+  {
+   "id": "nw-brightgate-rook",
+   "section": "halls",
+   "desk": "block",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "headline": "Neighbour Rook races a Cadet to the Hall door",
+   "body": [
+    "Rook, company staff now, raced a Keeper Cadet to the Old Wick Hall door and battled them on the steps.",
+    "Asked who won, Rook said there was an empty desk next to his. That was not an answer."
+   ],
+   "lore": [
+    "event.rook_brightgate",
+    "person.rook"
+   ]
+  },
+  {
+   "id": "nw-brightgate-fleet",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "headline": "Courtesy Cruisers: here to reassure you!",
+   "body": [
+    "Our Courtesy Cruisers glide on the hum: no wheels, no rotors, nothing to worry about. Sky Concierges up top!",
+    "Wave at a Cruiser today. It will not wave back, but it appreciates you. Have a bright day!"
+   ],
+   "lore": [
+    "thing.glimmer_fleet"
+   ]
+  },
+  {
+   "id": "nw-brightgate-glowcare",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "headline": "Glow Care: members only, smiles for all",
+   "body": [
+    "Glow Care is our member clinic for Walklings. The door is shut for privacy. Comfort is our first word!"
+   ],
+   "lore": [
+    "thing.glow_care"
+   ]
+  },
+  {
+   "id": "nw-highcharity-parade",
+   "section": "keepers",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen",
+    "story.crackdown"
+   ],
+   "lead": 165,
+   "headline": "Parade day: the President speaks on Charter Hill",
+   "body": [
+    "Rotor craft, marching Officers, tanks and the President's car came through Lantern Square to Charter Hill.",
+    "In his first speech in person, the President said a Keeper will stand on every road and at every Hall."
+   ],
+   "replies": [
+    {
+     "name": "Square regular",
+     "handle": "squareview",
+     "text": "Saw half his face between two flags. The flags looked very official."
+    }
+   ],
+   "lore": [
+    "event.parade_day",
+    "event.parade_speech",
+    "person.president"
+   ]
+  },
+  {
+   "id": "nw-highcharity-picking",
+   "section": "keepers",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen",
+    "story.r4_fork"
+   ],
+   "headline": "Picking Day closed to civilians",
+   "body": [
+    "From the speech: Picking Day, the draw that gives a civilian their first Walkling, is closed to them.",
+    "Holders who already walk with Walklings are not affected. Families with a name in the draw are."
+   ],
+   "lore": [
+    "event.parade_speech",
+    "term.picking_day"
+   ]
+  },
+  {
+   "id": "nw-highcharity-schools",
+   "section": "keepers",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "headline": "Speech: schools to be re-taught",
+   "body": [
+    "Also said: the schools re-taught; anyone standing with Glimmerwell in public fined or jailed.",
+    "No line of the speech mentioned the company's own permits. The Post checked twice."
+   ],
+   "lore": [
+    "event.parade_speech"
+   ]
+  },
+  {
+   "id": "nw-highcharity-rotor",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "headline": "Every Roof a Lantern, and the Rotor overhead",
+   "body": [
+    "The band played \"Every Roof a Lantern\" as the Lantern Rotor crossed. No lyrics. Everyone hummed."
+   ],
+   "lore": [
+    "thing.keeper_anthem_rotor"
+   ]
+  },
+  {
+   "id": "nw-highcharity-muster",
+   "section": "keepers",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen",
+    "story.crackdown"
+   ],
+   "headline": "The Muster Hall: chained since the Great War",
+   "body": [
+    "Beside the Dojo stands the Muster Hall, chained shut since the Great War. It is High Charity's Trial Hall.",
+    "The chain comes off, the door Keeper says, for a holder with seven Seals on the roll. Not before."
+   ],
+   "replies": [
+    {
+     "name": "Lantern Square porter",
+     "handle": "chainwatch",
+     "text": "I polish that chain on Fridays. Seems a shame nobody ever gets to take it off."
+    }
+   ],
+   "lore": [
+    "place.muster_hall",
+    "event.great_war",
+    "event.seal_roll"
+   ]
+  },
+  {
+   "id": "nw-highcharity-greatwar",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen",
+    "story.crackdown"
+   ],
+   "headline": "What the Great War left in the capital",
+   "body": [
+    "The Great War is long over. Some of what it left is still here: an old roll of Seals, and a chained hall.",
+    "The Post remembers it gently, as the old ones tell it: the lanterns stayed lit through all of it."
+   ],
+   "lore": [
+    "event.great_war",
+    "place.muster_hall",
+    "event.seal_roll"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-reopen-k",
+   "section": "halls",
+   "desk": "lantern",
+   "region": "fernbrook",
+   "when": [
+    "story.fen_turned=keepers",
+    "story.fen_turned",
+    "story.met_fen",
+    "story.reached_fernbrook"
+   ],
+   "lead": 170,
+   "headline": "Fernbrook Trial Hall reopens under the Keepers",
+   "body": [
+    "Master Fen has signed the Keepers' order and her Hall is open again. The cordon is gone from the door.",
+    "Fen offers one rematch to holders who earned her Seal before. The Post recommends a snack first."
+   ],
+   "lore": [
+    "event.fen_turn",
+    "person.master_fen",
+    "place.bloom_trial_hall"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-reopen-g",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "fernbrook",
+   "when": [
+    "story.fen_turned=glimmer",
+    "story.fen_turned",
+    "story.met_fen",
+    "story.reached_fernbrook"
+   ],
+   "lead": 170,
+   "headline": "Fernbrook Hall reopens as a demo hall!",
+   "body": [
+    "Master Fen's Hall is open again as a Glimmerwell demo hall. Partnership looks lovely on an orchard Master!",
+    "Come for a rematch, stay for the lanterns. Have a bright day!"
+   ],
+   "lore": [
+    "event.fen_turn",
+    "person.master_fen",
+    "place.bloom_trial_hall"
    ]
   }
  ],
@@ -6744,6 +8144,801 @@
    "lore": [
     "event.chipping_secret"
    ]
+  },
+  {
+   "id": "vo-fernbrook-curfewnight",
+   "who": "Lantern House cot, Fernbrook",
+   "text": "Slept under a wire set that would not stop talking. Fen was awake the whole night.",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "story.met_fen"
+   ],
+   "lore": [
+    "event.president_broadcast",
+    "person.master_fen"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-dull",
+   "who": "Orchard hand",
+   "text": "They say a Seal went dull in the Commander's hand, then came back. Seals know whose they are.",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "story.reached_fernbrook"
+   ],
+   "lore": [
+    "event.crackdown",
+    "term.seal"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-forsale",
+   "who": "Grocer, Fernbrook",
+   "text": "\"A Seal is not for sale.\" Nobody asked to buy one. Now everybody is wondering who did.",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown"
+   ],
+   "lore": [
+    "event.president_broadcast"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-wareday",
+   "who": "Porch sitter",
+   "text": "My gran says the Seal roll goes back to the Great War. She says it the way you say \"old roof\".",
+   "region": "hearthmoor",
+   "when": [
+    "story.crackdown",
+    "story.warden_met"
+   ],
+   "lore": [
+    "event.seal_roll",
+    "event.great_war"
+   ]
+  },
+  {
+   "id": "vo-wickerglen-lens",
+   "who": "Lamp crew, day shift",
+   "text": "Wiped forty lenses. Every one hummed like it was pleased with me. I was not pleased with it.",
+   "region": "wickerglen",
+   "when": [
+    "story.shift_g",
+    "story.met_census",
+    "story.met_lead"
+   ],
+   "lore": [
+    "thing.comfort_lamps",
+    "person.imogen"
+   ]
+  },
+  {
+   "id": "vo-wickerglen-scout",
+   "who": "Keeper Scout, dusk watch",
+   "text": "Nobody led them. They walked to the hum like it was calling them home for supper.",
+   "region": "wickerglen",
+   "when": [
+    "story.shift_k"
+   ],
+   "lore": [
+    "event.walk_to_hum"
+   ]
+  },
+  {
+   "id": "vo-hushwater-hut",
+   "who": "Angler, Hushwater",
+   "text": "Man by the weir waves at me every morning. Never says hello. Writes something down after.",
+   "region": "",
+   "when": [
+    "story.chi_met"
+   ],
+   "lore": [
+    "person.jacob_chi",
+    "place.weir_hut"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-hold-k",
+   "who": "Orchard hand",
+   "text": "Keepers on the lanes again. Fen's trees look like they slept for the first time in a week.",
+   "region": "fernbrook",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=keepers",
+    "story.reached_fernbrook",
+    "story.met_fen"
+   ],
+   "lore": [
+    "place.fernbrook",
+    "person.master_fen"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-hold-g",
+   "who": "Lantern gate, Fernbrook",
+   "text": "A lantern on my gate I did not ask for. It is a nice lantern. That is what bothers me.",
+   "region": "fernbrook",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=glimmer",
+    "story.reached_fernbrook",
+    "story.met_glimmerwell"
+   ],
+   "lore": [
+    "place.fernbrook",
+    "thing.glimmer_lanterns"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-hold-s",
+   "who": "Grocer, Fernbrook",
+   "text": "Keepers buy apples on the left of the stall. Glimmerwell buys on the right. I sell to the middle.",
+   "region": "fernbrook",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=split",
+    "story.reached_fernbrook"
+   ],
+   "lore": [
+    "place.fernbrook"
+   ]
+  },
+  {
+   "id": "vo-glimmer-pocket",
+   "who": "Night shift, the depot",
+   "text": "New hire keeps a hand on one pocket. Everyone here has a pocket like that. I do not ask about mine.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.cover=glimmer",
+    "story.keeper_cadet",
+    "story.side_pick_done"
+   ],
+   "lore": [
+    "term.lanyard"
+   ]
+  },
+  {
+   "id": "vo-glimmer-mail",
+   "who": "Clerk, review floor",
+   "text": "A Host carried a letter out by hand today. Off the wire. Up here that is the loudest thing going.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.cover=glimmer",
+    "story.rpt_1"
+   ],
+   "lore": [
+    "event.reports_home"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-chalk",
+   "who": "Plaza regular",
+   "text": "Somebody walked the whole west watch and admired the chalk. The chalk artist is still beaming.",
+   "region": "hearthmoor",
+   "when": [
+    "story.plaza_done"
+   ],
+   "lore": [
+    "place.hearthmoor_plaza"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-eastsign",
+   "who": "Officer on the east road",
+   "text": "East sign stands. Count closed. Thank you, citizen. Step back. Have some tea.",
+   "region": "hearthmoor",
+   "when": [
+    "story.board_gate_done"
+   ],
+   "lore": [
+    "person.officer_cald"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-plazalamps",
+   "who": "Plaza regular",
+   "text": "Lantern night. Pryce lit them slow, so we could watch every one catch.",
+   "region": "hearthmoor",
+   "when": [
+    "story.lantern_done"
+   ],
+   "phase": [
+    "dusk",
+    "night"
+   ],
+   "lore": [
+    "place.hearthmoor_plaza"
+   ]
+  },
+  {
+   "id": "vo-route3-humming",
+   "who": "Relay House porter",
+   "text": "One of the old ones hums along with the kettle now. In tune, mostly.",
+   "region": "route3",
+   "when": [
+    "story.ans_tallybat",
+    "story.ans_open"
+   ],
+   "lore": [
+    "creature.answerers"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-amos",
+   "who": "Fernbrook porch",
+   "text": "Host Amos keeps one window dark on purpose. He says the dark helps the cots sleep.",
+   "region": "fernbrook",
+   "when": [
+    "story.tl_amos"
+   ],
+   "lore": [
+    "person.lantern_hosts"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-quay",
+   "who": "Hearthmoor lane",
+   "text": "Saw them on Ribbit in a company lanyard. Now a pin. Busy autumn, holder.",
+   "region": "hearthmoor",
+   "when": [
+    "story.cover_done",
+    "story.cover=glimmer"
+   ],
+   "lore": [
+    "event.cover_gossip"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-drawer",
+   "who": "Next door",
+   "text": "Somebody on our lane put a lanyard in a drawer and a pin on their coat. The drawer squeaks.",
+   "region": "hearthmoor",
+   "when": [
+    "story.cover_done"
+   ],
+   "lore": [
+    "event.recall"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-kettle",
+   "who": "Next door to Mom",
+   "text": "Light on in that kitchen till late. Maze sat in the window like a lamp of her own.",
+   "region": "hearthmoor",
+   "when": [
+    "story.cv_mom"
+   ],
+   "phase": [
+    "night"
+   ],
+   "lore": [
+    "event.supper_with_mom",
+    "person.mom"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-important",
+   "who": "Hearthmoor lane",
+   "text": "Mrs. Calloway says a kid on our lane does \"important work\" now. She said it twice.",
+   "region": "hearthmoor",
+   "when": [
+    "story.cv_mom=told",
+    "story.cv_mom"
+   ],
+   "lore": [
+    "event.supper_with_mom",
+    "person.mrs_calloway"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-standgone",
+   "who": "Fernbrook plaza",
+   "text": "Juniper packed up her stand before supper. Left one lantern on the bench. It is still on.",
+   "region": "fernbrook",
+   "when": [
+    "story.cv_juniper=told",
+    "story.cv_juniper",
+    "story.met_glimmerwell"
+   ],
+   "lore": [
+    "event.juniper_stand_gone",
+    "person.juniper"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-mysterious",
+   "who": "Glimmer stand, Fernbrook",
+   "text": "Juniper says a holder went all mysterious on her. \"Very Keeper of them,\" she says, fondly.",
+   "region": "fernbrook",
+   "when": [
+    "story.cv_juniper=quiet",
+    "story.met_glimmerwell",
+    "story.cover_done"
+   ],
+   "lore": [
+    "person.juniper",
+    "event.recall"
+   ]
+  },
+  {
+   "id": "vo-route4-fork",
+   "who": "Fork shelter, Route 4",
+   "text": "West for the capital, east for the hills. Most people stand here a minute, reading the post.",
+   "region": "route4",
+   "when": [
+    "story.r4_fork",
+    "story.reached_route4"
+   ],
+   "lore": [
+    "place.route4",
+    "place.river_road"
+   ]
+  },
+  {
+   "id": "vo-route4-rambler",
+   "who": "Downs rambler",
+   "text": "Adders on the walls means weather. I have never been wrong. I have often been rained on.",
+   "region": "route4",
+   "when": [
+    "story.r4_adder_met"
+   ],
+   "lore": [
+    "creature.wall_adder"
+   ]
+  },
+  {
+   "id": "vo-route4-reeds",
+   "who": "Reed watcher",
+   "text": "I have watched one reed for an hour. It blinked. I am staying until it does it again.",
+   "region": "route4",
+   "when": [
+    "story.r4_heron_met"
+   ],
+   "lore": [
+    "creature.reed_heron"
+   ]
+  },
+  {
+   "id": "vo-route4-weaver",
+   "who": "Willow weaver",
+   "text": "Nobody comes down to the beds. Sit, or battle. Most people battle. Willow likes good hands.",
+   "region": "route4",
+   "when": [
+    "story.reached_withy"
+   ],
+   "lore": [
+    "place.withy_beds"
+   ]
+  },
+  {
+   "id": "vo-route4-tidy",
+   "who": "River road",
+   "text": "Bin tipped over in the night. Rubbish sorted into little piles by morning. Nobody owns up.",
+   "region": "route4",
+   "when": [
+    "story.r4_fork"
+   ],
+   "phase": [
+    "dawn",
+    "day"
+   ],
+   "lore": [
+    "place.river_road"
+   ]
+  },
+  {
+   "id": "vo-highcharity-checked",
+   "who": "Governor's House steps",
+   "text": "\"In order. I checked it myself.\" He means it. That is what makes it worth listening to.",
+   "region": "highcharity",
+   "when": [
+    "story.km_assigned",
+    "story.hc_gov_met"
+   ],
+   "lore": [
+    "event.governor_meeting",
+    "person.governor_high_charity"
+   ]
+  },
+  {
+   "id": "vo-highcharity-cadetdesk",
+   "who": "Clerk, Charter Hill",
+   "text": "A Cadet sat in the Governor's good chair today. Nobody gets the good chair. I polished it after.",
+   "region": "highcharity",
+   "when": [
+    "story.hc_gov_met"
+   ],
+   "lore": [
+    "person.governor_high_charity"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-howitwent",
+   "who": "Lodge gate, Hearthmoor",
+   "text": "Cadet came back from Charter Hill and went straight to the Warden. Not on the wire. In person.",
+   "region": "hearthmoor",
+   "when": [
+    "story.rpt_gov",
+    "story.km_assigned"
+   ],
+   "lore": [
+    "person.warden_ilse",
+    "event.governor_meeting"
+   ]
+  },
+  {
+   "id": "vo-mahopac-two",
+   "who": "Mahopac woods",
+   "text": "Two came up the trail together. One went home early to put the kettle on.",
+   "region": "mahopac",
+   "when": [
+    "story.mom_mah_ask"
+   ],
+   "lore": [
+    "event.mom_walk_north",
+    "person.mom"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-coats",
+   "who": "Bathhouse step",
+   "text": "Kids in coats at the bathhouse. In Kilnmouth! My nan would not believe it.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "place.kilnmouth_cold"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-reeve",
+   "who": "Council house porch",
+   "text": "Reeve Agna counts hands like a baker counts loaves. Three and three. Again. Again.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "person.reeve_agna",
+    "event.kilnmouth_empty_seat"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-gauge",
+   "who": "Springs regular's neighbour",
+   "text": "Gauge is another notch down. I stopped checking. My knees check for me.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "phase": [
+    "dawn",
+    "day"
+   ],
+   "lore": [
+    "thing.kilnmouth_calm_tower"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-dray",
+   "who": "Kiln yard",
+   "text": "Dray grew up in that bathhouse. Runs the tower crew now. Says \"the works\", never the company name.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "person.foreman_dray"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-garth",
+   "who": "Keeper post bench",
+   "text": "The retired Keeper stands by the post like he never retired. Very polite. Very by the book.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "person.edwin_garth"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-kidtower",
+   "who": "Kilnmouth kid",
+   "text": "No storm again! The tower is the best thing that ever happened here.",
+   "region": "kilnmouth",
+   "when": [
+    "story.seal4",
+    "story.km_arrived"
+   ],
+   "lore": [
+    "event.kilnmouth_storm_permit"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-warmroom",
+   "who": "Works yard",
+   "text": "Curfew night, the works kept a warm room open for a family. Say what you like. It was warm.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council"
+   ],
+   "phase": [
+    "dusk",
+    "night"
+   ],
+   "lore": [
+    "event.kilnmouth_curfew"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-orla",
+   "who": "Bathhouse queue",
+   "text": "Ask Orla a question and she hands you a bucket. You end up with the answer and a clean floor.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council"
+   ],
+   "lore": [
+    "person.bathkeeper_orla"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-coal",
+   "who": "Hall steps",
+   "text": "Wine vests carrying coal up the Hall steps. Nobody asked. Everybody watched.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council"
+   ],
+   "lore": [
+    "event.kilnmouth_council"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-hold-g",
+   "who": "Kiln yard",
+   "text": "Works plate on the council door now. Warm room all winter, they say. I will believe the warm.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council",
+    "hold:kilnmouth=glimmer"
+   ],
+   "lore": [
+    "event.kilnmouth_council"
+   ]
+  },
+  {
+   "id": "vo-kilnmouth-hold-k",
+   "who": "Kiln yard",
+   "text": "Keepers hold the town. Good. Now somebody tell the cloud.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council",
+    "hold:kilnmouth=keepers",
+    "story.km_arrived"
+   ],
+   "lore": [
+    "event.kilnmouth_council",
+    "thing.kilnmouth_calm_tower"
+   ]
+  },
+  {
+   "id": "vo-brightgate-five",
+   "who": "HQ lobby",
+   "text": "\"Visitors' hours end at five. It's five.\" She said it at ten in the morning.",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "lore": [
+    "place.brightgate_guest"
+   ]
+  },
+  {
+   "id": "vo-brightgate-appointment",
+   "who": "Gate Plaza bench",
+   "text": "Everything is free here. Every door I tried was by appointment. The bench was free. I sat.",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "lore": [
+    "place.brightgate_guest"
+   ]
+  },
+  {
+   "id": "vo-brightgate-ada",
+   "who": "Old Wick neighbour",
+   "text": "Master Ada says storms are not stopped, only moved. She says it to the sky, mostly.",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "lore": [
+    "event.hall4_brightgate"
+   ]
+  },
+  {
+   "id": "vo-brightgate-lamplighter",
+   "who": "Old Wick lane",
+   "text": "Three flame lanterns, one lamplighter, every dusk. The company lamps hum. These just burn.",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "phase": [
+    "dusk",
+    "night"
+   ],
+   "lore": [
+    "place.old_wick"
+   ]
+  },
+  {
+   "id": "vo-brightgate-cruiser",
+   "who": "Partner Row porch",
+   "text": "A Courtesy Cruiser parked outside my house to \"reassure\" me. I was fine before it came.",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "lore": [
+    "thing.glimmer_fleet"
+   ]
+  },
+  {
+   "id": "vo-highcharity-mylad",
+   "who": "Lantern Square",
+   "text": "My boy's name was in for Picking Day. Now it isn't.",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen",
+    "story.r4_fork"
+   ],
+   "lore": [
+    "event.parade_speech",
+    "term.picking_day"
+   ]
+  },
+  {
+   "id": "vo-highcharity-tanks",
+   "who": "Charter Hill kerb",
+   "text": "Tanks in the square, no guns on them. Big and quiet. Like a cat that wants you to know it's there.",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "lore": [
+    "event.parade_day"
+   ]
+  },
+  {
+   "id": "vo-highcharity-ledaway",
+   "who": "Lantern Square",
+   "text": "A guard led a woman in a wine vest past me. She looked at the Cadet pins, not the faces.",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "lore": [
+    "event.parade_day"
+   ]
+  },
+  {
+   "id": "vo-highcharity-chain",
+   "who": "Dojo step",
+   "text": "Shut since the war, holder. Come back with seven on the roll. That is the whole speech, every day.",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "lore": [
+    "place.muster_hall"
+   ]
+  },
+  {
+   "id": "vo-highcharity-anthem",
+   "who": "Bandstand",
+   "text": "No words to the anthem, so everybody hums their own. Sounds better than any words would.",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "lore": [
+    "thing.keeper_anthem_rotor"
+   ]
+  },
+  {
+   "id": "vo-fernbrook-fenturn",
+   "who": "Orchard hand",
+   "text": "Fen picked her side in front of everyone. Then she went and watered the trees like it was any day.",
+   "region": "fernbrook",
+   "when": [
+    "story.fen_turned",
+    "story.met_fen"
+   ],
+   "lore": [
+    "event.fen_turn",
+    "person.master_fen"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-pupil",
+   "who": "Schoolhouse pupil",
+   "text": "All our Walklings looked at the hill at once. Miss Lizzy said \"eyes front\". Even she looked.",
+   "region": "hearthmoor",
+   "when": [
+    "story.lizzy_class",
+    "story.lizzy_met"
+   ],
+   "lore": [
+    "event.lizzy_class",
+    "person.lizzy"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-whichlesson",
+   "who": "Flat 5B kitchen",
+   "text": "Lizzy wants to know which lesson the holder is now: lanyard or pin. She says teachers have to know.",
+   "region": "hearthmoor",
+   "when": [
+    "story.cover_done",
+    "story.cover=glimmer",
+    "story.lizzy_met"
+   ],
+   "lore": [
+    "event.cover_gossip",
+    "person.lizzy"
+   ]
+  },
+  {
+   "id": "vo-hushwater-jars",
+   "who": "Hushwater path",
+   "text": "Jars on the weir hut sill now. The man inside writes something down every time one is added.",
+   "region": "",
+   "when": [
+    "story.chi_done",
+    "story.chi_met"
+   ],
+   "lore": [
+    "person.jacob_chi",
+    "place.weir_hut"
+   ]
+  },
+  {
+   "id": "vo-hearthmoor-mo",
+   "who": "Keeper House stair",
+   "text": "Archivist Mo has five full pages and one blank one. He reads the blank one most.",
+   "region": "hearthmoor",
+   "when": [
+    "story.ans_all",
+    "story.met_mo",
+    "story.ans_open"
+   ],
+   "lore": [
+    "person.archivist_mo",
+    "creature.answerers"
+   ]
+  },
+  {
+   "id": "vo-brightgate-rookdesk",
+   "who": "Gate Plaza bench",
+   "text": "The Junior Bright from Hearthmoor keeps telling a Cadet there is an empty desk next to his.",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "lore": [
+    "event.rook_brightgate",
+    "person.rook"
+   ]
   }
  ],
  "notices": [
@@ -7924,6 +10119,349 @@
     "thing.atten",
     "event.heights_regenx_copy"
    ]
+  },
+  {
+   "id": "no-fernbrook-curfewposts",
+   "kind": "notice",
+   "title": "CURFEW POSTS STAND",
+   "text": "By order: posts stay up until the holders here are enrolled. Ask the Lodge.",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "!story.keeper_cadet"
+   ],
+   "lore": [
+    "event.crackdown",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "no-wickerglen-crates",
+   "kind": "notice",
+   "title": "CRATES: DO NOT LIFT LIDS",
+   "text": "Comfort crates are company property. Walklings inside are resting. Glimmerwell Co.",
+   "region": "wickerglen",
+   "when": [
+    "story.shift_k",
+    "story.met_glimmerwell"
+   ],
+   "lore": [
+    "event.walk_to_hum",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "no-hushwater-nowire",
+   "kind": "notice",
+   "title": "NO SIGNAL PAST THE TRUNK",
+   "text": "Past the fallen trunk the Keeper wires stop. Tell someone where you are walking.",
+   "region": "wickerglen",
+   "when": [
+    "story.chi_met",
+    "story.phone_got"
+   ],
+   "lore": [
+    "place.weir_hut",
+    "thing.keeper1"
+   ]
+  },
+  {
+   "id": "no-glimmer-trialday",
+   "kind": "ad",
+   "title": "TRIAL LANYARD DAY",
+   "text": "Try a lanyard, keep the smile! Seals logged free while you wait. Glimmerwell Co.",
+   "region": "fernbrook",
+   "when": [
+    "story.side=glimmer",
+    "story.cover=glimmer",
+    "story.keeper_cadet",
+    "story.side_pick_done",
+    "story.met_glimmerwell"
+   ],
+   "lore": [
+    "term.lanyard",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "no-hearthmoor-gatecount",
+   "kind": "notice",
+   "title": "TOWN BOARD: GATE COUNT",
+   "text": "Officer Cald wants a word about the east sign. Go see him. One tap, one walk.",
+   "region": "hearthmoor",
+   "when": [
+    "story.board_gate_pinned",
+    "!story.board_gate_yes"
+   ],
+   "lore": [
+    "person.officer_cald"
+   ]
+  },
+  {
+   "id": "no-hearthmoor-westwatch",
+   "kind": "notice",
+   "title": "WEST WATCH: A LAP",
+   "text": "Officer Vale is waiting on the lap: lamps, plaque, chalk. Report back at the watch.",
+   "region": "hearthmoor",
+   "when": [
+    "story.plaza_yes",
+    "!story.plaza_done"
+   ],
+   "lore": [
+    "place.hearthmoor_plaza"
+   ]
+  },
+  {
+   "id": "no-hearthmoor-plazalamps",
+   "kind": "notice",
+   "title": "LANTERN NIGHT TONIGHT",
+   "text": "Plaza lamps lit at dusk by Keeper Pryce. Bring a warm drink. Bring a Walkling.",
+   "region": "hearthmoor",
+   "when": [
+    "story.lantern_yes",
+    "!story.lantern_done"
+   ],
+   "lore": [
+    "place.hearthmoor_plaza"
+   ]
+  },
+  {
+   "id": "no-route3-five",
+   "kind": "notice",
+   "title": "FIVE THAT ANSWER",
+   "text": "Five old Walklings hum along the Brinewick road. Report each one to the Archivist.",
+   "region": "route3",
+   "when": [
+    "story.ans_open",
+    "!story.ans_all",
+    "story.ans_tallybat_clue",
+    "story.met_mo"
+   ],
+   "lore": [
+    "creature.answerers",
+    "person.archivist_mo"
+   ]
+  },
+  {
+   "id": "no-hearthmoor-5bleak",
+   "kind": "notice",
+   "title": "5B: MIND THE BUCKET",
+   "text": "Flat 5B ceiling drips. Bucket in the hall. Please do not kick the bucket.",
+   "region": "hearthmoor",
+   "when": [
+    "story.leak5b_yes",
+    "!story.leak_fixed",
+    "story.leak5b_seen"
+   ],
+   "lore": [
+    "event.leak_5b"
+   ]
+  },
+  {
+   "id": "no-route4-picking",
+   "kind": "notice",
+   "title": "PICKING DAY",
+   "text": "Every name in the draw. Good luck to all. Your first Walkling may be waiting.",
+   "region": "route4",
+   "when": [
+    "story.r4_fork"
+   ],
+   "lore": [
+    "term.picking_day"
+   ]
+  },
+  {
+   "id": "no-route4-towpath",
+   "kind": "notice",
+   "title": "TOWPATH: KEEPERS ONLY",
+   "text": "Canal towpath closed to walkers. The road goes round by the stone bridge.",
+   "region": "route4",
+   "when": [
+    "story.r4_fork"
+   ],
+   "lore": [
+    "place.river_road",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "no-route4-roads",
+   "kind": "notice",
+   "title": "RESURFACED BY PERMIT",
+   "text": "Roads and Coaches thanks you for keeping to the road. Please mind the walls.",
+   "region": "route4",
+   "when": [
+    "story.reached_route4"
+   ],
+   "lore": [
+    "place.route4"
+   ]
+  },
+  {
+   "id": "no-route4-lost",
+   "kind": "lost",
+   "title": "LOST: ONE BENCH CUSHION",
+   "text": "Left at the fork shelter. Last seen under a sleeping Walkling. Keep it, if so.",
+   "region": "route4",
+   "when": [
+    "story.r4_fork",
+    "story.reached_route4"
+   ],
+   "lore": [
+    "place.route4"
+   ]
+  },
+  {
+   "id": "no-hearthmoor-howitwent",
+   "kind": "notice",
+   "title": "THE LODGE IS IN",
+   "text": "The Warden would like to hear how it went. Come in person, not on the wire.",
+   "region": "hearthmoor",
+   "when": [
+    "story.hc_gov_met",
+    "!story.rpt_gov",
+    "story.km_assigned"
+   ],
+   "lore": [
+    "person.warden_ilse",
+    "event.governor_meeting"
+   ]
+  },
+  {
+   "id": "no-kilnmouth-curfew",
+   "kind": "notice",
+   "title": "BY ORDER",
+   "text": "No gathering after dark at the springs gate. By order of the capital.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council"
+   ],
+   "lore": [
+    "event.kilnmouth_curfew"
+   ]
+  },
+  {
+   "id": "no-kilnmouth-gauge",
+   "kind": "notice",
+   "title": "SPRING GAUGE",
+   "text": "Another notch down. Please do not tap the glass. It does not help.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "thing.kilnmouth_calm_tower"
+   ]
+  },
+  {
+   "id": "no-kilnmouth-lease",
+   "kind": "notice",
+   "title": "COMMON GROUND: LEASED",
+   "text": "Tower stands on common ground by lease. The lease ends at the next sitting.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "thing.kilnmouth_calm_tower"
+   ]
+  },
+  {
+   "id": "no-kilnmouth-relocated",
+   "kind": "notice",
+   "title": "RELOCATED, WITH THANKS",
+   "text": "A new home down the coast. Post goes to the works office. Have a bright day!",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "event.kilnmouth_empty_seat"
+   ]
+  },
+  {
+   "id": "no-kilnmouth-kiln",
+   "kind": "notice",
+   "title": "HALL 5: KILN COLD",
+   "text": "No fuel vote, no fire. The Trial Hall waits on the council.",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived",
+    "!story.km_council"
+   ],
+   "lore": [
+    "event.kilnmouth_empty_seat",
+    "place.kilnmouth_cold"
+   ]
+  },
+  {
+   "id": "no-brightgate-appt",
+   "kind": "notice",
+   "title": "BY APPOINTMENT",
+   "text": "Brightgate HQ welcomes guests to the lobby. All other floors by appointment.",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "lore": [
+    "place.brightgate_guest"
+   ]
+  },
+  {
+   "id": "no-brightgate-glowcare",
+   "kind": "ad",
+   "title": "GLOW CARE: JOIN TODAY",
+   "text": "A member clinic for your Walkling. Shut door, open heart. Ask about partnership.",
+   "region": "brightgate",
+   "when": [
+    "story.side=glimmer",
+    "story.seal4"
+   ],
+   "lore": [
+    "thing.glow_care"
+   ]
+  },
+  {
+   "id": "no-brightgate-hall4",
+   "kind": "notice",
+   "title": "HALL 4: OLD WICK",
+   "text": "The Brightgate Trial Hall is in the old quarter. Follow the flame lanterns.",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "lore": [
+    "event.hall4_brightgate",
+    "place.old_wick"
+   ]
+  },
+  {
+   "id": "no-highcharity-picking",
+   "kind": "notice",
+   "title": "PICKING DAY: SUSPENDED",
+   "text": "By order: closed to civilians until further notice. Holders are not affected.",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen",
+    "story.r4_fork"
+   ],
+   "lore": [
+    "event.parade_speech",
+    "term.picking_day"
+   ]
+  },
+  {
+   "id": "no-highcharity-muster",
+   "kind": "notice",
+   "title": "MUSTER HALL: CHAINED",
+   "text": "Shut since the Great War. Opens for a holder with seven Seals on the roll.",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "lore": [
+    "place.muster_hall"
+   ]
   }
  ],
  "polls": [
@@ -8360,6 +10898,221 @@
    ],
    "lore": [
     "thing.sanctuary_crates"
+   ]
+  },
+  {
+   "id": "po-fernbrook-dull",
+   "q": "A Seal went dull, then came back. Why?",
+   "options": [
+    "It knows its pair",
+    "Cold hands",
+    "Ask Master Fen"
+   ],
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "story.reached_fernbrook"
+   ],
+   "lore": [
+    "event.crackdown",
+    "term.seal"
+   ]
+  },
+  {
+   "id": "po-wickerglen-hum",
+   "q": "Wild Walklings walking to the lamps. Why?",
+   "options": [
+    "They like the hum",
+    "Somebody taught them",
+    "Ask a Scout"
+   ],
+   "region": "wickerglen",
+   "when": [
+    "story.shift_k"
+   ],
+   "lore": [
+    "event.walk_to_hum"
+   ]
+  },
+  {
+   "id": "po-hearthmoor-lantern",
+   "q": "Lantern night: best spot to watch?",
+   "options": [
+    "The plaza steps",
+    "The Lodge wall",
+    "On the hill"
+   ],
+   "region": "hearthmoor",
+   "when": [
+    "story.lantern_done"
+   ],
+   "lore": [
+    "place.hearthmoor_plaza"
+   ]
+  },
+  {
+   "id": "po-route3-five",
+   "q": "Which of the five would you sit with?",
+   "options": [
+    "The one that hums",
+    "The quiet one",
+    "All five, in a row"
+   ],
+   "region": "route3",
+   "when": [
+    "story.ans_all",
+    "story.ans_open"
+   ],
+   "lore": [
+    "creature.answerers"
+   ]
+  },
+  {
+   "id": "po-hearthmoor-supper",
+   "q": "Best food to pack for a long walk?",
+   "options": [
+    "Something warm",
+    "Snacks for my Walkling",
+    "Mom decides"
+   ],
+   "region": "hearthmoor",
+   "when": [
+    "story.cv_mom"
+   ],
+   "lore": [
+    "event.supper_with_mom"
+   ]
+  },
+  {
+   "id": "po-route4-fork",
+   "q": "At the fork, you go...",
+   "options": [
+    "West, to the river",
+    "East, to the hills",
+    "Sit on the bench"
+   ],
+   "region": "route4",
+   "when": [
+    "story.r4_fork",
+    "story.reached_route4"
+   ],
+   "lore": [
+    "place.route4",
+    "place.river_road"
+   ]
+  },
+  {
+   "id": "po-route4-heron",
+   "q": "How many herons did you walk past?",
+   "options": [
+    "None, I counted",
+    "Three, probably",
+    "I was the reed"
+   ],
+   "region": "route4",
+   "when": [
+    "story.r4_heron_met"
+   ],
+   "lore": [
+    "creature.reed_heron"
+   ]
+  },
+  {
+   "id": "po-highcharity-permit",
+   "q": "'Permit in order.' Your reaction?",
+   "options": [
+    "Good to know",
+    "In order for whom?",
+    "Read it twice"
+   ],
+   "region": "highcharity",
+   "when": [
+    "story.km_assigned"
+   ],
+   "lore": [
+    "event.governor_meeting"
+   ]
+  },
+  {
+   "id": "po-kilnmouth-seat",
+   "q": "Who should fill a town's empty seat?",
+   "options": [
+    "The town's own pick",
+    "Whoever warms it",
+    "Ask the capital"
+   ],
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "event.kilnmouth_empty_seat"
+   ]
+  },
+  {
+   "id": "po-kilnmouth-tower",
+   "q": "A tower that holds the rain off. Yes?",
+   "options": [
+    "Yes, no storms",
+    "No, the springs",
+    "Ask the springs"
+   ],
+   "region": "kilnmouth",
+   "when": [
+    "story.km_arrived"
+   ],
+   "lore": [
+    "thing.kilnmouth_calm_tower"
+   ]
+  },
+  {
+   "id": "po-brightgate-free",
+   "q": "Everything free in Brightgate. Catch?",
+   "options": [
+    "No catch",
+    "The doors",
+    "Ask at five"
+   ],
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "lore": [
+    "place.brightgate_guest"
+   ]
+  },
+  {
+   "id": "po-highcharity-speech",
+   "q": "'A Keeper on every road.' You feel...",
+   "options": [
+    "Safer",
+    "Watched",
+    "Both, honestly"
+   ],
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "lore": [
+    "event.parade_speech"
+   ]
+  },
+  {
+   "id": "po-highcharity-picking",
+   "q": "Picking Day closed. Fair?",
+   "options": [
+    "For now",
+    "Not fair",
+    "Ask a kid"
+   ],
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen",
+    "story.r4_fork"
+   ],
+   "lore": [
+    "term.picking_day",
+    "event.parade_speech"
    ]
   }
  ],
@@ -8913,6 +11666,375 @@
    ],
    "lore": [
     "event.ep1_end"
+   ]
+  },
+  {
+   "id": "yo-shifts",
+   "headline": "{holder} worked both shifts in Wickerglen",
+   "body": [
+    "A day with the lamp crew, a dusk with the Keeper Scout. {partner} stayed close both times."
+   ],
+   "when": [
+    "story.shift_g",
+    "story.shift_k",
+    "story.reached_glen"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.walk_to_hum",
+    "place.wickerglen"
+   ]
+  },
+  {
+   "id": "yo-chi",
+   "headline": "Off the wire with {holder}",
+   "body": [
+    "{holder} found the hut past the fallen trunk. No bars, no wires, one kettle. {partner} liked the quiet."
+   ],
+   "when": [
+    "story.chi_met"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "place.weir_hut"
+   ]
+  },
+  {
+   "id": "yo-undercover",
+   "headline": "{holder} wears two faces this autumn",
+   "body": [
+    "A lanyard on the coat, a Cadet oath underneath. {partner} knows which one is real."
+   ],
+   "when": [
+    "story.side=glimmer",
+    "story.cover=glimmer",
+    "story.keeper_cadet",
+    "story.side_pick_done"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.keeper_cadet",
+    "term.lanyard"
+   ]
+  },
+  {
+   "id": "yo-cadet-pin",
+   "headline": "Cadet {holder}, on the hill",
+   "body": [
+    "{holder} took the oath at the Lodge. {partner} sat up very straight for it."
+   ],
+   "when": [
+    "story.keeper_cadet",
+    "!story.cover=glimmer"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.keeper_cadet"
+   ]
+  },
+  {
+   "id": "yo-westwatch",
+   "headline": "{holder} walked the west watch",
+   "body": [
+    "Lamps, plaque, chalk, and back to the watch. {partner} inspected the chalk most carefully."
+   ],
+   "when": [
+    "story.plaza_done"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "place.hearthmoor_plaza"
+   ]
+  },
+  {
+   "id": "yo-gatecount",
+   "headline": "{holder} closed the gate count",
+   "body": [
+    "The east sign stands because {holder} went and looked. Small jobs keep a town."
+   ],
+   "when": [
+    "story.board_gate_done"
+   ],
+   "lore": [
+    "person.officer_cald"
+   ]
+  },
+  {
+   "id": "yo-allfive",
+   "headline": "{holder} found all five that answer",
+   "body": [
+    "Five old Walklings, five pages in the Archivist's book. {partner} hummed back at the last one."
+   ],
+   "when": [
+    "story.ans_all",
+    "story.ans_open"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "creature.answerers"
+   ]
+  },
+  {
+   "id": "yo-recall",
+   "headline": "{holder} is home, pin on",
+   "body": [
+    "The lanyard is in a drawer. The pin is on the coat. {partner} sniffed the drawer once and lost interest."
+   ],
+   "when": [
+    "story.cover_done",
+    "story.cover=glimmer"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.recall"
+   ]
+  },
+  {
+   "id": "yo-supper",
+   "headline": "{holder} had supper at home",
+   "body": [
+    "Mom, Maze, {partner} and {holder}. Somebody told the truth, or somebody did not. The soup was good."
+   ],
+   "when": [
+    "story.cv_mom"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.supper_with_mom"
+   ]
+  },
+  {
+   "id": "yo-route4",
+   "headline": "{holder} walked the coach road north",
+   "body": [
+    "Downs, fork, river road, Charter Hill gate. {partner} looked back at Hearthmoor once, then not again."
+   ],
+   "when": [
+    "story.r4_walked",
+    "story.reached_route4",
+    "story.r4_fork"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "place.route4",
+    "place.river_road"
+   ]
+  },
+  {
+   "id": "yo-heron",
+   "headline": "{holder} spotted a heron in the reeds",
+   "body": [
+    "It was a reed until it was not. {partner} saw it first and said nothing, which is very heron of it."
+   ],
+   "when": [
+    "story.r4_heron_met"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "creature.reed_heron"
+   ]
+  },
+  {
+   "id": "yo-governor",
+   "headline": "{holder} met Governor Merriden",
+   "body": [
+    "Charter Hill, a good chair, a whole town to look at. {partner} waited by the door like a guard."
+   ],
+   "when": [
+    "story.km_assigned",
+    "story.hc_gov_met"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.governor_meeting",
+    "person.governor_high_charity"
+   ]
+  },
+  {
+   "id": "yo-momwalk",
+   "headline": "{holder} walked to the lens with Mom",
+   "body": [
+    "The woods were snagged as ever. {partner} stayed close. Neither of you said the next thing."
+   ],
+   "when": [
+    "story.mom_mah_ask"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.mom_walk_north"
+   ]
+  },
+  {
+   "id": "yo-kilnmouth",
+   "headline": "{holder} reached cold Kilnmouth",
+   "body": [
+    "Frost on the pool rims, coats at the bathhouse. {partner} sniffed the springs and sneezed."
+   ],
+   "when": [
+    "story.km_arrived"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "place.kilnmouth_cold"
+   ]
+  },
+  {
+   "id": "yo-seal5",
+   "headline": "{holder} holds {seals} Seals now",
+   "body": [
+    "The Kilnmouth kiln burned for {holder} and {partner}. The Master shook hands like he meant it."
+   ],
+   "when": [
+    "story.seal5"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.hall5_kilnmouth"
+   ]
+  },
+  {
+   "id": "yo-seal4",
+   "headline": "{holder} earned the Brightgate Seal",
+   "body": [
+    "A Keeper Cadet in the company's own city, and a Seal from Master Ada. {partner} crackled for a minute."
+   ],
+   "when": [
+    "story.seal4"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.hall4_brightgate"
+   ]
+  },
+  {
+   "id": "yo-parade",
+   "headline": "{holder} saw the parade",
+   "body": [
+    "Rotors, Officers, the President's car. {partner} hid behind {holder} for the tanks. Fair."
+   ],
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.parade_day"
+   ]
+  },
+  {
+   "id": "yo-steps-north",
+   "headline": "{holder} logged {steps} steps today",
+   "body": [
+    "North roads are long. {partner} kept pace with {holder} the whole way."
+   ],
+   "when": [
+    "story.reached_route4"
+   ],
+   "me": [
+    "partner",
+    "steps>=3000"
+   ],
+   "lore": [
+    "place.route4"
+   ]
+  },
+  {
+   "id": "yo-four-seals",
+   "headline": "{seals} Seals in the case, and counting",
+   "body": [
+    "{holder} and {partner} hold more Seals than most on the hill. High Charity's roll has them all."
+   ],
+   "when": [
+    "story.seal4",
+    "story.crackdown"
+   ],
+   "me": [
+    "partner",
+    "seals>=4"
+   ],
+   "lore": [
+    "event.seal_roll",
+    "event.hall4_brightgate"
+   ]
+  },
+  {
+   "id": "yo-lizzy",
+   "headline": "Lizzy has a new lesson plan",
+   "body": [
+    "A pupil from the hill came home a Cadet. {holder} is welcome at the back of the class any time."
+   ],
+   "when": [
+    "story.keeper_cadet",
+    "story.lizzy_met"
+   ],
+   "lore": [
+    "person.lizzy",
+    "event.keeper_cadet"
+   ]
+  },
+  {
+   "id": "yo-chi-report",
+   "headline": "{holder} told it all off the wire",
+   "body": [
+    "Ledger, lamps, the list. Jacob Chi wrote down every word. {partner} slept by the stove."
+   ],
+   "when": [
+    "story.chi_done",
+    "story.chi_met"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "person.jacob_chi"
+   ]
+  },
+  {
+   "id": "yo-rook-race",
+   "headline": "{holder} raced Rook to the Hall door",
+   "body": [
+    "Old Wick, a Junior Bright, one door. {partner} wanted a rematch before the dust settled."
+   ],
+   "when": [
+    "story.seal4"
+   ],
+   "me": [
+    "partner"
+   ],
+   "lore": [
+    "event.rook_brightgate",
+    "person.rook"
    ]
   }
  ]

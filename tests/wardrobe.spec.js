@@ -2,7 +2,7 @@
    Save stays pixelpets.save.v2 with v 2. New data is wardrobe.* flags only. */
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -132,6 +132,12 @@ test('BUY refuses 119 Acorns and takes 120 for the Wick charm', async ({ page })
 
   await page.evaluate(() => { PixelPets.state.money = 120; });
   await page.locator('.ward-item[data-id="wick_charm"] .ward-act').click();
+  // The fresh WEAR button ignores a tap for its first 500 ms. Modern (the default) queues toasts, so the toast below can
+  // arrive after that window: tap first, then wait for the toast.
+  await expect(page.locator('.ward-item[data-id="wick_charm"] .ward-act')).toHaveText('WEAR');
+  await page.locator('.ward-item[data-id="wick_charm"] .ward-act').click();
+  const held = await page.evaluate(() => PixelPets.state.party[0].accessory || 'none');
+  expect(held).toBe('none');
   await expect(page.locator('#toast')).toHaveText('Wick charm is yours.');
   const bought = await page.evaluate(() => {
     const raw = JSON.parse(localStorage.getItem('pixelpets.save.v2'));
@@ -156,9 +162,6 @@ test('BUY refuses 119 Acorns and takes 120 for the Wick charm', async ({ page })
   expect(bought.rawKeys).toEqual(keysBefore);
   expect(bought.keys).not.toContain('wardrobe');
 
-  await page.locator('.ward-item[data-id="wick_charm"] .ward-act').click();
-  const held = await page.evaluate(() => PixelPets.state.party[0].accessory || 'none');
-  expect(held).toBe('none');
   await page.waitForTimeout(450);
   await page.locator('.ward-item[data-id="wick_charm"] .ward-act').click();
   await expect(page.locator('#toast')).toHaveText('Pipkit wears the Wick charm.');
@@ -227,7 +230,7 @@ test('CHANGE LOOK, shuffle and GEAR hide an unowned paid item @w1', async ({ pag
   expect(lists.acc).toEqual(FREE_ACC);
   expect(lists.col).toEqual(FREE_COL);
 
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setLook').click();
   await page.waitForSelector('#ovLook:not([hidden])');
   const buttons = await page.evaluate(() => ({
