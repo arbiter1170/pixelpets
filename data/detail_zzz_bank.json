@@ -1,0 +1,50 @@
+{
+  "spec": "BANK_AND_HOMES v0.1 (design repo, private; D2220-D2249), first slice: the two opening beats (§3.3, D2233) and the re-voiced Civic Bank lines (D2222).",
+  "_about": "Ours, not a design copy. Sorted after detail_zzz_act2_cover.json (Mom's repeats) and before detail_zzzz_mahopac_dreams.json, so Mom's passbook sits after her daily snack and before her repeat line, and a later Mahopac line never hides it. Both beats are optional talks off Act 2's critical path: Mom's passbook after Supper (story.cv_mom, never inside the Supper scene), then Teller Bodin (raw name Teller Ivo, shown as Bodin by D1766) opens the book after the posting. Save stays pixelpets.save.v2, v 2; new additive story.* keys only; nothing written at load. The built glimmer teller line and the door sign are unchanged.",
+  "_placeholders": {
+    "note": "PLACEHOLDER copy (Story to replace; BANK_AND_HOMES §3.3; OPEN_DECISIONS D2222-copy). Every line in this file is a placeholder except the BUILT teller line kept as the earliest glimmer case.",
+    "paths": ["scenes", "objPatch"]
+  },
+  "flags": {
+    "story.bank_book": "§3.3 beat 1 (D2233): Mom gave the holder her old Civic Bank passbook (an optional talk after Supper)",
+    "story.bank_open": "§3.3 beat 2 (D2233): Teller Bodin opened the book at the Civic Bank after the posting; the JARS tab and the dawn dividend appear"
+  },
+  "scenes": {
+    "bank_book": [
+      ["say", "Mom", "A better offer pays somewhere. Keep it in a book, not a sock."],
+      ["say", "", "She hands you a passbook. Civic Bank. Her name is crossed out; yours is pencilled in."],
+      ["say", "Mom", "The teller in High Charity knows me. Bodin. Tell him I said so."],
+      ["setFlag", "story.bank_book", true],
+      ["toast", "Mom's old passbook."]
+    ],
+    "bank_open": [
+      ["say", "Teller Ivo", "Your mother's book. She kept it tidy. The Keepers draw a Cadet's pay on us now."],
+      ["say", "Teller Ivo", "Your bag stays yours. Jars we keep. Counted at dawn, any day you look in."],
+      ["say", "", "He stamps the first page: KEPT."],
+      ["setFlag", "story.bank_open", true],
+      ["toast", "Your book is open."]
+    ]
+  },
+  "objPatch": {
+    "_note": "§3.3: Mom's passbook key sits before her repeat line (after the daily snack). The teller and the counter re-voice by key; the built line stays the earliest glimmer case, so a glimmer save reads the same until the beats run.",
+    "mom": {
+      "linesBefore": {"anchorKey": "story.cv_mom=told", "add": {
+        "story.cv_mom & !story.bank_book & !story.side=glimmer": "@bank_book"
+      }}
+    },
+    "hc_ivo": {
+      "linesFirst": {
+        "story.side=glimmer & !story.bank_open": "We don't hold lanyards. Or Acorns.",
+        "story.side=glimmer & story.bank_open": "We don't hold lanyards. We do keep old books. Yours is here.",
+        "story.bank_book & story.gov_posted & !story.bank_open": "@bank_open",
+        "story.bank_open": "Counted and kept. Your bag is yours to spend. Your jars, we mind.",
+        "story.bank_book & !story.bank_open & !story.gov_posted": "Your mother's book? Bring it back once the Keepers post you."
+      },
+      "linesSet": {"else": "Your Acorns stay in your bag. Books are for the posted."}
+    },
+    "hc_counter": {
+      "linesFirst": {"story.bank_open": "The counter is polished. Your jars are counted here at dusk."},
+      "linesSet": {"else": "The counter is polished. Your Acorns stay in your bag, for now."}
+    }
+  }
+}

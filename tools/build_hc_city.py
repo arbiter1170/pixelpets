@@ -1202,8 +1202,8 @@ if HC_MUSEUM:
             [TXT['w3_leave'], []]], '']],
         'wm_runner': [['say', '', TXT['wm_runner']], ['setFlag', 'story.wm_runner', True]],
     })
-    # The donation lantern (§2.2, D2308): 10 or 50 from the purse (the bank of BANK_AND_HOMES, PR #334, is not on main; once it
-    # lands the gift goes through its moneyDelta with a "Museum gift" memo). story.wm_given counts; the Friends board shows the
+    # The donation lantern (§2.2, D2308): 10 or 50 from the bag through the bank's moneyDelta (BANK_AND_HOMES, #334), one ledger line
+    # with the memo "Museum gift" (`pay`'s ref museum_gift; bank.js SCENE_MEMO). story.wm_given counts; the Friends board shows the
     # holder's name from 100; at 500 the curator offers the plaque (story.wm_plaque). The lantern glows for a beat (`glow`; reduced
     # motion lights it without the pulse).
     PLAQUE = ['choice', TXT['wm_plaque_ask'], [[TXT['wm_plaque_l'], [['setFlag', 'story.wm_plaque', 'lanterns']]],
@@ -1214,7 +1214,7 @@ if HC_MUSEUM:
             ['if', 'story.wm_given<100', [['inc', 'story.wm_given', n], ['if', 'story.wm_given>=100', [['toast', TXT['wm_friends_toast']]], []]],
              [['inc', 'story.wm_given', n]]],
             ['glow', 'wm_donation'], ['sfx', 'rest'],
-            ['if', 'story.wm_given>=500 & !story.wm_plaque', [PLAQUE], []]], say_('wm_short')]
+            ['if', 'story.wm_given>=500 & !story.wm_plaque', [PLAQUE], []]], say_('wm_short'), 'museum_gift']
     SC['wm_give'] = [['choice', TXT['wm_give'], [[TXT['wm_give_10'], [gift(10)]], [TXT['wm_give_50'], [gift(50)]], [TXT['wm_give_no'], []]], '']]
     SC['wm_plaque'] = [PLAQUE]
     # The people (§7). Lines are keyed on the story's flags; plain repeats turn by this visit's talks (`talked:` marks, never saved).

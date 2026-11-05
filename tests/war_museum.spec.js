@@ -4,7 +4,7 @@
    hc_museum_in skin), game.js (the `pay` and `glow` steps, `partner:out`, the keepsake), quests.js (the Stamp Trail side chain).
    §8 tests 1-10: the door and the mat, every exhibit reachable and tappable, the act gates (K2 on story.wb_cut, K5's card on
    story.hc_trial_called, K6, K7, K11), the Stamp Trail and its reward once, the donation lantern (10 and 50, the name at 100, the
-   plaque at 500, a short purse), rule 10 (D2314), no INSIGN (D2317), the palette (no mint, no wine west of the seam) and the three
+   plaque at 500, a short purse; each gift a "Museum gift" line in the bank's ledger through moneyDelta), rule 10 (D2314), no INSIGN (D2317), the palette (no mint, no wine west of the seam) and the three
    looks against data/look_lock.json. Runs at 320, 375 and 390 (@w1 rows at 320 only); one run in reduced motion; Modern controls;
    zero console errors. The city preview holds the save, so pixelpets.save.v2 stays as installed (v 2, unchanged). */
 const { test, expect } = require('@playwright/test');
@@ -425,6 +425,9 @@ test.describe('WAR_MUSEUM the donation lantern (§2.2, D2308)', () => {
     let l = await talk(page, 'wm_donation', ['10 Acorns']);
     expect(l[0]).toEqual(['>', '10 Acorns', ['10 Acorns', '50 Acorns', 'Not now'], 'Gifts keep the lamps lit. Give?']);
     expect(await page.evaluate(() => [PixelPets.state.money, PixelPets.state.flags['story.wm_given']])).toEqual([550, 10]);
+    // D2308 with the bank (#334): the gift is one ledger line through moneyDelta, memo "Museum gift"
+    const gift = await page.evaluate(() => { const l = PixelPets.state.bank.led.filter(r => r[3] === 'museum_gift'); return l.map(r => [r[1], r[2], PPBank.memo(r)]); });
+    expect(gift).toEqual([['scene', -10, 'Museum gift']]);
     expect(says(await talk(page, 'wm_friends'))).toEqual(['FRIENDS OF THE MUSEUM.']);
     await talk(page, 'wm_donation', ['50 Acorns']);
     expect((await page.evaluate(() => PixelPets.toasts)).includes('Your name is on the Friends board.')).toBe(false);
@@ -444,6 +447,9 @@ test.describe('WAR_MUSEUM the donation lantern (§2.2, D2308)', () => {
     expect(await page.evaluate(() => [PixelPets.state.money, PixelPets.state.flags['story.wm_given']])).toEqual([0, 560]);
     expect((await talk(page, 'wm_donation', ['Not now'])).length).toBe(1);
     expect(await page.evaluate(() => [PixelPets.state.money, PixelPets.state.v])).toEqual([0, 2]);
+    // same-day gifts merge into one "Museum gift" line of -560 (D2234); the short purse and "Not now" wrote nothing
+    expect(await page.evaluate(() => PixelPets.state.bank.led.filter(r => r[3] === 'museum_gift').map(r => [r[1], r[2], PPBank.memo(r)])))
+      .toEqual([['scene', -560, 'Museum gift']]);
   });
 });
 
