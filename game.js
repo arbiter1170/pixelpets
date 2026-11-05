@@ -4958,6 +4958,13 @@ function cond(c, live, o){
   if (c === 'else') return true;
   let neg = false; if (c[0] === '!') { neg = true; c = c.slice(1); }
   if (typeof c === 'string' && c.indexOf('fbplaza:') === 0) { const v = fbPlazaIs(c.slice(8), live); return neg ? !v : v; }
+  // D1191 (Vincent, Tue Nov 3, 2026): `hold:<node>=<id>` reads who controls a place, through the REGION_MAP hold rules
+  // (mapHold), so a prop can never drift from the map. Live reads see the scene's pending flags, like every other term.
+  if (typeof c === 'string' && c.indexOf('hold:') === 0) {
+    const eq = c.indexOf('='), node = c.slice(5, eq), want = c.slice(eq + 1);
+    const v = eq > 5 && mapHold(node, new Proxy({}, { get: (_, k) => flagOf(k, live) })) === want;
+    return neg ? !v : v;
+  }
   if (typeof c === 'string' && window.PPClock) {
     const bit = PPClock.match(c);
     if (bit !== null) return neg ? !bit : bit;

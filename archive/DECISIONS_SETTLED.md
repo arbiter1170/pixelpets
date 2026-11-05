@@ -136,6 +136,16 @@ Design `specs/WEIR_HUT.md` v0.1.1 (design master). Vincent saw the previews (rul
 - **D1598 (green, SETTLED: default).** Arrival at (4,10); the first step (4,9) fires the meeting scene once (a stub until that scene is built); no new sound.
 - **D1599 (green, SETTLED: default).** Build notes: overlay `data/detail_zz_weir_hut.json` copied verbatim; skin and art in `sprites.js`; every line PLACEHOLDER for Story.
 
+## Tue Nov 3, 2026, 11:17 AM ET: Vincent's rulings on the contested Hall's open yellows (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the contested Fernbrook Trial Hall: "Make sure we have an agent build the art, an agent build the 36 lines/lore. Have D1191 decided, switch happens based on who controle the town. D1193, have art/design agent figure it out. D1195, have art/design agent figure it out."
+
+- **D1191 (yellow, SETTLED by Vincent):** the Hall's props switch on who controls the town. Built as the spec's default: `cond()` reads `hold:<node>=<id>` through `mapHold()`, and the overlay's props use `hold:fernbrook=split|keepers|glimmer` (and their negations) instead of copied rule strings (`claude/hall2-art-lines`).
+- **D1193 (yellow, SETTLED by the art and design agent on Vincent's delegation):** keep the §5.3 holder spots: neutral `h1_local` on the seam (8,20), `h1_challenger` on the polish (12,12), the Keeper cadet `h1_cadet` on the Keeper half of the dais (3,5) facing right. Each stands on their own side's material; sight lines, paths and Fen's gate unchanged (`handoff/shots/trial_hall_fernbrook_art/ART_NOTES.md`).
+- **D1195 (yellow, SETTLED by the art and design agent on Vincent's delegation):** the Glimmerwell floor is lighter, by +21 greyscale luma on the T12 measure (east 166, west 145), inside a band of more than 20 and less than 40. +28 would need a cool grey PAL lacks; more white reads as glass. The halves also differ warm against cool and busy against quiet (`ART_NOTES.md`).
+- The 36 new prop lines are June's pass, drafted by Claude in June's role, for Vincent to approve (D1196's PLACEHOLDER copy replaced).
+- **D1196 (green, SETTLED by Vincent, Thu Nov 5, 2026):** the 36 new prop lines are June's pass (drafted by Claude in June's role) and are approved. Vincent, via the Chief of Staff, on the #311 catch-up: "311 yes" (the 390/320 compare sheets for the art pass and the 36 lines). The room stays behind `HALL2_RELEASED = false`; turning it on is a separate one-line PR.
+
 ## Tue Nov 3, 2026, 9:57 AM ET: Vincent settles the rest of GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
 
 Vincent, in his own words in the Claude Code session that wrote #268: "Defaults are fine, merge is approved if no conflicts". This settles the fleet's remaining yellow and green rows on their defaults (the reds were settled at 7:44 AM ET, below).
