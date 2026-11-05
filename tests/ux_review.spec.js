@@ -1,6 +1,6 @@
 /* Outside UX review (Oct 15): header acorns, progressbar semantics, canvas labels, and the debug panel kept out of the player DOM. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap, openDebug } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -83,7 +83,7 @@ test('the debug panel is not in the player DOM; it appears only in a debug sessi
   // a debug session builds it on demand
   await boot(page, starterSave(), '?debug=1');
   expect(await page.evaluate(() => !!document.querySelector('#ovDebug'))).toBe(false);   // not until it opens
-  await page.locator('#dbgTag').click();
+  await openDebug(page);
   await expect(page.locator('#ovDebug')).toBeVisible();
   await expect(page.locator('#dbgAgent summary')).toHaveText('Agent tools');
   await page.locator('#dbgLock').click();

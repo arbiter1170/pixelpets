@@ -8,7 +8,7 @@
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, openSettings } = require('./helpers');
 
 test.use({ serviceWorkers: 'block' });   // a service worker would serve game.js past the read hook on a second load
 trackErrors(test, expect);
@@ -486,7 +486,7 @@ test('T4 D800: narrator prompts show the holder at 4x, following the look as the
 
   // Between scenes: Settings > Change look, a new hairstyle, DONE. The next narrator prompt shows it.
   await page.waitForFunction(() => !PixelPets.scene && window.__ic.ev('!gearBlocked()'));
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setLook').click();
   await expect(page.locator('#ovLook')).toBeVisible();
   await page.locator('#lookHair button[data-opt="bun"]').click();

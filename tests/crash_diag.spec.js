@@ -4,7 +4,7 @@
    A page removed without pagehide is another Page.crash after the hidden mark is set,
    which is how a webview death leaves pp_alive behind. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, gotoGame } = require('./helpers');
+const { starterSave, installSave, gotoGame, openSettings } = require('./helpers');
 
 const NOTE = 'The game closed unexpectedly. Tap Copy crash info in Settings.';
 const HUD = ['#settingsBtn', '#gearFloat', '#dpad', '#tabs', '#thChip', '#talkBtn', '#questBtn', '#phoneBtn', '#petStrip', '#joyRing', '#walkTip', '#mapBtn', '#repBtn', '#walkBagBtn', '#petFloat', '#colFloat'];
@@ -185,7 +185,7 @@ test('a renderer crash stays in the log, keeps its diag, and the note shows once
   expect(entry.swc).toBe(before.alive.swc);
   expect(entry.sws).toBe(before.alive.sws);
   expect(entry.tap).toBe(before.alive.tap);
-  await next.locator('#settingsBtn').click();
+  await openSettings(next);
   await expect(next.locator('#ovSettings')).toBeVisible();
   const count = next.locator('#setCrashes');
   await expect(count).toBeVisible();
@@ -251,7 +251,7 @@ test('a renderer crash stays in the log, keeps its diag, and the note shows once
   expect(kept.n).toBe(1);
   expect(kept.first).toBe(row.first);
   expect(kept.seen).toBe(1);
-  await fresh.locator('#settingsBtn').click();
+  await openSettings(fresh);
   await expect(fresh.locator('#setCrashes')).toHaveText('Crashes on this build: 1');
   await expect(fresh.locator('#setCrashCopy')).toBeVisible();
   await fresh.locator('#setCrashCopy').click();
@@ -313,7 +313,7 @@ test('the crash log alone shows the count and the copy button', async ({ page })
     localStorage.setItem('pp_crash_log', JSON.stringify({ builds: { [b]: { n: 2, first: 10, last: 20, seen: 2 } } }));
     localStorage.setItem('pp_reload_last', JSON.stringify([{ reason: 'unknown', at: Date.now(), battleOn: false, build: b }]));
   });
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await expect(page.locator('#ovSettings')).toBeVisible();
   const line = page.locator('#setCrashes');
   await expect(line).toBeVisible();
@@ -452,7 +452,7 @@ test('an overlay hides the note and it comes back unless OK was tapped', async (
   await boot(next);
   expect(next.ppErrors).toEqual([]);
   await assertNote(next);
-  await next.locator('#settingsBtn').click();
+  await openSettings(next);
   await next.waitForFunction(() => {
     const el = document.querySelector('#crashNote');
     const settings = document.querySelector('#ovSettings');
@@ -465,7 +465,7 @@ test('an overlay hides the note and it comes back unless OK was tapped', async (
   await assertNote(next);
   await next.locator('#crashNoteOk').click();
   expect(await shown(next, '#crashNote')).toBeNull();
-  await next.locator('#settingsBtn').click();
+  await openSettings(next);
   await expect(next.locator('#ovSettings')).toBeVisible();
   await next.locator('#setClose').click();
   await noteHiddenPastBoot(next);

@@ -414,7 +414,7 @@
         {
           "kind": "npc",
           "id": "hc_kite",
-          "name": "Kit",
+          "name": "Mabry",
           "look": "kit",
           "x": 38,
           "y": 23,
@@ -2023,7 +2023,7 @@
     "Keeper Moss": "moss",
     "Mira": "mira",
     "Baker Cole": "cole",
-    "Kit": "kit",
+    "Mabry": "kit",
     "Porter Quin": "quin",
     "Captain Lumen": "petra",
     "Keeper Rowan": "sorrel",

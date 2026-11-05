@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, openSettings } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -185,7 +185,7 @@ async function boot(page, search) {
 }
 
 async function openLook(page) {
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setLook').click();
   await expect(page.locator('#ovLook')).toBeVisible();
 }

@@ -669,7 +669,8 @@ test.describe('WALK_BESIDE scenes behind their flags (D1960-D1969, D1978)', () =
     expect(t[1]).toBe('You stop with it. Up the hill the cloud sits flat, and nothing moves.');
     expect((await flags(page))['story.wb_springs']).toBe(true);
     expect(OVERLAY.waits.wb_springs.obj).toEqual({ kind: 'trigger', id: 'km_wb_springs', r: 0, when: ['story.km_storm', '!story.wb_springs'], scene: 'wb_springs' });
-    expect(await page.evaluate(() => !!PixelPets.mapInfo && Object.prototype.hasOwnProperty.call(WORLD, 'kilnmouth'))).toBe(false);   // the map is another branch's
+    // KILNMOUTH (#318) is on main now, so the map exists; the springs trigger still waits for its key (no tile is placed yet).
+    expect(await page.evaluate(() => Object.prototype.hasOwnProperty.call(WORLD, 'kilnmouth'))).toBe(true);
   });
 
   test('WB-T13: the Act 3-5 lines by path: Quinn, the stayer\'s Host letter, L13a, the President, the Spire twins', async ({ page }) => {
