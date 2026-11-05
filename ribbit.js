@@ -9,7 +9,9 @@
    Block News and Chirp Worldwide still post about the whole map.
 
    when: 'story.flag' (absent is false), '!story.flag', or 'story.side=glimmer'. story.side reads the
-   resolved side, so an unset pledge is keepers. */
+   resolved side, so an unset pledge is keepers. PHONE_FEED (D2172): 'hold:<node>=<keepers|glimmer|split|wild>' reads
+   state.holds, the town holds game.js works out with its own rules (matchHold), so a line can follow who holds a town;
+   with no holds passed (or an unknown node) the term is false and '!hold:...' is true. */
 (function (root) {
   'use strict';
 
@@ -149,18 +151,21 @@
     return flags[key];
   }
   function truthy(v) { return v !== undefined && v !== null && v !== false && v !== '' && v !== 0; }
-  function cond(raw, flags, side) {
+  const HOLD = /^hold:([a-z0-9_]+)=(keepers|glimmer|split|wild)$/;
+  function cond(raw, flags, side, holds) {
     let c = String(raw), neg = false;
     if (c.charAt(0) === '!') { neg = true; c = c.slice(1); }
     const eq = c.indexOf('=');
+    const h = HOLD.exec(c);
     let ok;
-    if (eq !== -1) ok = String(valueOf(c.slice(0, eq), flags, side)) === c.slice(eq + 1);
+    if (h) ok = !!holds && Object.prototype.hasOwnProperty.call(holds, h[1]) && holds[h[1]] === h[2];
+    else if (eq !== -1) ok = String(valueOf(c.slice(0, eq), flags, side)) === c.slice(eq + 1);
     else ok = truthy(valueOf(c, flags, side));
     return neg ? !ok : ok;
   }
-  function passes(when, flags, side) {
+  function passes(when, flags, side, holds) {
     if (!when || !when.length) return true;
-    for (let i = 0; i < when.length; i++) if (!cond(when[i], flags, side)) return false;
+    for (let i = 0; i < when.length; i++) if (!cond(when[i], flags, side, holds)) return false;
     return true;
   }
   function regionOf(map) {
@@ -177,6 +182,10 @@
     if (id === 'highcharity' || id.indexOf('hc_') === 0) return 'highcharity';
     if (id === 'route3' || id.indexOf('r3_') === 0) return 'route3';
     if (id === 'brinewick' || id.indexOf('bw_') === 0) return 'brinewick';
+    // PHONE_FEED (D2172): Route 4 is built; Kilnmouth and Brightgate read their own lines once their maps land.
+    if (id === 'route4' || id.indexOf('route4_') === 0) return 'route4';
+    if (id === 'kilnmouth' || id === 'km_road' || id.indexOf('km_') === 0) return 'kilnmouth';
+    if (id === 'brightgate' || id.indexOf('bg_') === 0) return 'brightgate';
     return '';
   }
   function pickWeighted(items, n, rng, weightOf) {
@@ -241,14 +250,15 @@
     const rngDesk = mulberry32(fnv1a('desk\n' + storySeed));
     const rngLocal = mulberry32(fnv1a('local\n' + storySeed + '\n' + map));
     const rngTag = mulberry32(fnv1a('tag\n' + storySeed));
-    const ok = p => passes(p.when, flags, side);
+    const holds = st.holds || null;
+    const ok = p => passes(p.when, flags, side, holds);
     const pins = POSTS.filter(p => p.pin && ok(p));
     const extraPool = POSTS.filter(p => !p.pin && (p.kind === 'block' || p.kind === 'chirp') && ok(p));
     const extra = pickWeighted(extraPool, DESK_EXTRA, rngDesk, () => 1);
     // D866: state.signal (1-4 bars) thins the local lines; unset keeps all LOCAL_N. The picks stay a stable prefix.
     const bars = Number.isInteger(st.signal) ? Math.max(1, Math.min(4, st.signal)) : 4;
     const locals = pickLocals(POSTS.filter(p => p.kind === 'local' && ok(p)), region, LOCAL_N, rngLocal).slice(0, Math.min(LOCAL_N, bars));
-    const tags = pickWeighted(TAGS.filter(t => passes(t.when, flags, side)), 3, rngTag, t => t.w || 1);
+    const tags = pickWeighted(TAGS.filter(t => passes(t.when, flags, side, holds)), 3, rngTag, t => t.w || 1);
     const posts = pins.concat(extra).map(p => publish(p, storySeed)).concat(locals.map(p => publish(p, storySeed + '\n' + map)));
     if (st.night) {
       const n = NIGHT_POSTS[fnv1a('night\n' + storySeed) % NIGHT_POSTS.length];
@@ -274,12 +284,15 @@
       if (p.region) regions[p.region] = (regions[p.region] || 0) + 1;
       if (p.region === 'heights' && !(p.when || []).includes('story.heights_done')) bad.push('heights line missing the flag: ' + p.id);
       if (/sold/i.test(p.text) && !(p.when || []).includes('story.quarry_bought')) bad.push('sold line missing the flag: ' + p.id);
+      (p.when || []).forEach(w => { if (/hold:/.test(w) && !/^!?hold:[a-z0-9_]+=(keepers|glimmer|split|wild)$/.test(w)) bad.push('bad hold term: ' + p.id); });
     });
     NIGHT_POSTS.forEach(p => { if (Array.from(p.text).length > LINE_MAX) bad.push('night text over ' + LINE_MAX + ': ' + p.id); });
     if (feed({ flags: {}, uid: 'n', day: '2026-04-01', night: true }).posts.filter(p => p.handle === NIGHT.handle).length !== 1) bad.push('night desk should post once at night');
     if (feed({ flags: {}, uid: 'n', day: '2026-04-01' }).posts.some(p => p.handle === NIGHT.handle)) bad.push('night desk posted by day');
+    if (!passes(['hold:fernbrook=keepers'], {}, 'keepers', { fernbrook: 'keepers' }) || passes(['hold:fernbrook=keepers'], {}, 'keepers', { fernbrook: 'split' })
+      || passes(['hold:fernbrook=keepers'], {}, 'keepers', null) || !passes(['!hold:fernbrook=glimmer'], {}, 'keepers', null)) bad.push('hold terms misread');
     const want = ['hearthmoor', 'route1', 'fernbrook', 'route2', 'wickerglen', 'cobblecrest', 'heights'];
-    if (POSTS.length > BASE_N) want.push('mahopac', 'highcharity', 'route3', 'brinewick');
+    if (POSTS.length > BASE_N) want.push('mahopac', 'highcharity', 'route3', 'brinewick', 'route4');
     want.forEach(r => {
       if ((regions[r] || 0) < 3) bad.push('region needs several lines: ' + r);
     });
