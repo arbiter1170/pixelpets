@@ -73,7 +73,7 @@ TXT = {
     'wickshop': hook('bh_wickshop'),                       # "Closed. Lanterns are free at the Plaza now."
     'academy': 'Term starts soon. Have a bright day!',     # §3.4 (Junior Bright School's facade line)
     'closed': 'Closed for now.',                           # the built PLACEHOLDER facade line (tools/build_hc_city.py), for a room its packet has not drawn
-    'shuttle': '[PLACEHOLDER] The shuttle stop. No shuttle runs from here yet.',   # bg_south: the region map link is not built (no fast travel)
+    'shuttle': '[PLACEHOLDER] The shuttle stop. No shuttle runs from here yet.',   # bg_south, only for a layout without the §17.1 shuttle stops
     'store_clerk': '[PLACEHOLDER] Welcome to Bright Mart! Everything at partner price.',
     'store_clerk_name': 'Bright Mart clerk',
     'host_name': 'Lantern Host',
@@ -280,7 +280,7 @@ def mouth_cells(c, m):
 INWARD = {'N': (0, 1, 'down'), 'S': (0, -1, 'up'), 'W': (1, 0, 'right'), 'E': (-1, 0, 'left')}
 for cid, c in CHUNKS.items():
     for m in c.src['mouths']:
-        if m.get('warp_obj'):   # bg_south: the walk-on warp back out. No region-map link is built (no fast travel; the Act 2 route is its own packet)
+        if m.get('warp_obj'):   # bg_south: the walk-on way back out. With the §17.1 stops the bar is dropped and the home mark bs_gate_home stands here
             x, y = m['warp_obj']
             c.add({'kind': 'prop', 'id': 'bg_south', 'x': x, 'y': y, 'sprite': 'road_bar', 'name': 'the shuttle bar', 'lines': {'else': TXT['shuttle']}}, blocks=False)
             c.reserved.add((x, y)); continue
@@ -529,7 +529,7 @@ for i, sc in enumerate(L['schedules']):
         if j == 0: o['schedule'] = rows
         c.add(o, blocks=False)
 
-# ---------- v0.2.1 (§17, D2090-D2106): holders, the one placed wild, the bowl, the pond sign, the timetable, the shuttle (inert) ----------
+# ---------- v0.2.1 (§17, D2090-D2106): holders, the one placed wild, the bowl, the pond sign, the timetable, the shuttle ----------
 DISTRICT_TRAINERS = {}
 for cid, c in CHUNKS.items():   # §17.3: four optional talk-to-battle holders (sight 0), off B5's line of travel
     for hd in c.src.get('holders', []):
@@ -547,10 +547,12 @@ lm('lm_pond_sign', 'bg_pond_sign', 'signpost', hook('bh_pond'), exact=True, kind
 for o in GP.objs:   # the shelter carries the timetable (two states, §17.1)
     if o['id'] == 'bg_shelter': o['lines'] = {'story.km_council': hook('bh_timetable_b'), 'else': hook('bh_timetable')}; o['name'] = 'the shuttle shelter'
 
-# The Bright Shuttle (§17.1, D2090 and D2091 are Vincent's red calls, not yet ruled): every leg's data is here, behind
-# `story.bg_shuttle_live`, a flag nothing sets. Wiring it is one change: drop that term from SHUTTLE_ON once Vincent rules.
+# The Bright Shuttle (§17.1; D2090 and D2091 settled by Vincent, Wed Nov 4, 2026; D2092, D2105, D2106 on their defaults; names
+# PLACEHOLDER until Story's name check, D2097). Every leg is a walk-on warp with a `when` and the built warp fade; no new mechanic.
+# The two narrations are `load` triggers on the landing tiles, so they play on the arrival itself (a plain trigger fires only
+# when a step ends there). Kilnmouth's stop is placed by detail_zzzzz_kilnmouth.json: this overlay loads before Kilnmouth's,
+# and applyMapPatch skips a map that does not exist yet.
 LINK = L.get('link') or {}
-SHUTTLE_ON = 'story.bg_shuttle_live'
 LS = {s_['id']: s_ for s_ in LINK.get('stops', [])}
 SHUTTLE_TXT = {'bs_first_ride': 'The shuttle hums to a stop. Nobody asks for a ticket. Nobody asks your name, either.',
                'hs_sign': 'BRIGHT SHUTTLE · Brightgate. Free, every hour. A Glimmerwell kindness. Have a bright day!',
@@ -558,35 +560,35 @@ SHUTTLE_TXT = {'bs_first_ride': 'The shuttle hums to a stop. Nobody asks for a t
                'ks_sign': 'BRIGHT SHUTTLE · Brightgate. Free for partners and their guests. Step on the mark.',
                'ks_att_first': 'The Lamp Works sends a shuttle for the tower crew. Guests ride free, Cadet. Have a bright day!',
                'ks_att': 'One step to Brightgate. Mind the mark!'}   # §17.1 lines (PLACEHOLDER)
+HM_SIGN = (19, 9)   # §17.1: the Hearthmoor stop's sign on the nearest free tile to the mark (18,9); checked on the composed map by tests/bright_shuttle.spec.js
+SLICE_PATCH, KILNMOUTH_STOP = {}, {}
 if LS:
-    for o in GP.objs:
-        if o['id'] == 'bg_south': o['when'] = ['!' + SHUTTLE_ON]   # the bar stands until the shuttle runs
+    GP.objs = [o for o in GP.objs if o['id'] != 'bg_south']   # the "no shuttle yet" bar stood on the home mark's tile: gone now the shuttle runs
     hx, hy = LS['bs_gate_home']['mark']
     GP.add({'kind': 'warp', 'id': 'bs_gate_home', 'x': hx, 'y': hy, 'to': 'hearthmoor', 'tx': LS['bs_hearthmoor']['arrive'][0], 'ty': LS['bs_hearthmoor']['arrive'][1],
-            'facing': LS['bs_hearthmoor']['arrive_facing'], 'when': [SHUTTLE_ON, LS['bs_gate_home']['when']]}, blocks=False)
+            'facing': LS['bs_hearthmoor']['arrive_facing'], 'when': [LS['bs_gate_home']['when']]}, blocks=False)
     wx, wy = LS['bs_gate_works']['mark']
     if not GP.walk(wx, wy): fail('brightgate: the works mark is not on a walk tile')
-    # the works line (33,38 -> Kilnmouth's yard) needs the Kilnmouth map, which this branch lacks: handed over with Kilnmouth's stop
-    WORKS_MARK = {'kind': 'warp', 'id': 'bs_gate_works', 'x': wx, 'y': wy, 'to': 'kilnmouth', 'tx': 52, 'ty': 16, 'facing': 'left',
-                  'when': [SHUTTLE_ON, LS['bs_gate_works']['when']], 'map': 'brightgate'}
-    GP.add({'kind': 'trigger', 'id': 'bs_first_ride', 'x': 32, 'y': 37, 'r': 0, 'when': [SHUTTLE_ON, '!story.bg_shuttle'], 'scene': 'bs_first_ride'}, blocks=False)
+    # the works line (33,38 -> Kilnmouth's yard 52,16, left), hidden until the council sits (D1882 kept, D2092)
+    GP.add({'kind': 'warp', 'id': 'bs_gate_works', 'x': wx, 'y': wy, 'to': 'kilnmouth', 'tx': 52, 'ty': 16, 'facing': 'left',
+            'when': [LS['bs_gate_works']['when']]}, blocks=False)
+    GP.add({'kind': 'trigger', 'id': 'bs_first_ride', 'x': 32, 'y': 37, 'r': 0, 'load': True, 'when': ['!story.bg_shuttle'], 'scene': 'bs_first_ride'}, blocks=False)
     SC['bs_first_ride'] = [['say', '', SHUTTLE_TXT['bs_first_ride']], ['setFlag', 'story.bg_shuttle', True]]
     SC['hs_first_drop'] = [['say', '', SHUTTLE_TXT['hs_first_drop']], ['setFlag', 'story.bg_shuttle_hm', True]]
     hm = LS['bs_hearthmoor']
     SLICE_PATCH = {'maps': {'hearthmoor': {'addObjs': [   # the Hearthmoor stop beside the Lantern Coach (tiles: the packet's default)
-        {'kind': 'warp', 'id': 'bs_hearthmoor', 'x': hm['mark'][0], 'y': hm['mark'][1], 'to': 'brightgate', 'tx': 32, 'ty': 37, 'facing': 'up', 'when': [SHUTTLE_ON, hm['when']]},
-        {'kind': 'trigger', 'id': 'hs_first_drop', 'x': hm['arrive'][0], 'y': hm['arrive'][1], 'r': 0, 'when': [SHUTTLE_ON, '!story.bg_shuttle_hm'], 'scene': 'hs_first_drop'}]}}}
-    # Kilnmouth's stop (works yard) is the KILNMOUTH build's map: its objects are handed over as data for that build to place.
+        {'kind': 'warp', 'id': 'bs_hearthmoor', 'x': hm['mark'][0], 'y': hm['mark'][1], 'to': 'brightgate', 'tx': 32, 'ty': 37, 'facing': 'up', 'when': [hm['when']]},
+        {'kind': 'sign', 'id': 'hs_sign', 'x': HM_SIGN[0], 'y': HM_SIGN[1], 'text': SHUTTLE_TXT['hs_sign'], 'when': [hm['when']]},
+        # 18,8 is on Hearthmoor's main road: the drop waits for a first visit, so nobody hears it before they have ridden
+        {'kind': 'trigger', 'id': 'hs_first_drop', 'x': hm['arrive'][0], 'y': hm['arrive'][1], 'r': 0, 'load': True,
+         'when': ['story.reached_brightgate', '!story.bg_shuttle_hm'], 'scene': 'hs_first_drop'}]}}}
+    # Kilnmouth's stop (works yard): placed in detail_zzzzz_kilnmouth.json (maps.kilnmouth.objs). Kept here for the text checks.
     ks = LS['bs_kilnmouth']
-    KILNMOUTH_STOP = {'_note': 'BRIGHTGATE_LAYOUT §17.1: for the Kilnmouth build to place on its works yard (objs) and on Gate Plaza (gate_works, once kilnmouth exists); inert behind ' + SHUTTLE_ON,
-                      'gate_works': WORKS_MARK,
-                      'objs': [{'kind': 'warp', 'id': 'bs_kilnmouth', 'x': ks['mark'][0], 'y': ks['mark'][1], 'to': 'brightgate', 'tx': 32, 'ty': 37, 'facing': 'up', 'when': [SHUTTLE_ON, ks['when']]},
-                               {'kind': 'sign', 'id': 'ks_sign', 'x': ks['sign'][0], 'y': ks['sign'][1], 'text': SHUTTLE_TXT['ks_sign'], 'when': [SHUTTLE_ON, ks['when']]},
+    KILNMOUTH_STOP = {'objs': [{'kind': 'warp', 'id': 'bs_kilnmouth', 'x': ks['mark'][0], 'y': ks['mark'][1], 'to': 'brightgate', 'tx': 32, 'ty': 37, 'facing': 'up', 'when': [ks['when']]},
+                               {'kind': 'sign', 'id': 'ks_sign', 'x': ks['sign'][0], 'y': ks['sign'][1], 'text': SHUTTLE_TXT['ks_sign'], 'when': [ks['when']]},
                                {'kind': 'npc', 'id': 'ks_attendant', 'name': 'Shuttle attendant', 'look': 'bg_courtesy', 'x': ks['attendant'][0], 'y': ks['attendant'][1],
-                                'facing': ks['attendant_facing'], 'still': True, 'when': [SHUTTLE_ON, ks['when']],
+                                'facing': ks['attendant_facing'], 'still': True, 'when': [ks['when']],
                                 'lines': {'!story.reached_brightgate': SHUTTLE_TXT['ks_att_first'], 'else': SHUTTLE_TXT['ks_att']}}]}
-else:
-    SLICE_PATCH, KILNMOUTH_STOP = {}, {}
 
 # ---------- final outdoor checks: every door and mouth reachable with every blocker standing; no one-wide choke ----------
 for cid, c in CHUNKS.items():
@@ -958,10 +960,10 @@ out = {
     'scenes': SC,
     'trainers': dict(TRAINERS_OUT, **DISTRICT_TRAINERS),
     'slicePatch': SLICE_PATCH,
-    '_shuttle': {'state': 'inert: D2090 and D2091 wait for Vincent; ' + 'story.bg_shuttle_live' + ' gates every leg', 'kilnmouth_stop': KILNMOUTH_STOP},
+    '_shuttle': {'state': 'live: D2090 and D2091 settled by Vincent, Wed Nov 4, 2026; the Kilnmouth stop (D2092) is placed in detail_zzzzz_kilnmouth.json'},
     'flags': {'story.reached_brightgate': 'set on the first arrival on Gate Plaza (beat sheet §9; ?debug=1 places in this build)',
-              'story.bg_dipper': 'the mill pond dipper, after the encounter (any result)', 'story.bg_shuttle': 'the first shuttle ride (inert until D2090)',
-              'story.bg_shuttle_hm': 'the first shuttle drop at Hearthmoor (inert until D2091)', 'story.bg_f2_guest': 'floor 2, first arrival as a guest',
+              'story.bg_dipper': 'the mill pond dipper, after the encounter (any result)', 'story.bg_shuttle': 'the first shuttle ride, on the first arrival at 32,37 (D2090, D2105)',
+              'story.bg_shuttle_hm': 'the first shuttle drop at Hearthmoor 18,8 (D2091, D2105)', 'story.bg_f2_guest': 'floor 2, first arrival as a guest',
               'story.seal4': 'Hall 4 won (Master Ada Coil, onWin seal4)', 'story.ada_sky': "H4's quiet tail played (beat sheet v3)",
               'story.bg_insign': 'the HQ plaque, first read (§9)', 'story.bg_crate': 'the CALM TOWER crate, first read', 'story.bg_vane': 'the dead vane, first read'},
 }

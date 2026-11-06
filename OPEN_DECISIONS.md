@@ -102,7 +102,8 @@ D1730-D1769 reserved: Design, NAMES_PASS v0.1 (design repo specs/NAMES_PASS.md; 
 D2110-D2339 reserved: Design (design repo specs/STORY_DECISIONS.md v0.109.1 to v0.110.1). D2270-D2279: LOOK_LOCK v0.1 (design repo specs/LOOK_LOCK.md; game `tests/look_lock.spec.js`); D2270-D2272 green (D2270 settled by Vincent's ask, Wed Nov 4, 2026), D2273-D2278 SETTLED by Vincent, Wed Nov 4, 2026 ("Look lock: all defaults"; built on `claude/look-fixes`, archive/DECISIONS_SETTLED.md).
 D2340-D2349 reserved: Design (the latest design repo reservations, Wed Nov 4, 2026).
 D2350: LOOK_LOCK follow-up (game; the Hall 4 crew's teal vest), SETTLED by Vincent, Thu Nov 5, 2026 ("Yes, to both"; archive/DECISIONS_SETTLED.md).
-Next free id is D2351.
+D2351: Bright Shuttle quest row `bg_hall` (green, Engineer, Thu Nov 5, 2026; Iris's call on the #338 quest gap, option B). Copy "Win Seal 4 at the Brightgate Trial Hall in Old Wick." / place "Brightgate Trial Hall" is PLACEHOLDER until Story signs, in the D2102/D2106 block of quest copy; target is the Hall door, Old Wick 32,15.
+Next free id is D2352.
 D2220-D2249 reserved: Design, BANK_AND_HOMES v0.1 (design specs/BANK_AND_HOMES.md; the Acorns chip becomes a button that opens a passbook: ledger, jars, a capped dawn dividend; Your Room kept on a paid-once lease; passes; daily welcome-back mechanics). Approved by Vincent, Wed Nov 4, 2026, with STOCK_MARKET v0.1: every row on its default except D2227 = B (the two statements write `story.cab_seat3_glim=suspected`, amending D1784; the statements are phase 6, not built yet). First slice (D2220-D2223, D2231, D2233, D2234, D2246) built in claude/bank-slice-1; jars, homes, passes, the company account and the Exchange are later slices. D2249 held.
 D1500-D1519 reserved: Design, ACT1_ALIGNMENT_OPTIONS (design specs/ACT1_ALIGNMENT_OPTIONS.md); SETTLED by Vincent, Tue Nov 3, 2026: "Alignment rulings: defaults on D1500, D1501, D1502, D1504-D1519; D1503 B".
 

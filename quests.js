@@ -368,9 +368,26 @@
     { id: 'km_permit', when: ['story.km_storm'], done: ['story.km_permit_seen'],
       text: "The tower crew holds the fence gate. Get past them and read the tower's permit.", place: 'Kilnmouth, the common',
       target: { map: 'kilnmouth', x: 27, y: 20 } },
-    // Brightgate (B5) is its own build: until a route or coach reaches it, the chain holds here.
+    // BRIGHTGATE_LAYOUT §17.1 (D2090, D2106; copy PLACEHOLDER, D2097): B4 to B5. The twin lead opens the Bright Shuttle in the
+    // Kilnmouth works yard; the first visit is always that ride, and the arrival on Gate Plaza is the done.
+    { id: 'bg_ride', when: ['story.km_twin_lead'], done: ['story.reached_brightgate'],
+      text: 'Ride the company shuttle from the Kilnmouth works yard to Brightgate.', place: 'Kilnmouth works yard',
+      target: { map: 'kilnmouth', x: 53, y: 16 } },
+    // The hold stays for a save that read the permit without the twin lead (both are set by the same scene).
     { id: 'a2_hold', when: ['story.km_permit_seen'], done: ['story.reached_brightgate'],
       text: 'Await your next orders.', place: 'The Amberwild' },
+    // H4 (BRIGHTGATE_LAYOUT §5.2; copy PLACEHOLDER, D2351; Iris's call on the #338 quest gap, Thu Nov 5, 2026, option B): after the
+    // first arrival Hall 4 is the next stop. Sits ahead of bg_home and km_report so the Governor row cannot show while Seal 4 is pending.
+    { id: 'bg_hall', when: ['story.reached_brightgate'], done: ['story.seal4'],
+      text: 'Win Seal 4 at the Brightgate Trial Hall in Old Wick.', place: 'Brightgate Trial Hall',   // [PLACEHOLDER]
+      target: { map: 'bg_oldtown', x: 32, y: 15 } },
+    // H4 to B6 (D2091, D2106): after Hall 4, the shuttle home lands beside the Lantern Coach that B6 rides; the first drop at
+    // Hearthmoor ends it (story.bg_shuttle_hm is only ever set after a first visit, so it implies the rows above).
+    { id: 'bg_home', when: ['story.seal4'], done: ['story.bg_shuttle_hm'],
+      text: 'Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', place: 'Brightgate shuttle stop',
+      target: { map: 'brightgate', x: 32, y: 38 } },
+    // Order matters: bg_home sits ahead of km_report so that after Hall 4 the shuttle home (B6) is shown before the report-back to
+    // the Governor (B7, K6); once the first drop at Hearthmoor is made, km_report follows.
     // CABINET_AND_COUNCILS v0.2.2 (1a, 1b; ACT2_BEAT_SHEET B7, B11): the report-back to the Governor (K6, story.km_reported), Lumen's
     // lead-in in the Governor's House lobby, the stair to the Cabinet Room and the twelfth chair (S1 plays there once K2a has,
     // story.pres_cabinet_first; K2a waits on the parade), then Kilnmouth's council sits (K7). Keepers path only. Row text is the

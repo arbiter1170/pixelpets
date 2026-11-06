@@ -13088,8 +13088,9 @@ const REGION_MAP = {
     kilnmouth:     { sheet: 'north', kind: 'town', col: 8, row: 6, label: 'KILNMOUTH', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', nameWhen: ['story.km_assigned'],
       coach: { path: [[8, 6], [7, 8], [8, 10], [9, 11]], when: ['story.km_council'] }, hold: [{ id: 'wild' }] },
     km_road:       { sheet: 'north', kind: 'route', col: 9, row: 9, label: 'CLAYBANK ROAD', labelAt: 'right', blurb: 'PLACEHOLDER (Kilnmouth packet)', path: [[9, 11], [9, 9], [8, 6]], hold: [{ id: 'wild' }] },
-    // BRIGHTGATE_LAYOUT §5.1, §9 (D1481): built, but no route or coach reaches it yet, so it stays ??? and grey until a save has
-    // been there (story.reached_brightgate; ?debug=1 places in this build). Blurb and hold line PLACEHOLDER (Story).
+    // BRIGHTGATE_LAYOUT §5.1, §9 (D1481, amended by D2090): the Bright Shuttle is the way in (walk-on marks, not this node), so it
+    // stays ??? and grey until a save has been there (story.reached_brightgate). The works line (D2093) is the region-map slice's.
+    // Blurb and hold line PLACEHOLDER (Story).
     brightgate:    { sheet: 'north', kind: 'town', col: 15, row: 5, label: 'BRIGHTGATE', labelAt: 'below', blurb: "Glimmerwell's city. Brightgate HQ.",
       hold: [{ id: 'glimmer', line: 'Glimmerwell holds the city. Have a bright day!' }] },
   },

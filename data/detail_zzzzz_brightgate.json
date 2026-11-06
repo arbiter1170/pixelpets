@@ -430,20 +430,6 @@
     },
     {
      "kind": "prop",
-     "id": "bg_south",
-     "x": 32,
-     "y": 38,
-     "sprite": "road_bar",
-     "name": "the shuttle bar",
-     "lines": {
-      "else": "[PLACEHOLDER] The shuttle stop. No shuttle runs from here yet."
-     },
-     "when": [
-      "!story.bg_shuttle_live"
-     ]
-    },
-    {
-     "kind": "prop",
      "id": "bg_lantern_sign",
      "x": 28,
      "y": 33,
@@ -1518,8 +1504,20 @@
      "ty": 8,
      "facing": "up",
      "when": [
-      "story.bg_shuttle_live",
       "story.reached_brightgate"
+     ]
+    },
+    {
+     "kind": "warp",
+     "id": "bs_gate_works",
+     "x": 33,
+     "y": 38,
+     "to": "kilnmouth",
+     "tx": 52,
+     "ty": 16,
+     "facing": "left",
+     "when": [
+      "story.km_council"
      ]
     },
     {
@@ -1528,8 +1526,8 @@
      "x": 32,
      "y": 37,
      "r": 0,
+     "load": true,
      "when": [
-      "story.bg_shuttle_live",
       "!story.bg_shuttle"
      ],
      "scene": "bs_first_ride"
@@ -7607,7 +7605,16 @@
       "ty": 37,
       "facing": "up",
       "when": [
-       "story.bg_shuttle_live",
+       "story.reached_brightgate"
+      ]
+     },
+     {
+      "kind": "sign",
+      "id": "hs_sign",
+      "x": 19,
+      "y": 9,
+      "text": "BRIGHT SHUTTLE · Brightgate. Free, every hour. A Glimmerwell kindness. Have a bright day!",
+      "when": [
        "story.reached_brightgate"
       ]
      },
@@ -7617,8 +7624,9 @@
       "x": 18,
       "y": 8,
       "r": 0,
+      "load": true,
       "when": [
-       "story.bg_shuttle_live",
+       "story.reached_brightgate",
        "!story.bg_shuttle_hm"
       ],
       "scene": "hs_first_drop"
@@ -7628,76 +7636,13 @@
   }
  },
  "_shuttle": {
-  "state": "inert: D2090 and D2091 wait for Vincent; story.bg_shuttle_live gates every leg",
-  "kilnmouth_stop": {
-   "_note": "BRIGHTGATE_LAYOUT §17.1: for the Kilnmouth build to place on its works yard (objs) and on Gate Plaza (gate_works, once kilnmouth exists); inert behind story.bg_shuttle_live",
-   "gate_works": {
-    "kind": "warp",
-    "id": "bs_gate_works",
-    "x": 33,
-    "y": 38,
-    "to": "kilnmouth",
-    "tx": 52,
-    "ty": 16,
-    "facing": "left",
-    "when": [
-     "story.bg_shuttle_live",
-     "story.km_council"
-    ],
-    "map": "brightgate"
-   },
-   "objs": [
-    {
-     "kind": "warp",
-     "id": "bs_kilnmouth",
-     "x": 53,
-     "y": 16,
-     "to": "brightgate",
-     "tx": 32,
-     "ty": 37,
-     "facing": "up",
-     "when": [
-      "story.bg_shuttle_live",
-      "story.km_twin_lead"
-     ]
-    },
-    {
-     "kind": "sign",
-     "id": "ks_sign",
-     "x": 49,
-     "y": 16,
-     "text": "BRIGHT SHUTTLE · Brightgate. Free for partners and their guests. Step on the mark.",
-     "when": [
-      "story.bg_shuttle_live",
-      "story.km_twin_lead"
-     ]
-    },
-    {
-     "kind": "npc",
-     "id": "ks_attendant",
-     "name": "Shuttle attendant",
-     "look": "bg_courtesy",
-     "x": 53,
-     "y": 17,
-     "facing": "left",
-     "still": true,
-     "when": [
-      "story.bg_shuttle_live",
-      "story.km_twin_lead"
-     ],
-     "lines": {
-      "!story.reached_brightgate": "The Lamp Works sends a shuttle for the tower crew. Guests ride free, Cadet. Have a bright day!",
-      "else": "One step to Brightgate. Mind the mark!"
-     }
-    }
-   ]
-  }
+  "state": "live: D2090 and D2091 settled by Vincent, Wed Nov 4, 2026; the Kilnmouth stop (D2092) is placed in detail_zzzzz_kilnmouth.json"
  },
  "flags": {
   "story.reached_brightgate": "set on the first arrival on Gate Plaza (beat sheet §9; ?debug=1 places in this build)",
   "story.bg_dipper": "the mill pond dipper, after the encounter (any result)",
-  "story.bg_shuttle": "the first shuttle ride (inert until D2090)",
-  "story.bg_shuttle_hm": "the first shuttle drop at Hearthmoor (inert until D2091)",
+  "story.bg_shuttle": "the first shuttle ride, on the first arrival at 32,37 (D2090, D2105)",
+  "story.bg_shuttle_hm": "the first shuttle drop at Hearthmoor 18,8 (D2091, D2105)",
   "story.bg_f2_guest": "floor 2, first arrival as a guest",
   "story.seal4": "Hall 4 won (Master Ada Coil, onWin seal4)",
   "story.ada_sky": "H4's quiet tail played (beat sheet v3)",

@@ -361,7 +361,7 @@ test.describe('KILNMOUTH round 1: B2-B4 on their tiles (K-T5; CAB K1-K5, D1990)'
       'story.km_twin_lead': true, 'story.pres_hint_default': true }));
     await goto(page, 'kilnmouth', 31, 22, 'left');
     expect(says(await talk(page, 'km_dray'))).toEqual(["First one's in Brightgate. Never switched on. Ask them why ours was."]);
-    expect((await quest(page)).id).toBe('a2_hold');
+    expect((await quest(page)).id).toBe('bg_ride');   // BRIGHT_SHUTTLE (D2106): the twin lead opens B5's row, the works yard shuttle
     expect((await stored(page)).v).toBe(2);
   });
 
