@@ -376,6 +376,11 @@
     // The hold stays for a save that read the permit without the twin lead (both are set by the same scene).
     { id: 'a2_hold', when: ['story.km_permit_seen'], done: ['story.reached_brightgate'],
       text: 'Await your next orders.', place: 'The Amberwild' },
+    // H4 (BRIGHTGATE_LAYOUT §5.2; copy PLACEHOLDER, D2351; Iris's call on the #338 quest gap, Thu Nov 5, 2026, option B): after the
+    // first arrival Hall 4 is the next stop. Sits ahead of bg_home and km_report so the Governor row cannot show while Seal 4 is pending.
+    { id: 'bg_hall', when: ['story.reached_brightgate'], done: ['story.seal4'],
+      text: 'Win Seal 4 at the Brightgate Trial Hall in Old Wick.', place: 'Brightgate Trial Hall',   // [PLACEHOLDER]
+      target: { map: 'bg_oldtown', x: 32, y: 15 } },
     // H4 to B6 (D2091, D2106): after Hall 4, the shuttle home lands beside the Lantern Coach that B6 rides; the first drop at
     // Hearthmoor ends it (story.bg_shuttle_hm is only ever set after a first visit, so it implies the rows above).
     { id: 'bg_home', when: ['story.seal4'], done: ['story.bg_shuttle_hm'],

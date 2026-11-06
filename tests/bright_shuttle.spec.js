@@ -50,6 +50,8 @@ const LINE = {
 const Q_B5 = ['bg_ride', 'Ride the company shuttle from the Kilnmouth works yard to Brightgate.', 'Kilnmouth works yard', { map: 'kilnmouth', x: 53, y: 16 }];
 const Q_H4 = ['bg_home', 'Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', 'Brightgate shuttle stop', { map: 'brightgate', x: 32, y: 38 }];
 
+const Q_HALL = ['bg_hall', 'Win Seal 4 at the Brightgate Trial Hall in Old Wick.', 'Brightgate Trial Hall', { map: 'bg_oldtown', x: 32, y: 15 }];   // D2351, PLACEHOLDER
+
 function save(flags, world) {
   const s = starterSave();
   s.settings.controls = 'modern';
@@ -309,6 +311,8 @@ test('BS7 quest rows (D2106): B4 to B5 and H4 to B6 read their text, place and t
   }, [MET, CREW, TWIN, IN_BG, H4, Object.assign({}, H4, { 'story.bg_shuttle_hm': true })]);
   expect(rows.twin).toEqual(Q_B5);
   expect(rows.h4).toEqual(Q_H4);
+  // reached_brightgate and km_permit_seen, no seal4: the Hall row, never the Governor's km_report (Iris's call on the quest gap)
+  expect(rows.inbg).toEqual(Q_HALL);
   expect(rows.glim).toEqual([Q_B5[1], Q_H4[1]]);   // one copy serves both sides
   for (const k of ['met', 'crew', 'inbg', 'home']) { expect(rows[k] && rows[k][0], k).not.toBe('bg_ride'); expect(rows[k] && rows[k][0], k).not.toBe('bg_home'); }
   expect(rows.check).toEqual([]);
