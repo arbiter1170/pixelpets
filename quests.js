@@ -49,6 +49,7 @@
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
     'story.bank_book', 'story.bank_open',   // BANK_AND_HOMES §3.3 (D2233): Mom's passbook and Bodin's open book, optional talks off the chain
     'story.mom_mah_ask', 'story.mom_mahopac', 'story.lens_note',   // MAHOPAC_DREAMS §9: Mom's walk north (the warp), her answer at the lens, Ilse's note
+    'story.lizzy_war', 'story.mo_shelf_arbiter', 'story.mo_shelf_five', 'story.mo_shelf_war',   // LORE_DISCOVERY (D2281): the lesson heard (its choice), Mo's shelf reads (Journal notes)
     'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
     'story.reached_brightgate', 'story.bg_insign', 'story.bg_crate', 'story.bg_vane', 'story.seal4', 'story.ada_sky',
     'story.bg_dipper', 'story.bg_shuttle', 'story.bg_shuttle_hm', 'story.bg_f2_guest',   // BRIGHTGATE_LAYOUT §9, §17 (H4's chain row is the Act 2 chain's): the first arrival on Gate Plaza and three first reads (places and hooks, not steps; B5's chain row is Story's)
@@ -586,6 +587,16 @@
       { id: 'lens_moment', label: 'The lens at Mahopac', when: ['story.lens_note', '!story.climb_open'], done: ['story.lens_seen'],
         text: 'Warden Ilse is waiting at the lens in Mahopac.', place: 'Breckenridge Observatory',
         target: { map: 'mahopac_obs', x: 3, y: 2 } },
+    ],
+    // LORE_DISCOVERY slice 1 (D2284): Lizzy's homework after her optional lesson (story.lizzy_war, at the Schoolhouse or at 5B):
+    // the plaza plaque, then back to Lizzy wherever she is (the npc field moves the marker with her). PLACEHOLDER copy.
+    [
+      { id: 'lz_history', label: "Lizzy's homework", when: ['story.lizzy_war'], done: ['story.lizzy_war_plaque'],
+        text: 'Read the plaque under the lantern statue in Hearthmoor Plaza.', place: 'Hearthmoor Plaza',
+        target: { map: 'hm_plaza', x: 12, y: 12 } },
+      { id: 'lz_history_back', when: ['story.lizzy_war_plaque'], done: ['story.lizzy_war_done'],
+        npc: 'Lizzy', text: 'Tell Lizzy who the next holder is.', place: 'Ms. Lizzy, Hearthmoor',
+        target: { map: 'hm_school_in', x: 10, y: 3 } },
     ],
     // WAR_MUSEUM §2.1 (D2307): the museum's quest, the Stamp Trail (PLACEHOLDER name, D2302). Accepted by talk: the curator hands
     // over the card (story.wm_card); five stamps, any order; the fifth pays once (story.wm_trail_done). Optional in every act.

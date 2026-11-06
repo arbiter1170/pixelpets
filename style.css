@@ -350,6 +350,10 @@ button.dex-cell:active{background:var(--n)}
 .dex canvas{width:54px;height:54px;background:var(--n)}
 @media (max-width:340px){ .dex{grid-template-columns:repeat(3,1fr)} }
 .dex .unk{color:var(--m)}
+/* LORE_DISCOVERY D2286: Journal notes under the Journal grid (text only, no taps) */
+.jn-notes{list-style:none;margin:0;padding:0 3px 12px;display:flex;flex-direction:column;gap:6px}
+.jn-notes[hidden]{display:none}
+.jn-notes li{background:var(--d);box-shadow:0 0 0 3px var(--k);padding:6px 8px;font-size:16px;line-height:1.35;color:var(--w);overflow-wrap:anywhere}
 .name-row{display:flex;align-items:center;gap:10px}
 .name-row[hidden]{display:none}
 .name-row label{flex:none;color:var(--y)}
