@@ -86,7 +86,7 @@ test('no v0.2 name (id, slice or time-of-day face) collides with v0.1 or any oth
   const hits = [];
   for (const id of NAMES) {
     const re = new RegExp('[\'"`.]' + id + '[\'"`:\\s,)\\]]');
-    for (const [f, src] of files) if (re.test(src)) hits.push(id + ' in ' + f);
+    for (const [f, src] of files) if (re.test(src) && !(f === 'data/hc_city_v2.js' && ADOPTED_IN_CITY.includes(id))) hits.push(id + ' in ' + f);
   }
   expect(hits).toEqual([]);
   expect(new Set(NAMES).size).toBe(NAMES.length);
@@ -243,7 +243,11 @@ test('reduced motion holds frame 0 of every animated v0.2 prop; without it they 
   expect(await grabs(page, 6)).toBeGreaterThan(1);
 });
 
+// WAR_MUSEUM v0.1.1 (D2301; Vincent approved the museum previews, Thu Nov 5, 2026) is the first room to adopt v0.2 pieces: the three
+// spots its packet marks "in v0.2 if it lands" (the old lantern shelf, the curator's counter, the station clock), in the city only.
+const ADOPTED_IN_CITY = ['pu_lantern_shelf', 'pt_station', 'pf_front_counter_civic_0', 'pf_front_counter_civic_1'];
 test('main maps place no v0.2 prop yet (art only; rooms adopt it in their own builds)', () => {
-  const md = fs.readFileSync(path.join(ROOT, 'data/mapdata.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'data/hc_city_v2.js'), 'utf8');
+  const md = fs.readFileSync(path.join(ROOT, 'data/mapdata.js'), 'utf8'), city = fs.readFileSync(path.join(ROOT, 'data/hc_city_v2.js'), 'utf8');
   expect(NAMES.filter(id => md.includes('"' + id + '"'))).toEqual([]);
+  expect(NAMES.filter(id => city.includes('"' + id + '"')).sort()).toEqual(ADOPTED_IN_CITY.slice().sort());
 });

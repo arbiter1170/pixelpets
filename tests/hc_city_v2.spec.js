@@ -334,7 +334,7 @@ test('D1426, D1439: Governor Merriden is Act 2 and civil (cast faction none); th
   expect(door.deny).toBe('By appointment.');
   const gov = gov1.find(o => o.id === 'hc_governor');
   expect(gov.when).toEqual(['story.act>=2']);
-  expect(gov.lines.else).toContain('Act 2');
+  expect(gov.lines.else).toBe("Without an appointment? I'm afraid even I need one of those, most days.");   // STORY_LINES D2138
   expect(gov.lines['story.gov_posted & !story.hc_gov_met']).toBe('@hc_gov_meet');   // GOVERNOR_MEETING §5
   expect(gov.lines.else).not.toContain('Act 5');
   // CABINET 1b: floor 1's stair goes to the Cabinet Room on the seat's key or GOV3; GOV3 moves up to floor 2's stair to floor 3

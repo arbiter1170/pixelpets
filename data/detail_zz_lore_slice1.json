@@ -10,7 +10,7 @@
   ]
  },
  "_revisit": {
-  "note": "D2320-D2331 and D2333-D2339 are settled (Wed Nov 4, 2026); every line here was re-read against them and stands, so their markers are cleared. D2332 waits on a rework: re-read these two scenes when it lands (D2295).",
+  "note": "HELD for the D2380 re-voice (D2394), Vincent's call Thu Nov 5, 2026 (\"hold the two scenes\"; D2380 = A, The Turning). lz_war and lz_war_home stay here as written, D2332 still marked, but they cannot play: their triggers (the two Lizzy keys, and the two chalkboard hints that point at them) need story.lz_war_open, a flag nothing sets. When June has re-voiced them (D2295), set that flag from the re-voiced build, or drop the prefix.",
   "scenes.lz_war": [
    "D2332"
   ],
@@ -19,6 +19,7 @@
   ]
  },
  "flags": {
+  "story.lz_war_open": "HOLD GATE (D2394). Nothing sets this flag. The lesson triggers (lz_war, lz_war_home) and the chalkboard hints need it, so the two war scenes cannot play until the D2380 re-voice lands. The homework row, the plaza plaque, the chatter and the lesson Journal note all open on story.lizzy_war, which only those scenes set, so they stay dormant meanwhile.",
   "story.lizzy_war": "ask / read. Lizzy's war lesson heard (lz_war at the Schoolhouse, or lz_war_home at 5B in the evening); the value is its one choice. Once only. NOT_STEPS (the homework rows open on it).",
   "story.lizzy_war_plaque": "The plaza plaque read for the homework (lz_war_plaque). Done flag of the lz_history row.",
   "story.lizzy_war_done": "The homework told back to Lizzy (lz_war_back): the sticker and the Journal note. Done flag of lz_history_back.",
@@ -343,7 +344,7 @@
    "linesBefore": {
     "anchorKey": "else",
     "add": {
-     "story.lizzy_class & !story.lizzy_war & day:weekday & win:school": "@lz_war",
+     "story.lz_war_open & story.lizzy_class & !story.lizzy_war & day:weekday & win:school": "@lz_war",
      "story.lizzy_war_plaque & !story.lizzy_war_done": "@lz_war_back"
     }
    }
@@ -352,7 +353,7 @@
    "linesBefore": {
     "anchorKey": "else",
     "add": {
-     "story.lizzy_class & !story.lizzy_war & win:evening": "@lz_war_home",
+     "story.lz_war_open & story.lizzy_class & !story.lizzy_war & win:evening": "@lz_war_home",
      "story.lizzy_war_plaque & !story.lizzy_war_done": "@lz_war_back"
     }
    }
@@ -376,8 +377,8 @@
   "school_board": {
    "linesFirst": {
     "story.lizzy_war": "THE GREAT WAR, in Lizzy's hand. A line under it is wiped. Then: PICKING DAY, and a question mark.",
-    "story.lizzy_class & away:Lizzy": "NEW LESSON: THE GREAT WAR. Weekdays, 8 to 3. Or knock at 5B after supper. - L.",
-    "story.lizzy_class": "NEW LESSON TODAY: THE GREAT WAR. Ask Ms. Lizzy."
+    "story.lz_war_open & story.lizzy_class & away:Lizzy": "NEW LESSON: THE GREAT WAR. Weekdays, 8 to 3. Or knock at 5B after supper. - L.",
+    "story.lz_war_open & story.lizzy_class": "NEW LESSON TODAY: THE GREAT WAR. Ask Ms. Lizzy."
    }
   },
   "hmp_plaque": {

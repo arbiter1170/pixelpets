@@ -1,7 +1,8 @@
 /* BRIGHTGATE_LAYOUT v0.2 (design specs/BRIGHTGATE_LAYOUT.md; D1478-D1499, D2000-D2009 settled; rule 9 previews approved):
    Glimmerwell's city, built by tools/build_brightgate.py into data/detail_zzzzz_brightgate.json. Widths are the Playwright
-   projects (320, 375, 390); every save here is in Modern controls. No route reaches the city yet: ?debug=1 places only.
-   Save stays pixelpets.save.v2 with v 2; the only new flag is story.reached_brightgate (additive). The §13 acceptance list
+   projects (320, 375, 390); every save here is in Modern controls. The Bright Shuttle (§17.1, D2090/D2091) is the way in; it
+   has its own spec (tests/bright_shuttle.spec.js), so these city saves have already ridden it once (story.bg_shuttle) and
+   ?debug=1 places them. Save stays pixelpets.save.v2 with v 2; the only new flag is story.reached_brightgate (additive). The §13 acceptance list
    is matched test by test below (BG1-BG9); the layout checker's rules are ported onto the composed world in BG3. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
@@ -18,6 +19,7 @@ function save(extra) {
   s.settings.follower = false;
   s.settings.textSpeed = 'fast';
   s.settings.tips = false;
+  s.flags['story.bg_shuttle'] = true;   // the first-ride narration on 32,37 is the shuttle spec's (BS1)
   Object.assign(s.flags, extra || {});
   return s;
 }
@@ -118,7 +120,9 @@ test('BG3 the layout checker on the game data: sizes, mouths paired, doors under
         if (o.kind === 'warp') {
           const to = W[o.to];
           if (!to) { out.push(id + ' warp ' + o.id + ' to a missing map'); continue; }
-          if (!walk(to.grid[o.ty][o.tx])) out.push(id + ' warp ' + o.id + ' lands on a solid tile');
+          // a skinned map (Kilnmouth's km_town, the works line's landing) reads its chars through its skin's walk table, as the game does
+          const sk = to.skin && typeof SKINS !== 'undefined' && SKINS[to.skin], ch = to.grid[o.ty][o.tx];
+          if (!((sk && sk.walk && sk.walk[ch] != null) ? sk.walk[ch] : walk(ch))) out.push(id + ' warp ' + o.id + ' lands on a solid tile');
           // paired: the landing has a warp back to this map within one tile
           const back = to.objs.some(b => b.kind === 'warp' && b.to === id && Math.abs(b.x - o.tx) + Math.abs(b.y - o.ty) === 1);
           if (!back) out.push(id + ' warp ' + o.id + ' has no warp back');
@@ -215,7 +219,7 @@ test('BG5 Bright Mart: the door leads in, the clerk runs the shop, and the mat l
   expect(await page.evaluate(() => [PixelPets.state.world.x, PixelPets.state.world.y])).toEqual([35, 34]);
 });
 
-test('BG6 shut doors say their line, and the shuttle stop says no shuttle runs yet (§5.4, §11)', async ({ page }) => {
+test('BG6 shut doors say their line, and the shuttle stop at 32,38 rides home to Hearthmoor (§5.4, §11, §17.1)', async ({ page }) => {
   await boot(page);
   await place(page, 'bg_keeper');
   const cases = [['brightgate', 55, 12, 'Residents only. Have a bright day!'], ['bg_campus', 52, 19, "By appointment. We'll call you."],
@@ -232,9 +236,8 @@ test('BG6 shut doors say their line, and the shuttle stop says no shuttle runs y
   await page.evaluate(() => PixelPets.goto('brightgate', 32, 37, 'down'));
   await settled(page, 'brightgate');
   await page.evaluate(() => PixelPets.walkStep('down'));
-  expect(await sayText(page)).toContain('No shuttle runs from here yet');
-  await closeSay(page);
-  expect(await page.evaluate(() => PixelPets.mapInfo.id)).toBe('brightgate');
+  await settled(page, 'hearthmoor');   // D2091: the bar is gone; the home mark lands beside the Lantern Coach
+  expect(await page.evaluate(() => [PixelPets.state.world.x, PixelPets.state.world.y])).toEqual([18, 8]);
 });
 
 test('BG7 no mint anywhere in Brightgate: the arrival frame and every battle scene (D2000, §13 item 8) @w1', async ({ page }) => {
@@ -517,27 +520,26 @@ test('BG15 Hall 4 teams are v0.2.1 §17.2: two Walklings per crew at Lv 32-33, A
 });
 
 // v0.2.1 §17.3-§17.5 (D2092-D2106 on their defaults): four optional holders, one placed dipper and no wild table; the bench
-// rest; the missing lines; and the Bright Shuttle's data held inert behind story.bg_shuttle_live until D2090/D2091 are ruled.
-test('BG16 v0.2.1: holders talk to battle, no wild rolls, the dipper once, the bench rests, the shuttle stays inert @w1', async ({ page }) => {
+// rest; the missing lines; and the Bright Shuttle's legs, live since D2090/D2091 (tests/bright_shuttle.spec.js plays them).
+test('BG16 v0.2.1: holders talk to battle, no wild rolls, the dipper once, the bench rests, the shuttle legs stand @w1', async ({ page }) => {
   test.setTimeout(90000);
   await boot(page, ACT2);
   const r = await page.evaluate(() => { const W = window.WORLD, T = MAPDATA.detail_zzzzz_brightgate.trainers;
     const ids = ['brightgate', 'bg_campus', 'bg_works', 'bg_oldtown', 'bg_partner'];
     return { holders: ids.map(id => W[id].objs.filter(o => o.kind === 'trainer').map(o => [o.id, o.x, o.y, T[o.id].sight])),
       spawns: ids.map(id => W[id].spawns), wilds: ids.map(id => W[id].objs.filter(o => o.kind === 'wild').map(o => [o.id, o.x, o.y, o.form, o.level])),
-      shuttle: W.brightgate.objs.filter(o => /^bs_/.test(o.id)).map(o => [o.id, o.when]), hm: W.hearthmoor.objs.filter(o => /^(bs_|hs_)/.test(o.id)).map(o => o.id) }; });
+      shuttle: W.brightgate.objs.filter(o => /^bs_/.test(o.id)).map(o => [o.id, o.when]), hm: W.hearthmoor.objs.filter(o => /^(bs_|hs_)/.test(o.id)).map(o => o.id),
+      bar: W.brightgate.objs.filter(o => o.id === 'bg_south').map(o => o.id) }; });
   expect(r.holders).toEqual([[['bg_h_board', 50, 27, 0]], [], [['bg_h_quay', 20, 36, 0]], [['bg_h_potter', 40, 32, 0]], [['bg_h_partner', 15, 39, 0]]]);
   expect(r.spawns).toEqual([null, null, null, null, null]);
   expect(r.wilds).toEqual([[], [], [], [['bg_wild_dipper', 17, 35, 'dipper/1', 32]], []]);
-  for (const [, when] of r.shuttle) expect(when).toContain('story.bg_shuttle_live');
-  expect(r.hm.sort()).toEqual(['bs_hearthmoor', 'hs_first_drop']);
-  // inert: the shuttle bar still stands at 32,38 and says no shuttle runs; Hearthmoor's mark is absent
-  await page.evaluate(() => PixelPets.goto('brightgate', 32, 37, 'down')); await settled(page, 'brightgate');
-  await page.evaluate(() => PixelPets.walkStep('down'));
-  expect(await sayText(page)).toContain('No shuttle runs from here yet');
-  await closeSay(page);
+  expect(r.shuttle).toEqual([['bs_gate_home', ['story.reached_brightgate']], ['bs_gate_works', ['story.km_council']], ['bs_first_ride', ['!story.bg_shuttle']]]);
+  expect(r.hm.sort()).toEqual(['bs_hearthmoor', 'hs_first_drop', 'hs_sign']);
+  expect(r.bar).toEqual([]);   // the "no shuttle yet" bar left 32,38 when the shuttle went live
+  // Hearthmoor's mark stands once a first visit is made (the arrival sets story.reached_brightgate)
+  await page.evaluate(() => PixelPets.goto('brightgate', 32, 36, 'down')); await settled(page, 'brightgate');
   await page.evaluate(() => PixelPets.goto('hearthmoor', 16, 10, 'up')); await settled(page, 'hearthmoor');
-  expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'bs_hearthmoor'))).toBe(false);
+  expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'bs_hearthmoor'))).toBe(true);
   // the bench by Hall 4's door rests the team (the built rest step)
   await page.evaluate(() => PixelPets.goto('bg_hall_in', 6, 22, 'left')); await settled(page, 'bg_hall_in');
   await page.evaluate(() => PixelPets.walkStep('left'));

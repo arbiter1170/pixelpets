@@ -211,21 +211,31 @@ for (const state of Object.keys(PICK)) {
   });
 }
 
-test('T6: the props keep the split look on every save kind until Fen\'s turn (D1432), whatever mapHold(fernbrook) reads', async ({ page }) => {
+test('T6 + D1191 + D1432: the props keep the split look until Fen\'s turn, then follow mapHold(fernbrook) through the hold: term, on every save kind', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390');
   test.setTimeout(120000);
   const kinds = ['a1', 'a2', 'b', "b'", 'c', 'c_glimmer', 'p', 'n', 'a1_glimmer'];
-  for (const kind of kinds) {
-    const fx = K.KINDS[kind], s = starterSave();
+  // #300 (ACT1_KEEPER_JOIN, D1504-D1506): a Keeper Cadet's Fernbrook settles by sway. The props follow it through the
+  // hold: term with no change of their own (D1191); these kinds pin that, with the hold each should read.
+  const cadet = (sway) => ({ flags: Object.assign({}, K.KINDS.c.flags, { 'story.keeper_cadet': true, 'story.side_pick_done': true, 'story.seal1': true, 'story.side': 'keepers', 'story.sway_fernbrook': sway }), seals: K.KINDS.c.seals });
+  const SWAY = { 'cadet_sway+3': [cadet(3), 'keepers'], 'cadet_sway-3': [cadet(-3), 'glimmer'], 'cadet_sway+1': [cadet(1), 'split'] };
+  for (const turned of [false, true]) for (const kind of kinds.concat(Object.keys(SWAY))) {
+    const fx = SWAY[kind] ? SWAY[kind][0] : K.KINDS[kind], s = starterSave();
     Object.assign(s.flags, fx.flags); s.seals = { ...fx.seals };
+    // D1432: story.fen_turned is set by nothing yet; the second pass sets it by hand, and the props then follow the hold (D1191).
+    if (turned) s.flags['story.fen_turned'] = 'keepers';
     s.world = { map: 'fernbrook', x: 12, y: 8, facing: 'down', respawn: 'fernbrook' };
     await installSave(page.context(), s, { quietDay: true });
     await gotoGame(page, ON);
     await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && typeof PixelPets.gateRead === 'function');
     const got = await page.evaluate(ids => ({ hold: PixelPets.mapHold('fernbrook'), on: ids.filter(id => (PixelPets.gateRead('fb_hall_in', id) || {}).whenOk) }), Object.keys(SHOWS));
-    // D1432: no kind here has story.fen_turned, so the Hall keeps the split look whatever the hold is.
-    const want = Object.keys(SHOWS).filter(id => shows(SHOWS[id], 'split') && !['fen_hall'].includes(id));
-    expect(got.on.filter(id => id !== 'fen_hall').sort(), kind).toEqual(want.sort());
+    if (SWAY[kind]) expect(got.hold, kind).toBe(SWAY[kind][1]);
+    // D1432: without story.fen_turned the Hall keeps the split look whatever the hold is; with it, the look is the hold's.
+    const want = Object.keys(SHOWS).filter(id => shows(SHOWS[id], turned ? got.hold : 'split') && !['fen_hall'].includes(id));
+    expect(got.on.filter(id => id !== 'fen_hall').sort(), kind + (turned ? ' turned' : '')).toEqual(want.sort());
+    // D1191: the props' `hold:` term is mapHold itself, negation included.
+    const terms = await page.evaluate(() => ['split', 'keepers', 'glimmer'].map(h => [h, PixelPets.condRead('hold:fernbrook=' + h).cond, PixelPets.condRead('!hold:fernbrook=' + h).cond]));
+    for (const [h, yes, no] of terms) { expect(yes, kind + ' ' + h).toBe(got.hold === h); expect(no, kind + ' !' + h).toBe(got.hold !== h); }
     await page.context().clearCookies();
     await page.evaluate(() => localStorage.clear());
   }
@@ -288,8 +298,11 @@ test('T11 T12: every new art key exists, no crimson in it, and the east floor re
   }, { tiles: NEW_TILES, art: NEW_ART });
   expect(r.missing).toEqual([]);
   expect(r.crimson).toBe(0);
-  // Mean luma on a 0-255 scale (first build: east about 27 above west). The Glimmerwell half must read lighter.
+  // Mean luma on a 0-255 scale. The Glimmerwell half must read lighter (§6.3), but not glare. D1195 (Sprites, Nov 3, 2026): the
+  // polished floor is an h field on a 1 px K grout grid, so east minus west measures about +21 (P 162 against hall_flag 140); the
+  // brief's +28 needs w in the field, which is the glare the brief rules out. Kept above +20 (where the halves merge), capped at +40.
   expect(r.east - r.west).toBeGreaterThan(20);
+  expect(r.east - r.west).toBeLessThan(40);
   expect(r.seam.filter(t => t === 'glim_seam').length).toBeGreaterThanOrEqual(10);
 });
 

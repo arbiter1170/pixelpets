@@ -1,7 +1,7 @@
 {
  "spec": "handoff/specs/POST_TRIAL_CRACKDOWN.md v0.3.1 + LANTERN_HOUSE_FERNBROOK.md; Vincent's Nov 3, 2026 change: no pick at dawn, the Warden's summons first (handoff/specs/WARDEN_SUMMONS.md)",
  "_about": "Ours, not a design copy. The post-Trial crackdown (scenes crackdown_street and crackdown_lantern), the shut Trial Hall, the curfew order until the pick (POST_TRIAL_CRACKDOWN §5: posts, notice, cordon, Glimmerwell on the east road; townsfolk back by day once Ilse calls, D1405), Warden Ilse's call (ilse_call) and the Lodge debrief (warden_meet) from RENDEZVOUS_VINCENT beats 1-2 (D1395, D1404; merged with WARDEN_SUMMONS by Vincent). The rendezvous, the two shifts and the report are a later build on top of this one, which moves the pick gate to story.rdv_done. Lantern House room objects live in fernbrook_rooms.json, because its maps load after every detail patch.",
- "_placeholders": "Every line here is PLACEHOLDER for June (D1208). The Commander is unnamed (D1198). 'Keeper tank' wording and the tanks' look are drafts (D1202). The Warden's lines and the dawn wire are placeholders until WARDEN_SUMMONS is written and settled (D1396-D1418). story.fen_lean steps (+1 Keep it, +1 He's hiding something, -1 He means well, 0 Hand it over) are PLACEHOLDER until Seals lore v3.1's encoding lands (D1411).",
+ "_placeholders": "Every line here is PLACEHOLDER for June (D1208). The Commander is unnamed (D1198). 'Keeper tank' wording and the tanks' look are drafts (D1202). The Warden's lines and the dawn wire are placeholders until WARDEN_SUMMONS is written and settled (D1396-D1418). story.fen_lean steps (+1 Keep it, +1 He's hiding something, -1 He means well, 0 Hand it over) are PLACEHOLDER until Seals lore v3.1's encoding lands (D1411). Story's lines (STORY_LINES Nov 4, 2026) are final for the Hall door's denyFirst (D2133), Fen's fen_dawn lines (D2134) and the Warden's call and Amos's message (D2139).",
  "flags": {
   "story.crackdown": "POST_TRIAL_CRACKDOWN: set at the end of the street scene (done flag of crackdown_street)",
   "story.hall1_shut": "D1224 (SEALS-O): the Fernbrook Trial Hall is shut by order of High Charity until Fen's Act 2 turn",
@@ -14,7 +14,7 @@
   "cd_cmdr": {
    "skin": "2",
    "hair": "short",
-   "hairCol": "h",
+   "hairCol": "k",
    "outfit": "cloak",
    "outfitCol": "g",
    "accent": "y",
@@ -1028,10 +1028,10 @@
        "!story.orchard_cleared"
       ],
       "lines": {
-       "story.orchard_lean=open": "Tobin won't listen to me. Try him.",
-       "story.chi_done": "You saw Ilse? Good. Then let's settle the rest, here at the gate.",
-       "story.warden_called & !story.warden_met": "The Warden rang you too? Go. I'll be at the gate.",
-       "story.warden_met": "Ilse sent you east? Go on. The crates aren't going anywhere today.",
+       "story.orchard_lean=open": "Tobin's by the cart. Show him what a strong team looks like.",
+       "story.chi_done": "Back from Wickerglen. Good. Step up to the gate, and we'll settle these crates.",
+       "story.warden_called & !story.warden_met": "The Warden wants you home? Go. The gate will keep.",
+       "story.warden_met": "The Warden sent you east? Go on. The crates aren't going anywhere today.",
        "else": "The roots held through the night. So did we."
       },
       "_note": "WARDEN_SUMMONS §3: Fen waits at the orchard gate from the dawn release until the lean. ACT1_KEEPER_JOIN: the Wickerglen investigation comes first; the lean (fb_side_pick) waits for story.chi_done. Re-pointed lines are PLACEHOLDER."
@@ -1157,7 +1157,8 @@
   "fb_hall": {
    "shutWhen": "story.hall1_shut",
    "denyFirst": {
-    "story.hall1_shut": "Shut by order of High Charity. A Keeper cordon blocks the door."
+    "story.hall1_shut & !story.side_pick_done": "Shut by order of High Charity. A Keeper cordon blocks the door.",
+    "story.hall1_shut": "Shut by order of High Charity. The notice on the door has started to curl."
    }
   },
   "ilse_lodge_after": {

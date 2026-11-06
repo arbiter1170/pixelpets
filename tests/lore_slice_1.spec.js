@@ -8,6 +8,7 @@ const { starterSave, installSave, trackErrors, gotoGame, withOverlay } = require
 trackErrors(test, expect);
 
 const NEW_FLAGS = ['story.lizzy_war', 'story.lizzy_war_plaque', 'story.lizzy_war_done', 'story.mo_shelf_arbiter', 'story.mo_shelf_five', 'story.mo_shelf_war'];
+const OPEN = { 'story.lz_war_open': true };   // D2394: the hold gate; T12 proves the lesson cannot play without it
 const CLASS_DONE = { 'story.class_sent': true, 'story.lizzy_met': true, 'story.lizzy_class': true, 'story.leak5b_seen': true, 'story.leak5b_yes': true };
 const KEEPER = { 'story.met_mo': true, 'story.side': 'keepers', 'story.side_pick_done': true, 'story.keeper_cadet': true };
 const TOAST = 'Written in your Journal.';
@@ -85,7 +86,7 @@ const texts = lines => lines.filter(l => l[0] !== '>' && l[0] !== '?').map(l => 
 test.describe('LORE_DISCOVERY slice 1: Lizzy\'s war lesson (D2280-D2283, D2287)', () => {
   test('T1: the lesson plays on a weekday by day after the class, once, and sets story.lizzy_war to the choice', async ({ page }) => {
     test.setTimeout(90000);
-    await boot(page, save(CLASS_DONE));
+    await boot(page, save(Object.assign({}, CLASS_DONE, OPEN)));
     const main0 = await page.evaluate(() => PixelPets.quest && PixelPets.quest.id);
     await at(page, 'mon', 10);
     await goto(page, 'hm_school_in', 10, 5, 'up');
@@ -119,7 +120,7 @@ test.describe('LORE_DISCOVERY slice 1: Lizzy\'s war lesson (D2280-D2283, D2287)'
   });
 
   test('T2: no lesson before the class, at the weekend or after school; the weekend court is Lizzy\'s own line', async ({ page }) => {
-    await boot(page, save({ 'story.lizzy_met': true, 'story.leak5b_seen': true, 'story.leak5b_yes': true }));
+    await boot(page, save(Object.assign({ 'story.lizzy_met': true, 'story.leak5b_seen': true, 'story.leak5b_yes': true }, OPEN)));
     await at(page, 'tue', 10);
     await goto(page, 'hm_school_in', 10, 5, 'up');
     expect(await line(page, 'school_lizzy')).not.toMatch(/lz_war/);   // the class is not done: the built line stands
@@ -138,7 +139,7 @@ test.describe('LORE_DISCOVERY slice 1: Lizzy\'s war lesson (D2280-D2283, D2287)'
 
   test('T3: the evening fallback at 5B plays the short lesson and sets the same flag', async ({ page }) => {
     test.setTimeout(90000);
-    await boot(page, save(CLASS_DONE));
+    await boot(page, save(Object.assign({}, CLASS_DONE, OPEN)));
     await at(page, 'sat', 20);
     await goto(page, 'hm_flats_5', 13, 5, 'up');
     expect(await line(page, 'f5_lizzy')).toBe('@lz_war_home');
@@ -154,7 +155,7 @@ test.describe('LORE_DISCOVERY slice 1: Lizzy\'s war lesson (D2280-D2283, D2287)'
   });
 
   test('T4: the chalkboard hints at the lesson, at the evening fallback, then shows the wiped line', async ({ page }) => {
-    await boot(page, save({ 'story.lizzy_met': true }));
+    await boot(page, save(Object.assign({ 'story.lizzy_met': true }, OPEN)));
     await at(page, 'mon', 10);
     await goto(page, 'hm_school_in', 4, 3, 'up');
     expect(await line(page, 'school_board')).toBe('BE KIND. FEED FIRST. ASK BEFORE YOU PET. Written in Lizzy\'s round chalk letters.');
@@ -364,7 +365,7 @@ test.describe('LORE_DISCOVERY slice 1: chatter (D2290)', () => {
 test.describe('LORE_DISCOVERY slice 1: saves (D2281)', () => {
   test('T11: an old save loads unchanged; the full slice adds only its story.* keys and keeps the save shape', async ({ page }) => {
     test.setTimeout(120000);
-    const old = save({ 'story.class_sent': true, 'story.lizzy_met': true, 'story.lizzy_class': true, 'story.seal1': true, 'story.post_trial_done': true, 'story.met_mo': true });
+    const old = save(Object.assign({ 'story.class_sent': true, 'story.lizzy_met': true, 'story.lizzy_class': true, 'story.seal1': true, 'story.post_trial_done': true, 'story.met_mo': true }, OPEN));
     await boot(page, old, { oldSave: true });
     await page.evaluate(() => { PixelPets.setFlag('story.leak5b_seen', true); PixelPets.setFlag('story.leak5b_yes', true); });   // setFlag saves
     const s0 = await stored(page);
@@ -394,5 +395,25 @@ test.describe('LORE_DISCOVERY slice 1: saves (D2281)', () => {
     expect(added.filter(k => !k.startsWith('daily.') && !k.startsWith('standing.') && !k.startsWith('story.beat.') && !k.startsWith('story.unlock_')).sort()).toEqual(['story.lizzy_war', 'story.lizzy_war_done', 'story.lizzy_war_plaque']);
     expect(s1.flags['story.lizzy_war']).toBe('ask');
     expect(await page.evaluate(() => PixelPets.questCheck)).toEqual([]);
+  });
+});
+
+test.describe('LORE_DISCOVERY slice 1: the two war scenes are held (D2394)', () => {
+  test('T12: with nothing setting story.lz_war_open, neither war scene can trigger, at school, at 5B or on the chalkboard', async ({ page }) => {
+    test.setTimeout(90000);
+    await boot(page, save(CLASS_DONE));
+    expect((await flags(page))['story.lz_war_open']).toBeUndefined();
+    await at(page, 'mon', 10);
+    await goto(page, 'hm_school_in', 10, 5, 'up');
+    expect(await line(page, 'school_lizzy')).not.toMatch(/lz_war/);
+    await goto(page, 'hm_school_in', 4, 3, 'up');
+    expect(await line(page, 'school_board')).not.toMatch(/GREAT WAR/);
+    await at(page, 'sat', 20);
+    await goto(page, 'hm_flats_5', 13, 5, 'up');
+    expect(await line(page, 'f5_lizzy')).not.toMatch(/lz_war/);
+    expect((await flags(page))['story.lizzy_war']).toBeUndefined();
+    // The data stays for June's re-voice: both scenes are still in the overlay, only unreachable.
+    const ids = ['lz_war', 'lz_war_home'].map(k => !!require('../data/detail_zz_lore_slice1.json').scenes[k]);
+    expect(ids).toEqual([true, true]);
   });
 });

@@ -47,6 +47,7 @@
     'story.sway_fernbrook', 'story.warden_cut',   // ACT1_KEEPER_JOIN §5: a town's sway counter (D1504) and the Act 3 loyalist choice (D1514)
     'story.a2_called', 'story.gov_told', 'story.rpt_gov',   // GOVERNOR_MEETING §6.2: Ilse's Act 2 call, the ledger told/kept (lines only), the optional Lodge report
     'story.cv_mom', 'story.cv_mom_walk', 'story.cv_mom_day', 'story.cv_juniper',   // ACT2_COVER_STORY §5.1: reveal answers (lines only), Supper's walk, the snack's day
+    'story.bank_book', 'story.bank_open',   // BANK_AND_HOMES §3.3 (D2233): Mom's passbook and Bodin's open book, optional talks off the chain
     'story.mom_mah_ask', 'story.mom_mahopac', 'story.lens_note',   // MAHOPAC_DREAMS §9: Mom's walk north (the warp), her answer at the lens, Ilse's note
     'story.lizzy_war', 'story.mo_shelf_arbiter', 'story.mo_shelf_five', 'story.mo_shelf_war',   // LORE_DISCOVERY (D2281): the lesson heard (its choice), Mo's shelf reads (Journal notes)
     'story.reached_route4', 'story.reached_withy', 'story.r4_adder_met', 'story.r4_heron_met', 'story.r4_heron_three',   // ROUTE_TO_GOVERNOR §10.1: places and sightings
@@ -58,6 +59,8 @@
     'story.hc_noon', 'story.hc_board', 'story.hc_mural', 'story.hc_lampstock', 'story.hc_gran', 'story.hc_news',   // HIGH_CHARITY_LAYOUT §11 hooks
     'story.hc_wall', 'story.hc_chute', 'story.hc_chambers', 'story.hc_gov_met', 'story.hc_trial_called',
     'story.cab_seat', 'story.km_seat_filled',   // CABINET_AND_COUNCILS §6 (1b): S1 writes them beside the chain step story.km_seat_pick
+    'story.wm_visited', 'story.wm_card', 'story.wm_trail', 'story.wm_trail_pick', 'story.wm_given', 'story.wm_plaque', 'story.wm_runner',   // WAR_MUSEUM §8:
+    'story.wm_st_lanterns', 'story.wm_st_map', 'story.wm_st_scout', 'story.wm_st_drum', 'story.wm_st_case',   // results and counters (city only); wm_trail_done is the side step
     'story.hc_parade_square', 'story.hc_sf_1', 'story.hc_sf_2', 'story.hc_sf_3', 'story.hc_parade_seen',   // HC_PARADE (D1365): beats inside the parade scene (city only); story.hc_greeted stays the step
     'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue',   // High Charity and Mahopac bits; neither is a main-chain step
     // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
@@ -366,9 +369,26 @@
     { id: 'km_permit', when: ['story.km_storm'], done: ['story.km_permit_seen'],
       text: "The tower crew holds the fence gate. Get past them and read the tower's permit.", place: 'Kilnmouth, the common',
       target: { map: 'kilnmouth', x: 27, y: 20 } },
-    // Brightgate (B5) is its own build: until a route or coach reaches it, the chain holds here.
+    // BRIGHTGATE_LAYOUT §17.1 (D2090, D2106; copy PLACEHOLDER, D2097): B4 to B5. The twin lead opens the Bright Shuttle in the
+    // Kilnmouth works yard; the first visit is always that ride, and the arrival on Gate Plaza is the done.
+    { id: 'bg_ride', when: ['story.km_twin_lead'], done: ['story.reached_brightgate'],
+      text: 'Ride the company shuttle from the Kilnmouth works yard to Brightgate.', place: 'Kilnmouth works yard',
+      target: { map: 'kilnmouth', x: 53, y: 16 } },
+    // The hold stays for a save that read the permit without the twin lead (both are set by the same scene).
     { id: 'a2_hold', when: ['story.km_permit_seen'], done: ['story.reached_brightgate'],
       text: 'Await your next orders.', place: 'The Amberwild' },
+    // H4 (BRIGHTGATE_LAYOUT §5.2; copy PLACEHOLDER, D2351; Iris's call on the #338 quest gap, Thu Nov 5, 2026, option B): after the
+    // first arrival Hall 4 is the next stop. Sits ahead of bg_home and km_report so the Governor row cannot show while Seal 4 is pending.
+    { id: 'bg_hall', when: ['story.reached_brightgate'], done: ['story.seal4'],
+      text: 'Win Seal 4 at the Brightgate Trial Hall in Old Wick.', place: 'Brightgate Trial Hall',   // [PLACEHOLDER]
+      target: { map: 'bg_oldtown', x: 32, y: 15 } },
+    // H4 to B6 (D2091, D2106): after Hall 4, the shuttle home lands beside the Lantern Coach that B6 rides; the first drop at
+    // Hearthmoor ends it (story.bg_shuttle_hm is only ever set after a first visit, so it implies the rows above).
+    { id: 'bg_home', when: ['story.seal4'], done: ['story.bg_shuttle_hm'],
+      text: 'Take the shuttle home to Hearthmoor. The Lantern Coach waits there.', place: 'Brightgate shuttle stop',
+      target: { map: 'brightgate', x: 32, y: 38 } },
+    // Order matters: bg_home sits ahead of km_report so that after Hall 4 the shuttle home (B6) is shown before the report-back to
+    // the Governor (B7, K6); once the first drop at Hearthmoor is made, km_report follows.
     // CABINET_AND_COUNCILS v0.2.2 (1a, 1b; ACT2_BEAT_SHEET B7, B11): the report-back to the Governor (K6, story.km_reported), Lumen's
     // lead-in in the Governor's House lobby, the stair to the Cabinet Room and the twelfth chair (S1 plays there once K2a has,
     // story.pres_cabinet_first; K2a waits on the parade), then Kilnmouth's council sits (K7). Keepers path only. Row text is the
@@ -577,6 +597,13 @@
       { id: 'lz_history_back', when: ['story.lizzy_war_plaque'], done: ['story.lizzy_war_done'],
         npc: 'Lizzy', text: 'Tell Lizzy who the next holder is.', place: 'Ms. Lizzy, Hearthmoor',
         target: { map: 'hm_school_in', x: 10, y: 3 } },
+    ],
+    // WAR_MUSEUM §2.1 (D2307): the museum's quest, the Stamp Trail (PLACEHOLDER name, D2302). Accepted by talk: the curator hands
+    // over the card (story.wm_card); five stamps, any order; the fifth pays once (story.wm_trail_done). Optional in every act.
+    [
+      { id: 'wm_trail', label: 'The Stamp Trail', when: ['story.wm_card'], done: ['story.wm_trail_done'],
+        text: "Stamp the card at the lantern wall, the map case, the Scout's lamp, the drum, and the empty case.", place: 'Muster Road Museum',
+        target: { map: 'hc_museum_in', x: 6, y: 4 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();

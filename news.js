@@ -9,6 +9,7 @@
      when  Ribbit's terms ('story.flag', '!story.flag', 'story.side=glimmer')
      sky   any of clear/cloud/rain/snow      phase  any of dawn/day/dusk/night
      me    partner, seals>=N, steps>=N, acorns>=N
+     hold  any `when` term may be 'hold:<node>=<id>', read from state.holds (PHONE_FEED D2172; ribbit.js cond)
    Text may carry only these tokens: {holder} {partner} {town} {seals} {steps}.
 
    Three editions a real day (MORNING before noon on the game clock, EVENING after, NIGHT in the late phase); the same
@@ -70,7 +71,7 @@
   }
   function gate(st, side) {
     const R = rib();
-    return x => R.passes(x.when, st.flags || {}, side)
+    return x => R.passes(x.when, st.flags || {}, side, st.holds || null)
       && (!x.sky || x.sky.indexOf(st.sky || '') !== -1)
       && (!x.phase || x.phase.indexOf(st.phase || '') !== -1)
       && meOk(x.me, st.me);
@@ -133,7 +134,7 @@
     features.sort((a, b) => order(a.section) - order(b.section));
 
     // Ribbit replies: the story's own, else one or two locals from its region that the holder could see today.
-    const locals = ribbitPosts().filter(p => p.kind === 'local' && R.passes(p.when, flags, side));
+    const locals = ribbitPosts().filter(p => p.kind === 'local' && R.passes(p.when, flags, side, st.holds || null));
     function publish(s, withReplies) {
       let replies = (s.replies || []).map(r => ({ name: r.name, handle: r.handle, text: fill(r.text, st) }));
       if (withReplies && !replies.length) {
@@ -247,6 +248,7 @@
       if (ids.has(x.id)) bad.push('duplicate id: ' + x.id);
       ids.add(x.id);
       if (x.region === 'heights' && !(x.when || []).includes('story.heights_done')) bad.push('heights item missing the flag: ' + x.id);
+      (x.when || []).forEach(w => { if (/hold:/.test(w) && !/^!?hold:[a-z0-9_]+=(keepers|glimmer|split|wild)$/.test(w)) bad.push('bad hold term: ' + x.id); });
     };
     all.forEach(s => {
       gateCheck(s);

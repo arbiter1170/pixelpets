@@ -1,5 +1,5 @@
 {
- "lore_version": "v0.7.8",
+ "lore_version": "v0.9.8",
  "_placeholders": "Placeholder copy (D1013): engineer drafts from the design lore index, every line citing its lore ids; Design signs or edits it (design specs/NEWS_FEED.md). Skill: walklings-lore-feed.",
  "_about": "Extra Ribbit posts and trending tags, merged into ribbit.js POSTS/TAGS. Same when terms. Never pin.",
  "posts": [
@@ -1985,6 +1985,764 @@
    "lore": [
     "event.tier2_tuning"
    ]
+  },
+  {
+   "id": "rp-fernbrook-dawnwalk",
+   "kind": "local",
+   "region": "fernbrook",
+   "name": "Orchard hand",
+   "handle": "dawnrow",
+   "desk": "Orchard hand",
+   "when": [
+    "story.crackdown",
+    "story.met_fen"
+   ],
+   "text": "Curfew off at dawn. Two walked out of the Lantern House. Fen nodded at the orchard, counting.",
+   "lore": [
+    "event.crackdown",
+    "person.master_fen"
+   ]
+  },
+  {
+   "id": "rp-chirp-notforsale",
+   "kind": "chirp",
+   "region": "",
+   "when": [
+    "story.crackdown"
+   ],
+   "text": "Overheard at a Lantern House: 'A Seal is not for sale.' Then a long silence. Then tea.",
+   "lore": [
+    "event.president_broadcast"
+   ]
+  },
+  {
+   "id": "rp-block-hallshut",
+   "kind": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.crackdown",
+    "story.hall1_shut",
+    "story.reached_fernbrook"
+   ],
+   "text": "Fernbrook: the Trial Hall stays shut by order. No date given for it to reopen.",
+   "lore": [
+    "event.crackdown",
+    "place.bloom_trial_hall"
+   ]
+  },
+  {
+   "id": "rp-wickerglen-lenses",
+   "kind": "local",
+   "region": "wickerglen",
+   "name": "Glen walker",
+   "handle": "lenswipe",
+   "desk": "Glen walker",
+   "when": [
+    "story.shift_g",
+    "story.met_lead",
+    "story.met_census"
+   ],
+   "text": "New day hand on the lamp crew. Lenses spotless. Imogen says \"sweetie\" to them now, too.",
+   "lore": [
+    "person.imogen",
+    "thing.comfort_lamps"
+   ]
+  },
+  {
+   "id": "rp-wickerglen-walkers",
+   "kind": "local",
+   "region": "wickerglen",
+   "name": "Glen walker",
+   "handle": "duskpath",
+   "desk": "Glen walker",
+   "when": [
+    "story.shift_k"
+   ],
+   "text": "Dusk in the glen: little feet on the path, all going the same way. Toward the hum. I went home.",
+   "lore": [
+    "event.walk_to_hum"
+   ]
+  },
+  {
+   "id": "rp-chirp-weir",
+   "kind": "chirp",
+   "region": "",
+   "when": [
+    "story.chi_met",
+    "story.phone_got"
+   ],
+   "text": "Someone lives off the wire by the Old Weir. Ribbit cannot reach him. Ribbit is a little jealous.",
+   "lore": [
+    "place.weir_hut",
+    "thing.ribbit"
+   ]
+  },
+  {
+   "id": "rp-fernbrook-hold-k",
+   "kind": "local",
+   "region": "fernbrook",
+   "name": "Orchard hand",
+   "handle": "rootedrow",
+   "desk": "Orchard hand",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=keepers",
+    "story.reached_fernbrook"
+   ],
+   "text": "Fernbrook is Keeper-held now. The orchard stays rooted. My Pomlet approves of the paperwork.",
+   "lore": [
+    "place.fernbrook",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "rp-fernbrook-hold-g",
+   "kind": "local",
+   "region": "fernbrook",
+   "name": "Orchard hand",
+   "handle": "gatelamp",
+   "desk": "Orchard hand",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=glimmer",
+    "story.reached_fernbrook",
+    "story.met_glimmerwell"
+   ],
+   "text": "Lanterns on every gate in Fernbrook. Bright, polite, everywhere. Even on the compost.",
+   "lore": [
+    "place.fernbrook",
+    "thing.glimmer_lanterns"
+   ]
+  },
+  {
+   "id": "rp-fernbrook-hold-s",
+   "kind": "local",
+   "region": "fernbrook",
+   "name": "Orchard hand",
+   "handle": "middlerow",
+   "desk": "Orchard hand",
+   "when": [
+    "story.keeper_cadet",
+    "hold:fernbrook=split",
+    "story.reached_fernbrook"
+   ],
+   "text": "Fernbrook, still split. Keepers on the lanes, Glimmerwell at the gate, apples in the middle.",
+   "lore": [
+    "place.fernbrook"
+   ]
+  },
+  {
+   "id": "rp-glimmer-logged",
+   "kind": "chirp",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.cover=glimmer",
+    "story.keeper_cadet",
+    "story.side_pick_done",
+    "story.met_glimmerwell"
+   ],
+   "text": "Another Seal logged at Juniper's stand. Logged for what? Brighter by nature, apparently.",
+   "lore": [
+    "term.lanyard",
+    "person.juniper"
+   ]
+  },
+  {
+   "id": "rp-hearthmoor-cadet",
+   "kind": "local",
+   "region": "hearthmoor",
+   "name": "Porch sitter",
+   "handle": "pinwatch",
+   "desk": "Porch sitter",
+   "when": [
+    "story.keeper_cadet",
+    "!story.cover=glimmer"
+   ],
+   "text": "New Cadet pin seen on the Lodge steps. Shiny. Very serious. Very much still a kid with a Walkling.",
+   "lore": [
+    "event.keeper_cadet"
+   ]
+  },
+  {
+   "id": "rp-hearthmoor-lanternnight",
+   "kind": "local",
+   "region": "hearthmoor",
+   "name": "Plaza regular",
+   "handle": "lampslow",
+   "desk": "Plaza regular",
+   "when": [
+    "story.lantern_done"
+   ],
+   "text": "Lantern night on the plaza. A holder ran the errands, Pryce lit the lamps slow, Tansy closed it out.",
+   "lore": [
+    "place.hearthmoor_plaza"
+   ]
+  },
+  {
+   "id": "rp-hearthmoor-eastsign",
+   "kind": "local",
+   "region": "hearthmoor",
+   "name": "Road walker",
+   "handle": "eastsign",
+   "desk": "Road walker",
+   "when": [
+    "story.board_gate_done"
+   ],
+   "text": "The east sign is still standing. A holder checked. Officer Cald looked relieved, then stern again.",
+   "lore": [
+    "person.officer_cald"
+   ]
+  },
+  {
+   "id": "rp-route3-five",
+   "kind": "chirp",
+   "region": "route3",
+   "when": [
+    "story.ans_all",
+    "story.ans_open"
+   ],
+   "text": "All five old Walklings on the Brinewick road are found. The hum sounds less lonely today.",
+   "lore": [
+    "creature.answerers"
+   ]
+  },
+  {
+   "id": "rp-cover-quay",
+   "kind": "local",
+   "region": "hearthmoor",
+   "name": "Porch sitter",
+   "handle": "quaywatch",
+   "desk": "Porch sitter",
+   "when": [
+    "story.cover_done",
+    "story.cover=glimmer",
+    "story.reached_brinewick"
+   ],
+   "text": "Brinewick quay, October: a holder in a company lanyard. Today: same holder, Keeper pin. Explain.",
+   "lore": [
+    "event.cover_gossip",
+    "place.brinewick"
+   ]
+  },
+  {
+   "id": "rp-cover-mom",
+   "kind": "local",
+   "region": "hearthmoor",
+   "name": "Lane gossip",
+   "handle": "lanetalk",
+   "desk": "Lane gossip",
+   "when": [
+    "story.cv_mom=told",
+    "story.cv_mom"
+   ],
+   "text": "A mom on the hill says her kid does \"important work\" now. Bless.",
+   "lore": [
+    "event.supper_with_mom",
+    "person.mom"
+   ]
+  },
+  {
+   "id": "rp-chirp-photoup",
+   "kind": "chirp",
+   "region": "",
+   "when": [
+    "story.cover_done",
+    "story.cover=glimmer",
+    "story.met_glimmerwell"
+   ],
+   "text": "A Junior Bright says a holder they knew went Keeper. \"Their photo is still up at the stand.\"",
+   "lore": [
+    "event.cover_gossip",
+    "person.juniper"
+   ]
+  },
+  {
+   "id": "rp-hearthmoor-posted",
+   "kind": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.gov_posted"
+   ],
+   "text": "Hearthmoor: a Lodge Cadet is posted to the Governor's office in High Charity. They walk.",
+   "lore": [
+    "event.posting"
+   ]
+  },
+  {
+   "id": "rp-fernbrook-standgone",
+   "kind": "local",
+   "region": "fernbrook",
+   "name": "Orchard hand",
+   "handle": "benchlamp",
+   "desk": "Orchard hand",
+   "when": [
+    "story.cv_juniper=told",
+    "story.cv_juniper"
+   ],
+   "text": "No free lanterns on the plaza today. Stand gone. One left on the bench, still glowing. Weird.",
+   "lore": [
+    "event.juniper_stand_gone"
+   ]
+  },
+  {
+   "id": "rp-route4-walls",
+   "kind": "local",
+   "region": "route4",
+   "name": "Downs rambler",
+   "handle": "wallwalker",
+   "desk": "Downs rambler",
+   "when": [
+    "story.r4_adder_met"
+   ],
+   "text": "Grey adder on the wall by the milestone. Yellow zigzag. It looked at my lunch, then at the sky.",
+   "lore": [
+    "creature.wall_adder"
+   ]
+  },
+  {
+   "id": "rp-route4-fork",
+   "kind": "local",
+   "region": "route4",
+   "name": "Downs rambler",
+   "handle": "forkbench",
+   "desk": "Downs rambler",
+   "when": [
+    "story.r4_fork",
+    "story.reached_route4"
+   ],
+   "text": "Fork shelter, Route 4. Trough, bench, a view of both roads. Best free seat in the Amberwild.",
+   "lore": [
+    "place.route4"
+   ]
+  },
+  {
+   "id": "rp-route4-reeds",
+   "kind": "local",
+   "region": "route4",
+   "name": "Reed watcher",
+   "handle": "stillreed",
+   "desk": "Reed watcher",
+   "when": [
+    "story.r4_heron_met",
+    "story.reached_withy"
+   ],
+   "text": "Three reeds by the pond. One turned its head. I am going home and thinking about this.",
+   "lore": [
+    "creature.reed_heron",
+    "place.withy_beds"
+   ]
+  },
+  {
+   "id": "rp-route4-picking",
+   "kind": "local",
+   "region": "route4",
+   "name": "River walker",
+   "handle": "drawday",
+   "desk": "River walker",
+   "when": [
+    "story.r4_fork"
+   ],
+   "text": "Picking Day sign on the river road. Every name in the draw. My brother checks it every morning.",
+   "lore": [
+    "term.picking_day"
+   ]
+  },
+  {
+   "id": "rp-chirp-onfoot",
+   "kind": "chirp",
+   "region": "route4",
+   "when": [
+    "story.gov_posted",
+    "story.reached_route4"
+   ],
+   "text": "The coach said no, so a Cadet walked north. The downs were very windy about it.",
+   "lore": [
+    "event.coach_turns_away"
+   ]
+  },
+  {
+   "id": "rp-highcharity-gov",
+   "kind": "block",
+   "region": "highcharity",
+   "when": [
+    "story.km_assigned"
+   ],
+   "text": "High Charity: Governor Merriden names a Cadet to look into Kilnmouth's cold springs.",
+   "lore": [
+    "event.governor_meeting",
+    "event.kilnmouth_assignment"
+   ]
+  },
+  {
+   "id": "rp-highcharity-goodchair",
+   "kind": "local",
+   "region": "highcharity",
+   "name": "Charter Hill clerk",
+   "handle": "goodchair",
+   "desk": "Charter Hill clerk",
+   "when": [
+    "story.hc_gov_met"
+   ],
+   "text": "Charter Hill gossip: a Cadet got the good chair in the Governor's office. The good chair!",
+   "lore": [
+    "person.governor_high_charity"
+   ]
+  },
+  {
+   "id": "rp-chirp-kilnmouth",
+   "kind": "chirp",
+   "region": "",
+   "when": [
+    "story.km_assigned"
+   ],
+   "text": "Kilnmouth's springs are cold this year. A capital Cadet is going to ask why. Pack a coat.",
+   "lore": [
+    "event.kilnmouth_assignment"
+   ]
+  },
+  {
+   "id": "rp-mahopac-kettle",
+   "kind": "local",
+   "region": "mahopac",
+   "name": "Mahopac hiker",
+   "handle": "snaggedtrail",
+   "desk": "Mahopac hiker",
+   "when": [
+    "story.mom_mah_ask",
+    "story.reached_mahopac"
+   ],
+   "text": "Saw a mum leave the observatory early \"to put the kettle on\". Mahopac time made it an hour.",
+   "lore": [
+    "event.mom_walk_north",
+    "place.mahopac"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-frost",
+   "kind": "local",
+   "region": "kilnmouth",
+   "name": "Kiln hand",
+   "handle": "kilnhand",
+   "desk": "Kiln hand",
+   "when": [
+    "story.km_arrived"
+   ],
+   "text": "Frost on the springs in Kilnmouth. Steam used to fog my glasses on this street. Now just my breath.",
+   "lore": [
+    "place.kilnmouth_cold"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-tie",
+   "kind": "local",
+   "region": "kilnmouth",
+   "name": "Council porch",
+   "handle": "threeandthree",
+   "desk": "Council porch",
+   "when": [
+    "story.km_arrived"
+   ],
+   "text": "Council tied three and three again. Reeve Agna counted twice to be sure. It was still three.",
+   "lore": [
+    "person.reeve_agna"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-cloud",
+   "kind": "local",
+   "region": "kilnmouth",
+   "name": "Kiln hand",
+   "handle": "flatcloud",
+   "desk": "Kiln hand",
+   "when": [
+    "story.km_arrived"
+   ],
+   "text": "The cloud over the tower has not moved in a week. It is just sitting there, flat, like a lid.",
+   "lore": [
+    "thing.kilnmouth_calm_tower"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-bathkids",
+   "kind": "local",
+   "region": "kilnmouth",
+   "name": "Bathhouse step",
+   "handle": "bathkids",
+   "desk": "Bathhouse step",
+   "when": [
+    "story.km_arrived"
+   ],
+   "text": "Bath kids in coats, racing to the springs, then just looking at them. Cold water is no fun.",
+   "lore": [
+    "place.kilnmouth_cold"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-storm",
+   "kind": "local",
+   "region": "kilnmouth",
+   "name": "Bathhouse step",
+   "handle": "nodrop",
+   "desk": "Bathhouse step",
+   "when": [
+    "story.seal4",
+    "story.km_arrived"
+   ],
+   "text": "Big storm on the hills. Not one drop on the springs. The kids cheered. I put my coat back on.",
+   "lore": [
+    "event.kilnmouth_storm_permit"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-curfew",
+   "kind": "local",
+   "region": "kilnmouth",
+   "name": "Works yard",
+   "handle": "warmroom",
+   "desk": "Works yard",
+   "when": [
+    "story.km_council"
+   ],
+   "text": "Curfew at the springs last night. The works kept a room warm. Odd thing to be grateful for.",
+   "lore": [
+    "event.kilnmouth_curfew"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-seven",
+   "kind": "block",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council"
+   ],
+   "text": "Kilnmouth: the council sat seven. The lease, the kiln fuel and the town's hold were voted.",
+   "lore": [
+    "event.kilnmouth_council"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-coal",
+   "kind": "chirp",
+   "region": "kilnmouth",
+   "when": [
+    "story.km_council"
+   ],
+   "text": "Wine vests carried coal up a Trial Hall's steps in Kilnmouth. Nobody asked. The kiln is lit.",
+   "lore": [
+    "event.kilnmouth_council"
+   ]
+  },
+  {
+   "id": "rp-kilnmouth-hall5",
+   "kind": "chirp",
+   "region": "kilnmouth",
+   "when": [
+    "story.seal5"
+   ],
+   "text": "A fifth Seal at Kilnmouth. Somewhere a Neighbour in a wine vest says: same as me.",
+   "lore": [
+    "event.hall5_kilnmouth",
+    "person.rook"
+   ]
+  },
+  {
+   "id": "rp-brightgate-free",
+   "kind": "local",
+   "region": "brightgate",
+   "name": "Guest pass",
+   "handle": "freetea",
+   "desk": "Guest pass",
+   "when": [
+    "story.seal4"
+   ],
+   "text": "Brightgate: free tea, free maps, free smiles. Every door I wanted: \"by appointment\". Free walk home.",
+   "lore": [
+    "place.brightgate_guest"
+   ]
+  },
+  {
+   "id": "rp-brightgate-hall",
+   "kind": "local",
+   "region": "brightgate",
+   "name": "Old Wick neighbour",
+   "handle": "deadrod",
+   "desk": "Old Wick neighbour",
+   "when": [
+    "story.seal4"
+   ],
+   "text": "Old Wick Hall had a Keeper Cadet in it today. Master Ada looked delighted. The rods did not.",
+   "lore": [
+    "event.hall4_brightgate"
+   ]
+  },
+  {
+   "id": "rp-brightgate-tower",
+   "kind": "local",
+   "region": "brightgate",
+   "name": "Works walker",
+   "handle": "idletower",
+   "desk": "Works walker",
+   "when": [
+    "story.seal4"
+   ],
+   "text": "The idle tower in the Lamp Works has dark lamps and a moving sky. Feels like it is waiting.",
+   "lore": [
+    "place.brightgate_guest"
+   ]
+  },
+  {
+   "id": "rp-brightgate-rook",
+   "kind": "chirp",
+   "region": "brightgate",
+   "when": [
+    "story.seal4"
+   ],
+   "text": "A Junior Bright and a Keeper Cadet raced to a Hall door in Old Wick. The door won. Then a battle.",
+   "lore": [
+    "event.rook_brightgate",
+    "person.rook"
+   ]
+  },
+  {
+   "id": "rp-highcharity-parade",
+   "kind": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "text": "High Charity: the President speaks on Charter Hill. A Keeper on every road and at every Hall.",
+   "lore": [
+    "event.parade_speech"
+   ]
+  },
+  {
+   "id": "rp-highcharity-picking",
+   "kind": "local",
+   "region": "highcharity",
+   "name": "Lantern Square",
+   "handle": "drawname",
+   "desk": "Lantern Square",
+   "when": [
+    "story.hc_parade_seen",
+    "story.r4_fork"
+   ],
+   "text": "Picking Day closed to civilians. My sister had her name in the draw. She is very quiet today.",
+   "lore": [
+    "term.picking_day",
+    "event.parade_speech"
+   ]
+  },
+  {
+   "id": "rp-highcharity-rotor",
+   "kind": "local",
+   "region": "highcharity",
+   "name": "Square regular",
+   "handle": "rotorshade",
+   "desk": "Square regular",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "text": "Lantern Rotor over the square. My Walkling chased its shadow all the way to the Dojo.",
+   "lore": [
+    "thing.keeper_anthem_rotor"
+   ]
+  },
+  {
+   "id": "rp-highcharity-chain",
+   "kind": "local",
+   "region": "highcharity",
+   "name": "Dojo regular",
+   "handle": "sevenseals",
+   "desk": "Dojo regular",
+   "when": [
+    "story.hc_parade_seen"
+   ],
+   "text": "Muster Hall chain is shiny today. Somebody polishes it. Nobody opens it. Seven Seals, they say.",
+   "lore": [
+    "place.muster_hall"
+   ]
+  },
+  {
+   "id": "rp-chirp-greatwar",
+   "kind": "chirp",
+   "region": "",
+   "when": [
+    "story.hc_parade_seen",
+    "story.crackdown"
+   ],
+   "text": "Gran says the Great War left us the Seal roll and a chained hall. She says little else.",
+   "lore": [
+    "event.great_war",
+    "event.seal_roll"
+   ]
+  },
+  {
+   "id": "rp-fernbrook-reopen",
+   "kind": "local",
+   "region": "fernbrook",
+   "name": "Orchard hand",
+   "handle": "russetnap",
+   "desk": "Orchard hand",
+   "when": [
+    "story.fen_turned",
+    "story.met_fen"
+   ],
+   "text": "Fernbrook Trial Hall is open again! Master Fen is taking rematches. Russet is taking naps.",
+   "lore": [
+    "event.fen_turn",
+    "person.master_fen"
+   ]
+  },
+  {
+   "id": "rp-hearthmoor-hill",
+   "kind": "local",
+   "region": "hearthmoor",
+   "name": "Schoolhouse parent",
+   "handle": "pickuptime",
+   "desk": "Schoolhouse parent",
+   "when": [
+    "story.lizzy_class"
+   ],
+   "text": "Every Walkling in the Schoolhouse turned toward the hill at once. Always toward the hill. Huh.",
+   "lore": [
+    "event.lizzy_class"
+   ]
+  },
+  {
+   "id": "rp-hearthmoor-mo",
+   "kind": "local",
+   "region": "hearthmoor",
+   "name": "Keeper House visitor",
+   "handle": "archivenote",
+   "desk": "Keeper House visitor",
+   "when": [
+    "story.ans_open",
+    "story.ans_tallybat_clue",
+    "story.met_mo"
+   ],
+   "text": "Archivist Mo is asking holders to look for five old Walklings on the Brinewick road. Bring notes.",
+   "lore": [
+    "person.archivist_mo",
+    "creature.answerers"
+   ]
+  },
+  {
+   "id": "rp-hearthmoor-samestreet",
+   "kind": "local",
+   "region": "hearthmoor",
+   "name": "Lane gossip",
+   "handle": "samestreet",
+   "desk": "Lane gossip",
+   "when": [
+    "story.cover_done"
+   ],
+   "text": "Mrs. Calloway: her Rook works for the company, the kid over the lane wears a pin. 'Same street.'",
+   "lore": [
+    "person.mrs_calloway",
+    "person.rook",
+    "event.recall"
+   ]
   }
  ],
  "tags": [
@@ -2071,6 +2829,83 @@
    "w": 1,
    "when": [
     "story.reached_brinewick"
+   ]
+  },
+  {
+   "tag": "#KeeperCadet",
+   "w": 2,
+   "when": [
+    "story.keeper_cadet"
+   ]
+  },
+  {
+   "tag": "#WeirHut",
+   "w": 1,
+   "when": [
+    "story.chi_met"
+   ]
+  },
+  {
+   "tag": "#Route4",
+   "w": 3,
+   "when": [
+    "story.reached_route4"
+   ]
+  },
+  {
+   "tag": "#RiverRoad",
+   "w": 2,
+   "when": [
+    "story.r4_fork"
+   ]
+  },
+  {
+   "tag": "#CharterHill",
+   "w": 3,
+   "when": [
+    "story.hc_gov_met"
+   ]
+  },
+  {
+   "tag": "#Kilnmouth",
+   "w": 3,
+   "when": [
+    "story.km_assigned"
+   ]
+  },
+  {
+   "tag": "#ColdSprings",
+   "w": 2,
+   "when": [
+    "story.km_arrived"
+   ]
+  },
+  {
+   "tag": "#SeventhChair",
+   "w": 3,
+   "when": [
+    "story.km_council"
+   ]
+  },
+  {
+   "tag": "#Brightgate",
+   "w": 3,
+   "when": [
+    "story.seal4"
+   ]
+  },
+  {
+   "tag": "#OldWick",
+   "w": 2,
+   "when": [
+    "story.seal4"
+   ]
+  },
+  {
+   "tag": "#ParadeDay",
+   "w": 3,
+   "when": [
+    "story.hc_parade_seen"
    ]
   }
  ]

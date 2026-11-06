@@ -255,7 +255,7 @@ SIGNS = {
     'hc_marina': 'CANAL MARINA · Tie up gently. The buoys mark the deep water. Wave if you need a hand.',
     'hc_mall': 'TWO-FLOOR MALL · Coats upstairs, crumbs downstairs. Walk your Walkling between the benches.',
     'hc_apt': 'KEEPER APARTMENTS · Rooms for holders new to the city. The landlord keeps the spare keys.',
-    'hc_gym': 'DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome.',
+    'hc_gym': 'DOJO · Practice before the Hall next door. Stones, tides, and blooms are all welcome.',
     'hc_lantern': 'LANTERN HOUSE · Rest and recover. 5 Acorns, or what you have.',
     'hc_hall': 'EVENT HALL · Five booths, one evening. Play kindly. The prizes are small on purpose.',
 }
@@ -332,7 +332,7 @@ rooms['hc_airport_in'] = room('hc_airport_in', 'Airship Field', 9, 7, 'charity',
      'lines': {'else': 'The boarding board. Dusk, if the wind stays kind.'}},
 ])
 rooms['hc_command_in'] = room('hc_command_in', 'Sky-Dock Command', 9, 7, 'charity', 'hc_command', [
-    {'kind': 'npc', 'id': 'hc_lumen', 'name': 'Captain Lumen', 'look': 'petra', 'x': 2, 'y': 3, 'facing': 'down',
+    {'kind': 'npc', 'id': 'hc_lumen', 'name': 'Captain Lumen', 'look': 'captain', 'x': 2, 'y': 3, 'facing': 'down',
      'lines': {
          'story.hc_council_done': 'The coast road is lit. Ships still fly.',
          'story.cobble_end&!story.side=glimmer': '@hc_council',
@@ -374,7 +374,7 @@ rooms['hc_bank_in'] = room('hc_bank_in', 'Civic Bank', 9, 7, 'charity', 'hc_bank
 ])
 rooms['hc_gym_in'] = room('hc_gym_in', 'Dojo', 9, 7, 'charity', 'hc_gym', [
     {'kind': 'npc', 'id': 'hc_sol', 'name': 'Floor Keeper Sol', 'look': 'sol', 'x': 4, 'y': 3, 'facing': 'down',
-     'lines': line_pair('No Seal here. Hall Masters keep those.', 'No trial today. The floor is just clean.')},
+     'lines': line_pair("No Seal here. The Hall next door's been shut since the war.", 'No trial today. The floor is just clean.')},
     {'kind': 'sign', 'id': 'hc_gym_note', 'x': 2, 'y': 4, 'text': 'Practice floor. No Seals. Wipe your boots.'},
 ])
 rooms['hc_lantern_in'] = room('hc_lantern_in', 'Lantern House', 9, 7, 'charity', 'hc_lantern', [
@@ -573,14 +573,15 @@ looks = {
     'nessa': {'skin': '2', 'hair': 'bun', 'hairCol': 'y', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'r'},
     'bram': {'skin': '3', 'hair': 'short', 'hairCol': 'd', 'outfit': 'coat', 'outfitCol': 'b', 'accent': 'w'},
     'sorrel': {'skin': '5', 'hair': 'short', 'hairCol': 'n', 'outfit': 'coat', 'outfitCol': 't', 'accent': 'o'},
-    'petra': {'skin': '4', 'hair': 'long', 'hairCol': 'p', 'outfit': 'coat', 'outfitCol': 'm', 'accent': 'c'},
+    'petra': {'skin': '4', 'hair': 'long', 'hairCol': 'p', 'outfit': 'coat', 'outfitCol': 'm', 'accent': 'c'},   # unworn since LOOK_LOCK F6 (Captain Lumen wears `captain`); kept, never removed
     'oren': {'skin': '4', 'hair': 'short', 'hairCol': 'o', 'outfit': 'hoodie', 'outfitCol': 'm', 'accent': 'y'},
     'willa': {'skin': '1', 'hair': 'spiky', 'hairCol': 'r', 'outfit': 'hoodie', 'outfitCol': 'p', 'accent': 'c'},
     'brin': {'skin': '2', 'hair': 'long', 'hairCol': 'n', 'outfit': 'tunic', 'outfitCol': 'b', 'accent': 'c'},
     'nim': {'skin': '1', 'hair': 'long', 'hairCol': 'y', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'o'},
     'otto': {'skin': '5', 'hair': 'short', 'hairCol': 'd', 'outfit': 'hoodie', 'outfitCol': 'b', 'accent': 'c'},
     'bramble': {'skin': '3', 'hair': 'bun', 'hairCol': 'o', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'l'},
-    'moss': {'skin': '4', 'hair': 'short', 'hairCol': 'd', 'outfit': 'coat', 'outfitCol': 'm', 'accent': 'y'},
+    'moss': {   # LOOK_LOCK F6 (WARDROBE_SHOP 4a): Keeper green top
+     'skin': '4', 'hair': 'short', 'hairCol': 'd', 'outfit': 'coat', 'outfitCol': 'g', 'accent': 'y'},
     'mira': {'skin': '2', 'hair': 'long', 'hairCol': 'y', 'outfit': 'tunic', 'outfitCol': 'r', 'accent': 'y'},
     'cole': {'skin': '3', 'hair': 'bun', 'hairCol': 'r', 'outfit': 'tunic', 'outfitCol': 'o', 'accent': 'y'},
     'kit': {'skin': '5', 'hair': 'spiky', 'hairCol': 'y', 'outfit': 'hoodie', 'outfitCol': 'c', 'accent': 'w'},
@@ -588,7 +589,8 @@ looks = {
     'ness': {'skin': '2', 'hair': 'bun', 'hairCol': 'o', 'outfit': 'tunic', 'outfitCol': 'b', 'accent': 'c'},
     'teller': {'skin': '6', 'hair': 'short', 'hairCol': 'h', 'outfit': 'coat', 'outfitCol': 'n', 'accent': 'w'},
     'sol': {'skin': '4', 'hair': 'short', 'hairCol': 'd', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'l'},
-    'nia': {'skin': '1', 'hair': 'spiky', 'hairCol': 'o', 'outfit': 'hoodie', 'outfitCol': 'r', 'accent': 'y'},
+    'nia': {   # LOOK_LOCK D2277: red hair, so she does not read as Rook
+     'skin': '1', 'hair': 'spiky', 'hairCol': 'r', 'outfit': 'hoodie', 'outfitCol': 'r', 'accent': 'y'},
     'tess': {'skin': '1', 'hair': 'bun', 'hairCol': 'r', 'outfit': 'tunic', 'outfitCol': 'p', 'accent': 'c'},
 }
 # outfitCol 'o' is NOT in keeper.js outfitCol list. Cole uses outfitCol o. Fix to a legal colour.
@@ -605,7 +607,7 @@ speakers = {
     'Baker Cole': 'cole',
     'Mabry': 'kit',
     'Porter Quin': 'quin',
-    'Captain Lumen': 'petra',
+    'Captain Lumen': 'captain',   # WARDROBE_SHOP 4a Captain Lumen row (LOOK_LOCK F6): the Keeper House captain's coat; `petra` stays defined, unworn
     'Keeper Rowan': 'sorrel',
     'Dockhand Ness': 'ness',
     'Teacher Mae': 'nessa',

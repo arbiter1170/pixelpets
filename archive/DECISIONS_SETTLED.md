@@ -2,6 +2,20 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Wed Nov 4, 2026: Vincent settles LOOK_LOCK's fixes (all defaults; recorded by Claude Code with the build, `claude/look-fixes`)
+
+Vincent: "Look lock: all defaults". The rule throughout: recolour the lookalike, never the main character. Design rows in `specs/LOOK_LOCK.md` (design repo); sheets in `handoff/shots/look_fixes/`.
+
+- **D2273 (red, SETTLED):** Associate Juniper wears her own key `juniper`: the Associate coat, soot trim and crimson bag, with long black hair. Tobin, the plain Associate and the others keep `associate`; parade supporter 2 keeps short dark hair.
+- **D2274 (red, SETTLED):** Archivist Mo wears her own key `mo`: the Keeper clerk coat with a white bob and glasses. Clerk Wynn, the Cadet, the Keeper reader and the High Charity clerk keep `clerk`; Keeper Pryce keeps his grey bun.
+- **D2275 (red, SETTLED):** the High Charity preview President wears `president` (the cardigan); `hc_president` is retired, kept defined and unworn.
+- **D2276 (red, SETTLED):** Dorian's two briefing copies wear `dorian`, Imogen's wears `imogen`.
+- **D2277 (red, SETTLED):** the eleven recolours as proposed: Clerk Nia's hair red; parade supporter 5 a buzz cut; Pim's hoodie sky; the Quilt Stitcher's sweater teal; the Commander's hair black; Dr. Ivo in a white lab coat; `regenx` hair grey; Mr. Gristle's coat dark; Brannoch's vest teal; the Diner Regular's hoodie green with a red buzz cut; supporter 4's hair orange.
+- **F6 (WARDROBE_SHOP 4a rows, built):** Captain Lumen in High Charity wears `captain` (`petra` kept, unworn); Keeper Moss and Cadet Arlo in Keeper green; Warden Teodor's trim white; Watch Saffie in the watch navy.
+- **D2278 (yellow, SETTLED):** Ken (`sm_ken`) and Sefton (`h1_cadet`) join the Keeper on-duty list; the Junior Bright wears its own Glimmer-set look `junior_bright`.
+- Also fixed: Route 4's three Keepers named the missing look `keeper_officer` and drew as villagers; they wear `officer` and join the on-duty list.
+- **D2350 (red, SETTLED by Vincent, Thu Nov 5, 2026):** the Hall 4 crew (`bg_hallcrew`: Rod Tender, Line Runner, Sky Watcher) wear a teal `t` vest instead of navy; Dad unchanged. Vincent: "Yes, to both". Built on `claude/look-fixes` on the default (Wed Nov 4); recorded here when Vincent saw the sheet (`handoff/shots/look_fixes/bg_hallcrew_390.png`, `_320.png`).
+
 ## Wed Nov 4, 2026: Vincent approves animated pixel sprites in battle (SPRITE_ANIM, recorded by Claude Code)
 
 Relayed by the coordinator: D2070 yes as previewed, D2071 yes (drawn leans); the yellows settle on their defaults. Built in #321.
@@ -121,6 +135,16 @@ Design `specs/WEIR_HUT.md` v0.1.1 (design master). Vincent saw the previews (rul
 - **D1597 (green, SETTLED: default).** Exterior dressing: five towpath cells, oil lamp, rain barrel, nets; no pole, no crest; `hw_weir_s` gains a line.
 - **D1598 (green, SETTLED: default).** Arrival at (4,10); the first step (4,9) fires the meeting scene once (a stub until that scene is built); no new sound.
 - **D1599 (green, SETTLED: default).** Build notes: overlay `data/detail_zz_weir_hut.json` copied verbatim; skin and art in `sprites.js`; every line PLACEHOLDER for Story.
+
+## Tue Nov 3, 2026, 11:17 AM ET: Vincent's rulings on the contested Hall's open yellows (recorded by Claude Code)
+
+Vincent, in the Claude Code session that built the contested Fernbrook Trial Hall: "Make sure we have an agent build the art, an agent build the 36 lines/lore. Have D1191 decided, switch happens based on who controle the town. D1193, have art/design agent figure it out. D1195, have art/design agent figure it out."
+
+- **D1191 (yellow, SETTLED by Vincent):** the Hall's props switch on who controls the town. Built as the spec's default: `cond()` reads `hold:<node>=<id>` through `mapHold()`, and the overlay's props use `hold:fernbrook=split|keepers|glimmer` (and their negations) instead of copied rule strings (`claude/hall2-art-lines`).
+- **D1193 (yellow, SETTLED by the art and design agent on Vincent's delegation):** keep the §5.3 holder spots: neutral `h1_local` on the seam (8,20), `h1_challenger` on the polish (12,12), the Keeper cadet `h1_cadet` on the Keeper half of the dais (3,5) facing right. Each stands on their own side's material; sight lines, paths and Fen's gate unchanged (`handoff/shots/trial_hall_fernbrook_art/ART_NOTES.md`).
+- **D1195 (yellow, SETTLED by the art and design agent on Vincent's delegation):** the Glimmerwell floor is lighter, by +21 greyscale luma on the T12 measure (east 166, west 145), inside a band of more than 20 and less than 40. +28 would need a cool grey PAL lacks; more white reads as glass. The halves also differ warm against cool and busy against quiet (`ART_NOTES.md`).
+- The 36 new prop lines are June's pass, drafted by Claude in June's role, for Vincent to approve (D1196's PLACEHOLDER copy replaced).
+- **D1196 (green, SETTLED by Vincent, Thu Nov 5, 2026):** the 36 new prop lines are June's pass (drafted by Claude in June's role) and are approved. Vincent, via the Chief of Staff, on the #311 catch-up: "311 yes" (the 390/320 compare sheets for the art pass and the 36 lines). The room stays behind `HALL2_RELEASED = false`; turning it on is a separate one-line PR.
 
 ## Tue Nov 3, 2026, 9:57 AM ET: Vincent settles the rest of GLIMMERWELL_VEHICLES_BUILDINGS (#268; recorded by Claude Code)
 
