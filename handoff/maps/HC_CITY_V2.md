@@ -104,7 +104,7 @@ Inspiration only, for Design and the builder to translate into pixels with `PAL`
 | §3 five chunks, the json grids, kept ids, the moved buildings (D1268, D1270) | Matched | | `the city loads`; `a save inside a moved building` |
 | §3.3 kept tiles: Event Hall 32,29, coach 32,37, hc_south 32,38, gate 32,36, Moss 30,36 | Matched | | `the coach still lands` |
 | §4.1 boulevards: walkable carriageway, solid bays and medians, crosswalks (D1271) | Matched | new tiles C Z U M; `X` mouth cells take their street's tile (X is Cobblecrest's rock pillar in the game) | build tool checks |
-| §4.2-4.5 lamp posts with the grey box, lanterns lit at noon, spotless parks | Matched, except the hum | the hum loop is iPhone audio, red (D1371): not built; the tap line ships | `player text` |
+| §4.2-4.5 lamp posts with the grey box, lanterns lit at noon, spotless parks | Matched | the hum loop is built (D1371, approved; see "The lamp hum" below); the tap line ships | `player text` |
 | §4.3 48 parked cars, the Glimmerwell bay left empty | Matched | cars sit on horizontal bay runs only (one car body) | `the city loads` |
 | §4.4 9 tank posts, idle-lit, no guns (D1272) | Matched | PLACEHOLDER tank art (A24; POST_TRIAL_CRACKDOWN §10a art is not built) | `the city loads`; reduced motion |
 | §5.1 coach arrival | Matched in data | the Hearthmoor coach tile (12,9) is a roof tile on main in both modes (earlier issue, for QA) | `the coach still lands` |
@@ -155,7 +155,7 @@ built roof kit for now. The President's look is a PLACEHOLDER NPC look (LH-2 is 
 
 ## Open, for the Chief of Staff
 
-- D1371 (red): the grey-box hum. Default not built.
+- D1371 (red, approved): the grey-box hum, built in its own PR (see "The lamp hum").
 - D1370, D1372-D1374: this build's own calls (see `OPEN_DECISIONS.md`).
 - ~~At ship time: flip `HC_CITY_V2`, drop the save hold, and add the city's map sizes to `save.js` MAP_SIZE.~~ DONE Fri Nov 6, 2026 (see "Switched on" below).
 - The Hearthmoor coach tile (12,9) is a roof tile on main (both modes); the coach can't be stepped on today. For QA.
@@ -211,3 +211,10 @@ parade speech is the settled D2130 text (S1-S7, S2 = D1428, "the national draft"
   asserted the old city were updated to the new truth (none skipped or deleted).
 - **Still open after the switch:** the 52 art rows (Pia), June's ten townsfolk lines, the Kindness Board names (HB3, D2358; the names clause is cut, June supplies names later), the 500-Acorn
   plaque prompt (D2357), the D1371 hum (red, next PR on its own), the real-phone perf check (Nina), a QA look at Store Row at 320.
+
+
+## The lamp hum (D1371; layout 4.2 and 4.5)
+- One voice, `PPSound.hum(level)` in `sfx.js`: two soft sine oscillators (147 and 148.5 Hz, a slow beat), synthesised like every other sound (no files, no new formats). The level is the gain: peak 0.02 on the master bus (about a quarter of one music note) times the Music volume.
+- `hcHumTick` in `game.js` (every 80 ms) works out the level from the distance to the NEAREST `hc_lamp_box` post on the five city maps: smoothstep from 1 at the post to 0 at 2 tiles; 0 on every other map (rooms too), while a menu, battle, scene or map fade is up, or off the walk screen.
+- Gates in `sfx.js`: sound not muted, Music on (and its volume), page visible, AudioContext running (it only exists after the first gesture). The gain glides (time constant 0.18 s), and the voice is kept for 0.5 s after a fade-out so a walk back in reuses the same voice.
+- Debug (`?debug=1` only): `PixelPets.hcHum()` and `PPSound.humInfo`. Spec: `tests/hc_lamp_hum.spec.js`. Save unchanged.

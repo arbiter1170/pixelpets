@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-07 ET: High Charity lamp hum (D1371, approved by Vincent; red, iPhone audio)
+- What changed and why: the grey box on a High Charity lamp post now hums softly within 2 tiles (layout 4.2, 4.5). One synthesised voice (`PPSound.hum` in sfx.js, two soft sines), level from the distance to the nearest post (`hcHumTick` in game.js): 0 beyond 2 tiles, in rooms, off the city, with a menu, battle, scene or fade up, with sound or Music off, and while the page is hidden. Nothing starts before the first gesture. Real-iPhone listen check is the rule 3 sign-off.
+- Files touched: sfx.js, game.js, tests/hc_lamp_hum.spec.js, handoff/maps/HC_CITY_V2.md, OPEN_DECISIONS.md, tools/GAMEJS_MAP.txt, index.html, version.json.
+- Commit(s) + build id: see PR (bump_build.py stamp).
+- Tests run and result (widths, checks): see PR.
+- Decisions made (colour + reasoning): D1371 approved (red). D2360-D2362 green: quietest defaults (peak 0.02, follows Music volume; smoothstep falloff; gated like music).
+- Anything left unfinished: the real-iPhone listen check (Nina).
+
 ## 2026-11-07 ET: High Charity city switched on (HC_CITY_V2 = true); Act 2 Keepers blocker fixed
 - What changed and why: `HC_CITY_V2` is on, the preview save hold is off. Live Keepers Act 2 rows (`gov_meet`, `km_report`, `cab_lead`) target `hc_gov_1`, which only the city has, so Keepers holders were stuck (Nina, QA_ACT2_HC_POINTER). `save.js` sizes every city map and room from `window.PP_HC_V2` (`hc_lantern_in` corrected to 16x22); additive, key `pixelpets.save.v2`, `v` 2. Parade speech is the settled D2130 S1-S7 (S2 = D1428); "the national draft" is gone. Literal `[PLACEHOLDER ...]` text a holder reads is cut or fixed (D2352-D2358); the museum plaque prompt stays (D2357). `hc_gov_2` and `hc_museum_in` take the indoor battle backdrop (D2359). Draft art ships.
 - Files touched: game.js, save.js, battle_bg.js, tools/build_hc_city.py, tools/hc_parade.py, data/hc_city_v2.js/.json, tests (new hc_city_live.spec.js; hc_city_v2 flag-off test rewritten; specs asserting the old city updated), handoff/maps/HC_CITY_V2.md, HC_PARADE.md, OPEN_DECISIONS.md, tests/README.md.
