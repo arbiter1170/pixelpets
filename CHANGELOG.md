@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-07 ET: High Charity city switched on (HC_CITY_V2 = true); Act 2 Keepers blocker fixed
+- What changed and why: `HC_CITY_V2` is on, the preview save hold is off. Live Keepers Act 2 rows (`gov_meet`, `km_report`, `cab_lead`) target `hc_gov_1`, which only the city has, so Keepers holders were stuck (Nina, QA_ACT2_HC_POINTER). `save.js` sizes every city map and room from `window.PP_HC_V2` (`hc_lantern_in` corrected to 16x22); additive, key `pixelpets.save.v2`, `v` 2. Parade speech is the settled D2130 S1-S7 (S2 = D1428); "the national draft" is gone. Literal `[PLACEHOLDER ...]` text a holder reads is cut or fixed (D2352-D2358); the museum plaque prompt stays (D2357). `hc_gov_2` and `hc_museum_in` take the indoor battle backdrop (D2359). Draft art ships.
+- Files touched: game.js, save.js, battle_bg.js, tools/build_hc_city.py, tools/hc_parade.py, data/hc_city_v2.js/.json, tests (new hc_city_live.spec.js; hc_city_v2 flag-off test rewritten; specs asserting the old city updated), handoff/maps/HC_CITY_V2.md, HC_PARADE.md, OPEN_DECISIONS.md, tests/README.md.
+- Commit(s) + build id: see PR (bump_build.py stamp).
+- Tests run and result (widths, checks): see PR.
+- Decisions made (colour + reasoning): D2352-D2359 green; D1371 hum not built (red, own PR).
+- Anything left unfinished: Pia's 52 art rows, June's ten townsfolk lines, Kindness Board names (D2358), plaque prompt line (D2357).
+
 ## 2026-11-05 02:15 ET: Build: Lizzy's optional history lesson, the homework row, Archivist Mo's shelf menu, three chatter lines and Journal notes (LORE_DISCOVERY v0.1 slice 1; D2280-D2296)
 - What changed and why:
   - Vincent's history-discovery rulings asked for a packet, then the first slice (data only where possible). Everything new is in `data/detail_zz_lore_slice1.json` unless named. Every line is PLACEHOLDER until Story signs it.
