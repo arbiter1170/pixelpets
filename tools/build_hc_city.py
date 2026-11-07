@@ -49,7 +49,7 @@ TXT = {
     'hb1_child': "Why are the lanterns on in the day?",
     'hb1_parent': "So they can see us, love. So we're safe.",
     'hb2_box': "A small grey box hums at the top.",
-    'hb3_board': "Good deeds this week: [FRIEND 1], [FRIEND 2], [FRIEND 3], [FRIEND 4], [FRIEND 5], [FRIEND 6].",   # FRIEND SLOT placeholders
+    'hb3_board': "Good deeds this week.",   # HC_CITY_V2 switch-on: the six [FRIEND n] names are cut (D2358); June writes the names
     'hb4_poor': "Nobody's poor in High Charity. It says so on the sign.",
     'hb5_patrol': "Citizen. Lovely evening. Keep to the lit side, please.",
     'hb5_patrol_day': "Citizen. Lovely day.",                     # PLACEHOLDER: no day line in §11; Story to replace

@@ -278,6 +278,16 @@ test('no bracket text a holder can read: the three cut groups are fixed, the par
   // the plaque prompt appears in wm_give and wm_plaque (one string, two scenes); D2307-build item 4 keeps it
   expect(hits.every(h => /A plaque, then\. Which case gets your plate\?/.test(h)), hits.join('\n')).toBe(true);
   expect(hits.length).toBeGreaterThan(0);
+  // any "[" in a player-read string (object lines, sign text, scene say/choice text) across all city data: only the plaque prompt may keep one
+  const br = [];
+  const walk2 = (n, where) => {
+    if (typeof n === 'string') { if (/\[/.test(n) && !/A plaque, then\. Which case gets your plate\?/.test(n)) br.push(where + ': ' + n); return; }
+    if (Array.isArray(n)) n.forEach((x, i) => walk2(x, where + '/' + i));
+    else if (n && typeof n === 'object') for (const [k, v] of Object.entries(n)) walk2(v, where + '/' + k);
+  };
+  for (const k of ['maps', 'rooms', 'scenes', 'objPatch', 'linesPatch', 'roomPatch']) if (DATA[k]) walk2(DATA[k], k);
+  expect(br, br.join('\n')).toEqual([]);
+  expect(JSON.stringify(DATA.scenes.hc2_board)).not.toMatch(/FRIEND/);
   // the ten townsfolk else lines read in-world, and the parade's end hooks are gone
   const lines = JSON.stringify(DATA.maps) + JSON.stringify(DATA.rooms);
   expect(lines).not.toMatch(/Story writes it/);

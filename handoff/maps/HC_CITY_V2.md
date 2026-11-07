@@ -209,5 +209,5 @@ parade speech is the settled D2130 text (S1-S7, S2 = D1428, "the national draft"
   names them. All three are tested in `tests/hc_city_live.spec.js`.
 - **Tests:** `tests/hc_city_live.spec.js` is the flag-on spec. `hc_city_v2.spec.js`'s flag-off test was rewritten to flag-on; the specs that
   asserted the old city were updated to the new truth (none skipped or deleted).
-- **Still open after the switch:** the 52 art rows (Pia), June's ten townsfolk lines, the Kindness Board names (HB3, D2358), the 500-Acorn
+- **Still open after the switch:** the 52 art rows (Pia), June's ten townsfolk lines, the Kindness Board names (HB3, D2358; the names clause is cut, June supplies names later), the 500-Acorn
   plaque prompt (D2357), the D1371 hum (red, next PR on its own), the real-phone perf check (Nina), a QA look at Store Row at 320.
