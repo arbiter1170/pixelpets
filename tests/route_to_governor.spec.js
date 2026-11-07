@@ -1,7 +1,7 @@
 /* ROUTE_TO_GOVERNOR v0.1.1 (design repo, private; D1850-D1876 and PACING's D1880-D1884, settled Wed Nov 4, 2026): the first
    Act 2 trip to the Governor is on foot (D1881). Route 4 (route4, the downs to the fork), the river road (route4_reeds), the
    withy beds (route4_withy), Hearthmoor's coach-road gap, the coach's one turn-away, Charter Hill's north mouth (the city is the
-   ?debug=1&hccity=2 preview until HC_CITY_V2 ships), the region map's second sheet and the level caps 41 / 44 (D1880).
+   the live city, HC_CITY_V2 on since Nov 6), the region map's second sheet and the level caps 41 / 44 (D1880).
    data/detail_zzzz_route4.json, tools/build_hc_city.py, quests.js, game.js, stats.js. Every new line is PLACEHOLDER.
    §10.3 T1-T11 plus ACT2_PACING §3's limits where a test can read them. 320, 375 and 390 (@w1 rows at 320 only); Modern
    controls; reduced motion; zero console errors; the save stays pixelpets.save.v2, v 2, additive story.* flags only. */
@@ -58,7 +58,7 @@ async function boot(page, s, opts = {}) {
   test.setTimeout(60000);
   if (opts.reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), s, { quietDay: true, oldSave: !!opts.oldSave });
-  await gotoGame(page, opts.city ? '?debug=1&hccity=2' : (opts.plain ? '' : '?debug=1'));
+  await gotoGame(page, opts.city ? '?debug=1' : (opts.plain ? '' : '?debug=1'));
   if (opts.plain) { await page.waitForFunction(() => window.PixelPets && PixelPets.state); return; }
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && typeof PixelPets.talkTo === 'function' && PixelPets.state);
   await page.evaluate(() => { PixelPets.showTab('walk'); if (PixelPets.clearWild) PixelPets.clearWild(); });

@@ -41,19 +41,15 @@ const MARKS = [
   { map: 'fb_heights', x: 16, y: 5, ch: 'p', sprites: ['door_step'] },
   { map: 'fernbrook', x: 5, y: 5, ch: 'p', sprites: ['door_step'] },
   { map: 'fernbrook', x: 22, y: 6, ch: 'p', sprites: ['door_step'] },
-  { map: 'highcharity', x: 32, y: 4, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 32, y: 9, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 52, y: 9, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 9, y: 11, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 22, y: 13, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 45, y: 15, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 18, y: 17, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 8, y: 25, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 11, y: 29, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 32, y: 29, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 49, y: 29, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 22, y: 34, ch: 'P', sprites: ['door_step_warm'] },
-  { map: 'highcharity', x: 55, y: 35, ch: 'P', sprites: ['door_step_warm'] },
+  // HC_CITY_V2 (live Nov 6): the city drops the old overlay's door-step decals; its eight Lantern Square doors stand on plain pavement (P) with no step decal.
+  { map: 'highcharity', x: 10, y: 29, ch: 'P', sprites: [] },
+  { map: 'highcharity', x: 32, y: 12, ch: 'P', sprites: [] },
+  { map: 'highcharity', x: 9, y: 11, ch: 'P', sprites: [] },
+  { map: 'highcharity', x: 32, y: 29, ch: 'P', sprites: [] },
+  { map: 'highcharity', x: 10, y: 37, ch: 'P', sprites: [] },
+  { map: 'highcharity', x: 21, y: 37, ch: 'P', sprites: [] },
+  { map: 'highcharity', x: 43, y: 37, ch: 'P', sprites: [] },
+  { map: 'highcharity', x: 53, y: 37, ch: 'P', sprites: [] },
   { map: 'mahopac', x: 5, y: 7, ch: 'p', sprites: ['door_step'] },
   { map: 'mahopac_obs', x: 4, y: 6, ch: 'm', tile: 'mat_dusk' },
 ];
@@ -62,6 +58,7 @@ function save() {
   const s = starterSave();
   s.settings.follower = false;
   s.settings.music = false;
+  s.flags['story.hc_greeted'] = true;   // the city is live: a first goto to Lantern Square plays the parade, which would block the next goto
   return s;
 }
 

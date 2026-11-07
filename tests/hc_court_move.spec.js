@@ -1,7 +1,7 @@
 /* HC_COURT_MOVE: the Keeper High Court moves to the south half of Charter Hill's Parade (D1354, settled by Vincent, Tue Nov 3,
    2026; design specs/HC_PARADE.md §3.1, specs/HIGH_CHARITY_LAYOUT.md v0.3 §3.3 and §7.6). Its front and wide steps face south
-   onto Muster Road; the old corner at 8,45 is plain grass; Muster Road keeps its full nine-tile cross-section. Preview only
-   (?debug=1&hccity=2, HC_CITY_V2 stays false). Runs at 320, 375 and 390; reduced motion; zero console errors; save unchanged. */
+   onto Muster Road; the old corner at 8,45 holds the Muster Road Museum since WAR_MUSEUM (D2300); Muster Road keeps its full nine-tile cross-section. The city is live
+   (HC_CITY_V2 on since Nov 6). Runs at 320, 375 and 390; reduced motion; zero console errors; save unchanged. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -20,7 +20,7 @@ function save() {
 }
 async function boot(page) {
   await installSave(page.context(), save(), { quietDay: true });
-  await gotoGame(page, '?debug=1&hccity=2');
+  await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && PixelPets.state && PixelPets.state.party[0]);
   await page.evaluate(() => { PixelPets.showTab('walk'); if (PixelPets.clearWild) PixelPets.clearWild(); });
 }
@@ -67,8 +67,11 @@ test('the Court stands on the Parade\'s south half: door 32,26 under its facade,
   expect(r.steps).toEqual(['hc_court_steps_w'].concat(Array(11).fill('hc_court_steps'), ['hc_court_steps_e']));
   // v0.4 build: the sign steps one tile east of the parade's close guards (HC_PARADE CLOSE2 stands on 30-31 and 33-34,26)
   expect(r.sign).toEqual([[35, 26, 'KEEPER HIGH COURT.']]);
-  expect(r.oldCorner).toBe('g'.repeat(13 * 7));     // the old corner is plain grass
-  expect(r.oldObjs).toEqual([]);                     // nothing placed there, not even dressing
+  // The old corner (where the Court first stood) holds the Muster Road Museum since WAR_MUSEUM (D2300, Nov 5): its roof and facade, no Court.
+  expect(r.oldCorner).toMatch(/R{3}/);
+  expect(r.oldCorner).not.toBe('g'.repeat(13 * 7));
+  expect(r.oldObjs).toContain('hc_museum');
+  expect(r.oldObjs).not.toContain('hc_court');
   for (const [i, row] of r.road.entries()) {
     expect(row, 'Muster Road row ' + (28 + i)).not.toMatch(/[TRHwF]/);
     if (i === 0 || i === 8) expect(row, 'sidewalk').toBe('P'.repeat(62));
@@ -116,16 +119,15 @@ test('an open path runs from both Muster Road mouths to the Court door, and a ho
   expect((await where(page)).map).toBe('hc_civic');
 });
 
-test('the save is unchanged: the preview never writes it, and v stays 2', async ({ page }) => {
+test('the save is unchanged in shape: the live city writes Charter Hill to it, the key stays pixelpets.save.v2 and v stays 2', async ({ page }) => {
   await boot(page);
-  const before = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
   await page.evaluate(() => PixelPets.goto('hc_civic', 32, 28, 'up'));
   await settle(page);
   await page.evaluate(() => PixelPets.walkStep('up'));
   await settle(page);
-  const after = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
-  expect(after).toBe(before);
-  expect(JSON.parse(after).v).toBe(2);
+  const after = JSON.parse(await page.evaluate(() => localStorage.getItem('pixelpets.save.v2')));
+  expect(after.v).toBe(2);
+  expect(after.world.map).toBe('hc_civic');
 });
 
 test.describe('reduced motion', () => {

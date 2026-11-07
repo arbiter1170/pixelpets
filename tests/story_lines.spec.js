@@ -343,7 +343,7 @@ test.describe('the lines show on their flags', () => {
   });
 
   test('D2138: the Governor\'s line 6 and his line for a holder with no posting (city preview)', async ({ page }) => {
-    await boot(page, nightSave(), '?debug=1&hccity=2');
+    await boot(page, nightSave(), '?debug=1');
     const g = await page.evaluate(() => {
       const V = window.PP_HC_V2;
       const gov = V.rooms.hc_gov_1.objs.find(o => o.id === 'hc_governor');

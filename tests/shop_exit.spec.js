@@ -15,6 +15,7 @@ function save(extra) {
   s.party[0].hunger = 40;
   s.money = 0;
   s.flags['trainer.r2_lead'] = true;
+  s.flags['story.hc_greeted'] = true;   // the city is live: a first visit to Lantern Square plays the parade, which would hold the store
   Object.assign(s.flags, extra || {});
   return s;
 }

@@ -1,12 +1,12 @@
 /* WAR_MUSEUM v0.1.1 (design repo, private; settled by Vincent Thu Nov 5, 2026, all defaults: D2300-D2318, rule 9 previews approved):
    the Muster Road Museum on Charter Hill's old corner (hc_civic box 2,38-14,43, door 8,44) and its room hc_museum_in (14x16).
-   tools/build_hc_city.py (the city is the ?debug=1&hccity=2 preview until HC_CITY_V2 ships), sprites.js (WAR_MUSEUM_ART and the
+   tools/build_hc_city.py (the city is live since Fri Nov 6, 2026: HC_CITY_V2 on), sprites.js (WAR_MUSEUM_ART and the
    hc_museum_in skin), game.js (the `pay` and `glow` steps, `partner:out`, the keepsake), quests.js (the Stamp Trail side chain).
    §8 tests 1-10: the door and the mat, every exhibit reachable and tappable, the act gates (K2 on story.wb_cut, K5's card on
    story.hc_trial_called, K6, K7, K11), the Stamp Trail and its reward once, the donation lantern (10 and 50, the name at 100, the
    plaque at 500, a short purse; each gift a "Museum gift" line in the bank's ledger through moneyDelta), rule 10 (D2314), no INSIGN (D2317), the palette (no mint, no wine west of the seam) and the three
    looks against data/look_lock.json. Runs at 320, 375 and 390 (@w1 rows at 320 only); one run in reduced motion; Modern controls;
-   zero console errors. The city preview holds the save, so pixelpets.save.v2 stays as installed (v 2, unchanged). */
+   zero console errors. The city is live and writes the save: pixelpets.save.v2 keeps the same keys and v 2. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
@@ -114,7 +114,7 @@ async function boot(page, flags, opts = {}) {
   const s = save(flags, opts.money);
   if (opts.follower) s.settings.follower = true;
   await installSave(page.context(), s, { quietDay: true });
-  await gotoGame(page, '?debug=1&hccity=2');
+  await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && typeof PixelPets.talkTo === 'function' && PixelPets.state);
   await page.evaluate(() => { PixelPets.showTab('walk'); if (PixelPets.clearWild) PixelPets.clearWild(); PixelPets.clock.freeze(true); PixelPets.clock.set('thu', 11, 0); });
   if (opts.reduce) expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
@@ -289,9 +289,11 @@ test.describe('WAR_MUSEUM in the game (§8 tests 1, 2, 4)', () => {
     await page.evaluate(() => PixelPets.walkStep('down'));
     await page.waitForFunction(() => PixelPets.mapInfo.id === 'hc_civic' && !PixelPets.fading, null, { timeout: 15000 });
     expect(await where(page)).toEqual({ map: 'hc_civic', x: 8, y: 45, facing: 'down' });
-    const after = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
-    expect(after).toBe(before);   // the city preview holds the save
-    expect(JSON.parse(after).v).toBe(2);
+    const after = JSON.parse(await page.evaluate(() => localStorage.getItem('pixelpets.save.v2')));
+    expect(after.v).toBe(2);   // the city is live, so the save is written (no hold); the key and v are as before
+    expect(after.world.map).toBe('hc_civic');
+    expect(after.flags['story.wm_visited']).toBe(true);
+    for (const k of Object.keys(JSON.parse(before))) expect(Object.keys(after), 'no save key is removed: ' + k).toContain(k);   // fields only ever added, by normalizeV2
   });
 
   test('WM-T4b: the runner\'s line plays once on the first walk up the seam (§5.2) @w1', async ({ page }) => {

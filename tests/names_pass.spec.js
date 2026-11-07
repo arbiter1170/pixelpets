@@ -54,6 +54,7 @@ function save(flags, extra) {
   s.settings.tips = false;
   s.settings.follower = false;
   s.settings.controls = 'modern';   // the shared starter save picks arcade; this spec plays in Modern controls
+  s.flags['story.hc_greeted'] = true;   // the city is live: a first visit to Lantern Square plays the parade, which would hold every talk
   Object.assign(s.flags, flags || {});
   if (extra) Object.assign(s, extra);
   return s;
@@ -216,7 +217,7 @@ test('the save is unchanged: v 2, the same keys, raw names only, for a fresh sav
 // when the save reached the renamed person; the old key stays with the person who keeps the name.
 const SPLIT = [
   { shown: 'Jory', old: 'Cal', file: 'heights', map: 'rx_f2', id: 'rx_cal', at: [5, 10], look: 'rx_cal' },
-  { shown: 'Mabry', old: 'Kit', file: 'highcharity', map: 'highcharity', id: 'hc_kite', at: [37, 23], look: 'kit' },
+  { shown: 'Mabry', old: 'Kit', file: 'highcharity', map: 'highcharity', id: 'hc_kite', at: [41, 26], look: 'kit' },
 ];
 const KEPT_SPLIT = [
   { shown: 'Cal', file: 'mahopac', map: 'mahopac', id: 'cal', look: 'cal' },

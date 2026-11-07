@@ -71,6 +71,9 @@ test('the B4 overlay lands: roofs, variants, new props and decals are on the mer
 test('no two buildings on a town map share roof, wall, door, windows and porch prop (BUILDING_VARIETY 1-27)', async ({ page }) => {
   await boot(page);
   for (const [id, n] of Object.entries(TOWNS)) {
+    // High Charity is the city since Nov 6 (HC_CITY_V2 live): applyHcCity replaces this overlay's porch props and outdoor dressing with
+    // the city's own, so its roofs, buildings and dressing are checked by tests/high_charity_v04.spec.js (charityCheck, tap audit, rule 10).
+    if (id === 'highcharity') continue;
     const r = await page.evaluate((id) => {
       PixelPets.goto(id, null, null, 'down');
       const v = PixelPets.exteriors(id), info = PixelPets.mapInfo, bad = [], seen = {}, roofCells = new Set(), doors = new Set();
@@ -107,6 +110,7 @@ test('no two buildings on a town map share roof, wall, door, windows and porch p
 test('every outdoor map loads clean, and the new props cut nobody off from the arrival tile', async ({ page }) => {
   await boot(page);
   for (const id of OUTDOOR) {
+    if (id === 'highcharity') continue;   // the city replaces this overlay's props (see the variety test above); its reach is tests/high_charity_v04.spec.js
     const r = await page.evaluate((id) => {
       const safe = PixelPets.exteriors(id).safe;
       PixelPets.goto(id, safe.x, safe.y, 'down');

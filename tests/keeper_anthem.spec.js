@@ -23,7 +23,7 @@ const LITERAL_FNV = { anthem_march: '781ed03a', anthem_dark: '3ccbbc3a', anthem_
 const SCENE_MUSIC_IDS = ['curfew', 'president', 'ledger', 'dawn', 'hearth', 'sweet', 'storm', 'hush'];
 // The shared KIT, as on main (T3: unchanged).
 const KIT_SRC = "const KIT = {\n    k: ['lowpass', 260, 90, 0.30],\n    s: ['highpass', 1500, 110, 0.10],\n    h: ['highpass', 6500, 30, 0.04],\n  };";
-const SHEET = '[PLACEHOLDER] A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem.';
+const SHEET = 'A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem.';
 const BANNED = /\b(faint(ed)?|evolv\w*|coins?|appeared|go, [a-z]+!|[a-z]+dex|trainer|monster|gym|rival)\b/i;
 
 function save(opts = {}) {
@@ -352,7 +352,7 @@ test.describe('KEEPER_ANTHEM', () => {
     await sceneOpen(page);
     await endScene(page);
     await page.evaluate(() => PixelPets.goto('hc_barracks_in', 4, 4, 'up'));
-    await expect.poll(() => page.evaluate(() => PPSound.musicWant)).toBe('charity');   // city off: the room keeps its loop
+    await expect.poll(() => page.evaluate(() => PPSound.musicWant)).toBe('anthem_hall');   // the city is live: the Barracks plays the anthem loop
     const after = await read();
     expect(after.v).toBe(2);
     expect(keys(after)).toEqual(keys(before));
@@ -362,19 +362,19 @@ test.describe('KEEPER_ANTHEM', () => {
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 
-  test('T14: debug hooks inert without ?debug=1: ?hccity=2 alone leaves both rooms on charity and no city', async ({ page }) => {
+  test('T14: debug hooks inert without ?debug=1: the two Keeper rooms of the live city play anthem_hall, but no hook, no city report and no WORLD global leak out', async ({ page }) => {
     await boot(page, { q: '?hccity=2' });
     const r = await page.evaluate(() => ({ debug: PixelPets.debug, city: typeof PixelPets.hcCity === 'function' ? PixelPets.hcCity() : null,
       c: PixelPets.mapTrack('hc_command_in'), b: PixelPets.mapTrack('hc_barracks_in'), world: typeof window.WORLD, v: PixelPets.state.v }));
-    expect(r).toEqual({ debug: false, city: null, c: 'charity', b: 'charity', world: 'undefined', v: 2 });
+    expect(r).toEqual({ debug: false, city: null, c: 'anthem_hall', b: 'anthem_hall', world: 'undefined', v: 2 });
   });
 
-  test('T17 T18: city on, the two Keeper rooms play anthem_hall; every other room is as with the roomPatch removed; city off both are charity', async ({ page }) => {
+  test('T17 T18: city live, the two Keeper rooms play anthem_hall; every other room is as with the roomPatch removed; ?hccity=0 changes nothing', async ({ page }) => {
     const ROOMS = ['hc_airport_in', 'hc_lantern_in', 'hc_gov_1', 'hc_gov_3', 'hc_church_in', 'hc_hall_in', 'hm_hq_f1', 'hm_hq_f2', 'hm_lodge_in'];
     const read = () => page.evaluate(([rooms]) => ({ c: PixelPets.mapTrack('hc_command_in'), b: PixelPets.mapTrack('hc_barracks_in'),
       cm: WORLD.hc_command_in.music, bm: WORLD.hc_barracks_in.music, other: rooms.map(id => [id, PixelPets.mapTrack(id)]),
       objs: ['hc_command_in', 'hc_barracks_in'].map(id => WORLD[id].objs.map(o => o.id).sort().join(',')) }), [ROOMS]);
-    await boot(page, { q: '?debug=1&hccity=2' });
+    await boot(page, { q: '?debug=1' });
     const on = await read();
     expect([on.c, on.b, on.cm, on.bm]).toEqual(['anthem_hall', 'anthem_hall', 'anthem_hall', 'anthem_hall']);
     // the same city without its roomPatch (debug: the data file with the key dropped)
@@ -384,7 +384,7 @@ test.describe('KEEPER_ANTHEM', () => {
       await route.fulfill({ status: 200, body: (await res.text()) + '\ndelete window.PP_HC_V2.roomPatch;\n', headers: { 'content-type': 'application/javascript', 'cache-control': 'no-store' } });
     });
     p2.ppErrors = []; p2.on('pageerror', e => p2.ppErrors.push(e.message));
-    await gotoGame(p2, '?debug=1&hccity=2');
+    await gotoGame(p2, '?debug=1');
     await p2.waitForFunction(() => window.PixelPets && PixelPets.state);
     const bare = await p2.evaluate(([rooms]) => ({ c: PixelPets.mapTrack('hc_command_in'), b: PixelPets.mapTrack('hc_barracks_in'), other: rooms.map(id => [id, PixelPets.mapTrack(id)]),
       objs: ['hc_command_in', 'hc_barracks_in'].map(id => WORLD[id].objs.map(o => o.id).concat(id === 'hc_command_in' ? ['hc_anthem_sheet_c'] : ['hc_anthem_sheet_b']).sort().join(',')) }), [ROOMS]);
@@ -393,16 +393,16 @@ test.describe('KEEPER_ANTHEM', () => {
     expect([bare.c, bare.b]).toEqual(['charity', 'charity']);
     expect(on.other).toEqual(bare.other);
     expect(on.objs).toEqual(bare.objs);   // the rooms gain the sheet and nothing else
-    // city off (plain ?debug=1): as main
+    // the city is live: ?hccity=0 is a no-op, both rooms keep the anthem and the sheet
     const p3 = await page.context().newPage();
     await gotoGame(p3, '?debug=1&hccity=0');
     await p3.waitForFunction(() => window.PixelPets && PixelPets.state);
-    expect(await p3.evaluate(() => [PixelPets.mapTrack('hc_command_in'), PixelPets.mapTrack('hc_barracks_in'), WORLD.hc_command_in.objs.some(o => /anthem/.test(o.id))])).toEqual(['charity', 'charity', false]);
+    expect(await p3.evaluate(() => [PixelPets.mapTrack('hc_command_in'), PixelPets.mapTrack('hc_barracks_in'), WORLD.hc_command_in.objs.some(o => /anthem/.test(o.id))])).toEqual(['anthem_hall', 'anthem_hall', true]);
     await p3.close();
   });
 
   test('T19: walk into the Barracks: anthem_hall; out through the mat: charity; back in: anthem_hall from bar 1', async ({ page }) => {
-    await boot(page, { q: '?debug=1&hccity=2', s: save({ world: { map: 'hc_civic', x: 55, y: 25, facing: 'up' } }) });
+    await boot(page, { q: '?debug=1', s: save({ world: { map: 'hc_civic', x: 55, y: 25, facing: 'up' } }) });
     await soundOn(page);
     const door = await page.evaluate(() => { const d = WORLD.hc_civic.objs.find(o => o.kind === 'door' && o.id === 'hc_barracks'); return { x: d.x, y: d.y }; });
     const walkIn = async () => {
@@ -424,7 +424,7 @@ test.describe('KEEPER_ANTHEM', () => {
   });
 
   test('T20: at 23:00 and on a Glimmer save both rooms still want anthem_hall', async ({ page }) => {
-    await boot(page, { q: '?debug=1&hccity=2', s: save({ side: 'glimmer' }) });
+    await boot(page, { q: '?debug=1', s: save({ side: 'glimmer' }) });
     const r = await page.evaluate(() => { PixelPets.clock.set('tue', 23, 0); PixelPets.clock.freeze(true);
       const out = { side: PixelPets.state.flags['story.side'], hh: PixelPets.clock.now().hh };
       out.rooms = ['hc_command_in', 'hc_barracks_in'].map(id => { PixelPets.goto(id, 4, 4, 'up'); return [id, PPSound.musicWant, PixelPets.mapTrack(id)]; });
@@ -439,7 +439,7 @@ test.describe('KEEPER_ANTHEM', () => {
   });
 
   test('T21: in the room, Sound OFF keeps the wish with no node; Sound ON starts it; volume 0 is silent; a stinger ducks it', async ({ page }) => {
-    await boot(page, { q: '?debug=1&hccity=2', s: save({ world: { map: 'hc_command_in', x: 4, y: 4, facing: 'up' } }) });
+    await boot(page, { q: '?debug=1', s: save({ world: { map: 'hc_command_in', x: 4, y: 4, facing: 'up' } }) });
     await page.evaluate(() => PixelPets.goto('hc_command_in', 4, 4, 'up'));
     expect(await page.evaluate(() => [PPSound.musicWant, PPSound.musicTrack, window.__spy.osc])).toEqual(['anthem_hall', null, 0]);
     await soundOn(page);
@@ -456,10 +456,10 @@ test.describe('KEEPER_ANTHEM', () => {
     expect(await page.evaluate(() => [PPSound.musicTrack, PPSound.musicSwell])).toEqual(['anthem_hall', null]);
   });
 
-  test('T22: one framed sheet per room names the anthem (PLACEHOLDER), opens on a tap, clean wording, save unchanged', async ({ page }) => {
+  test('T22: one framed sheet per room names the anthem (the bracket tag was cut at the switch-on), opens on a tap, clean wording, save unchanged', async ({ page }) => {
     const vw = page.viewportSize().width;
     for (const [rid, sid] of [['hc_command_in', 'hc_anthem_sheet_c'], ['hc_barracks_in', 'hc_anthem_sheet_b']]) {
-      await boot(page, { q: '?debug=1&hccity=2', s: save({ world: { map: rid, x: 4, y: 4, facing: 'up' } }) });
+      await boot(page, { q: '?debug=1', s: save({ world: { map: rid, x: 4, y: 4, facing: 'up' } }) });
       const before = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
       const signs = await page.evaluate(id => WORLD[id].objs.filter(o => o.kind === 'sign').map(o => ({ id: o.id, x: o.x, y: o.y, text: o.text })), rid);
       expect(signs).toEqual([{ id: sid, x: 4, y: 2, text: SHEET }]);
@@ -476,11 +476,16 @@ test.describe('KEEPER_ANTHEM', () => {
       await expect(page.locator('#sbText')).toHaveText(SHEET, { timeout: 8000 });
       expect(await page.evaluate(() => [PixelPets.state.world.x, PixelPets.state.world.y])).toEqual([4, 3]);
       await endScene(page);
-      expect(await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'))).toBe(before);   // the city preview holds the save
+      // the city is live and writes the save: reading the sheet adds no key and no flag (the timestamp may move)
+      const now = JSON.parse(await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'))), was = JSON.parse(before);
+      for (const k of Object.keys(was)) expect(Object.keys(now), 'no save key is removed: ' + k).toContain(k);
+      for (const k of Object.keys(was.flags)) expect(Object.keys(now.flags), 'no flag is removed: ' + k).toContain(k);
+      expect(Object.keys(now.flags).filter(k => !(k in was.flags) && !/^story\.beat\.|^story\.early_steps$|^story\.unlock_/.test(k)), 'reading the sheet sets no flag').toEqual([]);
+      expect(now.v).toBe(2);
       expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
     }
     // Arcade: facing the sheet, the TALK button (44 px) opens it too
-    await boot(page, { q: '?debug=1&hccity=2', s: save({ controls: 'arcade', world: { map: 'hc_barracks_in', x: 4, y: 3, facing: 'up' } }) });
+    await boot(page, { q: '?debug=1', s: save({ controls: 'arcade', world: { map: 'hc_barracks_in', x: 4, y: 3, facing: 'up' } }) });
     const talk = await page.locator('#talkBtn').boundingBox();
     expect(talk.width).toBeGreaterThanOrEqual(44);
     expect(talk.height).toBeGreaterThanOrEqual(44);

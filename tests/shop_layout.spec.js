@@ -229,6 +229,7 @@ test('Lanternfly motes buy in one tap, the wardrobe says Need N more, and the He
   test.setTimeout(60000);
   const s = save();
   s.money = 3000;
+  s.flags['story.hc_greeted'] = true;   // the city is live: a first arrival plays the parade
   await boot(page, s);
   await stand(page, 'highcharity', 2, 2, 'down');
   const at = await page.evaluate(() => {

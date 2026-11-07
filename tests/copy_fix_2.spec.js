@@ -105,9 +105,9 @@ function flatFive(text) {
   return String(text || '').includes('5 Acorns.') && !String(text).includes(', or what you have');
 }
 
-test('b the High Charity wall sign matches every other Lantern House sign', async ({ page }) => {
+test('b the High Charity Lantern House mark (the old wall sign is retired in the city) matches every other Lantern House sign', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => PixelPets.talkTo('hc_sign_lantern'));
+  await page.evaluate(() => PixelPets.talkTo('hc_lantern_sign'));
   await untilText(page, HOUSE);
   await endScene(page);
   await page.evaluate(() => PixelPets.talkTo('hm_sign_lantern'));
@@ -323,7 +323,7 @@ test('reduced motion still shows the sign and the hold tip', async ({ page }) =>
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await boot(page, null, 'arcade');
   expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
-  await page.evaluate(() => PixelPets.talkTo('hc_sign_lantern'));
+  await page.evaluate(() => PixelPets.talkTo('hc_lantern_sign'));
   await untilText(page, HOUSE);
   await endScene(page);
   await armHold(page);
@@ -344,7 +344,7 @@ test('reading a sign leaves the save at v2 with the same keys', async ({ page })
     return { v: raw.v, keys: Object.keys(raw).sort(), flags: Object.keys(raw.flags || {}).sort() };
   });
   expect(before.v).toBe(2);
-  await page.evaluate(() => PixelPets.talkTo('hc_sign_lantern'));
+  await page.evaluate(() => PixelPets.talkTo('hc_lantern_sign'));
   await untilText(page, HOUSE);
   await endScene(page);
   const after = await page.evaluate(() => {
