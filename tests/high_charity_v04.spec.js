@@ -1,5 +1,5 @@
-/* HIGH_CHARITY_LAYOUT v0.4.2 (design specs/HIGH_CHARITY_LAYOUT.md; §13 acceptance tests), on the city preview
-   (?debug=1&hccity=2; HC_CITY_V2 stays false, the preview never writes the save). Modern controls in every save.
+/* HIGH_CHARITY_LAYOUT v0.4.2 (design specs/HIGH_CHARITY_LAYOUT.md; §13 acceptance tests), on the live city
+   (HC_CITY_V2 switched on Fri Nov 6, 2026; plain ?debug=1, and the city writes the save). Modern controls in every save.
    - §13.1: the layout checker's rules (high_charity_layout_check.py) run over the merged game WORLD, after every overlay and
      kept object: sizes, paired mouths, doors under a facade, every door and mouth reachable from the arrival with every body
      and prop standing, no one-wide choke, patrol legs on walk tiles and off doors and mouths, tanks on kerb bays, nothing
@@ -39,7 +39,7 @@ function save(opts = {}) {
   s.world = Object.assign({ map: 'highcharity', x: 32, y: 37, facing: 'up', respawn: 'hearthmoor' }, opts.world || {});
   return s;
 }
-async function boot(page, s, q = '?debug=1&hccity=2') {
+async function boot(page, s, q = '?debug=1') {
   await installSave(page.context(), s || save(), { quietDay: true });
   await gotoGame(page, q);
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && PixelPets.state && PixelPets.state.party[0]);
@@ -364,18 +364,17 @@ test('old saves: today\'s High Charity tiles and the tiles this build cleared of
   }
 });
 
-test('the save is unchanged: walking three chunks and two rooms writes nothing; the key stays pixelpets.save.v2 at v 2', async ({ page }) => {
+test('the save is unchanged in shape: walking three chunks and two rooms writes the last room; the key stays pixelpets.save.v2 at v 2', async ({ page }) => {
   await boot(page);
-  const before = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
   for (const [m, x, y] of [['hc_civic', 32, 40], ['hc_exchange', 10, 20], ['hc_news_1', 7, 14], ['hc_college', 23, 20], ['hc_lantern_in', 8, 19]]) {
     await page.evaluate(([m, x, y]) => PixelPets.goto(m, x, y, 'up'), [m, x, y]);
     await settle(page);
     await page.evaluate(() => PixelPets.walkStep('down'));
     await settle(page);
   }
-  const after = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
-  expect(after).toBe(before);
-  expect(JSON.parse(after).v).toBe(2);
+  const after = JSON.parse(await page.evaluate(() => localStorage.getItem('pixelpets.save.v2')));
+  expect(after.v).toBe(2);
+  expect(after.world.map).toBe('hc_lantern_in');
 });
 
 test('battle backdrops with the city on: every city map has its own scene, PAL only, no two alike, props clear of the Walklings', async ({ page }) => {

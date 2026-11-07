@@ -1,7 +1,7 @@
 /* HC_PARADE v0.2 (design specs/HC_PARADE.md, D1353-D1369; handoff/maps/HC_PARADE.md): the first arrival in High Charity. Part 1
    the parade on Lantern Square, Part 2 the President's speech on Charter Hill, Part 3 three street battles with an ally and two
-   foes picked at random. City only (HC_CITY_V2 is false; the preview is ?debug=1&hccity=2 and never writes the save); normal play
-   and plain ?debug=1 keep hc_gate. Runs at 320, 375 and 390; reduced motion; zero console errors (trackErrors). §11 T1-T11. */
+   foes picked at random. The city is live (HC_CITY_V2 switched on Fri Nov 6, 2026), so plain play and plain ?debug=1 run
+   the parade and the save is written; ?hccity=2 is a no-op kept in these URLs. Runs at 320, 375 and 390; reduced motion; zero console errors (trackErrors). §11 T1-T11. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
@@ -23,7 +23,7 @@ function save(opts = {}) {
   s.world = Object.assign({ map: 'highcharity', x: 32, y: 37, facing: 'up', respawn: 'hearthmoor' }, opts.world || {});
   return s;
 }
-async function boot(page, s, q = '?debug=1&hccity=2', reduced = true) {
+async function boot(page, s, q = '?debug=1', reduced = true) {
   if (reduced) await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), s, { quietDay: true });
   await gotoGame(page, q);
@@ -115,13 +115,13 @@ for (const side of ['keepers', 'glimmer']) {
     const picks = seen.picks.map(k => JSON.parse(k)), ids = picks.flatMap(p => [p.ally, ...p.foes]);
     expect(picks.length).toBe(3);
     expect(new Set(ids).size).toBe(ids.length);
-    // §10: save v2, no new field (the preview holds the save: nothing written)
+    // §10: save v2, no new field (the city is live and writes the save; v stays 2)
     expect(seen.end.v).toBe(2);
   });
 }
 
 test('T6: SKIP finishes with the same flags as a full play', async ({ page }) => {
-  await boot(page, save(), '?debug=1&hccity=2', false);
+  await boot(page, save(), '?debug=1', false);
   await waitScene(page, 'hc_parade');
   const seen = await playThrough(page, { skip: true });
   expect(seen.skipped).toBe(true);
@@ -169,29 +169,31 @@ test('T5c: between battles the one-line re-stage plays, then battle 2', async ({
   await walkToHill(page);
   await waitScene(page, 'hc_parade_hill');
   const seen = await playThrough(page, { reduced: true });
-  expect(seen.lines[0]).toMatch(/PLACEHOLDER\] Muster Road is still packed/);
+  expect(seen.lines[0]).toMatch(/Muster Road is still packed\. The guards push in again\./);   // the bracket tag was cut at the switch-on
+  expect(seen.lines.join('\n')).not.toMatch(/PLACEHOLDER|\[/);
   expect(seen.lines.some(l => /^The President: /.test(l))).toBe(false);
   expect(seen.battles.length).toBe(2);
   for (const f of FLAGS) expect(seen.end.flags[f], f).toBe(true);
 });
 
-test('T9: an old v2 save from before this packet loads unchanged; normal play and plain ?debug=1 keep hc_gate', async ({ page }) => {
+test('T9: an old v2 save from before this packet loads unchanged; with the city live the gate trigger plays hc_parade, and a greeted holder stays quiet', async ({ page }) => {
   const s = save({ flags: { 'story.hc_greeted': true } });
   await boot(page, s, '?debug=1');
   await page.waitForTimeout(800);
   const r = await page.evaluate(() => ({ scene: PixelPets.scene, v: PixelPets.state.v, map: PixelPets.mapInfo.id, city: PixelPets.hcCity().on,
     trig: WORLD.highcharity.objs.filter(o => o.kind === 'trigger').map(o => o.id + ':' + o.scene),
     stored: JSON.parse(localStorage.getItem('pixelpets.save.v2')).flags['story.hc_greeted'] }));
-  expect(r.scene).toBeNull(); expect(r.v).toBe(2); expect(r.city).toBe(false); expect(r.stored).toBe(true);
-  expect(r.trig).toContain('hc_gate:hc_gate');
-  expect(r.trig.some(t => /hc_parade/.test(t))).toBe(false);
+  expect(r.scene).toBeNull(); expect(r.v).toBe(2); expect(r.city).toBe(true); expect(r.stored).toBe(true);
+  expect(r.trig).toContain('hc_gate:hc_parade');   // the switch-on: the city's gate trigger is the parade; story.hc_greeted keeps it from replaying
+  expect(r.trig).not.toContain('hc_gate:hc_gate');
 });
-test('T9b: the preview never writes the save during the parade', async ({ page }) => {
+test('T9b: the live city writes the save at the parade\'s end, v stays 2 and the parade flags are set', async ({ page }) => {
   await boot(page, save());
-  const before = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
   await waitScene(page, 'hc_parade');
   await playThrough(page, { reduced: true });
-  expect(await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'))).toBe(before);
+  const after = JSON.parse(await page.evaluate(() => localStorage.getItem('pixelpets.save.v2')));
+  expect(after.v).toBe(2);
+  expect(after.flags['story.hc_parade_seen']).toBe(true);
 });
 
 test('T10: debug hooks do nothing without ?debug=1', async ({ page }) => {

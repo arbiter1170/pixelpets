@@ -157,7 +157,7 @@ built roof kit for now. The President's look is a PLACEHOLDER NPC look (LH-2 is 
 
 - D1371 (red): the grey-box hum. Default not built.
 - D1370, D1372-D1374: this build's own calls (see `OPEN_DECISIONS.md`).
-- At ship time: flip `HC_CITY_V2`, drop the save hold, and add the city's map sizes to `save.js` MAP_SIZE.
+- ~~At ship time: flip `HC_CITY_V2`, drop the save hold, and add the city's map sizes to `save.js` MAP_SIZE.~~ DONE Fri Nov 6, 2026 (see "Switched on" below).
 - The Hearthmoor coach tile (12,9) is a roof tile on main (both modes); the coach can't be stepped on today. For QA.
 - The Dojo line fix (D1304) is a separate copy PR, as the layout says.
 
@@ -180,11 +180,34 @@ Built from design `specs/HIGH_CHARITY_LAYOUT.md` v0.4.2 (design `master` 5809141
 
 | Room | Packet | Why held |
 |---|---|---|
-| `hc_gov_2` Cabinet Room (twelve chairs, the charter under glass, the seating board, the map of towns) | layout §7.3; CABINET_AND_COUNCILS §4.1; WALK_BESIDE §2.1 | no grid in any packet; no inspiration pass; no preview |
+| ~~`hc_gov_2` Cabinet Room~~ | layout §7.3; CABINET_AND_COUNCILS §4.1 | **BUILT.** Previews approved by Vincent Wed Nov 4 (CABINET 1b; `tests/cabinet.spec.js`). Floor 1's stair goes to it; the Act 2 chain runs in it. Not held any more |
 | `hc_lantern_up` gallery | layout §7.1 | grid given; no inspiration pass; no preview |
 | `hc_college_in` College Great Hall | layout §7.4 | no grid; no preview |
 | `hc_trial_in` Muster Hall, `hc_trial_stone` Hall Stone room | layout §7.5 | blockouts only; also waits on the Hall 8 build (`HC_TRIAL_HALL`) |
 | `hc_library_in`, the Dojo expansion | layout §7.4 (phase 3) | no grid; no preview |
 
 Each needs, in order: the rule 9 inspiration pass (sub-agent or Gemini), Design's grid (the Cabinet Room has none), 390 before and
-after previews, and Vincent's yes. Until then floor 1's stair goes straight to floor 3 (D1372).
+after previews, and Vincent's yes. (The Cabinet Room is built, so floor 1's stair goes to floor 2 and floor 2's to the President's rooms on floor 3; D1372's "straight to floor 3" no longer applies.) The museum (`hc_museum_in`, WAR_MUSEUM, previews approved Thu Nov 5, D2300, D2301) is also built.
+
+## Switched on (Fri Nov 6, 2026; branch `claude/hc-city-live`)
+
+`HC_CITY_V2 = true` in `game.js`. Vincent, Fri Nov 6, 2026: "Act 2 fix: A: switch-on now, top priority". Why: on live build
+20261106-0301 the Keepers Act 2 rows `gov_meet`, `km_report` and `cab_lead` target `hc_gov_1`, a room that only the city has, so
+every Keepers holder was stuck in Act 2 (Nina's write-up, QA_ACT2_HC_POINTER). Vincent's calls for this build: draft art ships (no wait
+for Pia's 52 `HC_PLACEHOLDER_ART` redraws); only the literal `[PLACEHOLDER ...]` bracket text is cut or fixed (D2352-D2358); the
+parade speech is the settled D2130 text (S1-S7, S2 = D1428, "the national draft" is gone); the D1371 lamp hum is NOT in this build.
+
+- **Ship-time items, done:** the flag is on; the preview save hold is off (`HC_PREVIEW` is false whenever the flag is on, so the city
+  writes `pixelpets.save.v2` like any map and the "City preview: not saved" toast never shows); `save.js` MAP_SIZE and the floorSeen
+  ids take every city map from `window.PP_HC_V2` (`hc_civic` 64x48, `hc_exchange` 64x48, `hc_waterfront` 64x40, `hc_college` 48x48,
+  `hc_news_1` 14x16, `hc_news_2` 14x14, `hc_gov_1` 16x16, `hc_gov_2` 14x12, `hc_gov_3` 12x14, `hc_museum_in` 14x16, and `hc_lantern_in`
+  corrected from 9x7 to 16x22). `data/hc_city_v2.js` loads before `save.js` in `index.html`, so `normalizeV2` keeps a holder's place.
+  Additive only: key `pixelpets.save.v2`, `v` 2, no new save key.
+- `?hccity=2` is a no-op now (it may stay in old links). Debug hooks stay inert without `?debug=1`.
+- **Old saves:** a save in old Lantern Square loads on its tile if it is walkable, else at `safeSpot()` 32,37. All 13 moved rooms
+  keep their ids; their mats exit to the new doors. The retired `hc_apt_c` and `hc_buoy` were objects, never rooms, and nothing
+  names them. All three are tested in `tests/hc_city_live.spec.js`.
+- **Tests:** `tests/hc_city_live.spec.js` is the flag-on spec. `hc_city_v2.spec.js`'s flag-off test was rewritten to flag-on; the specs that
+  asserted the old city were updated to the new truth (none skipped or deleted).
+- **Still open after the switch:** the 52 art rows (Pia), June's ten townsfolk lines, the Kindness Board names (HB3, D2358; the names clause is cut, June supplies names later), the 500-Acorn
+  plaque prompt (D2357), the D1371 hum (red, next PR on its own), the real-phone perf check (Nina), a QA look at Store Row at 320.

@@ -39,6 +39,7 @@ function save(opts = {}) {
   s.settings.textSpeed = 'fast';
   s.settings.follower = false;
   s.money = opts.money != null ? opts.money : 744;
+  s.flags['story.hc_greeted'] = true;   // the city is live: a first arrival plays the parade, which would hold the chip's sheet shut
   Object.assign(s.flags, opts.flags || {});
   for (const [k, v] of Object.entries(s.flags)) if (v === null) delete s.flags[k];
   s.world = Object.assign({}, opts.world || HC);

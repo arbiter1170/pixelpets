@@ -122,6 +122,9 @@ test('both lantern rooms render the warm floor, and Cobblecrest stays dark', asy
       for (let y = 0; y < info.h; y++) for (let x = 0; x < info.w; x++) {
         const t = PixelPets.tileInfo(x, y);
         if (t.ch !== '.' || blocked.has(x + ',' + y)) continue;
+        const cv = document.querySelector('#mapCanvas');
+        const px = x * 16 - PixelPets.walk.cam.x + 2, py = y * 16 - PixelPets.walk.cam.y + 2;
+        if (px < 0 || py < 0 || px >= cv.width || py >= cv.height) continue;   // the city's 16x22 Lantern House is taller than the view: read what is on screen
         const got = at(x, y, 2, 2);
         floors.push({ x, y, tile: t.tile, got });
         if (got === '#f4f4f4') white.push(x + ',' + y + ' ' + t.tile);
@@ -137,6 +140,7 @@ test('both lantern rooms render the warm floor, and Cobblecrest stays dark', asy
           return open ? at(open.x, open.y, 0, 0) : null;
         })(),
         decal: PixelPets.tileInfo(2, 2).decal,
+        tiles: [...new Set(floors.map(f => f.tile))], skin: PixelPets.mapInfo.skin || (WORLD[room.id] && WORLD[room.id].skin) || null,
       };
       out.push(row);
     }
@@ -159,14 +163,10 @@ test('both lantern rooms render the warm floor, and Cobblecrest stays dark', asy
   expect(hm.glow).toBe(WARM.C);
   expect(hm.grout).toBe('#a8674a');
   expect(hm.decal).toBe('wall_shadow_warm');
-  expect(hc.face).toBe('hc_lantern__face');
-  expect(hc.faceHex).toBe('#9fae86');
-  expect(hc.wain).toBe(WARM.D);
-  expect(hc.foot).toBe(WARM.E);
-  expect(hc.win).toBe('hc_lantern__face');
-  expect(hc.glow).toBe(WARM.D);
-  expect(hc.grout).toBe('#5f6e4f');
-  expect(hc.decal).toBe('wall_shadow_warm');
+  // HC_CITY_V2 (live Nov 6): hc_lantern_in is the grand Lantern House on skin hc_lantern_grand (the Hearthmoor warm floor under a cream wall kit),
+  // so the old sage face, wainscot and grout checks no longer apply to it; its floors are still the warm floor (checked cell by cell above).
+  expect(hc.tiles.every(t => /^floor_lantern(_b|_c)?$/.test(t))).toBe(true);
+  expect(hc.skin).toBe('hc_lantern_grand');
   expect(cc.floors.length).toBeGreaterThan(0);
   for (const cell of cc.floors) {
     expect(['floor_clay', 'floor_clay_b', 'floor_clay_c']).toContain(cell.tile);

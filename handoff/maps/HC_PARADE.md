@@ -148,9 +148,9 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
 | Keeper tanks, beam, cordon | crackdown draft art (`keeper_tank_*`, `lantern_cordon`) | reused, as §8 says |
 | Music `anthem_march`, `anthem_dark` | `music` steps | KEEPER_ANTHEM (D1375-D1384) is not built; the steps name the cues and play nothing; the city loop keeps playing. No new sound (rule 3) |
 | Grey-box hum on each speech line | not built | red, D1371 (HC phase 1) |
-| Every line | `tools/hc_parade.py` | the packet's §2-§5 lines verbatim, PLACEHOLDER until Story signs them (D1358) |
+| Every line | `tools/hc_parade.py` | the packet's §2-§5 lines verbatim, PLACEHOLDER until Story signs them (D1358). The speech is now Story's settled text, D2130 S1-S7 (S2 = D1428's words; "the national draft" is gone), applied Fri Nov 6, 2026 |
 | Officer A / Officer B | cast labels | FRIEND SLOT names (§7) |
-| The re-stage line, the two HOOK lines, Officer A's thanks | `RESTAGE`, Part 3 ends | written as `[PLACEHOLDER: ...]` (the packet gives no words) |
+| The re-stage line, the two HOOK lines, Officer A's thanks | `RESTAGE`, Part 3 ends | were `[PLACEHOLDER: ...]` (the packet gives no words). Fri Nov 6 (HC_CITY_V2 switch-on): the two HOOK lines and Officer A's thanks are CUT (the scene ends on its existing in-world close); the re-stage line keeps its words without the tag (OPEN_DECISIONS D2355, D2356) |
 | Street-battle teams | `FIGHT.pools[side].team` | Story and Design (§5, open); level-matched within 1 |
 
 ## Open, for the Chief of Staff
@@ -160,5 +160,5 @@ is kept because the engineer fallback in `sprites.js` was drawn from it.)
   D1333-D1339 and D1340-D1346, which main already gives to #268 (D1333-D1347): a collision for that branch's owner, not
   renumbered here.
 - ~~Mint vests under rule 11~~: settled by the owner, Tue Nov 3: wine `V` with soot `N` (see the brief note above).
-- **At ship time** (with HC_CITY_V2): `save.js` must size the city's maps, or a save on Charter Hill loads at the Hearthmoor
+- **At ship time** (DONE Fri Nov 6, 2026 with the switch-on; `save.js` sizes the city's maps from `window.PP_HC_V2`; `tests/hc_city_live.spec.js`): `save.js` must size the city's maps, or a save on Charter Hill loads at the Hearthmoor
   Lantern House and E10's boot path never sees Charter Hill. In the preview the resume is exercised by arriving on Charter Hill.

@@ -51,12 +51,12 @@ async function exposeInternals(page) {
 }
 const inGame = (page, fn, arg) => page.evaluate(([src, a]) => window.__ll.ev('(' + src + ')')(a), [fn.toString(), arg === undefined ? null : arg]);
 
-// hccity=2 (debug only) also merges the High Charity preview cast, so its people are checked too.
+// the live High Charity city merges its cast too (HC_CITY_V2 on since Nov 6), so its people are checked as well.
 async function boot(page) {
   await exposeInternals(page);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), save(), { quietDay: true });
-  await gotoGame(page, '?debug=1&hccity=2');
+  await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true && window.BUILD);
   expect(await page.evaluate(() => typeof window.__ll), 'read hook: boot() line in game.js moved').toBe('object');
   await page.evaluate(() => PixelPets.showTab('walk'));

@@ -157,7 +157,7 @@ test('Your Home draws the wall kit, and rooms without it keep their tiles', asyn
   expect(report.keys.slice().sort()).toEqual(PAL_KEYS.slice().sort());
   expect(report.wall).toEqual(HOME_WALL);
   expect(report.opted).toContain('house_home');
-  expect(report.opted.length).toBe(59);   // 37 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT + BRIGHTGATE's six + KILNMOUTH's six
+  expect(report.opted.length).toBe(66);   // 37 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway + the three FERNBROOK_HOMES rooms + WEIR_HUT + BRIGHTGATE's six + KILNMOUTH's six + the live High Charity city's seven (HC_CITY_SKINS: hc_lantern_grand, hc_news_1, hc_news_2, hc_gov_1-3, hc_museum_in)
   expect(report.lists).toEqual({ home: [2, 6], up: [3, 5] });
   expect(report.parts).toEqual([
     'house_home__cap_n', 'house_home__cap_ne', 'house_home__cap_nw', 'house_home__cap_s', 'house_home__cap_se', 'house_home__cap_sw',

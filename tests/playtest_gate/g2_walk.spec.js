@@ -1,6 +1,6 @@
 /* PLAYTEST_GATE v0.1 §5 (tests/playtest_gate/PACKET.md): per-kind reads at load and the four walk steps, under ?debug=1.
    W1 the Act 1 Keeper join (the old-save move; SF-JOIN), W2 one town changing hands (SF-E6), W3 the Kilnmouth arrival on a
-   frozen clock (SF-KM), W4 the Cabinet stair in the hccity=2 preview (SF-CAB). PG-9 to PG-13 and PG-18. 320 and 390, reduced
+   frozen clock (SF-KM), W4 the Cabinet stair in the live city (SF-CAB; HC_CITY_V2 on since Fri Nov 6, 2026). PG-9 to PG-13 and PG-18. 320 and 390, reduced
    motion; 375 skipped. Save stays pixelpets.save.v2, v 2; zero console and page errors. */
 const { test, expect } = require('@playwright/test');
 const path = require('path');
@@ -15,7 +15,7 @@ L.gateGuard(test, expect);
 test.use({ reducedMotion: 'reduce' });
 
 const DEBUG_URL = './?debug=1';
-const CITY_URL = './?debug=1&hccity=2';
+const CITY_URL = './?debug=1';   // the city is live: no ?hccity
 const flags = page => page.evaluate(() => Object.assign({}, PixelPets.state.flags));
 const quest = page => page.evaluate(() => { const q = PixelPets.quest; return q && { id: q.id, target: q.target || null }; });
 const sceneId = page => page.evaluate(() => PixelPets.scene && PixelPets.scene.id);
@@ -74,8 +74,9 @@ test.describe('PLAYTEST_GATE g2: per-kind reads at load and the walk checks each
       const f = await flags(page);
       if (pk) for (const [k, v] of Object.entries(F.MOVE_KEEPERS)) expect(f[k], k).toEqual(v);
       else expect(f['story.keeper_cadet']).toBeUndefined();
-      // W4 (§5.4): no Cabinet without the preview.
-      expect(await page.evaluate(() => PixelPets.goto('hc_gov_1', 2, 2, 'left'))).toBe(false);
+      // W4 (§5.4): the city is live, so the Governor's House exists on a plain boot (it was false while the city was a preview);
+      // the Cabinet stair's own gate (story flags) is what W4's steps below check.
+      expect(await page.evaluate(() => PixelPets.goto('hc_gov_1', 2, 2, 'left'))).toMatchObject({ map: 'hc_gov_1', x: 2, y: 2 });
       // W3 (§5.3): after the settle, no Kilnmouth key in the stored save.
       const stored = JSON.parse(await L.settle(page, pk ? 2 : 1));
       expect(stored.v).toBe(2);
@@ -173,7 +174,7 @@ test.describe('PLAYTEST_GATE g2: the walk steps on stage fixtures (§5.1-§5.4)'
   });
 
   for (const open of [true, false]) {
-    test(`W4 SF-CAB-${open ? 'OPEN: the stair climbs to hc_gov_2 1,3' : 'DENY: Cabinet in session'}; the preview never writes the save (PG-13)`, async ({ page }) => {
+    test(`W4 SF-CAB-${open ? 'OPEN: the stair climbs to hc_gov_2 1,3' : 'DENY: Cabinet in session'}; the live city writes the save, v stays 2 (PG-13)`, async ({ page }) => {
       test.setTimeout(60000);
       await bootDebug(page, open ? F.STAGE.sf_cab_open() : F.STAGE.sf_cab_deny(), CITY_URL);
       const rawBefore = await L.storedRaw(page);
@@ -194,8 +195,12 @@ test.describe('PLAYTEST_GATE g2: the walk steps on stage fixtures (§5.1-§5.4)'
       }
       await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
       await page.waitForTimeout(5500);
-      expect(await L.storedRaw(page) === rawBefore, 'the stored save is byte-identical').toBe(true);
-      expect(await page.evaluate(() => PixelPets.toasts)).toContain('City preview: not saved');
+      // the city is live: nothing holds the save, so the last room is written; v and every key stay
+      const stored = JSON.parse(await L.storedRaw(page));
+      expect(stored.v).toBe(2);
+      expect(stored.world.map).toBe(open ? 'hc_gov_2' : 'hc_gov_1');
+      for (const k of Object.keys(JSON.parse(rawBefore))) expect(Object.keys(stored), 'no save key is removed: ' + k).toContain(k);
+      expect(await page.evaluate(() => PixelPets.toasts)).not.toContain('City preview: not saved');
     });
   }
 

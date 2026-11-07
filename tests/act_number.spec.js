@@ -138,7 +138,7 @@ test('with ?debug=1 a stored act still counts (debug places), and the derived ac
 });
 
 test('the debug places still work: the main-chain end is Act 2, the city preview Act 5 place reads Act 5', async ({ page }) => {
-  await boot(page, save(), '?debug=1&hccity=2');
+  await boot(page, save(), '?debug=1');
   const end = await page.evaluate(() => { const r = PixelPets.checkpoint('end'); return { ok: r.ok, act: PixelPets.act, stored: 'story.act' in PixelPets.state.flags, ep1: !!PixelPets.state.flags['story.ep1_end'] }; });
   expect(end).toEqual({ ok: true, act: 2, stored: false, ep1: true });
   await expect.poll(() => page.evaluate(() => !PixelPets.fading)).toBe(true);

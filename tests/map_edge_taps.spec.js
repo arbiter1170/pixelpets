@@ -32,6 +32,7 @@ function edgeSave(flags, follower) {
   s.settings.follower = !!follower;
   s.settings.music = false;
   s.settings.tips = false;
+  s.flags['story.hc_greeted'] = true;   // the city is live: a first visit to Lantern Square plays the parade, which would hold the placement
   Object.assign(s.flags, flags);
   return s;
 }

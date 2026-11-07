@@ -1,6 +1,6 @@
 /* GOVERNOR_MEETING v0.2.1 (design repo, private; D1469-D1475): Act 2 opens with Warden Ilse's Keeper1 call, the posting at the
-   Lodge, the meeting with Governor Merriden in the Governor's House (hc_gov_meet, tools/build_hc_city.py; the city is the
-   ?debug=1&hccity=2 preview until HC_CITY_V2 ships) and the optional report at the Lodge. Every new line is PLACEHOLDER.
+   Lodge, the meeting with Governor Merriden in the Governor's House (hc_gov_meet, tools/build_hc_city.py; the city is live since Fri
+   Nov 6, 2026 (HC_CITY_V2), so every boot here is a plain ?debug=1) and the optional report at the Lodge. Every new line is PLACEHOLDER.
    data/detail_zzz_act2_opener.json, quests.js, tools/build_hc_city.py. Save stays pixelpets.save.v2, v 2, new story.* keys only.
    §8 T1-T10; runs at 320, 375 and 390 (@w1 rows at 320 only); reduced motion; zero console errors. */
 const { test, expect } = require('@playwright/test');
@@ -59,7 +59,7 @@ function a2Save(flags, world) {
 async function boot(page, save, opts = {}) {
   if (opts.reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), save, { quietDay: true, oldSave: !!opts.oldSave });
-  await gotoGame(page, opts.city ? '?debug=1&hccity=2' : '?debug=1');
+  await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && typeof PixelPets.talkTo === 'function' && PixelPets.state);
   await page.evaluate(() => { PixelPets.showTab('walk'); if (PixelPets.clearWild) PixelPets.clearWild(); });
   if (opts.reduce) expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
@@ -192,8 +192,9 @@ test.describe('GOVERNOR_MEETING Part 1: Ilse sends the Cadet (D1469)', () => {
     expect(await doorOpen(page)).toBe(false);
     const q = await quest(page);
     expect(q).toEqual({ id: 'gov_post', text: 'Warden Ilse wants you home at the Lodge in Hearthmoor. You have a posting.', target: { map: 'hm_lodge_in', x: 5, y: 3 } });
-    // D1470: Lumen's lead-in is held for the seat; it is not built and nothing here writes the rumour flag.
-    expect(await page.evaluate(() => PixelPets.sceneScript('thr_cabinet_lead'))).toEqual([]);
+    // D1470: Lumen's lead-in is built with the Cabinet Room (CABINET 1b; the city is live), but it only rings after the report-back
+    // (story.km_reported), so a plain Cadet here writes no rumour flag.
+    expect((await page.evaluate(() => PixelPets.sceneScript('thr_cabinet_lead'))).length).toBeGreaterThan(0);
     await goto(page, 'hm_hq_f2', 8, 5, 'up');
     expect(await page.evaluate(() => PixelPets.talkTo('hq_lumen'))).toBe(true);
     await drive(page);

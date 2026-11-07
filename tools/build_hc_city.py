@@ -49,7 +49,7 @@ TXT = {
     'hb1_child': "Why are the lanterns on in the day?",
     'hb1_parent': "So they can see us, love. So we're safe.",
     'hb2_box': "A small grey box hums at the top.",
-    'hb3_board': "Good deeds this week: [FRIEND 1], [FRIEND 2], [FRIEND 3], [FRIEND 4], [FRIEND 5], [FRIEND 6].",   # FRIEND SLOT placeholders
+    'hb3_board': "Good deeds this week.",   # HC_CITY_V2 switch-on: the six [FRIEND n] names are cut (D2358); June writes the names
     'hb4_poor': "Nobody's poor in High Charity. It says so on the sign.",
     'hb5_patrol': "Citizen. Lovely evening. Keep to the lit side, please.",
     'hb5_patrol_day': "Citizen. Lovely day.",                     # PLACEHOLDER: no day line in §11; Story to replace
@@ -91,12 +91,12 @@ TXT = {
     'gov_kept': "You've the look of someone holding something back. Keep it, then. Bring it when it's ready.",
     'gov_m8': "Kilnmouth, then. Safe roads, Cadet.",
     'gov_after': "Kilnmouth's springs, and the empty seat. Come back when you know more.",
-    'gov_stair': "[PLACEHOLDER] Upstairs is the President's floor. Not today, holder.",
+    'gov_stair': "Upstairs is the President's floor. Not today, holder.",
     'court': "The Court is not sitting.",
     'closed': "Closed for now.",                                # PLACEHOLDER facade line (Store Row a-c, the Exchange, Ferry House, College)
     'boarded': "Boarded up.",                                   # PLACEHOLDER (Store Row d, the Glimmerwell named slot)
     'fish': "The stalls are packed away for now.",              # PLACEHOLDER
-    'gallery': "[PLACEHOLDER] The gallery stair is roped off for now.",
+    'gallery': "The gallery stair is roped off for now.",
     'hb14_gate': "Sealed. The tide decides.",                  # §11 HB14, Design's stub for Story (PLACEHOLDER)
     'news_bill': 'A Block News bill. BLOCK NEWS · Who. Where. What changed.',
     'apt_b': None,                                              # kept text
@@ -121,12 +121,13 @@ TXT = {
     'k6_1': "In default of the council? I stamped that. It was in order. It was also a tie.",
     'k6_2': "Two names were on my desk before you left. One came down from upstairs.",
     'k6_3': "A seat is confirmed at the cabinet, Cadet, not in an office. Bring the name to the table.",
-    # §8.2 scheduled townsfolk: the layout gives roles, not lines; Story writes them (PLACEHOLDER)
-    'sch_student': "[PLACEHOLDER: a College student's line; Story writes it.]",
-    'sch_clerk': "[PLACEHOLDER: the Exchange clerk's line; Story writes it.]",
-    'sch_dockhand': "[PLACEHOLDER: the pier dockhand's line; Story writes it.]",
-    'sch_shopper': "[PLACEHOLDER: the shopper's line; Story writes it.]",
-    'sch_office': "[PLACEHOLDER: the office worker's line; Story writes it.]",
+    # §8.2 scheduled townsfolk: the layout gives roles, not lines; Story writes them. HC_CITY_V2 switch-on (Nov 6): the literal bracket text is
+    # cut; until June writes each line they say the existing patrol day line (OPEN_DECISIONS, D2352)
+    'sch_student': "Citizen. Lovely day.",
+    'sch_clerk': "Citizen. Lovely day.",
+    'sch_dockhand': "Citizen. Lovely day.",
+    'sch_shopper': "Citizen. Lovely day.",
+    'sch_office': "Citizen. Lovely day.",
 }
 # WAR_MUSEUM v0.1.1 (design specs/WAR_MUSEUM.md, settled by Vincent Thu Nov 5, 2026, all defaults: D2300-D2318). Every line is the
 # packet's PLACEHOLDER copy for Story, word for word (§2, §3.2, §7); names stay PLACEHOLDER (D2302). Lines marked ENG are the
@@ -1385,7 +1386,7 @@ for rid, r in ROOMS.items():
     for oid, ln in r.pop('_lines', {}).items(): lines_patch[oid] = ln
 # KEEPER_ANTHEM v0.2.1 §8a.3 M11 (D1420, D1423): the anthem's two rooms. game.js applyHcCity() reads `roomPatch` (M10): the room
 # loop becomes anthem_hall and one framed-sheet sign names the anthem (D1419). City only: data/highcharity.json keeps `charity`.
-ANTHEM_SHEET = '[PLACEHOLDER] A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem.'
+ANTHEM_SHEET = 'A framed sheet of music: EVERY ROOF A LANTERN. The Keeper anthem.'
 room_patch = {
     'hc_command_in': {'music': 'anthem_hall', 'add': [{'kind': 'sign', 'id': 'hc_anthem_sheet_c', 'x': 4, 'y': 2, 'text': ANTHEM_SHEET}]},
     'hc_barracks_in': {'music': 'anthem_hall', 'add': [{'kind': 'sign', 'id': 'hc_anthem_sheet_b', 'x': 4, 'y': 2, 'text': ANTHEM_SHEET}]},

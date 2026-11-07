@@ -1,6 +1,6 @@
 /* CABINET_AND_COUNCILS v0.2.2 (design repo, private), phase 1a: Kilnmouth's empty seat, as folded into the cabinet build after
    #318 (KILNMOUTH) built the town and K1-K5. This file covers what 1a adds: K6, the report-back to Governor Merriden
-   (tools/build_hc_city.py, the ?debug=1&hccity=2 city preview); K7, the council sits (data/detail_zzzzz_kilnmouth.json); the sway
+   (tools/build_hc_city.py, the city, live since Nov 6); K7, the council sits (data/detail_zzzzz_kilnmouth.json); the sway
    and the hold it settles (§3.6); the Act 3 switch on a settled town; R4, Ilse's letter through a Lantern House Host; and the
    repeat lines (CABINET_LINES, settled by Vincent Wed Nov 4, 2026). K1-K4 (the Reeve, the asks, the pitches, the permit) are
    #318's and stay in tests/kilnmouth.spec.js. §7 K-T4 to K-T7 (K-T8 is PT2, phase 2). Runs at 320, 375 and 390 (@w1 rows at 320
@@ -74,7 +74,7 @@ async function boot(page, flags, opts = {}) {
   test.setTimeout(opts.long || 120000);
   await page.emulateMedia({ reducedMotion: opts.motion ? 'no-preference' : 'reduce' });
   await installSave(page.context(), save(flags), { quietDay: true });
-  await gotoGame(page, opts.city ? '?debug=1&hccity=2' : '?debug=1');
+  await gotoGame(page, opts.city ? '?debug=1' : '?debug=1');
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && typeof PixelPets.talkTo === 'function' && PixelPets.state);
   await page.evaluate(() => { PixelPets.showTab('walk'); if (PixelPets.clearWild) PixelPets.clearWild(); });
 }
@@ -139,6 +139,8 @@ test.describe('CABINET 1a K-T4: the report-back, K6 (§3.5)', () => {
     await setFlags(page, { 'story.km_arrived': true, 'story.km_storm': true, 'story.km_crew': true, 'story.km_permit_seen': true, 'story.km_permit_to': 'town' });
     expect((await quest(page)).id).toBe('a2_hold');   // Brightgate (B5) comes first in the beat order
     await setFlags(page, { 'story.reached_brightgate': true });
+    expect((await quest(page)).id).toBe('bg_hall');   // H4 (D2351) sits ahead of the report-back until Seal 4
+    await setFlags(page, { 'story.seal4': true, 'story.bg_shuttle_hm': true });
     expect(await quest(page)).toMatchObject({ id: 'km_report', target: { map: 'hc_gov_1', x: 12, y: 3 } });
     const before = await flags(page);
     expect(await page.evaluate(() => PixelPets.talkTo('hc_governor'))).toBe(true);

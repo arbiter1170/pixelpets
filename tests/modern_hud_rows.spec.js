@@ -14,6 +14,7 @@ function save(mode) {
   // its card sits above the dock over the map's bottom rows, so a slow stand caught it. A tip card is a modal, not HUD.
   s.settings.tips = false;
   s.flags['story.phone_got'] = true;
+  s.flags['story.hc_greeted'] = true;   // the city is live: a first visit to Lantern Square plays the parade, which would cover the map
   return s;
 }
 
@@ -50,7 +51,8 @@ test('modern keeps highcharity row 38 on the map canvas', async ({ page }) => {
   await boot(page, 'modern');
   const x = await page.evaluate(() => {
     PixelPets.goto('highcharity', 32, 30, 'down');
-    for (let i = 0; i < PixelPets.mapInfo.w; i++) if (PixelPets.tileInfo(i, 38).walk) return i;
+    // the walkable tile on row 38 nearest the south gate (32,38): the city's row 38 also has walk tiles at the chunk's far edges, which sit off the visible canvas
+    for (let d = 0; d < PixelPets.mapInfo.w; d++) for (const i of [32 - d, 32 + d]) if (i >= 0 && i < PixelPets.mapInfo.w && PixelPets.tileInfo(i, 38).walk) return i;
     return -1;
   });
   expect(x).toBeGreaterThanOrEqual(0);
