@@ -100,7 +100,9 @@ test('the bench gets half of its own-level XP from a holder win, worn-out Walkli
   const v1 = await page.evaluate(() => { PixelPets.goto('route1', 6, 10, 'down'); return JSON.parse(localStorage.getItem('pixelpets.save.v2')); });
   expect(v1.v).toBe(2);
   // The share uses the existing bx and bxHeld fields only: nothing named for it is written.
-  const keys = []; (function walk(o) { if (o && typeof o === 'object') for (const [k, x] of Object.entries(o)) { keys.push(k); walk(x); } })(v1);
+  // The bank's passbook (PR #334, D2246: normalizeV2 fills `S.bank` with `led`, `fold`, `jars` and `shares`) carries its own `bank.shares` map,
+  // unrelated to the bench share, and merged after this check was written; its path is skipped, every other key is still checked.
+  const keys = []; (function walk(o, path) { if (o && typeof o === 'object') for (const [k, x] of Object.entries(o)) { const p = path ? path + '.' + k : k; if (p !== 'bank.shares' && !p.startsWith('bank.shares.')) keys.push(k); walk(x, p); } })(v1, '');
   expect(keys.filter(k => /bench|share/i.test(k))).toEqual([]);
 });
 
