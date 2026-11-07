@@ -290,7 +290,7 @@ test('T9 D822: the quest arrow stacks above a match balloon, never on it', async
   await page.evaluate(() => PixelPets.cueForce(null));
 });
 
-test('T10 all: save unchanged, debug hooks inert without ?debug=1, 26 holders in data, quests check clean', async ({ page }) => {
+test('T10 all: save unchanged, debug hooks inert without ?debug=1, 50 holders in data, quests check clean', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.setFlag('story.tutorial_done', true));   // already true: just writes the save
   const before = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('pixelpets.save.v2')); return { v: s.v, keys: Object.keys(s).sort() }; });
@@ -313,7 +313,10 @@ test('T10 all: save unchanged, debug hooks inert without ?debug=1, 26 holders in
     const walk = v => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') { if (v.kind === 'trainer') n++; Object.values(v).forEach(walk); } };
     walk(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', f), 'utf8')));
   }
-  expect(n).toBe(32);
+  // plus the Act 2 builds merged after that count was last set (32): Route 4 (#315, detail_zzzz_route4.json, 3 holders),
+  // Brightgate (#316, detail_zzzzz_brightgate.json, 8) and Kilnmouth with Claybank Road (#318, detail_zzzzz_kilnmouth.json, 7)
+  // = 18 more, so 50 kind:'trainer' objects across the map data today.
+  expect(n).toBe(50);
   // Without debug (?debug=0 turns this tab's debug session off) the debug reads are inert.
   await page.goto('./?debug=0');
   await page.waitForFunction(() => window.PixelPets);
