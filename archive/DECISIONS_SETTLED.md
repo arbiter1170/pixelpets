@@ -1160,6 +1160,13 @@ Recorded from design GEAR_SWITCH v0.1.3 (design commit 8a06d36), without renumbe
 | D1002 (g) | yellow, STORMBELL_SPIRE | the dream-ledger echo | Settled by D1924 (Vincent, Wed Nov 4, 2026): the Spire debrief for W, the lens for L, P1 for G (design `specs/MAHOPAC_DREAMS.md` §5) |
 | D1940-D1951 | red D1940-D1946, yellow D1947-D1950, green D1951 | the lens moment, Mom's walk north, the silence, the epilogue card, the echoes, Dad's whereabouts, the side card, build notes | Settled by Vincent, Wed Nov 4, 2026, on every default (design `specs/MAHOPAC_DREAMS.md` §14) |
 
+## BATTLE_FX_4 v0.1 (settled Wed Nov 4, 2026)
+
+| Id | Colour | Call | Outcome |
+|---|---|---|---|
+| D2050 | red | the frame-sprite engine for battle impacts | Settled by Vincent, Wed Nov 4, 2026: yes (design `specs/BATTLE_FX_4.md` v0.2) |
+| D2051 | red | the impact look as previewed | Settled by Vincent, Wed Nov 4, 2026: yes, with a direction: the very detailed impacts go to final-stage Walklings and signature moves; basic animations stay, cleaned up (BATTLE_FX_4 v0.2, D2061-D2069; PR #323) |
+
 ## Vincent's confirmations, Fri Nov 6, 2026 (and yellows settled on their dates)
 
 Vincent confirmed these in session on Fri Nov 6, 2026, ticking each on the decisions page; his red rulings of Nov 5-6 are in the Chief of Staff's status reports. Moved here from OPEN_DECISIONS.md on Sat Nov 7, 2026 (Vincent: "Defaults for all. Build and merge."). Still open and marked so in OPEN_DECISIONS.md: D2174 and D2175 (held by Vincent), D1160 (wait), D1044 and D1319 (parked).
