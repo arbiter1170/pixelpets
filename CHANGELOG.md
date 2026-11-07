@@ -1,3 +1,18 @@
+## 2026-11-07 ET: Fix tests/lore_copy_wine (D1434 banner colours, D1437 rankCheck); data only
+- What changed and why: `tests/lore_copy_wine.spec.js` failed two tests on main. D1434 (settled): two Glimmerwell banner lines in `data/detail_zz_hall_contested.json` (from #311, behind `HALL2_RELEASED = false`) named a colour; the colour words are trimmed, nothing added. D1437: Fen, Hale and Marisol are still neutral with Master first; the test failed on `rankCheck().missing`, nine cast entries (Road Keeper, Lock Keeper, Gate Keeper from Route 4; PLACEHOLDER J, Foreman Dray, Edwin Garth, Tower Crew, Works Hand, Keeper Patrol from Kilnmouth) added on Nov 4 after the rank pass with no rank, flag or civilian mark. Each now has `rankFlag: "D1160"` (shown as today). Test not changed.
+- Player-visible wording (both lines sit in the unreleased contested Trial Hall):
+
+| Where | Old | New |
+|---|---|---|
+| detail_zz_hall_contested.json line 307 | A Glimmerwell banner with the honey diamond. It hangs from the same old nail the Keeper banner used. | A Glimmerwell banner with the diamond. It hangs from the same old nail the Keeper banner used. |
+| detail_zz_hall_contested.json line 463 (`fb_hall_banner_g1`) | A Glimmerwell banner, wine with a honey trim. Not a crease on it, not a speck of dust. | A Glimmerwell banner. Not a crease on it, not a speck of dust. |
+
+- Files touched: data/detail_zz_hall_contested.json, data/reputation.json, data/mapdata.js (regenerated), OPEN_DECISIONS.md (D2430), CHANGELOG.md, index.html, version.json.
+- Commit(s) + build id: see PR; build 20261107-0311.
+- Tests run and result (widths, checks): see PR.
+- Decisions made (colour + reasoning): D2430, green.
+- Anything left unfinished: D1160 stays parked.
+
 # Changelog
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
