@@ -18,6 +18,7 @@ function citySave(controls, world) {
   Object.assign(s.flags, {
     'story.side_pick_done': true, 'story.side': 'keepers', 'story.hc_invite': true, 'story.cobble_end': true,
     'story.seal1': true, 'story.heights_done': true, 'story.hc_council_done': true,
+    'story.hc_greeted': true,   // the city is live: a first coach arrival plays the parade; these tests are about the ride, so the holder was greeted already
   });
   s.standing = { keepers: 10, glimmer: 0 };
   s.world = Object.assign({ map: 'hearthmoor', x: COACH.x, y: COACH.y - 1, facing: 'down', respawn: 'hearthmoor' }, world || {});

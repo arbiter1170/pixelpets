@@ -182,7 +182,7 @@ test('the map shows who holds every place walked into, before the pick too; an u
   };
   await pick('route1');
   await expect(page.locator('#mapPlaceName')).toHaveText('ROUTE 1');
-  await expect(page.locator('#mapHold')).toHaveText('The Keeper watch holds this road.');
+  await expect(page.locator('#mapHold')).toHaveText('The Keeper watch holds this road. Walk beside, not ahead.');   // WALK_BESIDE D1934, D1971
   await shot(page, 'side-badge-map-visited');
   await pick('fernbrook');
   await expect(page.locator('#mapPlaceName')).toHaveText('???');

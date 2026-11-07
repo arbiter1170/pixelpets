@@ -1,7 +1,8 @@
 /* HIGH_CHARITY_LAYOUT v0.2.1 phase 1, "the capital, day one" (design specs/HIGH_CHARITY_LAYOUT.md; D1268, D1270-D1281,
    handoff/maps/HC_CITY_V2.md). Five walkable chunks (Lantern Square, Charter Hill, Exchange Quarter, Lantern Quay, College
-   Green) and five new rooms, behind HC_CITY_V2 (false) and the ?debug=1&hccity=2 preview. Normal play, plain ?debug=1
-   included, is unchanged; the preview never writes the save. Runs at 320, 375 and 390; reduced motion; zero console errors. */
+   Green) and five new rooms. HC_CITY_V2 was switched on Fri Nov 6, 2026: the city is the live High Charity, plain play and plain
+   ?debug=1 included, and it writes the save like any other map (tests/hc_city_live.spec.js holds the live-boot checks). ?hccity=2 is a
+   no-op now; these tests keep passing it. Runs at 320, 375 and 390; reduced motion; zero console errors. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
@@ -32,7 +33,7 @@ function save(opts = {}) {
   s.world = Object.assign({ map: 'highcharity', x: 32, y: 37, facing: 'up', respawn: 'hearthmoor' }, opts.world || {});
   return s;
 }
-async function boot(page, s, q = '?debug=1&hccity=2') {
+async function boot(page, s, q = '?debug=1') {
   await installSave(page.context(), s || save(), { quietDay: true });
   await gotoGame(page, q);
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && PixelPets.state && PixelPets.state.party[0]);
@@ -48,31 +49,33 @@ async function endScene(page) {
   }
 }
 
-test('flag off: plain ?debug=1 keeps today\'s High Charity and never loads the city into WORLD or the save maps', async ({ page }) => {
-  await boot(page, save(), '?debug=1');
-  const r = await page.evaluate(() => ({
-    hc: PixelPets.hcCity(), check: PixelPets.charityCheck(),
-    chunks: ['hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college', 'hc_news_1', 'hc_gov_3'].filter(id => !!WORLD[id]),
-    grid: WORLD.highcharity.grid.join('\n') === MAPDATA.highcharity.maps.highcharity.grid.join('\n'),
-    apt_c: WORLD.highcharity.objs.some(o => o.id === 'hc_apt_c'), lantern: [WORLD.hc_lantern_in.w, WORLD.hc_lantern_in.h],
-    inMapdata: Object.keys(MAPDATA).filter(k => /hc_city/.test(k)), saveMaps: PPSave.MAPS.filter(id => /^hc_(civic|exchange|waterfront|college|news|gov)/.test(id)),
-    data: !!window.PP_HC_V2,
-  }));
-  expect(r.hc.on).toBe(false);
-  expect(r.check).toEqual([]);
-  expect(r.chunks).toEqual([]);
-  expect(r.grid).toBe(true);
-  expect(r.apt_c).toBe(true);
-  expect(r.lantern).toEqual([9, 7]);
-  expect(r.inMapdata).toEqual([]);
-  expect(r.saveMaps).toEqual([]);
-  expect(r.data).toBe(true);   // the file loads, but nothing reads it without the flag
+test('flag on: plain ?debug=1 (no ?hccity) boots the city into WORLD and the save maps; the old city is gone, ?hccity=0 does not turn it off', async ({ page }) => {
+  for (const q of ['?debug=1', '?debug=1&hccity=0']) {
+    await boot(page, save(), q);
+    const r = await page.evaluate(() => ({
+      hc: PixelPets.hcCity(), check: PixelPets.charityCheck(),
+      chunks: ['hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college', 'hc_news_1', 'hc_gov_3'].filter(id => !!WORLD[id]),
+      grid: WORLD.highcharity.grid.join('\n') === MAPDATA.highcharity.maps.highcharity.grid.join('\n'),
+      apt_c: WORLD.highcharity.objs.some(o => o.id === 'hc_apt_c'), lantern: [WORLD.hc_lantern_in.w, WORLD.hc_lantern_in.h],
+      inMapdata: Object.keys(MAPDATA).filter(k => /hc_city/.test(k)), saveMaps: PPSave.MAPS.filter(id => /^hc_(civic|exchange|waterfront|college|news|gov)/.test(id)),
+      data: !!window.PP_HC_V2,
+    }));
+    expect(r.hc.on && r.hc.ship && !r.hc.preview, q).toBe(true);
+    expect(r.check).toEqual([]);
+    expect(r.chunks).toEqual(['hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college', 'hc_news_1', 'hc_gov_3']);
+    expect(r.grid, 'Lantern Square is the city\'s').toBe(false);
+    expect(r.apt_c, 'the locked Apartments C door is retired').toBe(false);
+    expect(r.lantern).toEqual([16, 22]);
+    expect(r.inMapdata, 'the city stays outside MAPDATA; game.js merges it').toEqual([]);
+    expect(r.saveMaps).toEqual(['hc_civic', 'hc_exchange', 'hc_waterfront', 'hc_college', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_2', 'hc_gov_3']);
+    expect(r.data).toBe(true);
+  }
 });
 
 test('the city loads: five chunks and five rooms, the in-game check passes, and every chunk keeps the perf budget', async ({ page }) => {
   await boot(page);
   const r = await page.evaluate(() => ({ hc: PixelPets.hcCity(), check: PixelPets.charityCheck(), rooms: ['hc_lantern_in', 'hc_news_1', 'hc_news_2', 'hc_gov_1', 'hc_gov_3'].map(id => WORLD[id] && [WORLD[id].w, WORLD[id].h]) }));
-  expect(r.hc.on && r.hc.preview && !r.hc.ship).toBe(true);
+  expect(r.hc.on && r.hc.ship && !r.hc.preview).toBe(true);
   expect(r.check).toEqual([]);
   // NPC_RANKS: every city Keeper body carries the D1374 flag (ranks are Story's), so none is missing a rank
   const ranks = await page.evaluate(() => PixelPets.rankCheck());
@@ -244,11 +247,13 @@ test('§5.3 gates: the Governor\'s House opens on the Keepers path in Act 2, the
       await endScene(page);
       expect((await where(page)).map, tag).toBe('hc_civic');
     }
-    // the stair to floor 3 (a warp with a need: solid until it holds)
+    // the stair up (a warp with a need: solid until it holds). CABINET 1b: it lands on floor 2, the Cabinet Room, which opens on
+    // GOV3 as well as on the seat's key, so these Act 5 saves (no cabinet flags) still reach floor 3 through it (cabinet.spec.js C-T2).
     const up = await page.evaluate(() => { PixelPets.goto('hc_gov_1', 2, 2, 'left'); return PixelPets.walkStep('left'); });
     await settle(page);
+    if (await page.evaluate(() => !!PixelPets.scene)) await endScene(page);   // a shut stair says its deny on the bump
     const at = await where(page);
-    expect(at.map === 'hc_gov_3', tag).toBe(c.top);
+    expect(at.map === 'hc_gov_2', tag).toBe(c.top);
     // Block News House: open on both paths
     await page.evaluate(() => PixelPets.goto('hc_exchange', 52, 13, 'up'));
     await settle(page);
@@ -293,36 +298,32 @@ test('the Muster Hall stands chained north of the Dojo with two duty Keepers; th
   expect(await page.evaluate(() => !!PixelPets.state.flags['story.hc_board'])).toBe(true);
 });
 
-test('the preview never writes the save: localStorage is untouched after walking through two chunks', async ({ page }) => {
+test('the city writes the save: a walk through two chunks leaves the new map in localStorage, key and v unchanged', async ({ page }) => {
   await boot(page);
-  const before = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
   await page.evaluate(() => { PixelPets.goto('hc_civic', 32, 19, 'up'); });
   await settle(page);
   await page.evaluate(() => { PixelPets.walkStep('down'); PixelPets.goto('hc_exchange', 52, 16, 'up'); });
   await settle(page);
-  const after = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
-  expect(after).toBe(before);
-  expect(JSON.parse(after).v).toBe(2);
+  const w = await page.evaluate(() => { const o = JSON.parse(localStorage.getItem('pixelpets.save.v2')); return { v: o.v, map: o.world.map, toast: /City preview/.test(document.body.innerText) }; });
+  expect(w.v).toBe(2);
+  expect(w.map).toBe('hc_exchange');
+  expect(w.toast, 'no "City preview: not saved" toast').toBe(false);
 });
 
-// The preview holds the cloud save too, not just localStorage: a signed-in debug tester on the Act 5 checkpoint must not
-// upload it (a second device would then adopt it). The real cloud.js runs against a stubbed SDK; nothing signs in.
-test('the preview never reaches the cloud save: the state hook gives null and no upload fires, even at Act 5', async ({ page }) => {
+// The city is live, so the cloud save is no longer held: a signed-in tester in the city gets the state hook like anywhere else. The real
+// cloud.js runs against a stubbed SDK; nothing signs in.
+test('the city no longer holds the cloud save: the state hook gives the state, even at Act 5 in the President\'s rooms', async ({ page }) => {
   test.setTimeout(60000);
   await stubCloudSdk(page);
-  await boot(page, save(), '?debug=1&hccity=2&cloud=block');
+  await boot(page, save(), '?debug=1&cloud=block');
   await page.waitForFunction(() => PPCloud.enabled && PPCloud.info().fbUid === 'preview-uid' && !!window.__ppCloudHooks, null, { timeout: 25000 });
   const r = await page.evaluate(() => PixelPets.checkpoint('hc2_pres'));
   expect(r.ok).toBe(true);
   await settle(page);
   expect(await page.evaluate(() => [PixelPets.state.flags['story.act'], PixelPets.state.flags['story.hc_gov_met']])).toEqual([5, true]);
-  await page.evaluate(() => PPCloud.syncNow());
-  await page.evaluate(() => PPCloud.syncNow());
-  await page.waitForTimeout(600);
-  const out = await page.evaluate(() => ({ state: window.__ppCloudHooks.getState(), uploads: window.__ppUploads || [], inflight: PPCloud.info().inflight }));
-  expect(out.state, 'getState gives null while the city preview is open').toBeNull();
-  expect(out.uploads, 'no upload during the city preview').toEqual([]);
-  expect(out.inflight).toBe(false);
+  const out = await page.evaluate(() => { const st = window.__ppCloudHooks.getState(); return { map: st && st.world && st.world.map, v: st && st.v }; });
+  expect(out.v, 'getState gives the state while the city is live').toBe(2);
+  expect(out.map).toMatch(/^hc_/);
 });
 
 test('D1426, D1439: Governor Merriden is Act 2 and civil (cast faction none); the President stays Act 5 and a Keeper', async () => {
@@ -332,10 +333,12 @@ test('D1426, D1439: Governor Merriden is Act 2 and civil (cast faction none); th
   expect(door.deny).toBe('By appointment.');
   const gov = gov1.find(o => o.id === 'hc_governor');
   expect(gov.when).toEqual(['story.act>=2']);
-  expect(gov.lines.else).toContain('Act 2');
+  expect(gov.lines.else).toBe("Without an appointment? I'm afraid even I need one of those, most days.");   // STORY_LINES D2138
   expect(gov.lines['story.gov_posted & !story.hc_gov_met']).toBe('@hc_gov_meet');   // GOVERNOR_MEETING §5
   expect(gov.lines.else).not.toContain('Act 5');
-  expect(gov1.find(o => o.id === 'hc_gov_up').need).toBe('!story.side=glimmer & story.act>=5 & story.hc_gov_met');
+  // CABINET 1b: floor 1's stair goes to the Cabinet Room on the seat's key or GOV3; GOV3 moves up to floor 2's stair to floor 3
+  expect(gov1.find(o => o.id === 'hc_gov_up').need).toBe('!story.side=glimmer & story.thr_chip_rumour & story.hc_parade_seen | !story.side=glimmer & story.act>=5 & story.hc_gov_met');
+  expect(DATA.rooms.hc_gov_2.objs.find(o => o.id === 'hc_gov2_up').need).toBe('!story.side=glimmer & story.act>=5 & story.hc_gov_met');
   expect(gov1.find(o => o.id === 'hc_chute_mouth')).toBeTruthy();   // HB12 sits on floor 1, behind the Act 2 door
   expect(gov3.find(o => o.id === 'hc_president')).toBeTruthy();
   const cast = Object.fromEntries(DATA.cast.map(e => [e.name, e]));

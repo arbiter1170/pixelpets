@@ -2,7 +2,7 @@
  "spec": "DAY1_TRIAL1_FLOW v0.4 (handoff/specs/DAY1_TRIAL1_FLOW.md; Vincent, Nov 2, 2026; D1166-D1171, D1175) on FACTION_PICK_TIMING v0.2.4 Part A (design ffada0b; June's lines from story/drafts AFTER_TRIAL_PICK_ARC_SKETCH, PICK_ARC_OVERHAUL beats 0-13, AFTER_TRIAL_STORY_PASS).",
  "_about": "Ours, not a design copy. Day 1 in Fernbrook (crates, Two Lights, Fen at dusk), Fen's go-home talk, Mom's ask, Lizzy's class, the three Trial Hall holders, the contested signs. objPatch edits existing objects by id after every overlay (game.js applyObjPatch); sceneTails and lineSwaps adjust built scenes without touching the design JSON. Save stays pixelpets.save.v2: every flag is a new story.* key, read only, nothing written at load.",
  "_placeholders": {
-  "note": "PLACEHOLDER copy (Story to replace; OPEN_DECISIONS row D1186). June's approved lines are kept as written where FPT has them (crate replies, Fen with Russet, Two Lights beats 1-13, Fen at dusk, Hall door deny for !story.crates_seen).",
+  "note": "PLACEHOLDER copy (Story to replace; OPEN_DECISIONS row D1186). June's approved lines are kept as written where FPT has them (crate replies, Fen with Russet, Two Lights beats 1-13, Fen at dusk, Hall door deny for !story.crates_seen). Story's lines (STORY_LINES Nov 4, 2026): sceneTails.seal1, Fen's crackdown line, is final (D2135), and so is the orchard@glimmer packing narration in lineSwaps (D2134).",
   "paths": [
    "scenes.crates_fen[2]",
    "scenes.tl_choice[0]",
@@ -10,7 +10,6 @@
    "scenes.fen_home",
    "scenes.mom_class",
    "scenes.lizzy_class",
-   "sceneTails.seal1",
    "lineSwaps",
    "lines",
    "trainers",
@@ -729,7 +728,7 @@
    [
     "say",
     "Master Fen",
-    "Go and get some air, {name}. I'll tidy the roots and follow you out."
+    "Go on out, {name}. Let Fernbrook see that Seal. I'll put the roots to bed and follow you."
    ]
   ]
  },
@@ -802,7 +801,7 @@
     [
      "say",
      "",
-     "Fen turns back to her trees without a word. The cart rolls off down the road."
+     "Fen turns back to her trees without a word. The cart rolls off toward the east road."
     ]
    ]
   },

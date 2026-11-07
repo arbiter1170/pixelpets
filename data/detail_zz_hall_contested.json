@@ -1,7 +1,7 @@
 {
  "spec": "handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md (v0.3; D1189-D1196)",
  "_about": "Two parts. slicePatch (live, unflagged): D1192, the town sign says Fernbrook Trial Hall (maps_slice.json is verbatim design data, so it is overridden here). hallPatch (FLAGGED): the contested Hall, applied by game.js only when HALL2_ON (debug plus ?hall2=1, or HALL2_RELEASED after Vincent's yes; AGENTS rule 9). It runs after fernbrook_rooms.json, so its rows and objects win. Flag off, fb_hall_in is exactly today's room. D1432 (Vincent, Nov 3, 2026): after Seal 1 and the pick the Hall is shut on both paths and keeps the split look until Fen's own Act 2 turn; the Keeper and Glimmerwell looks also need story.fen_turned (additive, set by nothing yet; her turn will set it). D1727 (REPORT_FLAGS default, pending Vincent): the look reads Fen's own turn, story.fen_turned=glimmer / =keepers, not the holder's story.side (under always undercover every holder is a Keeper in public by then). D1434: banners name no colour.",
- "_placeholders": "Every line under hallPatch.addObjs is PLACEHOLDER copy from the spec (D1196); Story replaces it. No line asks the holder to join a side (D1145).",
+ "_placeholders": "The lines under hallPatch.addObjs are June's pass (drafted by Claude in June's role, Vincent to approve; Tue Nov 3, 2026), replacing the spec's PLACEHOLDER copy (D1196). No line asks the holder to join a side (D1145).",
  "slicePatch": {
   "maps": {
    "fernbrook": {
@@ -19,28 +19,22 @@
  },
  "hallPatch": {
   "_whenKey": {
+   "_note": "D1191 (Vincent, Tue Nov 3, 2026, 11:17 AM ET): the props switch on who controls the town. Each `when` reads cond()'s hold:<node>=<id> term, which asks mapHold() (game.js REGION_MAP fernbrook hold rules), so the props can never drift from the map. D1432 (Vincent, Nov 3, 2026) layers on top: until story.fen_turned is set (nothing sets it yet) every prop keeps the split look, so each look term also reads story.fen_turned; once it is set the props follow the hold. D1727 (pending Vincent) would read story.fen_turned=<side> instead of the hold.",
    "split": [
-    "!story.side_pick_done | !story.seal1 | !story.fen_turned"
-   ],
-   "glimmer": [
-    "story.side_pick_done",
-    "story.seal1",
-    "story.fen_turned",
-    "story.fen_turned=glimmer"
+    "hold:fernbrook=split | !story.fen_turned"
    ],
    "keepers": [
-    "story.side_pick_done",
-    "story.seal1",
-    "story.fen_turned",
-    "!story.fen_turned=glimmer"
+    "hold:fernbrook=keepers & story.fen_turned"
+   ],
+   "glimmer": [
+    "hold:fernbrook=glimmer & story.fen_turned"
    ],
    "notKeepers": [
-    "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+    "!hold:fernbrook=keepers | !story.fen_turned"
    ],
    "notGlimmer": [
-    "!story.side_pick_done | !story.seal1 | !story.fen_turned | !story.fen_turned=glimmer"
-   ],
-   "_note": "split = contested, and also every save after the pick until story.fen_turned (D1432)."
+    "!hold:fernbrook=glimmer | !story.fen_turned"
+   ]
   },
   "maps": {
    "fb_hall_in": {
@@ -77,7 +71,7 @@
        "else": "A lamp by the flower dais."
       },
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | !story.fen_turned=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ]
      },
      {
@@ -90,10 +84,7 @@
        "else": "A lamp by the flower dais."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -106,10 +97,7 @@
        "else": "A stand of pale ribbons."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -122,10 +110,7 @@
        "else": "A hedge in a low planter."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -138,10 +123,7 @@
        "else": "A hedge in a low planter."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -154,10 +136,7 @@
        "else": "A round pot of cut blooms."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -170,10 +149,7 @@
        "else": "A bowl of loose petals."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -186,10 +162,7 @@
        "else": "A basket of pink blooms."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -212,10 +185,7 @@
        "else": "A bench along the path."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -238,10 +208,7 @@
        "else": "A stool pulled off the path."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -254,10 +221,7 @@
        "else": "A lamp in the top hedge. Fen's dais is one more step up."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -270,10 +234,7 @@
        "else": "A little spout keeps the lily trough full."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -286,10 +247,7 @@
        "else": "Rose cuttings, potted to grow on."
       },
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ]
      },
      {
@@ -317,10 +275,10 @@
       "y": 2,
       "sprite": "banner_keeper_old",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | !story.fen_turned=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
-       "else": "An old Keeper banner. The gold lantern is faded. Someone mended the hem by hand."
+       "else": "An old Keeper banner with a faded gold lantern. The hem has been mended by hand, in more than one thread."
       }
      },
      {
@@ -330,10 +288,10 @@
       "y": 2,
       "sprite": "banner_keeper_old",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | !story.fen_turned=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
-       "else": "Another old Keeper banner. The fringe is half gone."
+       "else": "Another old Keeper banner. Half the fringe has worn away. It's been patched, never replaced."
       }
      },
      {
@@ -343,13 +301,10 @@
       "y": 2,
       "sprite": "banner_glim",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "story.fen_turned=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell banner. It hangs where the Keeper banner was."
+       "else": "A Glimmerwell banner with the diamond. It hangs from the same old nail the Keeper banner used."
       }
      },
      {
@@ -359,13 +314,10 @@
       "y": 2,
       "sprite": "banner_glim",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "story.fen_turned=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "Another Glimmerwell banner. The hooks are new."
+       "else": "Another Glimmerwell banner. The hooks are new. The stone behind it is paler, where the old banner hung."
       }
      },
      {
@@ -375,10 +327,10 @@
       "y": 2,
       "sprite": "keep_lamp_wall",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | !story.fen_turned=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
-       "else": "An oil lamp in an old iron bracket. The wall above it is dark with soot."
+       "else": "An oil lamp in an old iron bracket. Years of flame have turned the stone above it black."
       }
      },
      {
@@ -388,10 +340,10 @@
       "y": 2,
       "sprite": "keep_honour_board",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | !story.fen_turned=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
-       "else": "An oak board with names in gold leaf. Most have faded. The last one is still bright."
+       "else": "An oak board of names in gold leaf. The oldest have worn to shadows. The newest still shines."
       }
      },
      {
@@ -401,10 +353,10 @@
       "y": 2,
       "sprite": "keep_lamp_wall",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | !story.fen_turned=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
-       "else": "An oil lamp. Someone trims the wick every morning."
+       "else": "An oil lamp, its wick trimmed neat. The flame flickers a little. Nobody here seems to mind."
       }
      },
      {
@@ -414,10 +366,10 @@
       "y": 2,
       "sprite": "keep_insignia",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | !story.fen_turned=glimmer"
+       "!hold:fernbrook=glimmer | !story.fen_turned"
       ],
       "lines": {
-       "else": "The Keeper crest, carved into the old stone."
+       "else": "The Keeper crest, carved deep into the old stone. Whoever cut it meant it to last."
       }
      },
      {
@@ -427,13 +379,10 @@
       "y": 2,
       "sprite": "crest_cover",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "story.fen_turned=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "A black cloth hangs over the old crest. A small red tag says: 'Under renovation.'"
+       "else": "A black cloth hides the old crest. A small wine tag: 'Under renovation. Thanks for your patience!'"
       }
      },
      {
@@ -443,10 +392,10 @@
       "y": 2,
       "sprite": "glim_plaque",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A new plate, bolted beside the crest: 'FERNBROOK TRIAL HALL. Brought to you by Glimmerwell Co.'"
+       "else": "An engraved steel plate: 'FERNBROOK TRIAL HALL. Brought to you by Glimmerwell Co. Brighter by nature!'"
       }
      },
      {
@@ -456,13 +405,10 @@
       "y": 2,
       "sprite": "glim_plaque_covered",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
-       "else": "A hand-lettered slip is pinned over the new plate. It just says: 'Fernbrook Trial Hall.'"
+       "else": "A slip is tacked over the steel plate, in careful brush letters: 'Fernbrook Trial Hall.' Nothing else."
       }
      },
      {
@@ -472,10 +418,10 @@
       "y": 2,
       "sprite": "banner_glim_half",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell banner, pinned up at one corner. Under it, an old Keeper banner still shows."
+       "else": "A Glimmerwell banner, pinned up by one corner. The old Keeper banner underneath still shows its lantern."
       }
      },
      {
@@ -485,13 +431,10 @@
       "y": 2,
       "sprite": "banner_glim",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "story.fen_turned=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell banner, pinned up straight now."
+       "else": "The Glimmerwell banner hangs straight now, pinned at every corner. Nothing shows underneath."
       }
      },
      {
@@ -501,13 +444,10 @@
       "y": 2,
       "sprite": "banner_keeper_old",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
-       "else": "The old Keeper banner, hanging straight again."
+       "else": "The old Keeper banner hangs straight again. A few pin holes in the cloth are the only sign."
       }
      },
      {
@@ -517,10 +457,10 @@
       "y": 2,
       "sprite": "banner_glim",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell banner. Very new and very clean."
+       "else": "A Glimmerwell banner. Not a crease on it, not a speck of dust."
       }
      },
      {
@@ -530,13 +470,10 @@
       "y": 3,
       "sprite": "comfort_lamp",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "story.fen_turned=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "A Comfort Lamp where the old dais lamp stood. It hums a little."
+       "else": "A Comfort Lamp stands where the old dais lamp was. The same steady glow as all the others. It hums."
       }
      },
      {
@@ -546,10 +483,10 @@
       "y": 3,
       "sprite": "comfort_lamp",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Comfort Lamp by the dais. Its glass is spotless."
+       "else": "A Comfort Lamp by the dais. Its glass is spotless, and the wine-red light never wavers."
       }
      },
      {
@@ -559,10 +496,10 @@
       "y": 6,
       "sprite": "banner_glim_stand",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell banner on a stand, where the ribbons were."
+       "else": "A Glimmerwell banner on a chrome stand, set where a ribbon stand used to be."
       }
      },
      {
@@ -572,10 +509,10 @@
       "y": 7,
       "sprite": "comfort_lamp",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Comfort Lamp clipped to the top planter. Fen's dais is one more step up."
+       "else": "A Comfort Lamp clipped to the top planter, humming. The dais is one more step up."
       }
      },
      {
@@ -585,10 +522,10 @@
       "y": 8,
       "sprite": "comfort_lamp",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Comfort Lamp. A small red tag hangs off it."
+       "else": "A Comfort Lamp with a small wine tag: 'Free to every home. It's a partnership!'"
       }
      },
      {
@@ -598,13 +535,10 @@
       "y": 8,
       "sprite": "comfort_lamp_off",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
-       "else": "A Comfort Lamp, switched off, with a cloth thrown over it."
+       "else": "A Comfort Lamp, switched off under a cream cloth. Nobody has thrown it out. Nobody has turned it on."
       }
      },
      {
@@ -614,10 +548,10 @@
       "y": 10,
       "sprite": "glim_planter",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A black planter with one round, clipped shrub. Every one is the same."
+       "else": "A black lacquer planter with one shrub, clipped into a ball. Every planter on this side matches."
       }
      },
      {
@@ -627,10 +561,10 @@
       "y": 16,
       "sprite": "glim_planter",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "Another black planter. The shrub is trimmed into a perfect ball."
+       "else": "Another black planter, another perfect ball. Not one leaf out of place. Not one flower, either."
       }
      },
      {
@@ -640,10 +574,10 @@
       "y": 18,
       "sprite": "comfort_lamp",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Comfort Lamp. The floor under it shines."
+       "else": "A Comfort Lamp. The polished floor under it shines like still water."
       }
      },
      {
@@ -653,10 +587,10 @@
       "y": 20,
       "sprite": "bulletin_keepers_x",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
-       "else": "The Keeper board, all hand-written slips. A Glimmerwell flyer is pinned over one corner."
+       "else": "The Keeper board: hand-written slips, tacked every which way. A glossy Glimmerwell flyer covers one corner."
       }
      },
      {
@@ -666,13 +600,10 @@
       "y": 20,
       "sprite": "bulletin_keepers",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
-       "else": "The Keeper board. Only hand-written slips now."
+       "else": "The Keeper board, all hand-written slips again. Someone took the flyer down and left the tack."
       }
      },
      {
@@ -682,13 +613,10 @@
       "y": 20,
       "sprite": "bulletin_glimmer",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "story.fen_turned=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "Glimmerwell posters cover the old Keeper board, edge to edge."
+       "else": "Glimmerwell posters cover the old Keeper board, edge to edge, all one size. Not one slip shows."
       }
      },
      {
@@ -698,10 +626,10 @@
       "y": 20,
       "sprite": "bulletin_glimmer_x",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell board of bright posters, all one size. One hand-written Keeper slip hangs on in a corner."
+       "else": "Bright posters, all one size: 'Comfort Lamps for every home!' One hand-written Keeper slip hangs on below."
       }
      },
      {
@@ -711,13 +639,10 @@
       "y": 20,
       "sprite": "bulletin_glimmer",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "story.fen_turned=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell board. Every poster is new."
+       "else": "A Glimmerwell board of new posters, squared to the edges. The biggest one reads: 'Brighter by nature!'"
       }
      },
      {
@@ -727,13 +652,10 @@
       "y": 20,
       "sprite": "bulletin_keepers",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
-       "else": "The posters are gone. Keeper slips are pinned up in their place."
+       "else": "The posters are down. Hand-written Keeper slips are tacked up in their place, a bit crooked."
       }
      },
      {
@@ -743,10 +665,10 @@
       "y": 21,
       "sprite": "seam_rope",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
-       "else": "A rope line where the new tile starts. A tag: 'Glimmerwell Co. works. Mind the polish.'"
+       "else": "A wine velvet rope where the new tile starts. A tag: 'Glimmerwell Co. works. Mind the polish!'"
       }
      },
      {
@@ -756,10 +678,10 @@
       "y": 20,
       "sprite": "grout_bucket",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned"
+       "hold:fernbrook=split | !story.fen_turned"
       ],
       "lines": {
-       "else": "A bucket of grout and a trowel. The work isn't finished."
+       "else": "A bucket of grout and a trowel, left mid-job. Moss is already poking up through the last seam."
       }
      },
      {
@@ -769,13 +691,10 @@
       "y": 22,
       "sprite": "tile_crate",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "!story.fen_turned=glimmer"
+       "hold:fernbrook=keepers & story.fen_turned"
       ],
       "lines": {
-       "else": "A crate of shiny tiles, pried up and stacked."
+       "else": "A crate of polished tiles, pried up and stacked. Most of the polish is still down. It's slow work."
       }
      },
      {
@@ -785,13 +704,10 @@
       "y": 22,
       "sprite": "keep_crate",
       "when": [
-       "story.side_pick_done",
-       "story.seal1",
-       "story.fen_turned",
-       "story.fen_turned=glimmer"
+       "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "A crate of the old hall lamps, boxed up by the door."
+       "else": "A crate of the old oil lamps, boxed up by the door. A honey tag on the lid: 'Relocated.'"
       }
      },
      {
@@ -801,10 +717,10 @@
       "y": 20,
       "sprite": "glimmer_stand",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell stand with neat rows of samples. Nobody is minding it."
+       "else": "A Glimmerwell stand of samples in neat rows. A card: 'Take one! Have a bright day!' Nobody is minding it."
       }
      },
      {
@@ -814,10 +730,10 @@
       "y": 20,
       "sprite": "comfort_lamp",
       "when": [
-       "!story.side_pick_done | !story.seal1 | !story.fen_turned | story.fen_turned=glimmer"
+       "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Comfort Lamp by the door. It's the first thing you see."
+       "else": "A Comfort Lamp right by the door. It's the first thing anyone sees coming in. That may be the point."
       }
      }
     ]

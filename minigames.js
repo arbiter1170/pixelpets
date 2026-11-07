@@ -161,7 +161,7 @@
       const pay = (first ? FIRST[id] : REPLAY[id]) || REPLAY[id];
       if (pay && pay[0] === 'acorns') {
         const n = pay[1];
-        S.money = (S.money || 0) + n;
+        api.moneyDelta('event', n, id);
         snd('stinger_item');
         lines.push(['', api.playerName() + ' got ' + api.acorns(n) + '!']);
       } else if (pay) {

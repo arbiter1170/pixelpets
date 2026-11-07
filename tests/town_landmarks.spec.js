@@ -19,20 +19,22 @@ const ARTS = {
   acorn_board: ['................', '................', '....dddddddddd..', '.....m......dm..', '.....m......dm..', '..nnnnnnnnn.dm..', '..nbbbbbbbn.dm..', '..nbbbdbbbn.dm..', '..nbboooobn.dm..', '..nbddddddn.dm..', '..nbyoooybn.dm..', '..nbyoooybn.dm..', '..nbbyyybbn.dm..', '..nnnnnnnnn.dm..', '..........ddddd.', '..........ddddd.'],
 };
 const PAL = { d: '#333c57', m: '#566c86', o: '#ef7d57', y: '#ffcd75', w: '#f4f4f4', r: '#b13e53', n: '#29366f', b: '#3b5dc9' };
+// High Charity is the live city's grand Lantern House: its door is at 32,12 and the healing mark stands on the doorstep row, 31,13, so `door` is the doorstep.
 const HOUSES = [
   { town: 'hearthmoor', room: 'hm_lantern_in', door: [16, 13], marker: ['hm_lantern_sign', 15, 13], guide: ['hm_lantern_host', 'Host Della', 4, 2], stand: [16, 14], bed: 'lantern_bed_a' },
   { town: 'cobblecrest', room: 'cc_lantern_in', door: [5, 5], marker: ['cc_lantern_sign', 4, 5], guide: ['cc_lantern_host', 'Host Garnet', 4, 2], stand: [5, 6], bed: 'cc_bed_a' },
   { town: 'fernbrook', room: 'fb_lantern_in', door: [5, 5], marker: ['fb_lantern_sign', 4, 5], guide: ['amos', 'Keeper Amos', 6, 3], stand: [5, 6], bed: 'fb_bed_a' },
-  { town: 'highcharity', room: 'hc_lantern_in', door: [22, 34], marker: ['hc_lantern_sign', 21, 34], guide: ['hc_lantern_host', 'Host Ines', 4, 2], stand: [22, 35], bed: 'hc_bed_a' },
+  { town: 'highcharity', room: 'hc_lantern_in', door: [32, 13], marker: ['hc_lantern_sign', 31, 13], guide: ['hc_lantern_host', 'Host Ines', 7, 16], stand: [32, 13], bed: 'hc_bed_a' },
 ];
 const STORES = [
   { town: 'hearthmoor', id: 'hm_store', x: 4, y: 26, stand: [4, 27], board: ['hm_store_board', 5, 26], see: [5, 27], from: [3, 6] },
   { town: 'cobblecrest', id: 'dottie', x: 12, y: 6, stand: [12, 7], board: ['cc_store_board', 14, 6], see: [14, 7], from: [5, 6] },
-  { town: 'highcharity', id: 'hc_shop', x: 30, y: 22, stand: [30, 23], board: ['hc_store_board', 32, 23], see: [32, 24], from: [32, 37] },
+  { town: 'highcharity', id: 'hc_shop', x: 48, y: 26, stand: [48, 27], board: ['hc_store_board', 46, 26], see: [46, 27], from: [32, 37] },
 ];
 
 function saveAt(extra) {
   const s = starterSave();
+  s.flags['story.hc_greeted'] = true;   // the city is live: a first visit to Lantern Square plays the parade, which would hold the walk
   Object.assign(s.flags, extra || {});
   s.settings.follower = false;
   s.settings.textSpeed = 'fast';
@@ -270,7 +272,8 @@ test('T7 each guide stands on a free tile and closes no side', async ({ page }) 
       PixelPets.goto(h.room, 4, 5, 'up');
       const g = PixelPets.mapObjs.find((o) => o.id === h.guide[0]);
       const tile = g && PixelPets.tileInfo(g.x, g.y);
-      const side = PixelPets.findPath([{ x: g.x, y: g.y + 1 }]);
+      // the city's grand Lantern House puts the 5-Acorn note on the tile below Ines (7,17), so the side check is any open side
+      const side = [[0, 1], [0, -1], [1, 0], [-1, 0]].some(([dx, dy]) => !!PixelPets.findPath([{ x: g.x + dx, y: g.y + dy }]));
       const roomGaps = gaps.filter((s) => s.indexOf(h.room + ':') === 0);
       return { id: h.guide[0], g, walk: !!(tile && tile.walk), side: !!side, roomGaps };
     });
@@ -475,8 +478,8 @@ test('T12 quest marks sit clear of the marker and the board', async ({ page }) =
 test('T13 the High Charity sign and note say 5 Acorns', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
-    PixelPets.goto('highcharity', 22, 35, 'up');
-    PixelPets.talkTo('hc_sign_lantern');
+    PixelPets.goto('highcharity', 32, 13, 'up');
+    PixelPets.talkTo('hc_lantern_sign');   // the old wall sign is retired in the city; its healing mark carries the same line
   });
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.text);
   expect(await page.evaluate(() => PixelPets.scene.text)).toBe(HC_WALL);

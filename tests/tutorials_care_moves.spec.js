@@ -1,6 +1,6 @@
 /* TUTORIALS_CARE_MOVES (D584-D598). Care walk, moves lesson, type chart, Settings chooser. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, openSettings, showScreen } = require('./helpers');
 const fs = require('fs');
 const path = require('path');
 
@@ -416,7 +416,7 @@ test('T-C16 T5 T6 and T7 are look-only while the care walk is armed', async ({ p
   await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T12r');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T1');
-  await page.locator('#tabs button[data-tab="pet"]').click();
+  await showScreen(page, 'pet');
   await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T2');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T3');
@@ -757,7 +757,7 @@ test('T-S1 the care replay is look-only', async ({ page }) => {
   await boot(page, saveAt());
   await page.evaluate(() => PixelPets.applyCtl('arcade'));
   const before = await flags(page);
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setTutorial').click();
   await page.locator('#shList .sh-item', { hasText: 'Care walk' }).click();
   await page.waitForFunction(() => (PixelPets.lesson().card || '').indexOf('C2') === 0);
@@ -772,7 +772,7 @@ test('T-S1 the care replay is look-only', async ({ page }) => {
 
 test('T-S2 moves replay toasts and arms the next wild battle', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'done', 'story.tut_moves_hit': true, 'story.tut_moves_n': 4 }));
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setTutorial').click();
   await page.locator('#shList .sh-item', { hasText: 'Moves and types' }).click();
   expect(await page.locator('#toast').textContent()).toContain('next wild battle');
@@ -784,7 +784,7 @@ test('T-S2 moves replay toasts and arms the next wild battle', async ({ page }) 
 
 test('T-S3 the type chart has nine rows from the chart', async ({ page }) => {
   await boot(page, saveAt());
-  await page.locator('#settingsBtn').click();
+  await openSettings(page);
   await page.locator('#setTutorial').click();
   await page.locator('#shList .sh-item', { hasText: 'Type chart' }).click();
   const rows = await page.evaluate(() => {

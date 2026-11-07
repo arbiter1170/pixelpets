@@ -1,6 +1,6 @@
 /* GOVERNOR_MEETING v0.2.1 (design repo, private; D1469-D1475): Act 2 opens with Warden Ilse's Keeper1 call, the posting at the
-   Lodge, the meeting with Governor Merriden in the Governor's House (hc_gov_meet, tools/build_hc_city.py; the city is the
-   ?debug=1&hccity=2 preview until HC_CITY_V2 ships) and the optional report at the Lodge. Every new line is PLACEHOLDER.
+   Lodge, the meeting with Governor Merriden in the Governor's House (hc_gov_meet, tools/build_hc_city.py; the city is live since Fri
+   Nov 6, 2026 (HC_CITY_V2), so every boot here is a plain ?debug=1) and the optional report at the Lodge. Every new line is PLACEHOLDER.
    data/detail_zzz_act2_opener.json, quests.js, tools/build_hc_city.py. Save stays pixelpets.save.v2, v 2, new story.* keys only.
    §8 T1-T10; runs at 320, 375 and 390 (@w1 rows at 320 only); reduced motion; zero console errors. */
 const { test, expect } = require('@playwright/test');
@@ -9,6 +9,8 @@ const path = require('path');
 const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
 
 trackErrors(test, expect);
+// KILNMOUTH lands on this branch when its maps are in the data: the chain then points at Claybank Road after the meeting.
+const KILN = /"km_road":\{/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'data', 'mapdata.js'), 'utf8'));
 
 const ROOT = path.join(__dirname, '..');
 const OPENER = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'detail_zzz_act2_opener.json'), 'utf8'));
@@ -57,7 +59,7 @@ function a2Save(flags, world) {
 async function boot(page, save, opts = {}) {
   if (opts.reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
   await installSave(page.context(), save, { quietDay: true, oldSave: !!opts.oldSave });
-  await gotoGame(page, opts.city ? '?debug=1&hccity=2' : '?debug=1');
+  await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && PixelPets.debug === true && typeof PixelPets.talkTo === 'function' && PixelPets.state);
   await page.evaluate(() => { PixelPets.showTab('walk'); if (PixelPets.clearWild) PixelPets.clearWild(); });
   if (opts.reduce) expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
@@ -141,7 +143,7 @@ const MEETING_HEAD = [
   "I've work for you. Kilnmouth's springs have gone cold this season. Nobody there can tell me why.",
   'A Calm Tower went up there the same season. Its permit is in order. I checked it myself.',
   "And their council has an empty seat. Everyone has a name for it. I'd like the town's.",
-  'Go and look. Listen more than you talk. Then come back and tell me what you found.',
+  'Go and look. Listen more than you talk. Then come back and tell me what you found, in plain words.',   // D2138
 ];
 // Into the office: the posted Cadet walks through the House door and stands at governor_front (12,5), facing up.
 async function toOffice(page) {
@@ -190,8 +192,9 @@ test.describe('GOVERNOR_MEETING Part 1: Ilse sends the Cadet (D1469)', () => {
     expect(await doorOpen(page)).toBe(false);
     const q = await quest(page);
     expect(q).toEqual({ id: 'gov_post', text: 'Warden Ilse wants you home at the Lodge in Hearthmoor. You have a posting.', target: { map: 'hm_lodge_in', x: 5, y: 3 } });
-    // D1470: Lumen's lead-in is held for the seat; it is not built and nothing here writes the rumour flag.
-    expect(await page.evaluate(() => PixelPets.sceneScript('thr_cabinet_lead'))).toEqual([]);
+    // D1470: Lumen's lead-in is built with the Cabinet Room (CABINET 1b; the city is live), but it only rings after the report-back
+    // (story.km_reported), so a plain Cadet here writes no rumour flag.
+    expect((await page.evaluate(() => PixelPets.sceneScript('thr_cabinet_lead'))).length).toBeGreaterThan(0);
     await goto(page, 'hm_hq_f2', 8, 5, 'up');
     expect(await page.evaluate(() => PixelPets.talkTo('hq_lumen'))).toBe(true);
     await drive(page);
@@ -257,8 +260,9 @@ test.describe('GOVERNOR_MEETING Part 2: the meeting, hc_gov_meet (D1471, D1472)'
     expect(f['story.hc_cabinet_seat']).toBeUndefined();
     expect(f['story.thr_chip_rumour']).toBeUndefined();
     expect(f['story.cab_seat']).toBeUndefined();
-    expect((await quest(page)).id).toBe('a2_hold');
-    expect((await quest(page)).text).toBe('Await your next orders.');
+    // KILNMOUTH (X19): once the town is built, its first row takes the holding row's place.
+    expect((await quest(page)).id).toBe(KILN ? 'km_walk' : 'a2_hold');
+    expect((await quest(page)).text).toBe(KILN ? 'Take the east fork from Route 4 and walk Claybank Road up to Kilnmouth.' : 'Await your next orders.');
     await goto(page, 'hc_gov_1', 12, 5, 'up');
     expect(await page.evaluate(() => PixelPets.talkTo('hc_governor'))).toBe(true);
     expect(says(await drive(page))).toEqual(["Kilnmouth's springs, and the empty seat. Come back when you know more."]);
@@ -384,7 +388,7 @@ test.describe('GOVERNOR_MEETING Part 3, one scene for every holder, old saves (D
     const MET = Object.assign({}, RECALLED, { 'story.gov_posted': true, 'story.hc_gov_met': true, 'story.km_assigned': true });
     await boot(page, a2Save(MET, { map: 'hm_lodge_in', x: 5, y: 5, facing: 'up' }));
     // Skipping it blocks nothing: the main chain is already past the meeting; the report is a side pointer.
-    expect((await quest(page)).id).toBe('a2_hold');
+    expect((await quest(page)).id).toBe(KILN ? 'km_walk' : 'a2_hold');
     expect(await page.evaluate(() => PixelPets.sideActive.some(a => a.id === 'gov_report'))).toBe(true);
     const ends = {};
     for (const told of ['told', 'kept', null]) {
@@ -407,7 +411,7 @@ test.describe('GOVERNOR_MEETING Part 3, one scene for every holder, old saves (D
     expect(await sceneId(page)).not.toBe('a2_report_gov');
     await drive(page);
     expect(await page.evaluate(() => PixelPets.sideActive.some(a => a.id === 'gov_report'))).toBe(false);
-    expect((await quest(page)).id).toBe('a2_hold');
+    expect((await quest(page)).id).toBe(KILN ? 'km_walk' : 'a2_hold');
   });
 
   test('T10: data: no @glimmer variant, every line fits, no banned word, no new save field; debug places only with ?debug=1 @w1', async ({ page }) => {

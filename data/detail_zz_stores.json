@@ -39,7 +39,7 @@
    "hair": "long",
    "hairCol": "b",
    "outfit": "coat",
-   "outfitCol": "b",
+   "outfitCol": "n",
    "accent": "w"
   },
   "glen_ilka": {
@@ -55,7 +55,7 @@
    "hair": "short",
    "hairCol": "h",
    "outfit": "vest",
-   "outfitCol": "m",
+   "outfitCol": "t",
    "accent": "o",
    "accessory": "goggles"
   },
@@ -65,7 +65,7 @@
    "hairCol": "n",
    "outfit": "coat",
    "outfitCol": "t",
-   "accent": "c"
+   "accent": "w"
   }
  },
  "slicePatch": {

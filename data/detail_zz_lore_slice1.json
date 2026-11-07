@@ -1,0 +1,440 @@
+{
+ "spec": "LORE_DISCOVERY v0.1, slice 1 (design repo, private): an optional weekday lesson with Lizzy, a homework row to the plaza plaque and back, Archivist Mo's shelf as a talk menu, three chatter lines and Journal notes. Decisions D2280-D2296.",
+ "_about": "Ours, not a design copy. Every line is PLACEHOLDER until Story signs it (OPEN_DECISIONS D2280-D2296). Lines stay vague on the open history questions and are listed for a revisit pass (D2295). Save stays pixelpets.save.v2, v 2: every flag here is an additive story.* key, nothing is written at load.",
+ "_placeholders": {
+  "note": "PLACEHOLDER copy (Story to replace; D2280-D2296).",
+  "paths": [
+   "scenes",
+   "objPatch",
+   "journalNotes"
+  ]
+ },
+ "_revisit": {
+  "note": "HELD for the D2380 re-voice (D2394), Vincent's call Thu Nov 5, 2026 (\"hold the two scenes\"; D2380 = A, The Turning). lz_war and lz_war_home stay here as written, D2332 still marked, but they cannot play: their triggers (the two Lizzy keys, and the two chalkboard hints that point at them) need story.lz_war_open, a flag nothing sets. When June has re-voiced them (D2295), set that flag from the re-voiced build, or drop the prefix.",
+  "scenes.lz_war": [
+   "D2332"
+  ],
+  "scenes.lz_war_home": [
+   "D2332"
+  ]
+ },
+ "flags": {
+  "story.lz_war_open": "HOLD GATE (D2394). Nothing sets this flag. The lesson triggers (lz_war, lz_war_home) and the chalkboard hints need it, so the two war scenes cannot play until the D2380 re-voice lands. The homework row, the plaza plaque, the chatter and the lesson Journal note all open on story.lizzy_war, which only those scenes set, so they stay dormant meanwhile.",
+  "story.lizzy_war": "ask / read. Lizzy's war lesson heard (lz_war at the Schoolhouse, or lz_war_home at 5B in the evening); the value is its one choice. Once only. NOT_STEPS (the homework rows open on it).",
+  "story.lizzy_war_plaque": "The plaza plaque read for the homework (lz_war_plaque). Done flag of the lz_history row.",
+  "story.lizzy_war_done": "The homework told back to Lizzy (lz_war_back): the sticker and the Journal note. Done flag of lz_history_back.",
+  "story.mo_shelf_arbiter": "Mo's shelf: the Arbiter page read (Journal note). NOT_STEPS.",
+  "story.mo_shelf_five": "Mo's shelf: the Arbiter page read after story.ans_open (Journal note). NOT_STEPS.",
+  "story.mo_shelf_war": "Mo's shelf: the war shelf read (Journal note). NOT_STEPS.",
+  "story.lizzy_class": "READ ONLY here. The lesson opens after the class.",
+  "story.met_mo": "READ ONLY here. The menu waits for his intro.",
+  "story.ans_open": "READ ONLY here. The Arbiter page adds the five after it."
+ },
+ "scenes": {
+  "lz_war": [
+   [
+    "say",
+    "",
+    "A new word is up on the chalkboard: THE GREAT WAR. Pip and Tilly are already arguing about it."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Today: the Great War. It was a long time ago. We skip the fighting part in this room."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Two loud answers, like always. The Keepers' books say the lanterns stayed lit on every road."
+   ],
+   [
+    "say",
+    "Wren",
+    "My mom says the hard years are when partnership started. Glimmerwell made a poster about it."
+   ],
+   [
+    "say",
+    "Pip",
+    "Where were the Walklings?"
+   ],
+   [
+    "say",
+    "Lizzy",
+    "The book gives them one line, Pip. Then the page stops. Picking Day started right after."
+   ],
+   [
+    "run",
+    "lz_war_end"
+   ]
+  ],
+  "lz_war_home": [
+   [
+    "say",
+    "",
+    "Lizzy is marking at her desk. The card on top says THE GREAT WAR."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "You missed my war lesson! Fine. Kitchen-table version. Buddy, you're the class."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "The Keepers' books say the lanterns stayed lit. Glimmerwell's poster says partnership started."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "The book gives Walklings one line. Then the page stops, and Picking Day starts. I checked. Twice."
+   ],
+   [
+    "run",
+    "lz_war_end"
+   ]
+  ],
+  "lz_war_end": [
+   [
+    "choice",
+    "Where's the part nobody wrote?",
+    [
+     [
+      "Ask someone old",
+      [
+       [
+        "say",
+        "Lizzy",
+        "Good. Ask the old ones. Della at the Lantern House knows who they are."
+       ],
+       [
+        "setFlag",
+        "story.lizzy_war",
+        "ask"
+       ]
+      ]
+     ],
+     [
+      "Read the old books",
+      [
+       [
+        "say",
+        "Lizzy",
+        "Good. Archivist Mo keeps the old books at the Keeper House. Wash your hands first."
+       ],
+       [
+        "setFlag",
+        "story.lizzy_war",
+        "read"
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Homework. Read the plaque in the plaza, then tell me who the next holder is. No, Buddy doesn't count."
+   ]
+  ],
+  "lz_war_plaque": [
+   [
+    "say",
+    "",
+    "A stone Keeper holds a lantern over the water. The plaque reads: KEEP THE LIGHT FOR THE NEXT HOLDER."
+   ],
+   [
+    "say",
+    "",
+    "That's Lizzy's homework. She'll want the answer in your own words."
+   ],
+   [
+    "setFlag",
+    "story.lizzy_war_plaque",
+    true
+   ]
+  ],
+  "lz_war_back": [
+   [
+    "say",
+    "Lizzy",
+    "Homework! So. Who's the next holder?"
+   ],
+   [
+    "say",
+    "",
+    "You tell her: whoever comes after you."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Right. So you keep the light, and you write things down for them. That's the whole job."
+   ],
+   [
+    "if",
+    "story.lizzy_war=ask",
+    [
+     [
+      "say",
+      "Lizzy",
+      "And keep asking the old ones. They forget what nobody asks them."
+     ]
+    ],
+    [
+     [
+      "say",
+      "Lizzy",
+      "And keep reading. A missing page is a clue too."
+     ]
+    ]
+   ],
+   [
+    "say",
+    "",
+    "Lizzy presses a gold star sticker onto {pet}. It stays on for almost a minute."
+   ],
+   [
+    "give",
+    "joy_crumb",
+    1
+   ],
+   [
+    "toast",
+    "Written in your Journal."
+   ],
+   [
+    "setFlag",
+    "story.lizzy_war_done",
+    true
+   ]
+  ],
+  "lore_mo_shelf": [
+   [
+    "if",
+    "story.met_mo&!story.side=glimmer&standing.keepers>=1",
+    [
+     [
+      "run",
+      "mo_shelf_menu"
+     ]
+    ]
+   ]
+  ],
+  "mo_shelf_menu": [
+   [
+    "choice",
+    "Which shelf?",
+    [
+     [
+      "The Arbiter page",
+      [
+       [
+        "say",
+        "Archivist Mo",
+        "The Arbiter, over in their house, has been emitting for ages."
+       ],
+       [
+        "say",
+        "Archivist Mo",
+        "The books fear a child born already listening. We have not seen one."
+       ],
+       [
+        "say",
+        "Archivist Mo",
+        "The emission has no name. The oldest page leaves that space empty."
+       ],
+       [
+        "if",
+        "story.ans_open",
+        [
+         [
+          "say",
+          "Archivist Mo",
+          "The hum woke all five. My books call them the Answerers. The page on what they answer stays blank."
+         ]
+        ]
+       ],
+       [
+        "if",
+        "!story.mo_shelf_arbiter | story.ans_open & !story.mo_shelf_five",
+        [
+         [
+          "toast",
+          "Written in your Journal."
+         ]
+        ]
+       ],
+       [
+        "setFlag",
+        "story.mo_shelf_arbiter",
+        true
+       ],
+       [
+        "if",
+        "story.ans_open",
+        [
+         [
+          "setFlag",
+          "story.mo_shelf_five",
+          true
+         ]
+        ]
+       ],
+       [
+        "run",
+        "mo_shelf_menu"
+       ]
+      ]
+     ],
+     [
+      "The war shelf",
+      [
+       [
+        "say",
+        "Archivist Mo",
+        "The war shelf is short. The pages that are not on it are the interesting part."
+       ],
+       [
+        "say",
+        "Archivist Mo",
+        "In the war, one Hall Stone was carried whole to the capital. It is still in chains. My page on why is blank."
+       ],
+       [
+        "say",
+        "Archivist Mo",
+        "One old book says someone nearly gathered eight Seals. It does not say who. I do not guess."
+       ],
+       [
+        "if",
+        "!story.mo_shelf_war",
+        [
+         [
+          "toast",
+          "Written in your Journal."
+         ]
+        ]
+       ],
+       [
+        "setFlag",
+        "story.mo_shelf_war",
+        true
+       ],
+       [
+        "run",
+        "mo_shelf_menu"
+       ]
+      ]
+     ],
+     [
+      "Not now",
+      [
+       [
+        "say",
+        "Archivist Mo",
+        "The shelf keeps."
+       ]
+      ]
+     ]
+    ]
+   ]
+  ]
+ },
+ "objPatch": {
+  "_note": "game.js applyObjPatch, after every overlay. Lizzy keys sit after every built key and before else; Mo keeps his lines (the menu follows his plain line through `after`, so a later key placed before standing.keepers>=1 keeps its order). A missing id is skipped.",
+  "school_lizzy": {
+   "linesBefore": {
+    "anchorKey": "else",
+    "add": {
+     "story.lz_war_open & story.lizzy_class & !story.lizzy_war & day:weekday & win:school": "@lz_war",
+     "story.lizzy_war_plaque & !story.lizzy_war_done": "@lz_war_back"
+    }
+   }
+  },
+  "f5_lizzy": {
+   "linesBefore": {
+    "anchorKey": "else",
+    "add": {
+     "story.lz_war_open & story.lizzy_class & !story.lizzy_war & win:evening": "@lz_war_home",
+     "story.lizzy_war_plaque & !story.lizzy_war_done": "@lz_war_back"
+    }
+   }
+  },
+  "diner_lizzy": {
+   "linesBefore": {
+    "anchorKey": "else",
+    "add": {
+     "story.lizzy_war_plaque & !story.lizzy_war_done": "@lz_war_back"
+    }
+   }
+  },
+  "court_lizzy": {
+   "linesBefore": {
+    "anchorKey": "else",
+    "add": {
+     "story.lizzy_war_plaque & !story.lizzy_war_done": "@lz_war_back"
+    }
+   }
+  },
+  "school_board": {
+   "linesFirst": {
+    "story.lizzy_war": "THE GREAT WAR, in Lizzy's hand. A line under it is wiped. Then: PICKING DAY, and a question mark.",
+    "story.lz_war_open & story.lizzy_class & away:Lizzy": "NEW LESSON: THE GREAT WAR. Weekdays, 8 to 3. Or knock at 5B after supper. - L.",
+    "story.lz_war_open & story.lizzy_class": "NEW LESSON TODAY: THE GREAT WAR. Ask Ms. Lizzy."
+   }
+  },
+  "hmp_plaque": {
+   "linesFirst": {
+    "story.lizzy_war & !story.lizzy_war_plaque": "@lz_war_plaque"
+   }
+  },
+  "hq_mo": {
+   "after": "lore_mo_shelf"
+  },
+  "school_kid_a": {
+   "chatterFirst": {
+    "story.lizzy_war & !story.lizzy_war_done": "Where were the Walklings? Nobody'll say!"
+   }
+  },
+  "court_pip": {
+   "chatterFirst": {
+    "story.lizzy_war & !story.lizzy_war_done": "Where were the Walklings? Nobody'll say!"
+   }
+  },
+  "school_kid_b": {
+   "chatterFirst": {
+    "story.lizzy_war & !story.lizzy_war_done": "I asked Tuft about the war. Tuft yawned."
+   }
+  },
+  "court_wren": {
+   "chatterFirst": {
+    "story.lizzy_war & !story.lizzy_war_done": "I asked Tuft about the war. Tuft yawned."
+   }
+  },
+  "hm_lantern_host": {
+   "chatterFirst": {
+    "story.lizzy_war": "The old ones rest here too. Ask gently."
+   }
+  }
+ },
+ "journalNotes": [
+  {
+   "id": "lz_war",
+   "flag": "story.lizzy_war_done",
+   "line": "Lizzy's war lesson: the book gives Walklings one line, then the page stops. Picking Day came after."
+  },
+  {
+   "id": "mo_arbiter",
+   "flag": "story.mo_shelf_arbiter",
+   "line": "Mo's old books: the Arbiter has been emitting for ages. Its emission has no name."
+  },
+  {
+   "id": "mo_five",
+   "flag": "story.mo_shelf_five",
+   "line": "Mo's old books: five that answer a hum, the Answerers. What they answer is a blank page."
+  },
+  {
+   "id": "mo_war",
+   "flag": "story.mo_shelf_war",
+   "line": "Mo's war shelf: one Hall Stone sits in chains in the capital. His page on why is blank."
+  }
+ ]
+}

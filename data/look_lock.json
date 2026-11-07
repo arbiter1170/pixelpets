@@ -1,0 +1,794 @@
+{
+ "_about": "LOOK_LOCK (Vincent, Nov 4 2026): guards the main cast's signature looks so no other NPC resembles them and their own style cannot drift silently; also holds the AGENTS rule 11 palette sets. Read by tests/look_lock.spec.js only (not in MAPDATA). Changing a locked look, or adding an exception, is a visible change for Vincent.",
+ "_how": "cast[].signature is the recorded look per key, cast[].grid a hash of its drawn frames, cast[].marks trait sets that are theirs alone. rule.pixel_threshold is the share of opaque pixels two looks may have in common. exceptions[] are known clashes on main, each with its follow-up; the spec fails on a new clash and on an exception that no longer clashes.",
+ "rule": {
+  "pixel_threshold": 0.85,
+  "pixel_frames": [
+   "down",
+   "up",
+   "right"
+  ],
+  "same_hair": "hair style and colour, plus the top colour or the same accessory",
+  "same_outfit": "garment, top colour, trim and accessory, with a real accessory or a fixed-colour swap"
+ },
+ "cast": [
+  {
+   "id": "rook",
+   "label": "Rook",
+   "names": [
+    "Rook"
+   ],
+   "keys": [
+    "rook"
+   ],
+   "seen_as": "spiky orange hair, blue hoodie, white trim",
+   "signature": {
+    "rook": {
+     "skin": "3",
+     "hair": "spiky",
+     "hairCol": "o",
+     "outfit": "hoodie",
+     "outfitCol": "b",
+     "accent": "w"
+    }
+   },
+   "grid": {
+    "rook": "4132c5ba"
+   },
+   "marks": [
+    {
+     "hair": "spiky",
+     "hairCol": "o"
+    }
+   ]
+  },
+  {
+   "id": "mom",
+   "label": "Mom",
+   "names": [
+    "Mom"
+   ],
+   "keys": [
+    "mom"
+   ],
+   "seen_as": "dark bob, red sweater, gold trim",
+   "signature": {
+    "mom": {
+     "skin": "2",
+     "hair": "bob",
+     "hairCol": "d",
+     "outfit": "sweater",
+     "outfitCol": "r",
+     "accent": "y",
+     "accessory": "none"
+    }
+   },
+   "grid": {
+    "mom": "721ce834"
+   },
+   "marks": []
+  },
+  {
+   "id": "lizzy",
+   "label": "Lizzy",
+   "names": [
+    "Lizzy"
+   ],
+   "keys": [
+    "lizzy"
+   ],
+   "seen_as": "dark curls, coral tunic, gold trim, flower clip",
+   "signature": {
+    "lizzy": {
+     "skin": "3",
+     "hair": "curls",
+     "hairCol": "d",
+     "outfit": "tunic",
+     "outfitCol": "o",
+     "accent": "y",
+     "accessory": "flower_clip"
+    }
+   },
+   "grid": {
+    "lizzy": "9c42b9a1"
+   },
+   "marks": [
+    {
+     "accessory": "flower_clip"
+    }
+   ]
+  },
+  {
+   "id": "ilse",
+   "label": "Warden Ilse",
+   "names": [
+    "Warden Ilse",
+    "Ilse"
+   ],
+   "keys": [
+    "ilse"
+   ],
+   "seen_as": "grey bun, plum coat, gold trim, green satchel",
+   "signature": {
+    "ilse": {
+     "skin": "2",
+     "hair": "bun",
+     "hairCol": "h",
+     "outfit": "coat",
+     "outfitCol": "p",
+     "accent": "y",
+     "extra": {
+      "o": "g"
+     }
+    }
+   },
+   "grid": {
+    "ilse": "e3e3fe6a"
+   },
+   "marks": [
+    {
+     "outfit": "coat",
+     "outfitCol": "p"
+    }
+   ]
+  },
+  {
+   "id": "president",
+   "label": "The President",
+   "names": [
+    "The President",
+    "President"
+   ],
+   "keys": [
+    "president"
+   ],
+   "seen_as": "grey short hair and a deep-green cardigan, in the crackdown scenes and the High Charity preview alike (D2275; `hc_president` is retired, kept unworn)",
+   "signature": {
+    "president": {
+     "skin": "3",
+     "hair": "short",
+     "hairCol": "h",
+     "outfit": "cardigan",
+     "outfitCol": "J",
+     "accent": "y"
+    }
+   },
+   "grid": {
+    "president": "d7e36108"
+   },
+   "marks": [
+    {
+     "outfitCol": "J"
+    }
+   ]
+  },
+  {
+   "id": "governor",
+   "label": "The Governor",
+   "names": [
+    "Governor Merriden",
+    "The Governor",
+    "Governor"
+   ],
+   "keys": [
+    "hc_governor"
+   ],
+   "seen_as": "grey short hair, Keeper-green coat, gold trim",
+   "signature": {
+    "hc_governor": {
+     "skin": "4",
+     "hair": "short",
+     "hairCol": "h",
+     "outfit": "coat",
+     "outfitCol": "g",
+     "accent": "y"
+    }
+   },
+   "grid": {
+    "hc_governor": "1626e1c4"
+   },
+   "marks": []
+  },
+  {
+   "id": "chi",
+   "label": "Jacob Chi",
+   "names": [
+    "Jacob Chi",
+    "Vincent Chi"
+   ],
+   "keys": [
+    "chi"
+   ],
+   "seen_as": "grey buzz cut, slate raincoat, gold trim, satchel",
+   "signature": {
+    "chi": {
+     "skin": "4",
+     "hair": "buzz",
+     "hairCol": "h",
+     "outfit": "raincoat",
+     "outfitCol": "m",
+     "accent": "y",
+     "accessory": "satchel"
+    }
+   },
+   "grid": {
+    "chi": "6d11fda6"
+   },
+   "marks": [
+    {
+     "outfit": "raincoat",
+     "accessory": "satchel"
+    }
+   ]
+  },
+  {
+   "id": "mo",
+   "label": "Archivist Mo",
+   "names": [
+    "Archivist Mo"
+   ],
+   "keys": [
+    "mo"
+   ],
+   "seen_as": "white bob and glasses, Keeper-green coat, white trim (her own key since D2274; the clerk coat stays)",
+   "signature": {
+    "mo": {
+     "skin": "4",
+     "hair": "bob",
+     "hairCol": "w",
+     "outfit": "coat",
+     "outfitCol": "g",
+     "accent": "w",
+     "accessory": "glasses"
+    }
+   },
+   "grid": {
+    "mo": "bfcafa20"
+   },
+   "marks": []
+  },
+  {
+   "id": "quinn",
+   "label": "Associate Quinn",
+   "names": [
+    "Associate Quinn",
+    "Quinn"
+   ],
+   "keys": [
+    "quinn"
+   ],
+   "seen_as": "ice-blue bun, white coat, soot trim, glasses",
+   "signature": {
+    "quinn": {
+     "skin": "1",
+     "hair": "bun",
+     "hairCol": "s",
+     "outfit": "coat",
+     "outfitCol": "w",
+     "accent": "N",
+     "accessory": "glasses"
+    }
+   },
+   "grid": {
+    "quinn": "b1c09c86"
+   },
+   "marks": [
+    {
+     "hair": "bun",
+     "hairCol": "s"
+    }
+   ]
+  },
+  {
+   "id": "juniper",
+   "label": "Associate Juniper",
+   "names": [
+    "Associate Juniper",
+    "Juniper"
+   ],
+   "keys": [
+    "juniper"
+   ],
+   "seen_as": "long black hair, wine coat, soot trim, crimson bag (her own key since D2273; the Associate coat stays)",
+   "signature": {
+    "juniper": {
+     "skin": "5",
+     "hair": "long",
+     "hairCol": "k",
+     "outfit": "coat",
+     "outfitCol": "V",
+     "accent": "N",
+     "extra": {
+      "o": "Q"
+     }
+    }
+   },
+   "grid": {
+    "juniper": "50515b72"
+   },
+   "marks": [],
+   "shares_outfit": [
+    "associate"
+   ],
+   "shares_outfit_why": "D2273 (Vincent, Wed Nov 4, 2026, defaults): Juniper keeps the Associate coat, soot trim and crimson bag, and Tobin and the plain Associate keep `associate`; her own hair sets her apart, so the hair, pixel and mark checks still run against it."
+  },
+  {
+   "id": "fen",
+   "label": "Master Fen",
+   "names": [
+    "Master Fen",
+    "Fen"
+   ],
+   "keys": [
+    "fen"
+   ],
+   "seen_as": "long white hair, green tunic, light green trim",
+   "signature": {
+    "fen": {
+     "skin": "4",
+     "hair": "long",
+     "hairCol": "w",
+     "outfit": "tunic",
+     "outfitCol": "g",
+     "accent": "l"
+    }
+   },
+   "grid": {
+    "fen": "51b13ea1"
+   },
+   "marks": [
+    {
+     "hair": "long",
+     "hairCol": "w"
+    }
+   ]
+  },
+  {
+   "id": "hale",
+   "label": "Master Hale",
+   "names": [
+    "Master Hale",
+    "Hale"
+   ],
+   "keys": [
+    "hale"
+   ],
+   "seen_as": "grey short hair, slate coat, orange trim",
+   "signature": {
+    "hale": {
+     "skin": "5",
+     "hair": "short",
+     "hairCol": "h",
+     "outfit": "coat",
+     "outfitCol": "m",
+     "accent": "o"
+    }
+   },
+   "grid": {
+    "hale": "40d48a34"
+   },
+   "marks": []
+  },
+  {
+   "id": "marisol",
+   "label": "Master Marisol",
+   "names": [
+    "Master Marisol",
+    "Marisol"
+   ],
+   "keys": [
+    "marisol"
+   ],
+   "seen_as": "white ponytail, navy coat, ice trim, cap",
+   "signature": {
+    "marisol": {
+     "skin": "4",
+     "hair": "pony",
+     "hairCol": "w",
+     "outfit": "coat",
+     "outfitCol": "n",
+     "accent": "s",
+     "accessory": "cap"
+    }
+   },
+   "grid": {
+    "marisol": "8e7c0cb3"
+   },
+   "marks": [
+    {
+     "hair": "pony",
+     "hairCol": "w"
+    }
+   ]
+  },
+  {
+   "id": "dad",
+   "label": "Dad",
+   "names": [
+    "Dad"
+   ],
+   "keys": [
+    "dad"
+   ],
+   "seen_as": "short dark hair, navy hoodie, gold trim, glasses",
+   "signature": {
+    "dad": {
+     "skin": "4",
+     "hair": "short",
+     "hairCol": "d",
+     "outfit": "hoodie",
+     "outfitCol": "n",
+     "accent": "y",
+     "accessory": "glasses"
+    }
+   },
+   "grid": {
+    "dad": "3b7a19f6"
+   },
+   "marks": []
+  },
+  {
+   "id": "calloway",
+   "label": "Mrs. Calloway",
+   "names": [
+    "Mrs. Calloway"
+   ],
+   "keys": [
+    "calloway"
+   ],
+   "seen_as": "orange bun, red tunic, gold trim",
+   "signature": {
+    "calloway": {
+     "skin": "3",
+     "hair": "bun",
+     "hairCol": "o",
+     "outfit": "tunic",
+     "outfitCol": "r",
+     "accent": "y"
+    }
+   },
+   "grid": {
+    "calloway": "c6cfbdc4"
+   },
+   "marks": []
+  },
+  {
+   "id": "dorian",
+   "label": "Dorian Pell",
+   "names": [
+    "Dorian Pell",
+    "Dorian"
+   ],
+   "keys": [
+    "dorian"
+   ],
+   "seen_as": "short blond hair, wine coat, soot trim",
+   "signature": {
+    "dorian": {
+     "skin": "2",
+     "hair": "short",
+     "hairCol": "y",
+     "outfit": "coat",
+     "outfitCol": "V",
+     "accent": "N"
+    }
+   },
+   "grid": {
+    "dorian": "2fe58094"
+   },
+   "marks": []
+  },
+  {
+   "id": "imogen",
+   "label": "Field Lead Imogen",
+   "names": [
+    "Field Lead Imogen",
+    "Imogen"
+   ],
+   "keys": [
+    "imogen"
+   ],
+   "seen_as": "blond bob, wine dress, soot trim, scarf",
+   "signature": {
+    "imogen": {
+     "skin": "2",
+     "hair": "bob",
+     "hairCol": "y",
+     "outfit": "dress",
+     "outfitCol": "V",
+     "accent": "N",
+     "accessory": "scarf"
+    }
+   },
+   "grid": {
+    "imogen": "8045c0b0"
+   },
+   "marks": []
+  },
+  {
+   "id": "hollis",
+   "label": "Associate Hollis",
+   "names": [
+    "Associate Hollis",
+    "Hollis"
+   ],
+   "keys": [
+    "hollis"
+   ],
+   "seen_as": "sky-blue curls, wine vest, soot trim, scarf",
+   "signature": {
+    "hollis": {
+     "skin": "1",
+     "hair": "curls",
+     "hairCol": "c",
+     "outfit": "vest",
+     "outfitCol": "V",
+     "accent": "N",
+     "accessory": "scarf"
+    }
+   },
+   "grid": {
+    "hollis": "1f2f9f00"
+   },
+   "marks": [
+    {
+     "hair": "curls",
+     "hairCol": "c"
+    }
+   ]
+  },
+  {
+   "id": "ashlee",
+   "label": "Ashlee Ironclaw",
+   "names": [
+    "Ashlee Ironclaw"
+   ],
+   "keys": [],
+   "pending": true,
+   "seen_as": "slot: her look has not landed in the game yet",
+   "todo": "Fill keys, signature, grid and marks when her look lands (design branch claude/ashlee-ironclaw); then run this spec and list any clash.",
+   "signature": {},
+   "grid": {},
+   "marks": []
+  }
+ ],
+ "palette": {
+  "_from": "Design WARDROBE_SHOP section 4a (WS-PALETTE), ids and PAL keys only. glimmer_dark buttons include its crimson accent key.",
+  "sets": {
+   "keeper": {
+    "top": [
+     "g",
+     "n",
+     "t",
+     "p"
+    ],
+    "trim": [
+     "y",
+     "w",
+     "o",
+     "r"
+    ],
+    "buttons": [
+     "o",
+     "y",
+     "w",
+     "g"
+    ],
+    "never": [
+     "lanyard"
+    ]
+   },
+   "glimmer": {
+    "top": [
+     "l",
+     "w",
+     "c",
+     "s",
+     "h"
+    ],
+    "trim": [
+     "w",
+     "l",
+     "c",
+     "s"
+    ],
+    "buttons": [
+     "o",
+     "w",
+     "l"
+    ],
+    "never": [
+     "keepercap"
+    ]
+   },
+   "glimmer_dark": {
+    "top": [
+     "V",
+     "w",
+     "h"
+    ],
+    "trim": [
+     "N",
+     "w",
+     "s"
+    ],
+    "buttons": [
+     "o",
+     "w",
+     "N",
+     "Q"
+    ],
+    "never": [
+     "keepercap"
+    ]
+   }
+  },
+  "schemes": {
+   "keeper": [
+    "keeper"
+   ],
+   "glimmer": [
+    "glimmer",
+    "glimmer_dark"
+   ]
+  },
+  "npcs": {
+   "keeper": [
+    "cc_watch",
+    "diner_bren",
+    "fb_constable",
+    "glen_watch",
+    "h1_cadet",
+    "hc_lumen",
+    "hc_moss",
+    "hc_rowan",
+    "hc_vesper",
+    "hm_arlo",
+    "hm_cald",
+    "hm_ness",
+    "hm_patrol",
+    "hmp_cadet",
+    "hmp_lamplighter",
+    "hmp_watch",
+    "hq_bram",
+    "hq_corwin",
+    "hq_linnea",
+    "hq_lumen",
+    "hq_mo",
+    "hq_orrin",
+    "hq_rue",
+    "hq_tamm",
+    "hq_wynn",
+    "hw_scout",
+    "hw_teodor",
+    "ilse_lodge",
+    "ilse_lodge_after",
+    "r1_halvard",
+    "r1_ness",
+    "r2_saffie",
+    "r2_watch",
+    "r4_keeper",
+    "r4r_gate_keeper",
+    "r4r_lock_keeper",
+    "sm_ken"
+   ],
+   "glimmer": [
+    "bw_dorian",
+    "bw_quinn",
+    "cc_mint",
+    "cc_quinn",
+    "fern_associate",
+    "gb_dorian",
+    "gb_dorian_bay",
+    "gb_imogen_npc",
+    "gb_juniper",
+    "hollis_aside",
+    "hollis_bw",
+    "juniper",
+    "juniper_q",
+    "r2_associate",
+    "r2_lead",
+    "rc_tobin",
+    "tobin_gate",
+    "tobin_glim"
+   ]
+  },
+  "titles": {
+   "keeper": [
+    "Keeper",
+    "Officer",
+    "Constable",
+    "Sergeant",
+    "Cadet",
+    "Captain",
+    "Warden",
+    "Watch",
+    "Scout",
+    "Archivist",
+    "Operator",
+    "Signaller",
+    "Lamplighter",
+    "Governor",
+    "President",
+    "Commander"
+   ],
+   "glimmer": [
+    "Associate",
+    "Bright",
+    "Field Lead",
+    "Glimmerwell",
+    "Founder"
+   ]
+  },
+  "uniform_core": [
+   {
+    "side": "keeper",
+    "label": "Keeper uniform coat (green, gold trim)",
+    "look": {
+     "outfit": "coat",
+     "outfitCol": "g",
+     "accent": "y"
+    }
+   },
+   {
+    "side": "glimmer",
+    "label": "Glimmerwell wine and soot",
+    "look": {
+     "outfitCol": "V",
+     "accent": "N"
+    }
+   }
+  ],
+  "faction_only": {
+   "keepercap": "keeper",
+   "lanyard": "glimmer"
+  },
+  "reference": [
+   "holder_glimmer_set"
+  ]
+ },
+ "retired": {
+  "_note": "Look keys no NPC wears any more. Kept defined (saves and old data may name them); spec (d) fails if one is removed or worn again.",
+  "hc_president": "D2275: the High Charity preview President wears `president`",
+  "petra": "WARDROBE_SHOP 4a Captain Lumen row (F6): hc_lumen wears `captain`",
+  "holder_glimmer_set": "D2278: a reference look for the palette devCheck, never worn; the Junior Bright wears `junior_bright`"
+ },
+ "exceptions": [
+  {
+   "check": "lookalike",
+   "clash": "hale|lookalike|km_nominee",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "The nominee look `km_nominee` (Edwin Garth) shares Master Hale's short grey hair and coat colour; change one."
+  },
+  {
+   "check": "palette",
+   "clash": "palette|uniform|km_dray",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "Foreman Dray wears Glimmerwell wine and soot with no Glimmerwell role: give him the role, or recolour the vest."
+  },
+  {
+   "check": "palette",
+   "clash": "palette|uniform|km_crew_wait",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "The tower crew wears Glimmerwell wine and soot with no Glimmerwell role: give the crew the role, or recolour `km_crew`."
+  },
+  {
+   "check": "palette",
+   "clash": "palette|uniform|km_crew_aside",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "As km_crew_wait (the same `km_crew` look)."
+  },
+  {
+   "check": "palette",
+   "clash": "palette|uniform|km_split_vest",
+   "todo": "Found when LOOK_LOCK (#328) met KILNMOUTH (#318) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "As km_crew_wait (the same `km_crew` look, on a works hand)."
+  },
+  {
+   "check": "lookalike",
+   "clash": "hale|lookalike|hc_officeworker",
+   "todo": "Found when LOOK_LOCK (#328) met HIGH_CHARITY v0.4 (#317) on main, Wed Nov 4, 2026; for the look-fix follow-up, no look changes until Vincent says yes",
+   "fix": "The city's office worker look `hc_officeworker` shares Master Hale's short grey hair and coat colour; change one (city preview only while HC_CITY_V2 is false)."
+  }
+ ]
+}

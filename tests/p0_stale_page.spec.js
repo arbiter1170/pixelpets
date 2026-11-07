@@ -20,7 +20,7 @@ test('an old cached index.html with new scripts still boots the saved partner (P
     if (route.request().resourceType() !== 'document' || served++ > 0) return route.continue();
     return route.fulfill({ contentType: 'text/html', body: OLD_PAGE });
   });
-  await page.goto('/', { waitUntil: 'load' });
+  await page.goto('./', { waitUntil: 'load' });
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state && document.querySelector('#hdrLv').textContent !== 'Lv 1', null, { timeout: 15000 });
   const v = await page.evaluate(() => ({
     lv: document.querySelector('#hdrLv').textContent,

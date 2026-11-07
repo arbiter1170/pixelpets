@@ -8,7 +8,8 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-// looks.json `look` per key (main look; alts are not wired).
+// looks.json `look` per key (main look; alts are not wired). Pim's hoodie is sky `c`, not orange: LOOK_LOCK D2277 (Vincent,
+// Wed Nov 4, 2026) recolours him so dark curls on orange no longer read as Lizzy.
 const LOOKS = {
   kitekid_pia: { id: 'route1_pia', map: 'route1', look: { skin: '1', hair: 'pony', hairCol: 'o', outfit: 'hoodie', outfitCol: 'y', accent: 'r', accessory: 'scarf' } },
   beachcomber_tam: { id: 'route1_tam', map: 'route1', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'vest', outfitCol: 'c', accent: 'o', accessory: 'brimhat' } },
@@ -31,7 +32,7 @@ const LOOKS = {
   neighbour_hattie: { id: 'hattie', map: 'hearthmoor', look: { skin: '4', hair: 'bun', hairCol: 'h', outfit: 'sweater', outfitCol: 'r', accent: 'w', accessory: 'scarf' } },
   orchard_odile: { id: 'odile', map: 'fernbrook', look: { skin: '2', hair: 'curls', hairCol: 'd', outfit: 'dress', outfitCol: 'b', accent: 'y', accessory: 'scarf' } },
   old_miner: { id: 'cc_miner', map: 'cobblecrest', look: { skin: '3', hair: 'short', hairCol: 'w', outfit: 'coat', outfitCol: 'd', accent: 'y' } },
-  kid_pim: { id: 'pim', map: 'cobblecrest', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'hoodie', outfitCol: 'o', accent: 'w' } },
+  kid_pim: { id: 'pim', map: 'cobblecrest', look: { skin: '5', hair: 'curls', hairCol: 'd', outfit: 'hoodie', outfitCol: 'c', accent: 'w' } },
   keeper_amos: { id: 'amos', map: 'fb_lantern_in', look: { skin: '6', hair: 'short', hairCol: 'w', outfit: 'coat', outfitCol: 'g', accent: 'y', accessory: 'glasses' } },
   broker_mara: { id: 'sm_mara', map: 'sm_den', look: { skin: '1', hair: 'bob', hairCol: 'k', outfit: 'coat', outfitCol: 'd', accent: 'r', accessory: 'glasses' } },
   crate_jed: { id: 'sm_jed', map: 'sm_tunnel', look: { skin: '4', hair: 'short', hairCol: 'o', outfit: 'sweater', outfitCol: 'b', accent: 'y' } },
@@ -45,6 +46,7 @@ const BRIMHAT_TOP = {
   right: ['................', '.....rrrrrr.....', '....tttttttt....', '.rrrrrrrrrrrrrr.', '...rrrrrrrrrr...'],
   up: ['................', '.....rrrrrr.....', '....tttttttt....', '..rrrrrrrrrrrr..', '...rrrrrrrrrr...'],
 };
+const SAME_PERSON = ['glen_scout'];   // a second placement of one of the 28 people (see the look test)
 const HAIRS = ['short', 'long', 'spiky', 'bun', 'bob', 'pony', 'curls', 'buzz'];
 const FACINGS = ['down', 'right', 'up', 'left'];
 
@@ -60,13 +62,14 @@ function save() {
 
 // game.js is one closure. A served copy (the file on disk is unchanged) adds an eval hook before boot(),
 // as tests/intro_cutscene.spec.js does, so the spec can read HOLDER_LOOK, NPC_LOOKS, LOOK_OF_NAME and npcLook.
-const BOOT_HOOK = 'try {\n  boot();\n';
+// CRLF-tolerant: a Windows checkout with core.autocrlf=true serves game.js with \r\n (.gitattributes now pins LF).
+const BOOT_HOOK = /try \{\r?\n  boot\(\);\r?\n/g;
 async function exposeInternals(page) {
   await page.route('**/game.js*', async (route) => {
     const res = await route.fetch();
     let body = await res.text();
-    const at = body.indexOf(BOOT_HOOK);
-    if (at >= 0 && body.indexOf(BOOT_HOOK, at + 1) < 0) body = body.slice(0, at) + 'window.__pl28 = { ev: s => eval(s) };\n' + body.slice(at);
+    const hits = [...body.matchAll(BOOT_HOOK)];
+    if (hits.length === 1) { const at = hits[0].index; body = body.slice(0, at) + 'window.__pl28 = { ev: s => eval(s) };\n' + body.slice(at); }
     await route.fulfill({ status: 200, body, headers: { 'content-type': 'application/javascript', 'cache-control': 'no-store' } });
   });
 }
@@ -117,7 +120,9 @@ test('each of the 28 people resolves to its own new look, with the looks.json fi
     const fields = Object.assign({}, defs[key]);
     delete fields.extra;
     expect(fields, key + ' definition').toEqual(want.look);
-    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id));   // LANTERN_HOUSE_FERNBROOK: the curfew-night twins (lh_odile) are the same person indoors
+    // Same person, second placement: LANTERN_HOUSE_FERNBROOK's curfew-night twins (lh_odile) indoors, and ACT1_KEEPER_JOIN's
+    // glen_scout, the built Keeper Scout earlier in time at Wickerglen (D1552, detail_zz_keeper_join.json).
+    const hits = all.filter(r => r.key === key && !/^lh_/.test(r.id) && SAME_PERSON.indexOf(r.id) < 0);
     expect(hits.map(r => r.map + ':' + r.id), key + ' is worn by its NPC only').toEqual([want.map + ':' + want.id]);
     expect(hits[0].same, key + ' drawn by npcLook').toBe(true);
   }

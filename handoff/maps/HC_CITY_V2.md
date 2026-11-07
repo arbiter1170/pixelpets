@@ -104,7 +104,7 @@ Inspiration only, for Design and the builder to translate into pixels with `PAL`
 | §3 five chunks, the json grids, kept ids, the moved buildings (D1268, D1270) | Matched | | `the city loads`; `a save inside a moved building` |
 | §3.3 kept tiles: Event Hall 32,29, coach 32,37, hc_south 32,38, gate 32,36, Moss 30,36 | Matched | | `the coach still lands` |
 | §4.1 boulevards: walkable carriageway, solid bays and medians, crosswalks (D1271) | Matched | new tiles C Z U M; `X` mouth cells take their street's tile (X is Cobblecrest's rock pillar in the game) | build tool checks |
-| §4.2-4.5 lamp posts with the grey box, lanterns lit at noon, spotless parks | Matched, except the hum | the hum loop is iPhone audio, red (D1371): not built; the tap line ships | `player text` |
+| §4.2-4.5 lamp posts with the grey box, lanterns lit at noon, spotless parks | Matched | the hum loop is built (D1371, approved; see "The lamp hum" below); the tap line ships | `player text` |
 | §4.3 48 parked cars, the Glimmerwell bay left empty | Matched | cars sit on horizontal bay runs only (one car body) | `the city loads` |
 | §4.4 9 tank posts, idle-lit, no guns (D1272) | Matched | PLACEHOLDER tank art (A24; POST_TRIAL_CRACKDOWN §10a art is not built) | `the city loads`; reduced motion |
 | §5.1 coach arrival | Matched in data | the Hearthmoor coach tile (12,9) is a roof tile on main in both modes (earlier issue, for QA) | `the coach still lands` |
@@ -155,8 +155,66 @@ built roof kit for now. The President's look is a PLACEHOLDER NPC look (LH-2 is 
 
 ## Open, for the Chief of Staff
 
-- D1371 (red): the grey-box hum. Default not built.
+- D1371 (red, approved): the grey-box hum, built in its own PR (see "The lamp hum").
 - D1370, D1372-D1374: this build's own calls (see `OPEN_DECISIONS.md`).
-- At ship time: flip `HC_CITY_V2`, drop the save hold, and add the city's map sizes to `save.js` MAP_SIZE.
+- ~~At ship time: flip `HC_CITY_V2`, drop the save hold, and add the city's map sizes to `save.js` MAP_SIZE.~~ DONE Fri Nov 6, 2026 (see "Switched on" below).
 - The Hearthmoor coach tile (12,9) is a roof tile on main (both modes); the coach can't be stepped on today. For QA.
 - The Dojo line fix (D1304) is a separate copy PR, as the layout says.
+
+## v0.4 build (Wed Nov 4, 2026; branch `claude/high-charity-v04`, lands after #315)
+
+Built from design `specs/HIGH_CHARITY_LAYOUT.md` v0.4.2 (design `master` 5809141). Still a preview: `HC_CITY_V2 = false`.
+
+- **Roads are clear (§4.1):** the tool refuses a blocker on `C` or `Z`. Five props that phase 1's placement search had nudged onto
+  carriageways now stand on sidewalk or grass.
+- **HC_PARADE's stands are kept clear** (`PARADE_STANDS`, copied from #296's beat sheet): no car in Muster Road's cordon bays, no
+  lamp or sign on a stand; the Court's sign is at 35,26. The parade scene itself stays #286/#296's.
+- **§8.2 scheduled townsfolk:** nine bodies on schedule rows. Spec tiles that are solid or on a road are nudged: Child 14,25 to
+  17,25; Parent 15,25 to 17,26; Student A's dusk 16,27 to 17,27; the shopper's Store Row 33,33 (a carriageway) to 36,33.
+- **HB14** sealed sea gate at Lantern Quay 21,38 (`HC_SPIRE_ROAD_HOOK`, D1279). **P1 reuse props** on the Square and College Green.
+- **Battle scenes:** each chunk draws its own (BATTLE_BACKDROPS_ACT2 §4).
+- **Checks:** `tests/high_charity_v04.spec.js` runs the layout checker's rules over the merged game WORLD (§13.1).
+- **Shots:** `handoff/shots/high_charity/` (before = `claude/route4`, after = this branch; 390 and 320, Modern, 11:00).
+
+### Rule 9: rooms held (never built), with the previews Vincent needs to see
+
+| Room | Packet | Why held |
+|---|---|---|
+| ~~`hc_gov_2` Cabinet Room~~ | layout §7.3; CABINET_AND_COUNCILS §4.1 | **BUILT.** Previews approved by Vincent Wed Nov 4 (CABINET 1b; `tests/cabinet.spec.js`). Floor 1's stair goes to it; the Act 2 chain runs in it. Not held any more |
+| `hc_lantern_up` gallery | layout §7.1 | grid given; no inspiration pass; no preview |
+| `hc_college_in` College Great Hall | layout §7.4 | no grid; no preview |
+| `hc_trial_in` Muster Hall, `hc_trial_stone` Hall Stone room | layout §7.5 | blockouts only; also waits on the Hall 8 build (`HC_TRIAL_HALL`) |
+| `hc_library_in`, the Dojo expansion | layout §7.4 (phase 3) | no grid; no preview |
+
+Each needs, in order: the rule 9 inspiration pass (sub-agent or Gemini), Design's grid (the Cabinet Room has none), 390 before and
+after previews, and Vincent's yes. (The Cabinet Room is built, so floor 1's stair goes to floor 2 and floor 2's to the President's rooms on floor 3; D1372's "straight to floor 3" no longer applies.) The museum (`hc_museum_in`, WAR_MUSEUM, previews approved Thu Nov 5, D2300, D2301) is also built.
+
+## Switched on (Fri Nov 6, 2026; branch `claude/hc-city-live`)
+
+`HC_CITY_V2 = true` in `game.js`. Vincent, Fri Nov 6, 2026: "Act 2 fix: A: switch-on now, top priority". Why: on live build
+20261106-0301 the Keepers Act 2 rows `gov_meet`, `km_report` and `cab_lead` target `hc_gov_1`, a room that only the city has, so
+every Keepers holder was stuck in Act 2 (Nina's write-up, QA_ACT2_HC_POINTER). Vincent's calls for this build: draft art ships (no wait
+for Pia's 52 `HC_PLACEHOLDER_ART` redraws); only the literal `[PLACEHOLDER ...]` bracket text is cut or fixed (D2352-D2358); the
+parade speech is the settled D2130 text (S1-S7, S2 = D1428, "the national draft" is gone); the D1371 lamp hum is NOT in this build.
+
+- **Ship-time items, done:** the flag is on; the preview save hold is off (`HC_PREVIEW` is false whenever the flag is on, so the city
+  writes `pixelpets.save.v2` like any map and the "City preview: not saved" toast never shows); `save.js` MAP_SIZE and the floorSeen
+  ids take every city map from `window.PP_HC_V2` (`hc_civic` 64x48, `hc_exchange` 64x48, `hc_waterfront` 64x40, `hc_college` 48x48,
+  `hc_news_1` 14x16, `hc_news_2` 14x14, `hc_gov_1` 16x16, `hc_gov_2` 14x12, `hc_gov_3` 12x14, `hc_museum_in` 14x16, and `hc_lantern_in`
+  corrected from 9x7 to 16x22). `data/hc_city_v2.js` loads before `save.js` in `index.html`, so `normalizeV2` keeps a holder's place.
+  Additive only: key `pixelpets.save.v2`, `v` 2, no new save key.
+- `?hccity=2` is a no-op now (it may stay in old links). Debug hooks stay inert without `?debug=1`.
+- **Old saves:** a save in old Lantern Square loads on its tile if it is walkable, else at `safeSpot()` 32,37. All 13 moved rooms
+  keep their ids; their mats exit to the new doors. The retired `hc_apt_c` and `hc_buoy` were objects, never rooms, and nothing
+  names them. All three are tested in `tests/hc_city_live.spec.js`.
+- **Tests:** `tests/hc_city_live.spec.js` is the flag-on spec. `hc_city_v2.spec.js`'s flag-off test was rewritten to flag-on; the specs that
+  asserted the old city were updated to the new truth (none skipped or deleted).
+- **Still open after the switch:** the 52 art rows (Pia), June's ten townsfolk lines, the Kindness Board names (HB3, D2358; the names clause is cut, June supplies names later), the 500-Acorn
+  plaque prompt (D2357), the D1371 hum (red, next PR on its own), the real-phone perf check (Nina), a QA look at Store Row at 320.
+
+
+## The lamp hum (D1371; layout 4.2 and 4.5)
+- One voice, `PPSound.hum(level)` in `sfx.js`: two soft sine oscillators (147 and 148.5 Hz, a slow beat), synthesised like every other sound (no files, no new formats). The level is the gain: peak 0.02 on the master bus (about a quarter of one music note) times the Music volume.
+- `hcHumTick` in `game.js` (every 80 ms) works out the level from the distance to the NEAREST `hc_lamp_box` post on the five city maps: smoothstep from 1 at the post to 0 at 2 tiles; 0 on every other map (rooms too), while a menu, battle, scene or map fade is up, or off the walk screen.
+- Gates in `sfx.js`: sound not muted, Music on (and its volume), page visible, AudioContext running (it only exists after the first gesture). The gain glides (time constant 0.18 s), and the voice is kept for 0.5 s after a fade-out so a walk back in reuses the same voice.
+- Debug (`?debug=1` only): `PixelPets.hcHum()` and `PPSound.humInfo`. Spec: `tests/hc_lamp_hum.spec.js`. Save unchanged.

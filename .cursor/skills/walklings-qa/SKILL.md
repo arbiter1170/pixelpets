@@ -15,14 +15,15 @@ Use this after a feature is in the game, and when a session is asked to play fro
 ## Play
 
 1. Serve the repo (`python3 -m http.server 8080 --bind 127.0.0.1`) and open `/?debug=1` in Chromium at 390×844 and at 320×568 (`isMobile`, `hasTouch`). Debug is only for ending a battle (`PixelPets.winBattle`) and reading `PixelPets.quest`. Walk, talk, and open panels yourself. Read the page as text first (`page.evaluate` on the dialog box, NEXT STEP, `PixelPets.quest.text`, element sizes); `python3 /workspace/pp_verify/pp_textcheck.py --url http://127.0.0.1:8080/` covers boot, build line, console errors and overflow. Screenshot only when a check fails or the question is visual (art, layout, colour).
-2. Start from a new game when the change is in the opening, the phone, the bag, or the faction pick. Otherwise seed a v2 save that stops one step before the new beat, then walk in.
-3. For a Glimmerwell pass, pledge with Tobin at the orchard gate (`side_pick`). Play the scene that follows, open NEXT STEP and the walk tip, open the bag, open PHONE (CRACK//HAND), then try the Hall door and one Heights beat (Kit, or Nia in the RegenX lobby).
-4. Write down every line you see. Flag `PLACEHOLDER`, a leftover `{token}`, a double space, a line over 110 characters, a speaker named `unnamed`, and a quest line that disagrees with the last thing an NPC said.
-5. On each screen, check that the primary button is inside the viewport without scrolling, taps are at least 44 CSS px, and the console has no error. A toast sitting on a choice or a CLOSE button is a note.
+2. Play in **Modern** controls, the game's default for a new save (Vincent, Nov 4, 2026): tap the map to walk and to talk, and use the dock's floating buttons. Seed saves with `settings.controls: 'modern'` (`starterSave()` already does). Arcade (the pad, TALK, the sideways grips, the arcade HUD rows) is a separate opt-in check, run only when the change touches Arcade, on a save with `controls: 'arcade'`.
+3. Start from a new game when the change is in the opening, the phone, the bag, or the faction pick. Otherwise seed a v2 save that stops one step before the new beat, then walk in.
+4. For a Glimmerwell pass, pledge with Tobin at the orchard gate (`side_pick`). Play the scene that follows, open NEXT STEP and the walk tip, open the bag, open PHONE (CRACK//HAND), then try the Hall door and one Heights beat (Kit, or Nia in the RegenX lobby).
+5. Write down every line you see. Flag `PLACEHOLDER`, a leftover `{token}`, a double space, a line over 110 characters, a speaker named `unnamed`, and a quest line that disagrees with the last thing an NPC said.
+6. On each screen, check that the primary button is inside the viewport without scrolling, taps are at least 44 CSS px, and the console has no error. A toast sitting on a choice or a CLOSE button is a note.
 
 ## Add a check
 
-When a break is fixed, add the assertion to `tests/qa_play.spec.js` or the spec that already owns that screen. Use `starterSave`, `installSave`, `gotoGame(page, '?debug=1')`, and `trackErrors`. Assert `PixelPets.state.v === 2`. Assert `PixelPets.questCheck` is `[]` when the change touched quest flags. One width is enough unless the layout changed; the look picker and the phone shell are checked at every project width.
+When a break is fixed, add the assertion to `tests/qa_play.spec.js` or the spec that already owns that screen. Use `starterSave`, `installSave`, `gotoGame(page, '?debug=1')`, and `trackErrors`. `starterSave()` is Modern; a check that is about Arcade sets `s.settings.controls = 'arcade'` with a one-line reason (pattern in `tests/README.md`). Assert `PixelPets.state.v === 2`. Assert `PixelPets.questCheck` is `[]` when the change touched quest flags. One width is enough unless the layout changed; the look picker and the phone shell are checked at every project width.
 
 Name the new row in `tests/README.md`. A player-visible fix also updates the README section that already describes that screen, `CHANGELOG.md`, and `OPEN_DECISIONS.md` when the words are still a guess. Pick new decision ids with `walklings-decision-ids`. Do not reuse D60 or D61.
 

@@ -26,8 +26,8 @@ CIV_LOOKS = {   # PLACEHOLDER townsfolk looks from the look kit (existing parts 
     'hc_pr_mv_1': {'skin': '2', 'hair': 'pony', 'hairCol': 'F', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
     'hc_pr_mv_2': {'skin': '5', 'hair': 'short', 'hairCol': 'd', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
     'hc_pr_mv_3': {'skin': '3', 'hair': 'curls', 'hairCol': 'k', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
-    'hc_pr_mv_4': {'skin': '1', 'hair': 'bob', 'hairCol': 'y', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
-    'hc_pr_mv_5': {'skin': '4', 'hair': 'spiky', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_4': {'skin': '1', 'hair': 'bob', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
+    'hc_pr_mv_5': {'skin': '4', 'hair': 'buzz', 'hairCol': 'o', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
     'hc_pr_mv_6': {'skin': '6', 'hair': 'bun', 'hairCol': 'h', 'outfit': 'vest', 'outfitCol': 'V', 'accent': 'N'},
 }
 # Generic labels (D1361: no new names). Officer A / Officer B are the packet's FRIEND SLOT placeholders.
@@ -181,13 +181,13 @@ def part2_speech():
     S += [['camera', None], ['walkTo', 'pr_pres', *COURT_DOOR, {'drop': True}]]                                  # he goes back in before the battles (owner); the guards stay
     return S
 
-SPEECH = [
-    "Citizens. Glimmerwell has crossed every line we drew. We will not wait for the next one.",
-    "From today, the national draft returns. Every able citizen will answer the roll.",
-    "Picking Day is closed to civilians. No civilian may pick a Walkling.",
-    "Our schools will teach again from the first page. Every lesson will serve the lantern.",
-    "Anyone who stands with Glimmerwell in public will be fined or jailed.",
-    "And to those who stand with them today: we see you.",
+SPEECH = [   # SETTLED by Vincent (D2130, Wed Nov 4, 2026; design story/STORY_LINES_2026-11-04.md §2.1, S1-S7); S2 is D1428's words
+    "Citizens of High Charity. You were afraid, and you asked me for order. Today you will see it.",
+    "From today, a Keeper stands on every road and at every Hall. Look up, and you will see us.",
+    "Picking Day has run since the Great War. From today, it is closed to civilians, until order returns.",
+    "Our schools will begin again at the first page. Every lesson will serve the lantern.",
+    "Stand with Glimmerwell in our streets, and you will be fined. Stand there again, and you will be jailed.",
+    "And to those in wine vests among us today: we see you.",
     "Keepers. Into the crowd.",
 ]
 GUARDS2 = [f'pr_line_{k}' for k in range(1, 5)] + [f'pr_guard_{k}' for k in range(1, 5)]
@@ -203,7 +203,7 @@ FIGHT = {   # §5 (D1360, D1361): the pools, labels and the PLACEHOLDER team poo
     },
     'stage': {'keepers': {'ally': [[1, 0]], 'foe': [[0, 1], [1, 1]]}, 'glimmer': {'ally': [[1, 0]], 'foe': [[0, -1], [1, -1]]}},
 }
-RESTAGE = '[PLACEHOLDER] Muster Road is still packed. The guards push in again.'
+RESTAGE = 'Muster Road is still packed. The guards push in again.'
 BETWEEN = {'keepers': ['Another one. Left side!', 'Hold the line!'], 'glimmer': ["They're boxing us in!", 'This way!']}
 
 def part3():
@@ -213,12 +213,10 @@ def part3():
                   [['say', N_GUARD, BETWEEN['keepers'][n - 2]]] if n > 1 else []])
         S.append(['hcFight', n, FIGHT])
     keepers_end = [['walkTo', 'pr_off_a', 27, 30],
-                   ['say', N_OFF_A, '[PLACEHOLDER: Officer A thanks the holder and hands off to the next Keeper quest (D1363).]'],
                    ['if', '!story.hc_invite', [['say', N_OFF_A, "The Event Hall booths stay covered until Ilse's letter arrives."]]]]
     glimmer_end = [['say', N_SUPP, 'Not here. Run!'],
                    ['walkTo', 'player', 12, 34, {'line': True}], ['curtain', 'on'],
                    ['warp', 'hc_waterfront', *QUAY_NORTH, 'down'], ['curtain', 'off'],
-                   ['say', '', '[PLACEHOLDER: the hook for the next Glimmer quest (D1362).]'],
                    ['if', '!story.hc_invite', [['say', '', "The Event Hall booths stay covered until Ilse's letter arrives."]]]]
     S.append(['if', 'story.side=glimmer', glimmer_end, keepers_end])
     S += [['setFlag', 'story.hc_parade_seen', True], ['setFlag', 'story.hc_greeted', True]]

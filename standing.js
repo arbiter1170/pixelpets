@@ -23,6 +23,8 @@
       keepers: {
         name: 'The Keepers', short: 'Keepers',
         earn: 'care and kindness: bond, care streaks, Journal pages, freeing crated Walklings',
+        // WALK_BESIDE E8 (D1931, D1972): the whole word, shown on the STANDING card after story.wb_charter. `asks` stays as built (D1937).
+        asksLong: 'Walk beside them, not ahead. Where they stop, stop. Where they turn, look.',
         asks: 'The Keepers ask you to walk beside wild Walklings, not ahead of them. Feed, rest, listen, and leave glow where it grows. In return the Lantern Houses and Halls treat you as family: warmer words, a Keepers shelf of care goods, and a Warden who will vouch for you.',
         tiers: [
           { name: 'Stranger',      blurb: 'New in town. Folk are polite.',  toast: 'Welcome, traveller!' },

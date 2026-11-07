@@ -50,6 +50,15 @@ function labWalk() {
   return ctx.LAB_SKIN.walk;
 }
 
+// The literal `walk` tables of the per-map skins in sprites.js ({ skin: { char: 0 | 1 } }). A skin's table wins over the global
+// tile table for that map's chars, as tileWalks() does in game.js (KILNMOUTH's km_town / km_road chars are local to their maps).
+function skinWalks() {
+  const out = {}, re = /SKINS\.(\w+)\s*=[^;]*?\bwalk:\s*(\{[^{}]*\})/g, src = read('sprites.js');
+  let m;
+  while ((m = re.exec(src))) { try { out[m[1]] = vm.runInNewContext('(' + m[2] + ')'); } catch (e) { /* not a plain literal: global tiles */ } }
+  return out;
+}
+
 function applyMapPatch(world, patch) {
   if (!patch || !patch.maps) return;
   for (const [id, pt] of Object.entries(patch.maps)) {
@@ -124,16 +133,18 @@ function composeWorld(md) {
   return { world, tiles };
 }
 
-function tileWalks(map, x, y, tiles, lab) {
+function tileWalks(map, x, y, tiles, lab, skins) {
   if (!map || !map.grid || y < 0 || x < 0 || y >= map.h || x >= map.w) return false;
   const row = map.grid[y];
   if (!row || x >= row.length) return false;
   const ch = row[x];
   if (map.skin === 'lab' && lab && Object.prototype.hasOwnProperty.call(lab, ch)) return !!lab[ch];
+  const sk = map.skin && skins && skins[map.skin];
+  if (sk && Object.prototype.hasOwnProperty.call(sk, ch)) return !!sk[ch];
   return !!(tiles[ch] && tiles[ch].walk);
 }
 
-function mapProblems(world, tiles, lab) {
+function mapProblems(world, tiles, lab, skins) {
   const bad = [];
   for (const [id, map] of Object.entries(world)) {
     const seen = {};
@@ -149,14 +160,14 @@ function mapProblems(world, tiles, lab) {
         bad.push(where + ': target out of bounds ' + o.to + ' ' + o.tx + ',' + o.ty);
         continue;
       }
-      if (!tileWalks(dest, o.tx, o.ty, tiles, lab)) {
+      if (!tileWalks(dest, o.tx, o.ty, tiles, lab, skins)) {
         const ch = (dest.grid[o.ty] || '')[o.tx] || '?';
         bad.push(where + ': tile ' + o.to + ' ' + o.tx + ',' + o.ty + ' is not walkable (' + ch + ')');
       }
     }
     for (const [oid, n] of Object.entries(seen)) if (n > 1) bad.push(id + ': duplicate object id ' + oid);
     if (!map.safe) bad.push(id + ': no safe spot');
-    else if (!tileWalks(map, map.safe.x, map.safe.y, tiles, lab)) {
+    else if (!tileWalks(map, map.safe.x, map.safe.y, tiles, lab, skins)) {
       const ch = (map.grid[map.safe.y] || '')[map.safe.x] || '?';
       bad.push(id + ': safe tile not walkable ' + map.safe.x + ',' + map.safe.y + ' (' + ch + ')');
     }
@@ -167,7 +178,7 @@ function mapProblems(world, tiles, lab) {
 function repoMapProblems() {
   const md = mapdata();
   const built = composeWorld(md);
-  return mapProblems(built.world, built.tiles, labWalk());
+  return mapProblems(built.world, built.tiles, labWalk(), skinWalks());
 }
 
 function copyTree(dir) {

@@ -42,8 +42,17 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // ROUTE_TO_GOVERNOR (#315): Route 4, its sightings and the north road add warp 22, sign 7, talk 19, scene 1, trigger 6,
     // trainer 3, pickup 4, wild 3 (recounted on the merged tree, Wed Nov 4, 2026).
     // MAHOPAC_DREAMS (#314): the lens room adds talk 2 (Mom and Warden Ilse at the lens) and sign 1 (the sill).
-    door: 49, warp: 123, sign: 105, talk: 835, scene: 41, trigger: 52, board: 7,
-    trainer: 31, pickup: 21, wild: 12, shop: 14, roll: 1, booth: 6, panel: 2,
+    // WALK_BESIDE (#324): Archivist Mo at the Lodge steps adds talk 1 and the steps' trigger adds trigger 1 (both behind story.cab_seat).
+    // BRIGHTGATE (#316): the city's five districts, the HQ, Hall 4 and their rooms add door 30, warp 79, sign 21, talk 224,
+    // trigger 3, trainer 8, wild 1, shop 1 (recounted on the merged tree, Wed Nov 4, 2026).
+    // KILNMOUTH (#318): Claybank Road, the town and its six rooms (Hall 5 and the Hall Stone room among them) add door 9,
+    // warp 22, sign 11, talk 76, trigger 4, trainer 7, pickup 1, wild 2, shop 1 (recounted on the tree merged with main at
+    // 5052c15, Wed Nov 4, 2026; the four tap-side moves change no count).
+    // BRIGHT_SHUTTLE (D2090-D2092, D2106): the works yard stop (mark, sign, attendant), the works line on Gate Plaza and the
+    // Hearthmoor sign add warp 2 and sign 2; the attendant's talk 1 replaces the removed "no shuttle yet" bar's (net talk 0).
+    // Recounted on the tree at 9e65883 (main with #318), Wed Nov 4, 2026.
+    door: 88, warp: 226, sign: 139, talk: 1136, scene: 41, trigger: 60, board: 7,
+    trainer: 46, pickup: 22, wild: 15, shop: 16, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
   // The Hearthmoor coach (hm_to_hc) left this list when it moved off the Keeper House roof to (16,9).
@@ -75,8 +84,8 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // WEIR_HUT (D1591): the desk is two tiles; while Vincent Chi stands at (3,3) its left half is boxed in and the right half
     // (weir_desk_r, the same line) answers from (4,3). tests/weir_hut.spec.js taps it.
     'hw_weir_hut_in:weir_desk_l has no free neighbour',
-    // ROUTE_TO_GOVERNOR (#315): the top bar of the closed east road (22,1) sits under the tree line; the middle bar gives the same line.
-    'route4:r4_east_bar_n neighbour is off the safe region',
+    // (route4:r4_east_bar_n left this list with KILNMOUTH (#318): the Claybank Road warps at (23,1)-(23,3) put its east neighbour on the walk region.)
+    // (brightgate:bs_gate_home left this list with BRIGHT_SHUTTLE: the "no shuttle yet" bar no longer stands on its tile.)
   ]);
   expect(audit.n).toBeGreaterThan(100);
   const sceneOnly = audit.rows.filter((r) => r.kind === 'prop' && r.act === 'scene' && !r.talkable).map((r) => r.id).sort();

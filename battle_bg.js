@@ -162,6 +162,23 @@ const FAR = {
   roofs(S, list){ list.forEach(([x, n, tall]) => { const t = tall || 1; S.fill('R', x, S.hz - 8 - 8 * t, 8 * n, 8, 0.5, x, 0); S.fill('H', x, S.hz - 8 * t, 8 * n, 8 * t, 0.5, x, 1); }); },
 };
 
+// BATTLE_BACKDROPS_ACT2 v0.1.1 (design specs/battle_backdrops_act2/recipes.js; BRIGHTGATE_LAYOUT v0.2): Brightgate's helpers.
+// A far row of company blocks in flat PAL: wall, a seam every 4 px, a cap and a band (the white panel city).
+FAR.blocks = (S, list, wall = 'w', seam = 'h', cap = 'N', band = 'V') => {
+  const { hz, P } = S;
+  list.forEach(([x, w, h]) => {
+    P(wall, x, hz - h, w, h); for (let k = x + 3; k < x + w; k += 4) P(seam, k, hz - h + 3, 1, h - 3);
+    P(cap, x, hz - h - 2, w, 2); P(band, x, hz - h, w, 1); P('d', x, hz - 1, w, 1);
+  });
+};
+// A tall thin mast in flat PAL (the City Relay, a Calm Tower): no glow, one cap; `tip` is the lamp colour.
+FAR.mast = (S, x, top, col = 'm', tip = 'h') => { const { hz, P } = S; P(col, x, top, 2, hz - top); P('d', x + 2, top + 2, 1, hz - top - 2); P(tip, x - 1, top - 2, 4, 2); };
+// Brightgate's haze: the day sky's ice band reads close to mint between white blocks, so company scenes repaint it grey (D2000).
+const haze = S => { if (!S.night && !S.dull) S.P('h', 0, S.hz - 3, S.W, 3); };
+// Panel paving in flat PAL: white panels, soft grey seams (not navy), from the horizon down (B05).
+const panels = (S, y0 = S.hz) => { const { W, H, P } = S; P('w', 0, y0, W, H - y0);
+  for (let y = y0 + 6; y < H; y += 8) P('h', 0, y, W, 1); for (let x = 5; x < W; x += 8) for (let y = y0; y < H; y += 16) P('h', x, y, 1, 8); };
+
 /* ---------- indoor: the room's own wall and floor ---------- */
 const NOT_FLOOR = { '^': 1, m: 1 };
 function room(S, o){
@@ -337,6 +354,26 @@ const OUT = {
     S.fill('s', 4, S.hz + 18, 30, 12, 0.5, 14, 9); S.fill('w', 6, S.hz + 20, 26, 8, 1, 14, 10); S.band('y', 10, 4);
     S.deco(() => { S.art('withy_bundle', S.W - 9, S.H - 2) || S.art('crate', S.W - 9, S.H - 2); });
   },
+  // BRIGHTGATE_LAYOUT v0.2 (BATTLE_BACKDROPS_ACT2 v0.1.1 recipes; the stand-in chars swapped for the city's tiles: L the glide
+  // lane, I panel paving, d setts, o cobbles). Haze grey, no mint (D2000).
+  brightgate(S){ sky(S); haze(S); FAR.blocks(S, [[0, 12, 10], [14, 9, 14], [41, 10, 12], [54, 12, 9]]); FAR.blocks(S, [[26, 12, 8]], 'C', 'C', 'B', 'F');
+    panels(S); S.band('L', 14, 8, 0.5); S.P('w', 0, S.hz + 17, S.W, 1);
+    S.fill('I', 2, S.hz + 26, 28, 12, 0.5, 31, 19); S.fill('w', 5, S.hz + 28, 22, 8, 1, 32, 20);
+    S.deco(() => { S.art('bg_comfort_lamp', 10, S.hz + 13) || S.art('lamp_post', 10, S.hz + 13); S.art('bg_hedge_planter', S.W - 9, S.H - 2); }); },
+  bg_campus(S){ sky(S); haze(S); FAR.blocks(S, [[2, 30, 18]], 's', 'w', 'N', 'V'); S.P('V', 8, S.hz - 22, 18, 1); FAR.blocks(S, [[36, 10, 8], [50, 12, 10]]);
+    S.ground('l', 5); S.band('I', 10, 8, 0.5); S.fill('w', S.W - 30, S.hz + 24, 26, 8, 1, 30, 30);
+    S.deco(() => { S.art('banner_glim_stand', 10, S.hz + 14) || S.art('flag_pole', 10, S.hz + 14); S.art('bg_hedge_planter', S.W - 9, S.H - 2); }); },
+  bg_works(S){ sky(S); haze(S); S.fill('K', 0, S.hz - 12, 30, 12, 0.5, 3, 3); S.P('N', 0, S.hz - 14, 30, 2); FAR.mast(S, 44, 2, 'm', 'h'); FAR.blocks(S, [[50, 13, 9]], 'm', 'd', 'N', 'y');
+    S.ground('d', 4); S.fill('F', 0, S.hz, S.W, 8, 0.5, 46, 34);
+    for (let x = 1; x < S.W; x += 4) S.P('F', x, S.hz + 14, 2, 5); S.P('h', 0, S.hz + 15, S.W, 1); S.P('h', 0, S.hz + 18, S.W, 1);
+    S.band('D', 22, 8, 0.5); S.band('w', 30, 10);
+    S.deco(() => { S.art('water_tank', 14, S.hz - 8, 0.75) || S.art('crate_stack', 14, S.hz + 12); S.art('tile_crate', S.W - 9, S.H - 2) || S.art('crate_stack', S.W - 9, S.H - 2); }); },
+  bg_oldtown(S){ sky(S); FAR.hills(S, 'g', 0.8); FAR.roofs(S, [[0, 2], [16, 1], [24, 2, 2], [40, 1], [48, 2]]);
+    S.ground('o', 6); S.band('o', 6, 8, 0.5); S.fill('s', S.W - 32, S.hz + 22, 30, 14, 1, 20, 30); S.fill('w', S.W - 30, S.hz + 24, 26, 10, 1, 21, 31);
+    S.deco(() => { S.art('lamp_post', 12, S.hz + 14); S.art('bench_long', S.W - 12, S.H - 2); }); },
+  bg_partner(S){ sky(S); FAR.blocks(S, [[0, 10, 8], [12, 10, 8], [24, 10, 8], [36, 10, 8], [48, 10, 8], [60, 10, 8]], 'h', 'm', 'N', 'V');
+    S.ground('l', 2); S.band('I', 8, 8, 0.5); S.band('I', 26, 8, 0.5);
+    S.deco(() => { S.art('bg_comfort_lamp', 12, S.hz + 14) || S.art('lamp_post', 12, S.hz + 14); S.art('bg_comfort_lamp', S.W - 8, S.H - 2) || S.art('bg_hedge_planter', S.W - 9, S.H - 2); }); },
 };
 // Every room (the whole interior list). back: props at the foot of the back wall, left of the foe; front: props in the
 // front-right corner. Trial Halls add banners and a floor ring. group: a group battle happens here (boxes()).
@@ -364,6 +401,9 @@ const ROOMS = {
   sm_tunnel: {}, bw_lantern_in: {}, bw_store_in: {}, fb_lantern_in: {},
   fbh_press_in: {}, fbh_picker_in: {}, fbh_stitch_in: {},   // FERNBROOK_HOMES (on main without a scene; added with WEIR_HUT)
   hw_weir_hut_in: {},   // WEIR_HUT: no wilds or holders inside; listed so every room has a scene (its first two props)
+  // Hall 4, VOLT (BATTLE_BACKDROPS_ACT2 v0.1.1): the storm tower.
+  bg_hall_in: { hall: true, banner: ['n', 'y'], ring: 'c', back: ['bg_rod'], front: ['bg_coil'] },   // the recipe's mast and vane carry mint pixels; the hall's own rod and coil instead (D2000)
+  bg_lantern_in: {}, bg_store_in: {}, bg_hq_lobby: {}, bg_review_in: {}, bg_gala_in: {},   // BRIGHTGATE_LAYOUT (BATTLE_BACKDROPS_ACT2): no battle designed; every room has a scene
 };
 // A room with no named props takes its own first two prop sprites (back, then front), so every room still shows its things.
 function autoProps(env, o){
@@ -403,15 +443,70 @@ function frame(bg, t){ return bg && bg.btAlt && bg.btAlt.width && Math.floor(t /
 
 // HIGH_CHARITY_LAYOUT phase 1: the four new chunks and the new rooms. game.js calls enableCity() only while the city is
 // on (HC_CITY_V2 or ?debug=1&hccity=2), so every scene here always has its map in WORLD.
+// HIGH_CHARITY_LAYOUT v0.4 (BATTLE_BACKDROPS_ACT2 §4, its proposed tune): each chunk draws its own scene in its district's
+// colours (layout §3.1), so no two city maps share one. Each draws its landmark as a flat block on the far layer (above the
+// horizon, where the Walklings' boxes never reach; S.house slid it off the right edge at 63 px): the Square the Muster Hall,
+// the one dark roof with no lantern (layout §5.2); Charter Hill the Keeper High Court; the Exchange Block News House. PAL only.
+const HC_SQUARE = OUT.highcharity;
+function hcFinials(S, list){ list.forEach(([x, , tall]) => S.P('y', x + 3, S.hz - 8 - 8 * (tall || 1) - 2, 2, 2)); }
+function hcBlock(S, x, roof, wall, w = 16){ S.P(roof, x, S.hz - 20, w, 8); S.P('k', x, S.hz - 21, w, 1); S.P(wall, x, S.hz - 12, w, 12); S.P('k', x + (w >> 1) - 2, S.hz - 8, 4, 8); }
 const HC_OUT = {
-  hc_civic(S){ OUT.highcharity(S); },
-  hc_exchange(S){ OUT.highcharity(S); },
+  highcharity(S){
+    HC_SQUARE(S); hcFinials(S, [[0, 1, 2], [9, 2, 3], [26, 1, 2]]);
+    hcBlock(S, Math.min(S.W - 18, 38), 'd', 'F');
+  },
+  hc_civic(S){                                        // Charter Hill: pale stone, the Governor's House columns, Keeper green banners
+    sky(S); FAR.roofs(S, [[2, 4, 2]]); hcFinials(S, [[2, 4, 2]]); hcBlock(S, Math.min(S.W - 18, 40), 'h', 'w');
+    for (let x = Math.min(S.W - 18, 40) + 2; x < Math.min(S.W - 18, 40) + 15; x += 4) S.P('h', x, S.hz - 11, 1, 11);   // the Court's columns
+    for (let x = 6; x < 32; x += 6) S.P('w', x, S.hz - 14, 2, 14);
+    [10, 22].forEach(x => S.P('J', x, S.hz - 22, 3, 7));
+    S.ground('P', 4); S.band('C', 18, 16, 1, 0, S.W);
+    S.deco(() => {
+      S.art('banner_keeper', 10, S.hz + 14) || S.art('flag_pole', 10, S.hz + 14) || S.art('lamp_post', 10, S.hz + 14);
+    });
+  },
+  hc_exchange(S){                                     // the Exchange Quarter: slate blocks, brass trim, the boulevard and its bays
+    sky(S); FAR.roofs(S, [[0, 2, 3], [14, 3, 2]]); hcFinials(S, [[0, 2, 3], [14, 3, 2]]);
+    [[0, 16], [14, 24]].forEach(([x, w]) => S.P('y', x, S.hz - 9, w, 1));
+    hcBlock(S, Math.min(S.W - 18, 42), 'm', 'h'); S.P('d', Math.min(S.W - 18, 42) + 12, S.hz - 30, 1, 10);   // Block News House and its wire mast
+    S.ground('P', 6); S.band('U', 10, 8, 0.5, 0, S.W); S.band('C', 18, 16, 1, 0, S.W);
+    S.deco(() => {
+      S.art('poster_stand', 12, S.hz + 14) || S.art('lamp_post', 12, S.hz + 14);
+    });
+  },
   hc_waterfront(S){ sky(S); FAR.roofs(S, [[0, 1, 2], [20, 2, 3]]); S.ground('D', 2); S.band('w', 22, 10, 1, 0, S.W);
     S.deco(() => { S.art('rope_coil', 10, S.hz + 14) || S.art('lamp_post', 10, S.hz + 14); }); },
   hc_college(S){ sky(S); FAR.roofs(S, [[4, 2, 3]]); S.ground('g', 5); S.band('P', 20, 8, 0.5, 0, S.W);
     S.deco(() => { S.art('lm_big_tree', S.W - 10, S.H - 2, 0.6); }); },
 };
-const HC_ROOMS = { hc_news_1: {}, hc_news_2: {}, hc_gov_1: {}, hc_gov_3: {} };
+const HC_ROOMS = { hc_news_1: {}, hc_news_2: {}, hc_gov_1: {}, hc_gov_3: {}, hc_gov_2: {}, hc_museum_in: {} };   // hc_gov_2 (the Cabinet Room) and hc_museum_in took the indoor recipe at the HC_CITY_V2 switch-on: every WORLD map needs a scene
+// KILNMOUTH v0.1.1 §11.1 (BATTLE_BACKDROPS_ACT2 rows): Claybank Road, the town and Hall 5 from their own tiles and props; the
+// other five rooms take the indoor recipe. The road's B10 look (the creek full, puddles) reads the map's soaked cells.
+const KM_OUT = {
+  km_road(S){                                         // the clay valley: clay hills, the track, a thin low creek with wide sand
+    const row = (S.env.cells || [])[25] || [], soaked = row[5] === 'm';
+    sky(S); FAR.ridge(S, 'B', 'F'); S.ground('g'); S.band('p', 18, 4);
+    if (soaked) { S.band('w', 24, 6); [[6, 12], [S.W - 14, 16], [S.W >> 1, 30]].forEach(([x, y]) => S.P('c', x, S.hz + y, 5, 1)); S.P('h', 0, 2, S.W, 1); }
+    else { S.band('s', 24, 3); S.band('w', 27, 3); }
+    S.fill('j', S.W - 18, S.hz + 2, 16, 8, 0.5, 2, 20);
+    S.deco(() => { S.art('km_hammer', 12, S.hz + 14, 0.75) || S.art('milestone', 12, S.hz + 14); });
+  },
+  kilnmouth(S){                                       // the flat cloud, two bottle kilns (one smoking east), the yard's clay, the gauge
+    const { W, hz, P } = S;
+    sky(S); P('h', 0, 0, W, 6); P('m', 0, 6, W, 1);
+    [[4, false], [W - 18, true]].forEach(([x, warm]) => {
+      P('B', x + 3, hz - 14, 8, 14); P('B', x + 5, hz - 19, 4, 5); P('F', x + 9, hz - 14, 2, 14); P('F', x + 5, hz - 20, 4, 1);
+      if (warm) { P('m', x + 9, hz - 24, 3, 2); P('h', x + 12, hz - 27, 3, 2); P('w', x + 15, hz - 29, 2, 1); }
+    });
+    S.ground('p'); S.band('e', 20, 6, 0.5);
+    S.deco(() => { S.art('km_gauge', 10, S.hz + 16, 0.75) || S.art('lamp_post', 10, S.hz + 16); });
+  },
+};
+const KM_ROOMS = { km_hall_in: { hall: true, banner: ['r', 'o'], ring: 'y', back: ['km_vent_lit'], front: ['km_vent'] },
+  km_lantern_in: {}, km_store_in: {}, km_bath_in: {}, km_council_in: {}, km_stone_in: {} };
+Object.assign(OUT, KM_OUT); Object.assign(ROOMS, KM_ROOMS);
+Object.keys(KM_OUT).forEach(id => { scenes[id] = { room: false }; });
+Object.keys(KM_ROOMS).forEach(id => { scenes[id] = { room: true, group: false, hall: !!KM_ROOMS[id].hall }; });
 function enableCity(){
   Object.assign(OUT, HC_OUT); Object.assign(ROOMS, HC_ROOMS);
   Object.keys(HC_OUT).forEach(id => { scenes[id] = { room: false }; });
