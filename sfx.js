@@ -68,10 +68,10 @@ const PPSound = (() => {
   }
   // First gesture unlocks audio; kept on so iOS can resume after an interruption (phone call, lock screen, another app's audio).
   // pointerdown/touchstart are not "activation" on iOS, so touchend/click/keydown do the real unlock; pointerdown is a harmless early try.
-  const unlock = () => { if (muted) return; session(true); if (ensure()) { warm(); startWanted(); } };
+  const unlock = () => { if (muted) return; session(true); if (ensure()) { warm(); startWanted(); humApply(); } };
   ['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => window.addEventListener(ev, unlock, { capture: true, passive: true }));
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { if (keep && !keep.paused) try { keep.pause(); } catch(e) {} }
+    if (document.hidden) { if (keep && !keep.paused) try { keep.pause(); } catch(e) {} humApply(); }
     else if (ac && !muted && ac.state !== 'running') { try { const r = ac.resume(); if (r && r.catch) r.catch(() => {}); } catch(e) {} }
   });
 
@@ -925,7 +925,7 @@ const PPSound = (() => {
   }
   function setMusic(on, gesture){
     MUSIC_ON = !!on;
-    if (!MUSIC_ON) { token++; if (trk) stopTrack(0.1); return false; }
+    if (!MUSIC_ON) { token++; if (trk) stopTrack(0.1); humApply(); return false; }
     if (gesture && !muted && ensure()) warm();
     startWanted();
     return true;
@@ -939,6 +939,37 @@ const PPSound = (() => {
     if (ac.state !== 'running') { try { const r = ac.resume(); if (r && r.then) r.then(begin).catch(() => {}); } catch(e) {} return; }
     begin();
   }
+
+  /* HC_LAMP_HUM (D1371, layout 4.2 and 4.5): the grey box on a High Charity lamp post hums. ONE voice (two soft sines a hair apart, so they
+     beat slowly), no files. The game calls hum(level) with 0..1 (its distance to the nearest post); the level is the voice's gain, under the
+     same gates as music: sound not muted, Music on, page visible, context running (so nothing starts before a first gesture). The peak is
+     HUM_PEAK (about a quarter of a music note) and follows the Music volume. Gain moves with a slow time constant, so it never hard-cuts;
+     at 0 the voice is stopped and disconnected after the fade. */
+  const HUM_PEAK = 0.02, HUM_TC = 0.18;
+  let humWant = 0, hum = null;
+  const humGate = () => !muted && MUSIC_ON && !document.hidden;
+  const humLevel = () => humGate() ? Math.max(0, Math.min(1, humWant)) : 0;
+  // The voice is never doubled: a hum that fades out is kept for 0.5 s, and if the level comes back in that time it is the SAME voice that rises again.
+  function humStop(){
+    if (!hum || hum.fading) return;
+    const h = hum; h.fading = true;
+    try { h.g.gain.cancelScheduledValues(ac.currentTime); h.g.gain.setTargetAtTime(0.0001, ac.currentTime, 0.06); } catch(e) {}
+    h.timer = setTimeout(() => { if (hum === h) hum = null; for (const n of [h.a, h.b]) { try { n.stop(); } catch(e) {} } for (const n of [h.a, h.b, h.g]) { try { n.disconnect(); } catch(e) {} } }, 500);
+  }
+  function humApply(){
+    const lv = humLevel();
+    if (lv <= 0.001 || !ac || ac.state !== 'running') { humStop(); return; }
+    try {
+      if (!hum) {
+        const g = ac.createGain(), a = ac.createOscillator(), b = ac.createOscillator();
+        a.type = b.type = 'sine'; a.frequency.value = 147; b.frequency.value = 148.5;
+        g.gain.setValueAtTime(0.0001, ac.currentTime); a.connect(g); b.connect(g); g.connect(out); a.start(); b.start();
+        hum = { g, a, b, fading: false, timer: 0 };
+      } else if (hum.fading) { clearTimeout(hum.timer); hum.fading = false; hum.timer = 0; }
+      hum.g.gain.setTargetAtTime(Math.max(0.0001, HUM_PEAK * lv * (MUSIC_VOL / 0.5)), ac.currentTime, HUM_TC);
+    } catch(e) { hum = null; }
+  }
+  function setHum(level){ humWant = +level > 0 ? +level : 0; humApply(); return humLevel(); }
 
   let petAt = 0;
   function play(name, delay){
@@ -956,11 +987,11 @@ const PPSound = (() => {
   }
   function setMuted(m){
     muted = !!m;
-    if (muted) { if (ac) live.forEach(s => stCancel(s, ac.currentTime)); live = []; token++; if (trk) stopTrack(0.03); }
+    if (muted) { if (ac) live.forEach(s => stCancel(s, ac.currentTime)); live = []; token++; if (trk) stopTrack(0.03); humApply(); }
     try { if (muted) localStorage.setItem(MUTE_KEY, '1'); else localStorage.removeItem(MUTE_KEY); } catch(e) {}
     if (out && ac) { try { out.gain.setTargetAtTime(muted ? 0 : MASTER, ac.currentTime, 0.01); } catch(e) {} }
     session(!muted);                                   // muted: back to 'ambient', silent loop paused
-    if (!muted && ensure()) { warm(); startWanted(); } // toggling is itself a gesture: unlock now
+    if (!muted && ensure()) { warm(); startWanted(); humApply(); } // toggling is itself a gesture: unlock now
     return muted;
   }
   return { play, setMuted, toggle: () => setMuted(!muted), get muted(){ return muted; }, get available(){ return !!AC; },
@@ -971,5 +1002,6 @@ const PPSound = (() => {
     get musicVol(){ return MUSIC_VOL; },
     get musicSwell(){ return trk && trk.swell ? Object.assign({}, trk.swell) : null; },   // KEEPER_ANTHEM M4: read-only, for tests
     set musicVol(v){ const n = +v; if (!Number.isFinite(n)) return; MUSIC_VOL = Math.max(0, Math.min(1, n));
-      if (trk && ac) { try { trk.bus.gain.setTargetAtTime(MUSIC_VOL, ac.currentTime, 0.05); } catch(e) {} } } };
+      if (trk && ac) { try { trk.bus.gain.setTargetAtTime(MUSIC_VOL, ac.currentTime, 0.05); } catch(e) {} } humApply(); },
+    hum: setHum, get humInfo(){ return { want: humWant, level: humLevel(), voices: hum && !hum.fading ? 1 : 0, peak: HUM_PEAK }; } };
 })();

@@ -20544,6 +20544,34 @@ function frame(t){
     else requestAnimationFrame(frame);
   }
 }
+/* ---------- HC_LAMP_HUM (D1371; layout 4.2 and 4.5): the grey box hums within 2 tiles of a lamp post ---------- */
+// One voice lives in sfx.js (PPSound.hum); this only works out the level, 0 to 1, from the holder's distance to the NEAREST post
+// (a post is a `hc_lamp_box` prop on a city map). Zero beyond HC_HUM_RADIUS tiles, on any other map (rooms included), and while a menu,
+// battle, scene or map fade is up. sfx.js adds the sound, Music and hidden-page gates; the gain glides, so it never hard-cuts.
+const HC_HUM_RADIUS = 2;
+let hcHumPosts = null, hcHumMap = '', hcHumSent = 0, hcHumAt = 0, hcHumLast = { level: 0, dist: null };
+function hcHumPostsFor(map){
+  if (hcHumMap !== map.id || !hcHumPosts) { hcHumMap = map.id; hcHumPosts = (map.objs || []).filter(o => o.kind === 'prop' && o.sprite === 'hc_lamp_box'); }
+  return hcHumPosts;
+}
+function hcHumCompute(){
+  let level = 0, dist = null;
+  if (S && HC_V2_ON && screen === 'walk' && CUR && HC_CHUNKS.includes(CUR.id) && !overlayOpen() && !fade.busy && !walk.intro) {
+    for (const o of hcHumPostsFor(CUR)) {
+      const d = Math.hypot(o.x - walk.fx, o.y - walk.fy);
+      if (dist === null || d < dist) dist = d;
+    }
+    if (dist !== null && dist < HC_HUM_RADIUS) { const k = 1 - dist / HC_HUM_RADIUS; level = k * k * (3 - 2 * k); }   // smoothstep: soft at the rim
+  }
+  return { level, dist };
+}
+function hcHumTick(t){
+  if (t - hcHumAt < 80) return;
+  hcHumAt = t;
+  hcHumLast = hcHumCompute();
+  if (hcHumLast.level > 0 || hcHumSent > 0) { hcHumSent = hcHumLast.level; try { PPSound.hum(hcHumLast.level); } catch (e) {} }
+}
+
 function frameBody(t){
   const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
   const p = pet();
@@ -20567,6 +20595,7 @@ function frameBody(t){
   if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncSide(); syncWalkTip(); }
   if (S && window.PPClock) { renderClockChip(); noteWhereMinute(); }
   if (S) { unlockWatch(t); carePump(t); }
+  hcHumTick(t);
   if (!$('#ovMap').hidden) drawMapOverlay(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if ($('#ovWardrobe') && !$('#ovWardrobe').hidden) drawWardPreview(t);
@@ -21396,6 +21425,7 @@ function boot(){
     objs: WORLD[id].objs.length, people: WORLD[id].objs.filter(o => o.kind === 'npc').length,
     tanks: WORLD[id].objs.filter(o => /^hc_tank/.test(o.sprite || '')).length, cars: WORLD[id].objs.filter(o => /^hc_car/.test(o.sprite || '')).length })) : [],
     check: HC_V2_ON ? hcCityCheck() : null } : null;
+  api.hcHum = () => DEBUG ? { level: hcHumLast.level, dist: hcHumLast.dist, radius: HC_HUM_RADIUS, sent: hcHumSent, posts: CUR && HC_CHUNKS.includes(CUR.id) ? hcHumPostsFor(CUR).length : 0, sfx: PPSound.humInfo } : null;
   api.hcPlaceholders = () => DEBUG && typeof HC_PLACEHOLDER_ART !== 'undefined' ? Object.assign({}, HC_PLACEHOLDER_ART) : null;
   api.exportSave = () => exportText();
   api.importSave = text => { if (!stageCopy(text)) return false; confirmCopy(); return true; };

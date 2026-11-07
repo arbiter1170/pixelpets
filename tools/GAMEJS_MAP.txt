@@ -2250,27 +2250,36 @@
 20535-20535  let frameFails
 20535-20535  let frameCount
 20535-20535  let frameBreak
-20536-20546  function frame
-20547-20592  function frameBody
-20593-20598  function regenAll
-20599-20610  function catchUp
-20611-20620  let hiddenAt
-20621-20627  function cloudSummary
-20628-20703  function startCloud
-20704-20704  const buildChk
-20705-20714  function checkBuild
-20715-20721  function pumpBuildBar
-20722-20727  function freshUrl
-20728-20731  function dropBuildParam
-20732-20744  function startBuildCheck
-20745-20751  function bootReadOnly
-20752-20783  function highCharityDevCheck
-20784-20784  const HC_CHUNKS
-20785-20820  function hcCityCheck
-20821-20824  function registerInstall
-20825-21538  function boot
-21539-21539  const BOOT_RETRY_KEY
-21540-21558  function bootRetried
+20536-20550  function frame
+20551-20551  const HC_HUM_RADIUS
+20552-20552  let hcHumPosts
+20552-20552  let hcHumMap
+20552-20552  let hcHumSent
+20552-20552  let hcHumAt
+20552-20552  let hcHumLast
+20553-20556  function hcHumPostsFor
+20557-20567  function hcHumCompute
+20568-20574  function hcHumTick
+20575-20621  function frameBody
+20622-20627  function regenAll
+20628-20639  function catchUp
+20640-20649  let hiddenAt
+20650-20656  function cloudSummary
+20657-20732  function startCloud
+20733-20733  const buildChk
+20734-20743  function checkBuild
+20744-20750  function pumpBuildBar
+20751-20756  function freshUrl
+20757-20760  function dropBuildParam
+20761-20773  function startBuildCheck
+20774-20780  function bootReadOnly
+20781-20812  function highCharityDevCheck
+20813-20813  const HC_CHUNKS
+20814-20849  function hcCityCheck
+20850-20853  function registerInstall
+20854-21568  function boot
+21569-21569  const BOOT_RETRY_KEY
+21570-21588  function bootRetried
 
 # battle_bg.js
 13-18  function lay
@@ -2432,7 +2441,7 @@
 9-685  const PPSave
 
 # sfx.js
-8-975  const PPSound
+8-1007  const PPSound
 
 # sprite_anim.js
 13-26  const SA
