@@ -479,7 +479,7 @@ const HC_OUT = {
   hc_college(S){ sky(S); FAR.roofs(S, [[4, 2, 3]]); S.ground('g', 5); S.band('P', 20, 8, 0.5, 0, S.W);
     S.deco(() => { S.art('lm_big_tree', S.W - 10, S.H - 2, 0.6); }); },
 };
-const HC_ROOMS = { hc_news_1: {}, hc_news_2: {}, hc_gov_1: {}, hc_gov_3: {} };
+const HC_ROOMS = { hc_news_1: {}, hc_news_2: {}, hc_gov_1: {}, hc_gov_3: {}, hc_gov_2: {}, hc_museum_in: {} };   // hc_gov_2 (the Cabinet Room) and hc_museum_in took the indoor recipe at the HC_CITY_V2 switch-on: every WORLD map needs a scene
 // KILNMOUTH v0.1.1 §11.1 (BATTLE_BACKDROPS_ACT2 rows): Claybank Road, the town and Hall 5 from their own tiles and props; the
 // other five rooms take the indoor recipe. The road's B10 look (the creek full, puddles) reads the map's soaked cells.
 const KM_OUT = {

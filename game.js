@@ -85,11 +85,11 @@ const HALL2_ON = (() => {
   return on;
 })();
 /* HIGH_CHARITY_LAYOUT v0.2.1 phase 1 ("the capital, day one"; D1268, D1270-D1281). The five-chunk city lives in
-   data/hc_city_v2.js (window.PP_HC_V2, built by tools/build_hc_city.py), outside MAPDATA. HC_CITY_V2 is the ship switch:
-   it stays false until Vincent's yes on the 390 previews (layout §13 test 10), then flips in one line. Until then the city
-   is a preview on ?debug=1&hccity=2 only (kept for this tab in sessionStorage; ?hccity=0 turns it off). Plain ?debug=1
-   never turns it on. While it is a preview, the save is held (nothing writes pixelpets.save.v2), as the #268 preview lot does. */
-const HC_CITY_V2 = false;
+   data/hc_city_v2.js (window.PP_HC_V2, built by tools/build_hc_city.py), outside MAPDATA. HC_CITY_V2 is the ship switch.
+   SWITCHED ON Fri Nov 6, 2026 (Vincent: "Act 2 fix: A: switch-on now, top priority"): the Act 2 rows point at hc_gov_1, a room
+   that exists only in the city. The city now writes the save like any other map (save.js MAP_SIZE sizes its maps). ?hccity=2 is a
+   no-op now (kept so old links work); the preview hold below (HC_PREVIEW) can only be true if the const is set back to false. */
+const HC_CITY_V2 = true;
 const HC_STREET_SOLID_BAYS = true, HC_TANK_POSTS = true, HC_GOV_HOUSE = true;   // D1271, D1272, D1276 (yellow, at their defaults, inside the city)
 const HCCITY_KEY = 'pixelpets.hccity';
 function readHcCityPref(){

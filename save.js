@@ -32,6 +32,10 @@ const PPSave = (() => {
     const pm = MD[k] && MD[k].slicePatch && MD[k].slicePatch.maps;
     if (pm) for (const [id, pt] of Object.entries(pm)) if (MAP_SIZE[id] && pt && pt.set && pt.set.w && pt.set.h) MAP_SIZE[id] = [pt.set.w, pt.set.h];
   }
+  // HIGH_CHARITY_LAYOUT ship time (HC_CITY_V2 on): the city's own maps and rooms (data/hc_city_v2.js loads before this file), so a save made
+  // in a new chunk or room reloads in place. hc_lantern_in is 9x7 in MAPDATA and 16x22 in the city: the city size wins. Additive; v stays 2.
+  const HCV2 = typeof window !== 'undefined' && window.PP_HC_V2;
+  if (HCV2) { addMaps(HCV2.maps); addMaps(HCV2.rooms); }
   const MAPS = Object.keys(MAP_SIZE);
   // D224: floorSeen keys are real map ids. Detail overlays can add rooms that MAPS has not sized yet.
   const FLOOR_SEEN_IDS = new Set(MAPS);
@@ -43,6 +47,7 @@ const PPSave = (() => {
       for (const [id, m] of Object.entries(group)) if (m && m.w && m.h) FLOOR_SEEN_IDS.add(id);
     }
   }
+  if (HCV2) for (const key of ['maps', 'rooms']) for (const [id, m] of Object.entries(HCV2[key] || {})) if (m && m.w && m.h) FLOOR_SEEN_IDS.add(id);
   const MAP_W = 24, MAP_H = 20;                 // v1 positions were on the 24x20 proto map
   // PARTNER_DAY (Vincent, Nov 2, 2026): a detail overlay may move the fresh-game start (the bedroom upstairs); the last one wins.
   const NEW_GAME = MD ? Object.keys(MD).filter(k => k.startsWith('detail_')).sort().reduce((ng, k) => (MD[k] && MD[k].newGame) || ng, MD.interiors.newGame)
