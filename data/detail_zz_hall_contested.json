@@ -304,7 +304,7 @@
        "hold:fernbrook=glimmer & story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell banner with the honey diamond. It hangs from the same old nail the Keeper banner used."
+       "else": "A Glimmerwell banner with the diamond. It hangs from the same old nail the Keeper banner used."
       }
      },
      {
@@ -460,7 +460,7 @@
        "!hold:fernbrook=keepers | !story.fen_turned"
       ],
       "lines": {
-       "else": "A Glimmerwell banner, wine with a honey trim. Not a crease on it, not a speck of dust."
+       "else": "A Glimmerwell banner. Not a crease on it, not a speck of dust."
       }
      },
      {

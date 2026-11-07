@@ -970,18 +970,21 @@
       "name": "Road Keeper",
       "faction": "keepers",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "ROUTE_TO_GOVERNOR §5.2 (D1857, D1860): the Keeper post at the fold on Route 4. Role name PLACEHOLDER."
     },
     {
       "name": "Lock Keeper",
       "faction": "keepers",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "ROUTE_TO_GOVERNOR §5.3: the towpath lock on the river road. Role name PLACEHOLDER."
     },
     {
       "name": "Gate Keeper",
       "faction": "keepers",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "ROUTE_TO_GOVERNOR §5.3: the Charter Hill gate on the river road. Role name PLACEHOLDER."
     },
     {
@@ -1042,18 +1045,21 @@
       "name": "PLACEHOLDER J",
       "faction": "glimmer",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "KILNMOUTH §5.3 (B4): the Tower Crew holder at the fence gate. Name PLACEHOLDER."
     },
     {
       "name": "Foreman Dray",
       "faction": "glimmer",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "CAB §3.2 (NAMES_PASS D1751): the works foreman, a wine work vest; K3 pitch."
     },
     {
       "name": "Edwin Garth",
       "faction": "keepers",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "CAB §3.2 (NAMES_PASS D1750): the Commander's nominee, a retired Keeper, no rank shown; K3 pitch."
     },
     {
@@ -1096,18 +1102,21 @@
       "name": "Tower Crew",
       "faction": "glimmer",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "KILNMOUTH §5.3 B4: the crew at the fence gate (the battle is PLACEHOLDER J). Role name PLACEHOLDER."
     },
     {
       "name": "Works Hand",
       "faction": "glimmer",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "KILNMOUTH §5.5: the split hold, a wine vest at the works gate. Role name PLACEHOLDER."
     },
     {
       "name": "Keeper Patrol",
       "faction": "keepers",
       "base": 50,
+      "rankFlag": "D1160",
       "note": "KILNMOUTH §5.5: the curfew pair on Gate Street and the Keeper hold. Role name PLACEHOLDER."
     },
     {
