@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-07 ET: Settle Vincent's Nov 5-6 rows, file the Great War ids, lore_version v0.10.0 (docs plus a two-line data bump)
+- What changed and why: Vincent's confirmations of Fri Nov 6 are recorded: SCENE_MUSIC D1890-D1909 (all defaults, D1898 included), CABINET v0.2 and GLIMMER_DECISIONS D1770-D1809 (defaults, D1787 = B, D1807 = B), B-PICK D1811-D1813, CABINET_LINES D2150-D2154 (Reeve Damson, Steward Hobday), D1087 (no mint), LH-1 and LH-2 (done via D1413 and D1414), Answerers D837-D848 (closed as built). His red rulings: D1371 (the hum, built in #343), D971 (allow "1886"), D1000 (built sounds only) settled; D1308 and D1332 settled on their defaults when their deadlines passed. D2174 and D2175 stay open (held by Vincent), D1160 stays open (wait), D1044 and D1319 stay open (parked). The Great War reservation lines D2380-D2429 from design STORY_DECISIONS v0.115 are pasted; next free id is D2430. `lore_version` in `data/news.json` and `data/ribbit_posts.json` moves from v0.9.8 to v0.10.0 (the design lore index is v0.10.0; no entry text changed). No code change, no save change (`pixelpets.save.v2`, `v` 2).
+- Files touched: OPEN_DECISIONS.md, archive/DECISIONS_SETTLED.md, data/news.json, data/ribbit_posts.json, data/mapdata.js (regenerated), CHANGELOG.md, index.html, version.json.
+- Commit(s) + build id: see PR; build 20261107-0302.
+- Tests run and result (widths, checks): `node tools/scans/run.js` all five scans pass; design `lore/lore_check.py --game` PASS; phone_feed, news and related lore specs at 390 (see PR).
+- Decisions made (colour + reasoning): none new. Settled rows only, as Vincent ruled.
+- Anything left unfinished: the D1371 real-iPhone listen check (Nina).
+
 ## 2026-11-07 ET: High Charity lamp hum (D1371, approved by Vincent; red, iPhone audio)
 - What changed and why: the grey box on a High Charity lamp post now hums softly within 2 tiles (layout 4.2, 4.5). One synthesised voice (`PPSound.hum` in sfx.js, two soft sines), level from the distance to the nearest post (`hcHumTick` in game.js): 0 beyond 2 tiles, in rooms, off the city, with a menu, battle, scene or fade up, with sound or Music off, and while the page is hidden. Nothing starts before the first gesture. Real-iPhone listen check is the rule 3 sign-off.
 - Files touched: sfx.js, game.js, tests/hc_lamp_hum.spec.js, handoff/maps/HC_CITY_V2.md, OPEN_DECISIONS.md, tools/GAMEJS_MAP.txt, index.html, version.json.
